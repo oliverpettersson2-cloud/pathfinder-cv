@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- ============================================
+       Pathfinder — Favicon / App-ikon
+       Bakgrund: #1a1a2e
+       C: #ffffff  V: #f0c040
+       Kompass nål N: #e85d26
+  ============================================ -->
+
+  <!-- Bakgrund -->
+  <rect width="64" height="64" rx="14" fill="#1a1a2e"/>
+
+  <!-- Kompass -->
+  <g transform="translate(32, 26)">
+    <circle cx="0" cy="0" r="14" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <polygon points="0,-11 -3,1 0,-0.5 3,1" fill="#e85d26"/>
+    <polygon points="0,11 -3,-1 0,0.5 3,-1" fill="rgba(255,255,255,0.25)"/>
+    <circle cx="0" cy="0" r="2" fill="#e85d26"/>
+  </g>
+
+  <!-- CV text -->
+  <text x="27" y="53"
+        font-family="Georgia,serif"
+        font-size="12" font-weight="700"
+        fill="#ffffff">C</text>
+  <text x="34" y="53"
+        font-family="Georgia,serif"
+        font-size="12" font-weight="700"
+        fill="#f0c040">V</text>
+</svg>
