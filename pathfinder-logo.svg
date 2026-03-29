@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 60">
+  <!-- ============================================
+       Pathfinder — AI-CV-Builder
+       Navbar/mörk version (används i <nav>)
+       
+       Färger:
+         Bakgrund nav:  #1a1a2e
+         Text "Path":   #ffffff
+         Text "finder": #f0c040
+         Tagline:       rgba(255,255,255,0.4)
+         Kompass nål N: #e85d26
+         Kompass nål S: rgba(255,255,255,0.25)
+  ============================================ -->
+
+  <!-- Kompass-ikon -->
+  <g transform="translate(28, 30)">
+    <circle cx="0" cy="0" r="18" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="12" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <!-- Norr-nål (orange) -->
+    <polygon points="0,-15 -4,2 0,-1 4,2" fill="#e85d26"/>
+    <!-- Syd-nål (vit/muted) -->
+    <polygon points="0,15 -4,-2 0,1 4,-2" fill="rgba(255,255,255,0.25)"/>
+    <!-- Öst-Väst linje -->
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <!-- Mittpunkt -->
+    <circle cx="0" cy="0" r="2.5" fill="#e85d26"/>
+    <!-- N-markering -->
+    <text x="0" y="-20" text-anchor="middle"
+          font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+          font-size="7" font-weight="700"
+          fill="rgba(255,255,255,0.5)">N</text>
+  </g>
+
+  <!-- Logotyptext -->
+  <text x="54" y="26"
+        font-family="Georgia,serif"
+        font-size="20" font-weight="700"
+        fill="#ffffff">Path<tspan fill="#f0c040">finder</tspan></text>
+
+  <!-- Tagline -->
+  <text x="56" y="41"
+        font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+        font-size="8.5" font-weight="400"
+        fill="rgba(255,255,255,0.4)"
+        letter-spacing="1.2">AI-CV-Builder</text>
+</svg>
