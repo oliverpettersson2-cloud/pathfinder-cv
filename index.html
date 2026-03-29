@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0053)file:///C:/Users/olive/Downloads/Pathfinder_CV_3.html -->
+<!-- saved from url=(0061)file:///C:/Users/olive/Downloads/CV_skaparen_v14_mobil_4.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   
@@ -7,8 +7,8 @@
   <title>Pathfinder - CV Builder | Professional CV Builder</title>
   
   <!-- PDF Generation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
+  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
   
   
   <style>
@@ -748,7 +748,7 @@
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.5);
-      z-index: 200;
+      z-index: 10000;
       align-items: center;
       justify-content: center;
     }
@@ -1669,18 +1669,443 @@
     }
     .nytt-cv-cancel:hover { background: rgba(255,255,255,0.12); color: #fff; }
     /* ===== SLUT AUTENTISERING ===== */
-  </style>
+  
+    /* =====================================================
+       MOBIL-LAYOUT — visas bara under 768px
+       ===================================================== */
+    @media (max-width: 768px) {
+
+      /* Dölj desktop-nav steg-indikator på mobil */
+      .nav-steps { display: none !important; }
+
+      /* Kompaktare navbar */
+      nav { height: 56px; padding: 0 16px; }
+      .nav-logo { font-size: 20px; }
+
+      /* Hela main-containern göms — vi visar mobil-UI istället */
+      .main-container { display: none !important; }
+
+      /* ── Bottom Tab Bar ─────────────────────────────── */
+      #mobileTabBar {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 64px;
+        background: #1a1a2e;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        z-index: 500;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+      }
+
+      .mob-tab {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.4);
+        font-size: 9px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: color 0.2s;
+        padding: 6px 2px;
+        letter-spacing: 0.2px;
+        text-transform: uppercase;
+        min-width: 0;
+      }
+
+      .mob-tab__icon { font-size: 18px; line-height: 1; }
+
+      .mob-tab--active { color: #3eb489; }
+      .mob-tab--active .mob-tab__icon { 
+        filter: drop-shadow(0 0 6px rgba(62,180,137,0.5));
+      }
+
+      /* ── Mobil innehållsyta ─────────────────────────── */
+      #mobileContent {
+        display: block;
+        position: fixed;
+        top: 56px; left: 0; right: 0; bottom: 64px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        background: #1a1a2e;
+      }
+
+      /* ── Mobil panel (varje flik) ───────────────────── */
+      .mob-panel {
+        display: none;
+        padding: 20px 16px 32px;
+        animation: mobFadeIn 0.2s ease;
+      }
+      .mob-panel--active { display: block; }
+
+      @keyframes mobFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ── Mobil section-kort ─────────────────────────── */
+      .mob-section {
+        margin-bottom: 24px;
+      }
+
+      .mob-section-title {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.35);
+        margin-bottom: 10px;
+        padding-left: 2px;
+      }
+
+      /* ── Mobil input-fält ───────────────────────────── */
+      .mob-input {
+        width: 100%;
+        background: rgba(255,255,255,0.08);
+        border: 1.5px solid rgba(255,255,255,0.12);
+        border-radius: 12px;
+        padding: 14px 16px;
+        color: #fff;
+        font-size: 16px; /* 16px = ingen auto-zoom på iOS */
+        font-family: inherit;
+        outline: none;
+        margin-bottom: 10px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        -webkit-appearance: none;
+      }
+      .mob-input::placeholder { color: rgba(255,255,255,0.3); }
+      .mob-input:focus {
+        border-color: #3eb489;
+        box-shadow: 0 0 0 3px rgba(62,180,137,0.12);
+      }
+
+      textarea.mob-input {
+        resize: none;
+        min-height: 110px;
+        line-height: 1.6;
+      }
+
+      /* ── Stora action-knappar ───────────────────────── */
+      .mob-btn-primary {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 14px;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: opacity 0.15s, transform 0.1s;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .mob-btn-primary:active { opacity: 0.8; transform: scale(0.98); }
+
+      .mob-btn-ai {
+        background: linear-gradient(135deg, #7c3aed 0%, #5b8dee 100%);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+      }
+      .mob-btn-green {
+        background: linear-gradient(135deg, #3eb489 0%, #2a9d72 100%);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(62,180,137,0.3);
+      }
+      .mob-btn-outline {
+        background: rgba(255,255,255,0.06);
+        border: 1.5px dashed rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.6);
+        font-size: 14px;
+      }
+      .mob-btn-danger {
+        background: rgba(255,90,90,0.1);
+        border: 1.5px solid rgba(255,90,90,0.25);
+        color: #ff8080;
+        font-size: 13px;
+        padding: 12px;
+      }
+      .mob-btn-export {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #fff;
+        font-size: 16px;
+        padding: 18px;
+        box-shadow: 0 6px 20px rgba(16,185,129,0.35);
+        border-radius: 16px;
+      }
+      .mob-btn-share {
+        background: linear-gradient(135deg, #0088cc 0%, #0055aa 100%);
+        color: #fff;
+        font-size: 15px;
+        padding: 16px;
+        box-shadow: 0 4px 16px rgba(0,136,204,0.3);
+      }
+
+      /* ── Item-list på mobil ─────────────────────────── */
+      .mob-item-card {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .mob-item-text strong {
+        display: block;
+        color: #fff;
+        font-size: 14px;
+        margin-bottom: 2px;
+      }
+      .mob-item-text small {
+        color: rgba(255,255,255,0.45);
+        font-size: 12px;
+      }
+      .mob-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+      .mob-icon-btn {
+        background: rgba(255,255,255,0.08);
+        border: none;
+        border-radius: 8px;
+        width: 36px; height: 36px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+        cursor: pointer;
+        color: rgba(255,255,255,0.7);
+        -webkit-tap-highlight-color: transparent;
+      }
+      .mob-icon-btn:active { background: rgba(255,255,255,0.15); }
+
+      /* ── Förhandsgranskningspanel ───────────────────── */
+      #mobPreviewPanel {
+        padding: 16px;
+        background: #f0ede6;
+        min-height: 100%;
+      }
+      #mobPreviewPanel .cv-document {
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        transform-origin: top center;
+        transform: scale(0.85);
+        margin: 0 auto -60px;
+      }
+
+      /* ── Exportpanel ────────────────────────────────── */
+      .mob-export-card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      .mob-export-card h3 {
+        color: #fff;
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+      .mob-export-card p {
+        color: rgba(255,255,255,0.45);
+        font-size: 12px;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+
+      /* ── Mall-väljare mobil ─────────────────────────── */
+      .mob-template-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .mob-template-btn {
+        background: rgba(255,255,255,0.06);
+        border: 2px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 12px 8px;
+        color: rgba(255,255,255,0.6);
+        font-size: 12px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.2s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .mob-template-btn--active {
+        border-color: #3eb489;
+        color: #3eb489;
+        background: rgba(62,180,137,0.1);
+      }
+
+      /* ── Toggle foto ────────────────────────────────── */
+      .mob-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(255,255,255,0.06);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+      }
+      .mob-toggle-label {
+        color: rgba(255,255,255,0.8);
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .mob-toggle {
+        width: 48px; height: 28px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 14px;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s;
+        border: none;
+        flex-shrink: 0;
+      }
+      .mob-toggle::after {
+        content: '';
+        position: absolute;
+        top: 3px; left: 3px;
+        width: 22px; height: 22px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform 0.2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      }
+      .mob-toggle--on { background: #3eb489; }
+      .mob-toggle--on::after { transform: translateX(20px); }
+
+      /* Dölj auth-overlay på mobil — visas ändå via JS */
+    }
+
+
+      /* ── Flik-lås & progress ────────────────────────── */
+      .mob-tab--locked {
+        opacity: 0.35;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      .mob-tab--locked .mob-tab__icon::after {
+        content: '';
+      }
+      .mob-tab__lock {
+        font-size: 10px;
+        line-height: 1;
+        margin-top: -2px;
+      }
+      .mob-tab--done .mob-tab__done {
+        display: inline-block;
+      }
+      .mob-tab__done {
+        display: none;
+        font-size: 9px;
+        color: #3eb489;
+        margin-top: -1px;
+      }
+      .mob-tab--done {
+        color: rgba(255,255,255,0.55);
+      }
+      .mob-tab--done.mob-tab--active {
+        color: #3eb489;
+      }
+
+      /* Progress-bar längst upp */
+      #mobProgressBar {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3eb489, #5b8dee);
+        transition: width 0.4s ease;
+        z-index: 499;
+        border-radius: 0 2px 2px 0;
+      }
+
+      /* Lås-overlay på låst panel */
+      .mob-locked-msg {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 32px;
+        text-align: center;
+        gap: 16px;
+      }
+      .mob-locked-msg__icon { font-size: 40px; }
+      .mob-locked-msg__title {
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .mob-locked-msg__desc {
+        color: rgba(255,255,255,0.4);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+
+      /* ── Fortsätt-knapp ─────────────────────────────── */
+      .mob-fortsatt {
+        position: sticky;
+        bottom: 0;
+        left: 0; right: 0;
+        padding: 16px;
+        background: linear-gradient(to top, #1a1a2e 70%, transparent);
+        margin: 0 -16px -32px;
+      }
+      .mob-fortsatt-btn {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 16px;
+        font-size: 16px;
+        font-weight: 800;
+        font-family: inherit;
+        cursor: pointer;
+        background: linear-gradient(135deg, #3eb489 0%, #2a9d72 100%);
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(62,180,137,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.15s, transform 0.1s;
+      }
+      .mob-fortsatt-btn:active { opacity: 0.85; transform: scale(0.98); }
+      .mob-fortsatt-btn--disabled {
+        background: rgba(255,255,255,0.1) !important;
+        color: rgba(255,255,255,0.3) !important;
+        box-shadow: none !important;
+        cursor: not-allowed;
+      }
+
+    /* Desktop: dölj mobil-UI */
+    @media (min-width: 769px) {
+      #mobileTabBar { display: none !important; }
+      #mobileContent { display: none !important; }
+    }
+</style>
 </head>
 <body>
 
   <!-- ===== AUTENTISERINGSOVERLAY ===== -->
-  <div id="authOverlay">
+  <div id="authOverlay" class="hidden">
     <div class="auth-card">
       <div class="auth-logo">Path<span>finder</span></div>
       <div class="auth-tagline">Bygg ditt CV med AI</div>
 
       <!-- STEG 1: E-postformular -->
-      <div id="authStep1" class="auth-step active">
+      <div id="authStep1" class="auth-step">
         <div class="auth-title">Logga in eller skapa konto</div>
         <div class="auth-subtitle">Ange din e-postadress sa skickar vi en inloggningslank och en 6-siffrig kod.</div>
         <input type="email" id="authEmail" class="auth-input" placeholder="din@epost.se" autocomplete="email" inputmode="email">
@@ -1695,8 +2120,8 @@
           Koden ar skickad till <strong id="authEmailDisplay"></strong>
         </div>
         <div id="authDemoBox" style="display:none; background:rgba(240,192,64,0.1); border:1px solid rgba(240,192,64,0.3); border-radius:10px; padding:14px 16px; margin-bottom:16px; text-align:center;">
-          <div style="font-size:11px; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Demo &mdash; din inloggningskod</div>
-          <div id="authDemoCode" style="font-size:32px; font-weight:800; letter-spacing:8px; color:#f0c040; font-family:'Courier New',monospace;"></div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Demo — din inloggningskod</div>
+          <div id="authDemoCode" style="font-size:32px; font-weight:800; letter-spacing:8px; color:#f0c040; font-family:&#39;Courier New&#39;,monospace;"></div>
           <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-top:6px;">I produktion skickas denna kod via e-post</div>
         </div>
         <div class="auth-subtitle">Koden ar forifylld nedan. Tryck pa "Verifiera kod" for att logga in.</div>
@@ -1718,10 +2143,10 @@
       </div>
 
       <!-- STEG 3: Inloggad -->
-      <div id="authStep3" class="auth-step">
-        <div style="font-size:48px; margin-bottom:16px;">&#x2705;</div>
+      <div id="authStep3" class="auth-step active">
+        <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
-        <div class="auth-subtitle" id="authWelcomeText">Valkommenin. Ditt konto ar redo.</div>
+        <div class="auth-subtitle" id="authWelcomeText">Du ar inloggad som oliver.pettersson2@gmail.com</div>
         <button class="auth-btn" onclick="authEnterApp()">Fortsatt till Pathfinder</button>
       </div>
     </div>
@@ -1731,7 +2156,7 @@
   <!-- NYTT CV MODAL -->
   <div id="nyttCVModal">
     <div class="nytt-cv-card">
-      <div class="nytt-cv-icon">&#x1F4C4;</div>
+      <div class="nytt-cv-icon">📄</div>
       <div class="nytt-cv-title">Nytt CV</div>
       <div class="nytt-cv-text">
         Alla uppgifter i CV-byggaren rensas och du borjar med ett tomt dokument.<br>
@@ -1750,12 +2175,12 @@
     </div>
     <!-- STEG-INDIKATOR -->
     <div class="nav-steps" id="navSteps" role="navigation" aria-label="Steg i processen">
-      <div class="nav-step nav-step--active" id="navStep1" aria-current="step">
-        <div class="nav-step__num">1</div>
+      <div class="nav-step nav-step--done" id="navStep1" aria-current="step">
+        <div class="nav-step__num">✓</div>
         <span class="nav-step__label">Inloggning</span>
       </div>
-      <div class="nav-step-divider" id="navDiv1"></div>
-      <div class="nav-step" id="navStep2">
+      <div class="nav-step-divider nav-step-divider--done" id="navDiv1"></div>
+      <div class="nav-step nav-step--active" id="navStep2" aria-current="step">
         <div class="nav-step__num">2</div>
         <span class="nav-step__label">Skapa CV</span>
       </div>
@@ -1770,13 +2195,13 @@
     <div style="display:flex; align-items:center; gap:8px;">
       <button class="nav-settings-btn" onclick="toggleSettingsPanel()" aria-label="Inställningar" title="Inställningar">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
         </svg>
       </button>
-      <button id="authUserBadge" class="auth-user-badge" onclick="authShowUserMenu()" style="display:none;" aria-label="Inloggad anvandare">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span id="authUserEmail" style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+      <button id="authUserBadge" class="auth-user-badge" onclick="authShowUserMenu()" style="display: flex;" aria-label="Inloggad anvandare">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span id="authUserEmail" style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">oliver.pettersson2@gmail.com</span>
       </button>
     </div>
   </nav>
@@ -1784,15 +2209,15 @@
   <!-- INSTÄLLNINGSPANEL: API-nyckel -->
   <div id="settingsPanel" class="settings-panel" role="dialog" aria-label="Inställningar" aria-hidden="true">
     <div class="settings-panel__header">
-      <span>&#9881;&#65039; Inställningar</span>
-      <button class="settings-panel__close" onclick="toggleSettingsPanel()" aria-label="Stäng">&#x2715;</button>
+      <span>⚙️ Inställningar</span>
+      <button class="settings-panel__close" onclick="toggleSettingsPanel()" aria-label="Stäng">✕</button>
     </div>
     <div class="settings-panel__body">
       <label class="settings-label" for="apiKeyInput">Anthropic API-nyckel</label>
       <div class="settings-api-row">
         <input type="password" id="apiKeyInput" class="settings-api-input" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" oninput="saveApiKey()" aria-label="API-nyckel">
         <button class="settings-api-toggle" onclick="toggleApiKeyVisibility()" title="Visa/dölj nyckel" aria-label="Visa eller dölj API-nyckel">
-          <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
         </button>
       </div>
       <p class="settings-hint">Nyckeln sparas lokalt i din webbläsare och används för AI-funktioner.</p>
@@ -1841,33 +2266,20 @@
           <input type="file" id="photoUpload" accept="image/*" onchange="uploadProfilePhoto()" style="display: none;" aria-label="Välj profilbild från din enhet">
           <!-- Profilbildshantering: två knappar bredvid varandra -->
           <div class="photo-action-container" role="group" aria-label="Profilbildshantering">
-            <button
-              class="photo-btn photo-btn--upload"
-              onclick="document.getElementById('photoUpload').click()"
-              aria-label="Ladda upp ny profilbild"
-              title="Ladda upp ny profilbild"
-            >
+            <button class="photo-btn photo-btn--upload" onclick="document.getElementById(&#39;photoUpload&#39;).click()" aria-label="Ladda upp ny profilbild" title="Ladda upp ny profilbild">
               <svg class="photo-btn__icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
               </svg>
               <span>Ladda upp ny bild</span>
             </button>
 
-            <button
-              id="removePhotoBtn"
-              class="photo-btn photo-btn--remove"
-              onclick="removeProfilePhoto()"
-              aria-label="Ta bort profilbild"
-              title="Ta bort profilbild"
-              disabled
-              aria-disabled="true"
-            >
+            <button id="removePhotoBtn" class="photo-btn photo-btn--remove" onclick="removeProfilePhoto()" aria-label="Ta bort profilbild" title="Ta bort profilbild" disabled="" aria-disabled="true">
               <svg class="photo-btn__icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6M14 11v6"/>
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6M14 11v6"></path>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
               </svg>
               <span>Ta bort bild</span>
             </button>
@@ -1885,17 +2297,84 @@
         <div class="form-section-title">
           Profil
           <div style="display: flex; gap: 4px;">
-            <button style="background: none; border: none; color: var(--accent3); font-size: 11px; cursor: pointer; padding: 4px 8px; font-weight: 700;" onclick="aiAnalyzeAndGenerate()" id="profileAiBtn">&#10024; AI Analysera</button>
             <button style="background: none; border: none; color: #ff6b6b; font-size: 11px; cursor: pointer; padding: 4px 8px; font-weight: 700;" onclick="clearProfileText()">🗑️ Rensa</button>
           </div>
         </div>
         <textarea class="form-input" id="summary" placeholder="Skriv en kort presentation..." onchange="saveData(); updatePreview();"></textarea>
+        <button id="summaryAutofillBtn" onclick="aiAutofillProfileSummary()" style="
+            width: 100%;
+            margin-top: 6px;
+            padding: 11px 14px;
+            background: linear-gradient(135deg, var(--ai) 0%, #5b8dee 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.15s;
+          " onmouseover="this.style.opacity=&#39;0.88&#39;; this.style.transform=&#39;translateY(-1px)&#39;" onmouseout="this.style.opacity=&#39;1&#39;; this.style.transform=&#39;translateY(0)&#39;">
+          ✨ Få 3 AI-förslag på profiltext
+        </button>
       </div>
 
       <!-- ARBETSLIVSERFARENHET -->
       <div class="form-section">
         <div class="form-section-title">Arbetslivserfarenhet</div>
-        <div class="item-list" id="jobsList"></div>
+        <div class="item-list" id="jobsList">
+        <div class="item-card" draggable="true" ondragstart="startDrag(event, &#39;jobs&#39;, 0)" ondragover="dragOver(event)" ondrop="drop(event, &#39;jobs&#39;, 0)" ondragend="dragEnd(event)" style="cursor: grab;">
+          <span style="display: flex; gap: 4px; align-items: center; margin-right: 10px;"><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveJobUp(0)" title="Flytta upp">▲</span><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveJobDown(0)" title="Flytta ned">▼</span></span>
+          <div class="item-card-text">
+            <strong>Studie &amp; Yrkesvägledare</strong>
+            <small>Arbetsmarknad · Februari 2017 - December 2024</small>
+          </div>
+          <div class="item-card-buttons">
+            <button class="btn-icon" onclick="openJobModal(0)" title="Redigera">✏️</button>
+            <button class="btn-icon" onclick="removeJob(0)" title="Ta bort" style="color: #ff6b6b;">×</button>
+          </div>
+        </div>
+      
+        <div class="item-card" draggable="true" ondragstart="startDrag(event, &#39;jobs&#39;, 1)" ondragover="dragOver(event)" ondrop="drop(event, &#39;jobs&#39;, 1)" ondragend="dragEnd(event)" style="cursor: grab;">
+          <span style="display: flex; gap: 4px; align-items: center; margin-right: 10px;"><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveJobUp(1)" title="Flytta upp">▲</span><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveJobDown(1)" title="Flytta ned">▼</span></span>
+          <div class="item-card-text">
+            <strong>Bartender/servitör</strong>
+            <small>Speakers Corner · Mars 2013</small>
+          </div>
+          <div class="item-card-buttons">
+            <button class="btn-icon" onclick="openJobModal(1)" title="Redigera">✏️</button>
+            <button class="btn-icon" onclick="removeJob(1)" title="Ta bort" style="color: #ff6b6b;">×</button>
+          </div>
+        </div>
+      
+        <div class="item-card" draggable="true" ondragstart="startDrag(event, &#39;jobs&#39;, 2)" ondragover="dragOver(event)" ondrop="drop(event, &#39;jobs&#39;, 2)" ondragend="dragEnd(event)" style="cursor: grab;">
+          <span style="display: flex; gap: 4px; align-items: center; margin-right: 10px;"><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveJobUp(2)" title="Flytta upp">▲</span><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveJobDown(2)" title="Flytta ned">▼</span></span>
+          <div class="item-card-text">
+            <strong>Servitör/Bartender</strong>
+            <small>Tycho Brahe Restaurang · Februari 2014 - Augusti 2022</small>
+          </div>
+          <div class="item-card-buttons">
+            <button class="btn-icon" onclick="openJobModal(2)" title="Redigera">✏️</button>
+            <button class="btn-icon" onclick="removeJob(2)" title="Ta bort" style="color: #ff6b6b;">×</button>
+          </div>
+        </div>
+      
+        <div class="item-card" draggable="true" ondragstart="startDrag(event, &#39;jobs&#39;, 3)" ondragover="dragOver(event)" ondrop="drop(event, &#39;jobs&#39;, 3)" ondragend="dragEnd(event)" style="cursor: grab;">
+          <span style="display: flex; gap: 4px; align-items: center; margin-right: 10px;"><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveJobUp(3)" title="Flytta upp">▲</span><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveJobDown(3)" title="Flytta ned">▼</span></span>
+          <div class="item-card-text">
+            <strong>Bartender/servitör</strong>
+            <small>NISSE ·  </small>
+          </div>
+          <div class="item-card-buttons">
+            <button class="btn-icon" onclick="openJobModal(3)" title="Redigera">✏️</button>
+            <button class="btn-icon" onclick="removeJob(3)" title="Ta bort" style="color: #ff6b6b;">×</button>
+          </div>
+        </div>
+      </div>
         <button class="btn-add" onclick="openJobModal()">+ Lägg till jobb</button>
       </div>
 
@@ -1908,14 +2387,68 @@
             <button style="background: none; border: none; color: #ff6b6b; font-size: 11px; cursor: pointer; padding: 4px 8px; font-weight: 700;" onclick="clearAllSkills()">🗑️ Rensa</button>
           </div>
         </div>
-        <div class="skills-grid" id="skillsGrid"></div>
+        <div class="skills-grid" id="skillsGrid">
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 0)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 0)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Vägledning
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(0)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 1)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 1)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Kommunikation
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(1)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 2)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 2)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Pedagogik
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(2)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 3)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 3)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Analys
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(3)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 4)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 4)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Samarbete
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(4)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 5)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 5)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Service
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(5)">×</span>
+        </div>
+      </div>
         <button class="btn-add" onclick="openSkillsModal()">+ Hantera kompetenser</button>
       </div>
 
       <!-- UTBILDNING -->
       <div class="form-section">
         <div class="form-section-title">Utbildning</div>
-        <div class="item-list" id="eduList"></div>
+        <div class="item-list" id="eduList">
+        <div class="item-card" draggable="true" ondragstart="startDrag(event, &#39;education&#39;, 0)" ondragover="dragOver(event)" ondrop="drop(event, &#39;education&#39;, 0)" ondragend="dragEnd(event)" style="cursor: grab;">
+          <span style="display: flex; gap: 4px; align-items: center; margin-right: 10px;"><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveEduUp(0)" title="Flytta upp">▲</span><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveEduDown(0)" title="Flytta ned">▼</span></span>
+          <div class="item-card-text">
+            <strong>haha</strong>
+            <small> · </small>
+          </div>
+          <div class="item-card-buttons">
+            <button class="btn-icon" onclick="openEduModal(0)" title="Redigera">✏️</button>
+            <button class="btn-icon" onclick="removeEdu(0)" title="Ta bort" style="color: #ff6b6b;">×</button>
+          </div>
+        </div>
+      
+        <div class="item-card" draggable="true" ondragstart="startDrag(event, &#39;education&#39;, 1)" ondragover="dragOver(event)" ondrop="drop(event, &#39;education&#39;, 1)" ondragend="dragEnd(event)" style="cursor: grab;">
+          <span style="display: flex; gap: 4px; align-items: center; margin-right: 10px;"><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveEduUp(1)" title="Flytta upp">▲</span><span style="font-size: 16px; font-weight: bold; cursor: pointer; color: #fff;" onclick="moveEduDown(1)" title="Flytta ned">▼</span></span>
+          <div class="item-card-text">
+            <strong>UHRIY</strong>
+            <small>Folkhögskola · </small>
+          </div>
+          <div class="item-card-buttons">
+            <button class="btn-icon" onclick="openEduModal(1)" title="Redigera">✏️</button>
+            <button class="btn-icon" onclick="removeEdu(1)" title="Ta bort" style="color: #ff6b6b;">×</button>
+          </div>
+        </div>
+      </div>
         <button class="btn-add" onclick="openEduModal()">+ Lägg till utbildning</button>
       </div>
 
@@ -1925,7 +2458,32 @@
           Körkort &amp; Licenser
           <button style="background: none; border: none; color: #ff6b6b; font-size: 11px; cursor: pointer; padding: 4px 8px; font-weight: 700;" onclick="clearAllLicenses()">🗑️ Rensa</button>
         </div>
-        <div class="skills-grid" id="licensesGrid"><div style="color: rgba(255,255,255,0.3); font-size: 12px; padding: 12px; text-align: center;">Inga körkort tillagda ännu</div></div>
+        <div class="skills-grid" id="licensesGrid">
+          <div style="display: inline-block; background: rgb(240, 237, 230); border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ B - Personbil (max 3500kg)
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(0)">×</span>
+          </div>
+        
+          <div style="display: inline-block; background: rgb(240, 237, 230); border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ Truckkort A - Låglyftande (plocktruck, ledstaplare)
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(1)">×</span>
+          </div>
+        
+          <div style="display: inline-block; background: rgb(240, 237, 230); border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ Truckkort B - Höglyftande (motviktstruck, åkstaplare)
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(2)">×</span>
+          </div>
+        
+          <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ Truckkort C - Större specialtruckar
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(3)">×</span>
+          </div>
+        
+          <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ Truckkort D - Specialiserade truckar
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(4)">×</span>
+          </div>
+        </div>
         <button class="btn-add" onclick="openLicensesModal()">+ Hantera körkort</button>
       </div>
 
@@ -1935,21 +2493,51 @@
           Språk
           <button style="background: none; border: none; color: #ff6b6b; font-size: 11px; cursor: pointer; padding: 4px 8px; font-weight: 700;" onclick="clearAllLanguages()">🗑️ Rensa</button>
         </div>
-        <div class="skills-grid" id="languagesGrid"><div style="color: rgba(255,255,255,0.3); font-size: 12px; padding: 12px; text-align: center;">Inga språk tillagda ännu</div></div>
+        <div class="skills-grid" id="languagesGrid">
+        <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;" onclick="removeLanguage(&#39;Svenska&#39;)">
+          Svenska - Modersmål
+          <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;">×</span>
+        </div>
+      
+        <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;" onclick="removeLanguage(&#39;Arabiska&#39;)">
+          Arabiska - Flytande
+          <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;">×</span>
+        </div>
+      </div>
         <button class="btn-add" onclick="openLanguagesModal()">+ Hantera språk</button>
       </div>
 
       <!-- CERTIFIKATIONER -->
       <div class="form-section">
         <div class="form-section-title">Certifikationer</div>
-        <div class="item-list" id="certList"></div>
+        <div class="item-list" id="certList">
+        <div class="item-card">
+          <div class="item-card-text">
+            <strong>HLR</strong>
+            <small>Polis · 2023</small>
+          </div>
+          <div class="item-card-buttons">
+            <button class="btn-icon" onclick="openCertModal(0)">✏️</button>
+            <button class="btn-icon" onclick="removeCert(0)">×</button>
+          </div>
+        </div>
+      </div>
         <button class="btn-add" onclick="openCertModal()">+ Lägg till certifikat</button>
       </div>
 
       <!-- REFERENSER -->
       <div class="form-section">
         <div class="form-section-title">Referencer</div>
-        <div class="item-list" id="refList"></div>
+        <div class="item-list" id="refList">
+          <div class="item-card" style="background: rgba(62,180,137,0.1); border-color: rgba(62,180,137,0.2);">
+            <div class="item-card-text">
+              <strong style="color: var(--accent2);">Referenser lämnas på begäran</strong>
+            </div>
+            <div class="item-card-buttons">
+              <button class="btn-icon" onclick="removeRefOnRequest()" style="color: var(--accent);">×</button>
+            </div>
+          </div>
+        </div>
         <button class="btn-add" onclick="openRefModal()">+ Lägg till referens</button>
         <button class="btn-add" style="border-style: solid; background: rgba(62,180,137,0.1); color: rgba(62,180,137,0.8); border-color: rgba(62,180,137,0.3);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
       </div>
@@ -1962,195 +2550,285 @@
 
     <!-- PREVIEW -->
     <div class="preview-area">
-      <div class="cv-document cv-classic" id="cvDocument">
+      <div class="cv-document cv-template-10" id="cvDocument">
         <div class="cv-header">
           <div class="cv-header-photo" id="photoContainer" style="display: block;">
-            <img id="profilePhoto" src="" alt="Foto" style="display: none;">
+            <img id="profilePhoto" src="file:///C:/Users/olive/Downloads/CV_skaparen_v14_mobil_4.html" alt="Foto" style="display: none;">
           </div>
           <div class="cv-header-content">
-            <div class="cv-name" id="previewName">Ditt Namn</div>
-            <div class="cv-title" id="previewTitle">Din yrkestitel</div>
-            <div class="cv-contact" id="previewContact"></div>
+            <div class="cv-name" id="previewName">Oliver Pettersson</div>
+            <div class="cv-title" id="previewTitle">Studie &amp; Yrkesvägledare</div>
+            <div class="cv-contact" id="previewContact">oliver.pettersson2@gmail.com · 0766071757</div>
           </div>
         </div>
         <div class="cv-body">
-          <div class="cv-section" id="summarySection" style="display: none;">
+          <div class="cv-section" id="summarySection" style="display: block;">
             <div class="cv-section-title">Profil</div>
-            <div class="cv-summary" id="previewSummary">Serviceinriktad och driven medarbetare med erfarenhet inom handel och kundservice. Jag trivs i en miljö där tempot är högt och där jag får möjlighet att skapa positiva kundupplevelser. Jag är van vid kassahantering, lagerarbete och problemlösning, även när situationen kräver snabba beslut. Som lagspelare bidrar jag aktivt till ett bra arbetsklimat och tar gärna initiativ för att effektivisera arbetet. Jag lär mig nya system snabbt och söker en roll där jag kan fortsätta utvecklas och bidra till ett professionellt och engagerat team.</div>
+            <div class="cv-summary" id="previewSummary">Lyhörd och samarbetsorienterad studie- och yrkesvägledare med förmåga att skapa förtroende och bygga bärande relationer med både individer och externa aktörer. Min bakgrund innefattar nära samverkan med Arbetsförmedlingen, socialtjänsten och utbildningsaktörer, vilket har gett mig en stark förståelse för hur helhetslösningar skapas kring personer i sårbar ställning. Jag värdesätter ett inkluderande arbetssätt och bidrar gärna till en miljö präglad av öppenhet, tydlighet och gemensamt ansvar.</div>
           </div>
 
-          <div class="cv-section" id="jobsSection" style="display: none;">
+          <div class="cv-section" id="jobsSection" style="display: block;">
             <div class="cv-section-title">Arbetslivserfarenhet</div>
             <div id="previewJobs">
             <div class="cv-entry">
-              <div class="cv-entry-title">Kassapersonal / Kundservice</div>
-              <div class="cv-entry-subtitle">Willys – Göteborg · September 2022 – Januari 2024</div>
-              <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: #555; line-height: 1.6;"><li style="margin-bottom: 4px;">Kassahantering, kontantkontroller och daglig avräkning av försäljning</li><li style="margin-bottom: 4px;">Kundvård, försäljning och kundbemötande av högsta klass</li><li style="margin-bottom: 4px;">Lagerkontroll, exponering av varor och butiksmiljö</li></ul>
+              <div class="cv-entry-title">Studie &amp; Yrkesvägledare</div>
+              <div class="cv-entry-subtitle">Arbetsmarknad – Helsingborg · Februari 2017 – December 2024</div>
+              <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: #555; line-height: 1.6;"><li style="margin-bottom: 4px;">Genomförde individuella vägledningssamtal med arbetssökande i syfte att kartlägga kompetenser, identifiera hinder och upprätta handlingsplaner för återinträde på arbetsmarknaden.</li><li style="margin-bottom: 4px;">Samordnade insatser i nära samarbete med Arbetsförmedlingen, socialtjänsten och externa utbildningsaktörer för att erbjuda heltäckande stöd till personer i sårbar ställning.</li><li style="margin-bottom: 4px;">Tog självständigt initiativ till att utveckla nya vägledningsmetoder och strukturer inom enheten, vilket bidrog till effektivare flöden och förbättrad måluppfyllelse för deltagarna.</li></ul>
             </div>
           
             <div class="cv-entry">
-              <div class="cv-entry-title">Försäljningsassistent</div>
-              <div class="cv-entry-subtitle">Elgiganten – Göteborg · Mars 2021</div>
-              <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: #555; line-height: 1.6;"><li style="margin-bottom: 4px;">Försäljning av varor och tjänster med fokus på produktkunskap</li><li style="margin-bottom: 4px;">Professionellt kundbemötande och lösning av kundönskemål</li><li style="margin-bottom: 4px;">Lagerkontroll, varuplacering och butiksstöd</li></ul>
+              <div class="cv-entry-title">Bartender/servitör</div>
+              <div class="cv-entry-subtitle">Speakers Corner – Landskrona · Mars 2013</div>
+              <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: #555; line-height: 1.6;"><li style="margin-bottom: 4px;">Ansvarade för beredning och servering av cocktails samt hantering av ett brett dryckessortiment i en livlig bar- och restaurangmiljö på Speakers Corner i Landskrona.</li><li style="margin-bottom: 4px;">Utvecklade över tid ett breddat ansvar inom personalhandledning av ny serveringspersonal samt bidrog aktivt till att upprätthålla en hög servicenivå under högtrycksperioder.</li><li style="margin-bottom: 4px;">Hanterade kassaavstämning, lageruppföljning och beställningar av förbrukningsvaror som en naturlig del av den dagliga driften.</li></ul>
             </div>
           
             <div class="cv-entry">
-              <div class="cv-entry-title">Vikarie på Förskola</div>
-              <div class="cv-entry-subtitle">Förskolan Solstrålen – Göteborg · Juni 2019 – Februari 2021</div>
-              <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: #555; line-height: 1.6;"><li style="margin-bottom: 4px;">Stötta barnen i lärande och utveckling genom lek och skapande aktiviteter</li><li style="margin-bottom: 4px;">Säkerhet, hygienrutiner och skapade stimulerande lärmiljöer</li><li style="margin-bottom: 4px;">Samarbete med föräldrar, övrig personal och dokumentation av barnens utveckling</li></ul>
+              <div class="cv-entry-title">Servitör/Bartender</div>
+              <div class="cv-entry-subtitle">Tycho Brahe Restaurang – Landskrona · Februari 2014 – Augusti 2022</div>
+              <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: #555; line-height: 1.6;"><li style="margin-bottom: 4px;">Tillägnade mig grundläggande kunskaper inom matservering, bordsdukning och gästbemötande i en traditionell restaurangmiljö på Tycho Brahe Restaurang i Landskrona.</li><li style="margin-bottom: 4px;">Lärde mig snabbt att arbeta strukturerat under en erfaren restaurangpersonal, med fokus på att ge varje gäst ett professionellt och välkomnande bemötande från ankomst till avfärd.</li><li style="margin-bottom: 4px;">Bekantade mig med menyer, allergianpassningar och grundläggande vinkunskap som stöd för att kunna ge välgrundade rekommendationer till restaurangens gäster.</li></ul>
             </div>
           
             <div class="cv-entry">
-              <div class="cv-entry-title">Städpersonal</div>
-              <div class="cv-entry-subtitle">Göta Rengöring – Göteborg · Oktober 2017 – Maj 2019</div>
-              <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: #555; line-height: 1.6;"><li style="margin-bottom: 4px;">Städning av kontorslokaler, butiker och industrier med hög standard</li><li style="margin-bottom: 4px;">Upprätthållande av högsta hygienstandard och renlighet</li><li style="margin-bottom: 4px;">Självständigt arbete, säkerhetsprotokollan och användning av maskiner</li></ul>
+              <div class="cv-entry-title">Bartender/servitör</div>
+              <div class="cv-entry-subtitle">NISSE – HElsingborg ·  </div>
+              <ul style="margin: 8px 0 0 0; padding-left: 16px; font-size: 12px; color: #555; line-height: 1.6;"><li style="margin-bottom: 4px;">Mixade och presenterade drinkar ur ett roterande cocktailmeny-koncept på NISSE i Helsingborg, med fokus på kreativa säsongsanpassade recept och noggrann presentation.</li><li style="margin-bottom: 4px;">Byggde löpande upp en förtrogenhet med stammisars preferenser och anpassade servicen individuellt för att stärka gästrelationer och återbesöksfrekvens.</li><li style="margin-bottom: 4px;">Koordinerade barens uppsättning inför kvällsservice, inklusive mise en place, stationsförberedelse och säkerställande av att alkohollagstiftningens regler följdes under hela skiftet.</li></ul>
             </div>
           </div>
           </div>
 
-          <div class="cv-section" id="skillsSection" style="display: none;">
+          <div class="cv-section" id="skillsSection" style="display: block;">
             <div class="cv-section-title">Kompetenser</div>
             <div id="previewSkills">
-          <div style="display: flex; flex-wrap: wrap; gap: 0; align-items: center; font-size: 12px; color: var(--deep); line-height: 1.6;">
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
             
-              <span style="display: flex; align-items: center;">
-                
-                <span>Kassahantering</span>
-              </span>
+              <span style="
+                display: inline-block;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 20px;
+                padding: 3px 12px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--deep);
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+              ">Vägledning</span>
             
-              <span style="display: flex; align-items: center;">
-                <span style="margin: 0 12px; color: #ccc;">•</span>
-                <span>Kundservice</span>
-              </span>
+              <span style="
+                display: inline-block;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 20px;
+                padding: 3px 12px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--deep);
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+              ">Kommunikation</span>
             
-              <span style="display: flex; align-items: center;">
-                <span style="margin: 0 12px; color: #ccc;">•</span>
-                <span>Försäljning</span>
-              </span>
+              <span style="
+                display: inline-block;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 20px;
+                padding: 3px 12px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--deep);
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+              ">Pedagogik</span>
             
-              <span style="display: flex; align-items: center;">
-                <span style="margin: 0 12px; color: #ccc;">•</span>
-                <span>Lagerkontroll</span>
-              </span>
+              <span style="
+                display: inline-block;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 20px;
+                padding: 3px 12px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--deep);
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+              ">Analys</span>
             
-              <span style="display: flex; align-items: center;">
-                <span style="margin: 0 12px; color: #ccc;">•</span>
-                <span>Teamarbete</span>
-              </span>
+              <span style="
+                display: inline-block;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 20px;
+                padding: 3px 12px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--deep);
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+              ">Samarbete</span>
             
-              <span style="display: flex; align-items: center;">
-                <span style="margin: 0 12px; color: #ccc;">•</span>
-                <span>Problemlösning</span>
-              </span>
+              <span style="
+                display: inline-block;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 20px;
+                padding: 3px 12px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--deep);
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+              ">Service</span>
             
           </div>
         </div>
           </div>
 
-          <div class="cv-section" id="eduSection" style="display: none;">
+          <div class="cv-section" id="eduSection" style="display: block;">
             <div class="cv-section-title">Utbildning</div>
             <div id="previewEdu">
           <div class="cv-entry">
-            <div class="cv-entry-title">Handelsutbildning</div>
-            <div class="cv-entry-subtitle">Arbetsmarknadsverket · 2020 - 2021</div>
+            <div class="cv-entry-title">haha</div>
+            <div class="cv-entry-subtitle"> · </div>
           </div>
         
           <div class="cv-entry">
-            <div class="cv-entry-title">Kundservice &amp; Försäljning</div>
-            <div class="cv-entry-subtitle">Folkhögskolan Väst · 2018 - 2019</div>
-          </div>
-        
-          <div class="cv-entry">
-            <div class="cv-entry-title">Samhäll &amp; Ekonomi</div>
-            <div class="cv-entry-subtitle">Torslanda Gymnasium · 2013 - 2016</div>
+            <div class="cv-entry-title">UHRIY</div>
+            <div class="cv-entry-subtitle">Folkhögskola · </div>
           </div>
         </div>
           </div>
 
-          <div class="cv-section" id="languagesSection" style="display: none;">
+          <div class="cv-section" id="languagesSection" style="display: block;">
             <div class="cv-section-title">Språk</div>
             <div id="previewLanguages">
-          <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             
-              <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                <div style="font-weight: 600; font-size: 12px; color: var(--deep);">Kroatisk</div>
-                <div style="font-size: 11px; color: #888; margin-top: 2px;">Modersmål</div>
+              <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 10px;
+                padding: 8px 16px;
+                min-width: 72px;
+                text-align: center;
+              ">
+                <div style="font-weight: 700; font-size: 12px; color: var(--deep);">Svenska</div>
+                <div style="font-size: 10px; color: #777; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px;">Modersmål</div>
               </div>
             
-              <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                <div style="font-weight: 600; font-size: 12px; color: var(--deep);">Bosnisk</div>
-                <div style="font-size: 11px; color: #888; margin-top: 2px;">Modersmål</div>
-              </div>
-            
-              <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                <div style="font-weight: 600; font-size: 12px; color: var(--deep);">Svenska</div>
-                <div style="font-size: 11px; color: #888; margin-top: 2px;">Flytande</div>
-              </div>
-            
-              <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                <div style="font-weight: 600; font-size: 12px; color: var(--deep);">Engelska</div>
-                <div style="font-size: 11px; color: #888; margin-top: 2px;">Flytande</div>
+              <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 10px;
+                padding: 8px 16px;
+                min-width: 72px;
+                text-align: center;
+              ">
+                <div style="font-weight: 700; font-size: 12px; color: var(--deep);">Arabiska</div>
+                <div style="font-size: 10px; color: #777; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px;">Flytande</div>
               </div>
             
           </div>
         </div>
           </div>
 
-          <div class="cv-section" id="licensesSection" style="display: none;">
+          <div class="cv-section" id="licensesSection" style="display: block;">
             <div class="cv-section-title">Körkort &amp; Licenser</div>
             <div id="previewLicenses">
-          <div style="display: flex; flex-wrap: wrap; gap: 0; align-items: center; font-size: 12px; color: var(--deep); line-height: 1.8;">
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
             
-              <span style="display: flex; align-items: center;">
-                
-                <strong>B - Personbil (max 3500kg)</strong>
-              </span>
+              <span style="
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 8px;
+                padding: 4px 12px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--deep);
+                white-space: nowrap;
+              ">B - Personbil (max 3500kg)</span>
             
-              <span style="display: flex; align-items: center;">
-                <span style="margin: 0 14px; color: #ddd;">|</span>
-                <strong>C1 - Lätt lastbil (3500-7500kg)</strong>
-              </span>
+              <span style="
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 8px;
+                padding: 4px 12px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--deep);
+                white-space: nowrap;
+              ">Truckkort A - Låglyftande (plocktruck, ledstaplare)</span>
             
-              <span style="display: flex; align-items: center;">
-                <span style="margin: 0 14px; color: #ddd;">|</span>
-                <strong>CE - Lastbil med tung släp</strong>
-              </span>
+              <span style="
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 8px;
+                padding: 4px 12px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--deep);
+                white-space: nowrap;
+              ">Truckkort B - Höglyftande (motviktstruck, åkstaplare)</span>
+            
+              <span style="
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 8px;
+                padding: 4px 12px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--deep);
+                white-space: nowrap;
+              ">Truckkort C - Större specialtruckar</span>
+            
+              <span style="
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 8px;
+                padding: 4px 12px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--deep);
+                white-space: nowrap;
+              ">Truckkort D - Specialiserade truckar</span>
             
           </div>
         </div>
           </div>
 
-          <div class="cv-section" id="certSection" style="display: none;">
+          <div class="cv-section" id="certSection" style="display: block;">
             <div class="cv-section-title">Certifikationer</div>
             <div id="previewCerts">
           <div class="cv-entry">
             <div class="cv-entry-title">HLR</div>
-            <div class="cv-entry-subtitle">Brandkåren · 2022</div>
+            <div class="cv-entry-subtitle">Polis · 2023</div>
           </div>
         </div>
           </div>
 
-          <div class="cv-section" id="refSection" style="display: none;">
+          <div class="cv-section" id="refSection" style="display: block;">
             <div class="cv-section-title">Referenser</div>
-            <div id="previewRefs">
-            <div class="cv-entry">
-              <div class="cv-entry-title">Anna Bergström</div>
-              <div class="cv-entry-subtitle">Butikschef, Willys Göteborg</div>
-              <div style="font-size: 12px; color: #666; margin-top: 4px;">anna.bergstrom@willys.se · 031-123 45 67</div>
-            </div>
-          
-            <div class="cv-entry">
-              <div class="cv-entry-title">Marcus Svensson</div>
-              <div class="cv-entry-subtitle">Försäljningschef, Elgiganten Västra Göteborg</div>
-              <div style="font-size: 12px; color: #666; margin-top: 4px;">marcus.svensson@elgiganten.se · 031-987 65 43</div>
-            </div>
-          
-            <div class="cv-entry">
-              <div class="cv-entry-title">Linnéa Johansson</div>
-              <div class="cv-entry-subtitle">Förskolechef, Förskolan Solstrålen</div>
-              <div style="font-size: 12px; color: #666; margin-top: 4px;">linnea.johansson@goteborg.se · 031-555 66 77</div>
-            </div>
-          </div>
+            <div id="previewRefs"><p style="font-style: italic; color: #666;">Referenser lämnas på begäran</p></div>
           </div>
         </div>
       </div>
@@ -3016,6 +3694,13 @@
         <div id="languagesSelector">
         <div style="margin: 8px 0;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
+            <input type="checkbox" checked="" onchange="toggleLanguage(&#39;Svenska&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
+            <span style="font-size: 13px; flex: 1;">Svenska</span>
+          </label>
+        </div>
+      
+        <div style="margin: 8px 0;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
             <input type="checkbox" onchange="toggleLanguage(&#39;Engelska&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
             <span style="font-size: 13px; flex: 1;">Engelska</span>
           </label>
@@ -3023,7 +3708,14 @@
       
         <div style="margin: 8px 0;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
-            <input type="checkbox" onchange="toggleLanguage(&#39;Arabiska&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
+            <input type="checkbox" onchange="toggleLanguage(&#39;Danska&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
+            <span style="font-size: 13px; flex: 1;">Danska</span>
+          </label>
+        </div>
+      
+        <div style="margin: 8px 0;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
+            <input type="checkbox" checked="" onchange="toggleLanguage(&#39;Arabiska&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
             <span style="font-size: 13px; flex: 1;">Arabiska</span>
           </label>
         </div>
@@ -3050,21 +3742,21 @@
         </div>
       
         <div style="margin: 8px 0;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); transition: 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
             <input type="checkbox" onchange="toggleLanguage(&#39;Persiska (Farsi)&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
             <span style="font-size: 13px; flex: 1;">Persiska (Farsi)</span>
           </label>
         </div>
       
         <div style="margin: 8px 0;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); transition: 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
             <input type="checkbox" onchange="toggleLanguage(&#39;Franska&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
             <span style="font-size: 13px; flex: 1;">Franska</span>
           </label>
         </div>
       
         <div style="margin: 8px 0;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); transition: 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
             <input type="checkbox" onchange="toggleLanguage(&#39;Kroatisk&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
             <span style="font-size: 13px; flex: 1;">Kroatisk</span>
           </label>
@@ -3134,21 +3826,21 @@
         </div>
       
         <div style="margin: 8px 0;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); transition: 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
             <input type="checkbox" onchange="toggleLanguage(&#39;Tamilsk&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
             <span style="font-size: 13px; flex: 1;">Tamilsk</span>
           </label>
         </div>
       
         <div style="margin: 8px 0;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); transition: 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
             <input type="checkbox" onchange="toggleLanguage(&#39;Mandarin (Kinesisk)&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
             <span style="font-size: 13px; flex: 1;">Mandarin (Kinesisk)</span>
           </label>
         </div>
       
         <div style="margin: 8px 0;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); transition: all 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); transition: 0.2s; user-select: none;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.08)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.04)&#39;; this.style.borderColor=&#39;rgba(255,255,255,0.15)&#39;">
             <input type="checkbox" onchange="toggleLanguage(&#39;Lao&#39;)" style="cursor: pointer; width: 16px; height: 16px;">
             <span style="font-size: 13px; flex: 1;">Lao</span>
           </label>
@@ -4544,12 +5236,20 @@ Ge bara profiltexten, ingen förklaringtext.`;
       const skillsSection = document.getElementById('skillsSection');
       if (cvData.skills && cvData.skills.length > 0) {
         document.getElementById('previewSkills').innerHTML = `
-          <div style="display: flex; flex-wrap: wrap; gap: 0; align-items: center; font-size: 12px; color: var(--deep); line-height: 1.6;">
-            ${cvData.skills.map((s, i) => `
-              <span style="display: flex; align-items: center;">
-                ${i > 0 ? '<span style="margin: 0 12px; color: #ccc;">•</span>' : ''}
-                <span>${s}</span>
-              </span>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            ${cvData.skills.map(s => `
+              <span style="
+                display: inline-block;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 20px;
+                padding: 3px 12px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--deep);
+                letter-spacing: 0.2px;
+                white-space: nowrap;
+              ">${s}</span>
             `).join('')}
           </div>
         `;
@@ -4562,11 +5262,21 @@ Ge bara profiltexten, ingen förklaringtext.`;
       const languagesSection = document.getElementById('languagesSection');
       if (cvData.languages && cvData.languages.length > 0) {
         document.getElementById('previewLanguages').innerHTML = `
-          <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             ${cvData.languages.map(lang => `
-              <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                <div style="font-weight: 600; font-size: 12px; color: var(--deep);">${lang.name}</div>
-                <div style="font-size: 11px; color: #888; margin-top: 2px;">${lang.level}</div>
+              <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 10px;
+                padding: 8px 16px;
+                min-width: 72px;
+                text-align: center;
+              ">
+                <div style="font-weight: 700; font-size: 12px; color: var(--deep);">${lang.name}</div>
+                <div style="font-size: 10px; color: #777; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px;">${lang.level}</div>
               </div>
             `).join('')}
           </div>
@@ -4580,12 +5290,21 @@ Ge bara profiltexten, ingen förklaringtext.`;
       const licensesSection = document.getElementById('licensesSection');
       if (cvData.licenses && cvData.licenses.length > 0) {
         document.getElementById('previewLicenses').innerHTML = `
-          <div style="display: flex; flex-wrap: wrap; gap: 0; align-items: center; font-size: 12px; color: var(--deep); line-height: 1.8;">
-            ${cvData.licenses.map((lic, i) => `
-              <span style="display: flex; align-items: center;">
-                ${i > 0 ? '<span style="margin: 0 14px; color: #ddd;">|</span>' : ''}
-                <strong>${lic}</strong>
-              </span>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            ${cvData.licenses.map(lic => `
+              <span style="
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(26,26,46,0.07);
+                border: 1px solid rgba(26,26,46,0.15);
+                border-radius: 8px;
+                padding: 4px 12px;
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--deep);
+                white-space: nowrap;
+              ">${lic}</span>
             `).join('')}
           </div>
         `;
@@ -4870,6 +5589,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
       const btn = document.querySelector('.btn-autofill-job') || document.getElementById('jobAutofillBtn');
       const originalText = btn ? btn.textContent : '';
       if (btn) { btn.disabled = true; btn.textContent = '⏳ AI genererar...'; }
+      showAiLoader('Genererar arbetsuppgifter...', 'AI skriver unika meningar för detta jobb');
 
       try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -4915,6 +5635,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         }
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        hideAiLoader();
       }
     }
 
@@ -4977,6 +5698,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
                   document.querySelector('[onclick*="aiAutofillProfileSummary"]');
       const originalText = btn ? btn.textContent : '';
       if (btn) { btn.disabled = true; btn.textContent = '⏳ AI genererar...'; }
+      showAiLoader('Genererar profiltexter...', 'AI skapar 3 unika alternativ åt dig');
 
       try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -5018,6 +5740,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
         window.currentSummaryAlternatives = alts;
 
+        hideAiLoader();
         const modal = document.getElementById('profilSummaryModal');
         if (modal) modal.classList.add('active');
 
@@ -5033,6 +5756,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         }
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        hideAiLoader();
       }
     }
 
@@ -5087,6 +5811,9 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
     // ===== ADVANCED PDF GENERATOR =====
     async function generateAdvancedPDF() {
+      const btn = document.querySelector('.btn-pdf');
+      const originalHTML = btn ? btn.innerHTML : '📄 Skapa PDF';
+      let tempContainer = null;
       try {
         if (!cvData.name) {
           showToast('⚠️ Fyll i ditt namn först', 'error');
@@ -5094,173 +5821,153 @@ Ge bara profiltexten, ingen förklaringtext.`;
         }
 
         showToast('⏳ Genererar professionell PDF...', 'info');
-        
-        const btn = document.querySelector('.btn-pdf');
-        const originalHTML = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '⏳ Arbetar...';
+        if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Arbetar...'; }
 
-        // Hämta CV-element
+        // ── Konstanter ─────────────────────────────────────────────────────
+        const SCALE       = 2;
+        const A4_PX_W     = 794;    // 210mm @ 96dpi
+        const MARGIN_MM   = 10;
+        const PAGE_W_MM   = 210;
+        const PAGE_H_MM   = 297;
+        const CONTENT_H_MM = PAGE_H_MM - MARGIN_MM * 2;  // 277 mm
+        // px per mm i innehållsytan (oSkalad)
+        const PX_PER_MM   = A4_PX_W / (PAGE_W_MM - MARGIN_MM * 2);  // ~4.1
+        const PAGE_PX_H   = CONTENT_H_MM * PX_PER_MM;               // ~1137 px
+
+        // ── Bygg temporär rendering-container ─────────────────────────────
         const cvElement = document.getElementById('cvDocument');
         if (!cvElement) throw new Error('CV-element kunde inte hittas!');
 
-        // Klona CV för att undvika att ändra DOM
+        tempContainer = document.createElement('div');
+        tempContainer.style.cssText =
+          'position:absolute;left:-9999px;top:0;width:' + A4_PX_W + 'px;background:#fff;padding:0;margin:0;';
         const cvClone = cvElement.cloneNode(true);
-        
-        // Skapa temporär container
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.top = '-9999px';
-        tempContainer.style.width = '210mm';
-        tempContainer.style.background = '#fff';
-        tempContainer.style.padding = '0';
-        tempContainer.style.margin = '0';
+        cvClone.style.borderRadius = '0';
+        cvClone.style.boxShadow    = 'none';
         tempContainer.appendChild(cvClone);
         document.body.appendChild(tempContainer);
 
-        // Vänta på att element är renderat
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Låt webbläsaren rita klart
+        await new Promise(r => setTimeout(r, 600));
 
-        // Renderera till canvas med optimerade inställningar
-        const canvas = await html2canvas(cvClone, {
-          scale: 1.5, // Reducerad från 2 för bättre stabilitet
-          useCORS: true,
-          allowTaint: true,
+        // ── Mät skyddade block (rubrik + innehåll hör ihop) ───────────────
+        const cloneOffsetTop = cvClone.getBoundingClientRect().top + window.scrollY;
+
+        function blockY(el) {
+          const r = el.getBoundingClientRect();
+          return {
+            top:    r.top  + window.scrollY - cloneOffsetTop,
+            bottom: r.bottom + window.scrollY - cloneOffsetTop
+          };
+        }
+
+        const protected_blocks = [];
+
+        // CV-header ska aldrig brytas
+        const hdr = cvClone.querySelector('.cv-header');
+        if (hdr) protected_blocks.push(blockY(hdr));
+
+        // Sektioner: alla UTOM arbetslivserfarenhet skyddas som helhet
+        // (rubrik + innehåll flyttas ihop till nästa sida)
+        cvClone.querySelectorAll('.cv-section').forEach(s => {
+          const titleEl = s.querySelector('.cv-section-title');
+          const titleText = titleEl ? titleEl.textContent.trim().toUpperCase() : '';
+          const isJobSection = titleText.includes('ARBETS') || titleText.includes('ERFARENHET') || titleText.includes('JOBB');
+          if (!isJobSection) {
+            protected_blocks.push(blockY(s));
+          }
+        });
+
+        // Varje enskilt jobb-entry skyddas (roll + företag + arbetsuppgifter håller ihop)
+        // Detta gäller ALLA cv-entry, inklusive jobb
+        cvClone.querySelectorAll('.cv-entry').forEach(e => protected_blocks.push(blockY(e)));
+
+        // ── Beräkna smarta sidbrytningspunkter ────────────────────────────
+        const totalH = cvClone.scrollHeight;
+        const breaks = [0];
+        let cur = 0;
+
+        while (cur < totalH) {
+          let next = cur + PAGE_PX_H;
+          if (next >= totalH) break;
+
+          // Flytta brytpunkten om den hamnar mitt i ett skyddat block
+          for (const blk of protected_blocks) {
+            if (next > blk.top + 2 && next < blk.bottom - 2) {
+              const before = blk.top - 8;
+              next = (before > cur + PAGE_PX_H * 0.3) ? before : blk.bottom + 8;
+              break;
+            }
+          }
+
+          breaks.push(Math.round(next));
+          cur = next;
+        }
+        breaks.push(totalH);
+
+        // ── Rendera hela klonen till stor canvas ───────────────────────────
+        const fullCanvas = await html2canvas(cvClone, {
+          scale:           SCALE,
+          useCORS:         true,
+          allowTaint:      true,
           backgroundColor: '#ffffff',
-          logging: false,
-          width: 794, // A4 210mm @ 96 dpi
-          windowHeight: cvClone.scrollHeight,
-          imageTimeout: 5000,
-          ignoreElements: (element) => {
-            // Ignorera problematiska element
-            if (element.classList && element.classList.contains('no-export')) return true;
-            return false;
-          }
+          logging:         false,
+          width:           A4_PX_W,
+          windowHeight:    totalH,
+          imageTimeout:    10000,
+          ignoreElements:  el => el.classList && el.classList.contains('no-export')
         });
 
-        // Validera canvas
-        if (!canvas || canvas.width === 0 || canvas.height === 0) {
-          throw new Error('Canvas rendering misslyckades - dokumentet är tomt');
+        if (!fullCanvas || fullCanvas.width === 0 || fullCanvas.height === 0) {
+          throw new Error('Canvas rendering misslyckades – dokumentet är tomt');
         }
 
-        // Skapa PDF med jsPDF
+        // ── Bygg PDF sida för sida ─────────────────────────────────────────
         const { jsPDF } = window.jspdf;
-        const pageWidth = 210; // mm
-        const pageHeight = 297; // mm
-        const marginTop = 10;
-        const marginBottom = 10;
-        const marginLeft = 10;
-        const marginRight = 10;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
 
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4',
-          compress: true // Aktivera komprimering
-        });
+        const imgWidthMm = PAGE_W_MM - MARGIN_MM * 2;   // 190 mm
+        const canvasW    = fullCanvas.width;             // A4_PX_W * SCALE
 
-        // Beräkna dimensioner
-        const imgWidth = pageWidth - marginLeft - marginRight;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        // Konvertera canvas till JPEG (mer stabil än PNG)
-        // JPEG är mer robust för stora bilder och fungerar bättre med jsPDF
-        const imgData = canvas.toDataURL('image/jpeg', 0.95); // 95% kvalitet
-        
-        // Validera bilddata
-        if (!imgData || imgData.length < 100) {
-          throw new Error('Bildkonvertering misslyckades - datamängden för liten');
+        for (let p = 0; p < breaks.length - 1; p++) {
+          const srcTop    = Math.round(breaks[p]     * SCALE);
+          const srcBottom = Math.round(breaks[p + 1] * SCALE);
+          const srcH      = srcBottom - srcTop;
+          if (srcH <= 0) continue;
+
+          // Klipp ut slice
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width  = canvasW;
+          pageCanvas.height = srcH;
+          const ctx = pageCanvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvasW, srcH);
+          ctx.drawImage(fullCanvas, 0, srcTop, canvasW, srcH, 0, 0, canvasW, srcH);
+
+          const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+          if (!imgData || imgData.length < 100) throw new Error('Sida ' + (p+1) + ': bildkonvertering misslyckades');
+
+          if (p > 0) pdf.addPage();
+
+          // Höjd i mm: (srcH_oskalad / PX_PER_MM) = (srcH/SCALE) / PX_PER_MM
+          const sliceH_mm = (srcH / SCALE) / PX_PER_MM;
+          pdf.addImage(imgData, 'JPEG', MARGIN_MM, MARGIN_MM, imgWidthMm, sliceH_mm);
         }
 
-        let remainingHeight = imgHeight;
-        let sourceY = 0;
-        let pageNum = 1;
-        const pageContentHeight = pageHeight - marginTop - marginBottom;
-
-        // Lägg till första sidan
-        if (imgHeight <= pageContentHeight) {
-          // Allt får plats på en sida
-          pdf.addImage(imgData, 'JPEG', marginLeft, marginTop, imgWidth, imgHeight);
-        } else {
-          // Behöver flera sidor - använd smart sidbrytning
-          while (remainingHeight > 0) {
-            const availableHeight = pageContentHeight;
-            const canvasHeight = canvas.height;
-            const canvasWidth = canvas.width;
-
-            // Beräkna hur mycket av källan som ska användas
-            const sourceHeight = Math.min(
-              (availableHeight * canvasWidth) / imgWidth,
-              canvasHeight - sourceY
-            );
-
-            if (sourceHeight <= 0) break; // Förhindra oändlig loop
-
-            // Skapa canvas för denna sida
-            const pageCanvas = document.createElement('canvas');
-            pageCanvas.width = canvasWidth;
-            pageCanvas.height = sourceHeight;
-            
-            const ctx = pageCanvas.getContext('2d');
-            if (!ctx) throw new Error('Canvas context kunde inte skapas');
-            
-            ctx.drawImage(canvas, 0, sourceY, canvasWidth, sourceHeight, 0, 0, canvasWidth, sourceHeight);
-
-            // Konvertera denna sida till JPEG
-            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-            
-            if (!pageImgData || pageImgData.length < 100) {
-              throw new Error(`Sida ${pageNum}: Bildkonvertering misslyckades`);
-            }
-
-            // Lägg till sida i PDF
-            if (pageNum > 1) {
-              pdf.addPage();
-            }
-
-            const pageImgHeight = (sourceHeight * imgWidth) / canvasWidth;
-            pdf.addImage(pageImgData, 'JPEG', marginLeft, marginTop, imgWidth, pageImgHeight);
-
-            sourceY += sourceHeight;
-            remainingHeight -= pageImgHeight;
-            pageNum++;
-          }
-        }
-
-        // Spara PDF
-        const fileName = `${cvData.name || 'CV'}_${new Date().getFullYear()}.pdf`;
+        // ── Spara ─────────────────────────────────────────────────────────
+        const fileName = (cvData.name || 'CV') + '_' + new Date().getFullYear() + '.pdf';
         pdf.save(fileName);
-
-        showToast(`✅ PDF skapad: ${fileName}`, 'success');
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-
-        // Städa upp
-        document.body.removeChild(tempContainer);
+        showToast('✅ PDF skapad: ' + fileName, 'success');
 
       } catch (error) {
         console.error('PDF Error:', error);
-        
-        // Detaljerat felmeddelande för debugging
-        let userMessage = '❌ Fel vid PDF-generering';
-        if (error.message.includes('Canvas')) {
-          userMessage = '❌ Canvas rendering failed - försök uppdatera sidan';
-        } else if (error.message.includes('bildkonvertering')) {
-          userMessage = '❌ Bildkonvertering misslyckades - dokumentet kan vara för stort';
-        } else if (error.message.includes('jsPDF')) {
-          userMessage = '❌ PDF-skapning misslyckades - försök igen';
-        } else {
-          userMessage = `❌ ${error.message}`;
-        }
-        
-        showToast(userMessage, 'error');
-        
-        const btn = document.querySelector('.btn-pdf');
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = '📄 Skapa PDF';
-        }
+        let msg = '❌ ' + (error.message || 'Något gick fel');
+        if (error.message.includes('Canvas'))           msg = '❌ Rendering misslyckades – uppdatera sidan och försök igen';
+        if (error.message.includes('bildkonvertering')) msg = '❌ Bildkonvertering misslyckades – dokumentet kan vara för stort';
+        showToast(msg, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = originalHTML; }
+        if (tempContainer && tempContainer.parentNode) document.body.removeChild(tempContainer);
       }
     }
 
@@ -5409,6 +6116,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
       const totalJobs = cvData.jobs.length;
       const allJobTitles = cvData.jobs.map(j => j.title).join(', ');
+      showAiLoader('Analyserar CV...', 'Steg 1 av 2 – genererar arbetsuppgifter');
 
       try {
         // ── LAGER 1: Analysera varje jobb individuellt ──────────────────
@@ -5559,6 +6267,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
         // ── LAGER 2 + 3: Aggregerad analys for kompetenser + profiltext ─
         btn.textContent = 'Genererar profil...';
+        document.getElementById('aiLoadingSubtitle').textContent = 'Steg 2 av 2 – genererar profiltext & kompetenser';
 
         const name = cvData.name || 'Anvandaren';
         const currentTitle = document.getElementById('title').value.trim() || '';
@@ -5575,43 +6284,52 @@ Ge bara profiltexten, ingen förklaringtext.`;
         }).join('\n');
 
         const aggregMsg = [
-          'Baserat pa denna persons hela karriarresa, generera kompetenser och profiltext.',
+          'Baserat på denna persons hela karriärresa, generera kompetenser och 3 olika profiltexter.',
           'Svara ENBART med JSON. Inga kommentarer.',
           '',
           'Namn: ' + name,
-          currentTitle ? 'Sokt roll: ' + currentTitle : '',
+          currentTitle ? 'Sökt roll: ' + currentTitle : '',
           eduDetails ? 'Utbildning:\n' + eduDetails : '',
           '',
-          'Karriarresa (kronologisk ordning, senaste forst):',
+          'Karriärresa (kronologisk ordning, senaste först):',
           karriarSummary,
           '',
-          'KRAV pa profiltext:',
-          '- 3-4 meningar som speglar HELA karriarresan, inte bara senaste jobbet',
-          '- Lyfta fram progression och bredd',
-          '- Professionell, personlig och positiv ton',
-          '- Basera enbart pa verkliga erfarenheter ovan',
+          'KRAV på profiltexterna (3 stycken, tydligt olika):',
+          '- Alt 1: fokus på erfarenhet och bredd i karriären',
+          '- Alt 2: fokus på drivkraft, initiativ och resultat',
+          '- Alt 3: fokus på personliga styrkor och samarbete',
+          '- Varje text: 2-3 meningar, professionell ton, basera på verkliga erfarenheter',
           '',
-          'KRAV pa kompetenser:',
-          '- 6-10 kompetenser som summerar HELA karriaren',
-          '- Blanda harda och mjuka fardigheter',
+          'KRAV på kompetenser:',
+          '- 6-10 kompetenser som summerar HELA karriären',
+          '- Blanda hårda och mjuka färdigheter',
           '- Undvik upprepningar',
           '',
           'Returnera exakt:',
           '{',
           '  "yrkesmatchning": {"yrke": "SSYK-titel", "niva": "junior/mellanniva/erfaren"},',
-          '  "profiltext": "...",',
+          '  "profiltextalternativ": ["alt1", "alt2", "alt3"],',
           '  "kompetenser": ["k1", "k2", "..."]',
           '}'
         ].filter(Boolean).join('\n');
 
-        const aggregRaw = await pfCall(aggregMsg, 800);
+        const aggregRaw = await pfCall(aggregMsg, 1000);
         let aggregParsed;
         try { aggregParsed = JSON.parse(aggregRaw); } catch(e) { aggregParsed = {}; }
 
-        // Sattes profiltext
-        if (aggregParsed.profiltext) {
-          cvData.summary = aggregParsed.profiltext;
-          document.getElementById('summary').value = cvData.summary;
+        // Visa 3 profilalternativ i modal
+        const profAlts = aggregParsed.profiltextalternativ || [];
+        if (profAlts.length > 0) {
+          const alt0 = document.getElementById('altText0');
+          const alt1 = document.getElementById('altText1');
+          const alt2 = document.getElementById('altText2');
+          if (alt0) alt0.textContent = profAlts[0] || '';
+          if (alt1) alt1.textContent = profAlts[1] || '';
+          if (alt2) alt2.textContent = profAlts[2] || '';
+          window.currentSummaryAlternatives = profAlts;
+          hideAiLoader();
+          const modal = document.getElementById('profilSummaryModal');
+          if (modal) modal.classList.add('active');
         }
 
         // Yrkestitel om tomt
@@ -5642,7 +6360,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         const matchInfo = aggregParsed.yrkesmatchning
           ? aggregParsed.yrkesmatchning.yrke + ' (' + (aggregParsed.yrkesmatchning.niva || '') + ')'
           : '';
-        showToast('Pathfinder klar' + (matchInfo ? ': ' + matchInfo : '') + '!', 'success');
+        showToast('Pathfinder klar' + (matchInfo ? ': ' + matchInfo : '') + '! Välj profiltext.', 'success');
 
       } catch (error) {
         console.error('Pathfinder AI-fel:', error);
@@ -5655,6 +6373,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
       } finally {
         btn.disabled = false;
         btn.textContent = 'AI Analysera';
+        hideAiLoader();
       }
     }
     // ===== SLUT PATHFINDER AI-MODUL =====
@@ -5972,5 +6691,800 @@ Ge bara profiltexten, ingen förklaringtext.`;
     });
   </script>
 
+
+
+  <!-- ===== GLOBAL AI-LADDNINGSOVERLAY ===== -->
+  <div id="aiLoadingOverlay" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(10, 12, 28, 0.75);
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  ">
+    <div style="
+      background: linear-gradient(135deg, #1e2540 0%, #252f47 100%);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 40px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      min-width: 260px;
+    ">
+      <!-- Timglas-animation -->
+      <div id="aiLoadingHourglass" style="font-size: 48px; animation: hourglassSpin 2s ease-in-out infinite;">⏳</div>
+      <div id="aiLoadingTitle" style="
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        text-align: center;
+        letter-spacing: 0.3px;
+      ">AI arbetar...</div>
+      <div id="aiLoadingSubtitle" style="
+        font-size: 12px;
+        color: rgba(255,255,255,0.45);
+        text-align: center;
+        max-width: 220px;
+        line-height: 1.5;
+      ">Vänligen vänta och undvik att klicka</div>
+      <!-- Pulsande dots -->
+      <div style="display: flex; gap: 8px; margin-top: 4px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:dotPulse 1.2s ease-in-out infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:dotPulse 1.2s ease-in-out 0.4s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:dotPulse 1.2s ease-in-out 0.8s infinite;"></div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes hourglassSpin {
+      0%   { transform: rotate(0deg);   }
+      40%  { transform: rotate(0deg);   }
+      50%  { transform: rotate(180deg); }
+      90%  { transform: rotate(180deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes dotPulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40%            { opacity: 1;   transform: scale(1.2); }
+    }
+  </style>
+
+  <script>
+    function showAiLoader(title, subtitle) {
+      const overlay = document.getElementById('aiLoadingOverlay');
+      if (title)    document.getElementById('aiLoadingTitle').textContent    = title;
+      if (subtitle) document.getElementById('aiLoadingSubtitle').textContent = subtitle;
+      overlay.style.display = 'flex';
+      document.body.style.pointerEvents = 'none';
+      overlay.style.pointerEvents = 'all';
+    }
+    function hideAiLoader() {
+      document.getElementById('aiLoadingOverlay').style.display = 'none';
+      document.body.style.pointerEvents = '';
+      document.body.style.removeProperty('pointer-events');
+    }
+  </script>
+  <!-- ===== SLUT AI-LADDNINGSOVERLAY ===== -->
+
+
+  <!-- =====================================================
+       MOBIL UI — Flik-baserad app-layout
+       ===================================================== -->
+
+  <!-- Tab bar längst ner -->
+  <div id="mobProgressBar" style="width:14%;"></div>
+  <div id="mobileTabBar">
+    <button class="mob-tab mob-tab--active" id="tabBtn-info" onclick="mobSwitchTab(&#39;info&#39;)">
+      <span class="mob-tab__icon">👤</span>
+      <span>Info</span>
+    </button>
+    <button class="mob-tab mob-tab--locked" id="tabBtn-jobb" onclick="mobSwitchTab(&#39;jobb&#39;)">
+      <span class="mob-tab__icon">💼</span>
+      <span>Jobb</span>
+      <span class="mob-tab__done">✓</span>
+    </button>
+    <button class="mob-tab mob-tab--locked" id="tabBtn-utbildning" onclick="mobSwitchTab(&#39;utbildning&#39;)">
+      <span class="mob-tab__icon">🎓</span>
+      <span>Utbildning</span>
+      <span class="mob-tab__done">✓</span>
+    </button>
+    <button class="mob-tab mob-tab--locked" id="tabBtn-mer" onclick="mobSwitchTab(&#39;mer&#39;)">
+      <span class="mob-tab__icon">📋</span>
+      <span>Mer</span>
+      <span class="mob-tab__done">✓</span>
+    </button>
+    <button class="mob-tab mob-tab--locked" id="tabBtn-profil" onclick="mobSwitchTab(&#39;profil&#39;)">
+      <span class="mob-tab__icon">✍️</span>
+      <span>Profil</span>
+      <span class="mob-tab__done">✓</span>
+    </button>
+    <button class="mob-tab mob-tab--locked" id="tabBtn-forhandsgranska" onclick="mobSwitchTab(&#39;forhandsgranska&#39;)">
+      <span class="mob-tab__icon">👁️</span>
+      <span>CV</span>
+      <span class="mob-tab__done">✓</span>
+    </button>
+    <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
+      <span class="mob-tab__icon">📤</span>
+      <span>Exportera</span>
+    </button>
+  </div>
+
+  <!-- Mobil innehållsyta -->
+  <div id="mobileContent">
+
+    <!-- FLIK 1: Info (Personuppgifter) -->
+    <div class="mob-panel mob-panel--active" id="mobPanel-info">
+
+      <div class="mob-section">
+        <div class="mob-section-title">Profilbild</div>
+        <div class="mob-toggle-row">
+          <span class="mob-toggle-label">Visa profilbild</span>
+          <button class="mob-toggle mob-toggle--on" id="mobPhotoToggle" onclick="mobTogglePhoto()"></button>
+        </div>
+        <input type="file" id="mobPhotoUpload" accept="image/*" capture="user" onchange="mobUploadPhoto()" style="display:none;">
+        <button class="mob-btn-primary mob-btn-green" onclick="document.getElementById(&#39;mobPhotoUpload&#39;).click()">
+          📷 Ladda upp eller ta foto
+        </button>
+        <button class="mob-btn-primary mob-btn-danger" id="mobRemovePhotoBtn" onclick="mobRemovePhoto()" style="display:none;">
+          🗑️ Ta bort bild
+        </button>
+      </div>
+
+      <div class="mob-section">
+        <div class="mob-section-title">Personuppgifter</div>
+        <input type="text" class="mob-input" id="mob-name" placeholder="Ditt fullständiga namn" oninput="mobSync(&#39;name&#39;,  this.value); mobCheckInfoDone()">
+        <input type="text" class="mob-input" id="mob-title" placeholder="Din yrkestitel" oninput="mobSync(&#39;title&#39;, this.value); mobCheckInfoDone()">
+        <input type="email" class="mob-input" id="mob-email" placeholder="E-postadress" oninput="mobSync(&#39;email&#39;, this.value)" inputmode="email">
+        <input type="tel" class="mob-input" id="mob-phone" placeholder="Telefonnummer" oninput="mobSync(&#39;phone&#39;, this.value)" inputmode="tel">
+      </div>
+
+      <div class="mob-fortsatt">
+        <button class="mob-fortsatt-btn mob-fortsatt-btn--disabled" id="mobFortsattInfo" onclick="mobFortsatt(&#39;info&#39;,&#39;jobb&#39;)">
+          Fortsätt till Jobb →
+        </button>
+      </div>
+
+    </div>
+
+    <!-- FLIK 3: Utbildning -->
+    <div class="mob-panel" id="mobPanel-utbildning">
+      <div class="mob-section">
+        <div class="mob-section-title">Utbildning</div>
+        <div id="mobEduList"></div>
+        <button class="mob-btn-primary mob-btn-outline" onclick="openEduModal()">+ Lägg till utbildning</button>
+      </div>
+      <div class="mob-fortsatt">
+        <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;utbildning&#39;,&#39;mer&#39;)">
+          Fortsätt till Mer →
+        </button>
+      </div>
+    </div>
+
+    <!-- FLIK 5: Profil / Presentation -->
+    <div class="mob-panel" id="mobPanel-profil">
+      <div class="mob-section">
+        <div class="mob-section-title">Profil / Presentation</div>
+        <p style="color:rgba(255,255,255,0.4);font-size:13px;line-height:1.6;margin-bottom:16px;">
+          Skriv en kort sammanfattning av dig själv — eller låt AI:n skapa förslag baserat på det du fyllt i.
+        </p>
+        <textarea class="mob-input" id="mob-summary" placeholder="Skriv en kort presentation om dig själv..." oninput="mobSync(&#39;summary&#39;, this.value)" rows="6"></textarea>
+        <button class="mob-btn-primary mob-btn-danger" onclick="mobClearSummary()" style="margin-bottom:8px;">
+          🗑️ Rensa profiltext
+        </button>
+        <button class="mob-btn-primary mob-btn-ai" onclick="aiAutofillProfileSummary()">
+          ✨ Få 3 AI-förslag på profiltext
+        </button>
+      </div>
+      <div class="mob-fortsatt">
+        <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;profil&#39;,&#39;forhandsgranska&#39;)">
+          Se mitt CV →
+        </button>
+      </div>
+    </div>
+
+    <!-- FLIK 2: Jobb -->
+    <div class="mob-panel" id="mobPanel-jobb">
+      <div class="mob-section">
+        <div class="mob-section-title">Arbetslivserfarenhet</div>
+        <div id="mobJobsList"></div>
+        <button class="mob-btn-primary mob-btn-outline" onclick="openJobModal()">
+          + Lägg till jobb
+        </button>
+      </div>
+      <div class="mob-fortsatt">
+        <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;jobb&#39;,&#39;utbildning&#39;)">
+          Fortsätt till Utbildning →
+        </button>
+      </div>
+    </div>
+
+    <!-- FLIK 4: Mer (Kompetenser, Språk, Körkort, Certs, Refs) -->
+    <div class="mob-panel" id="mobPanel-mer">
+
+      <div class="mob-section">
+        <div class="mob-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Kompetenser</span>
+          <button style="background:none;border:none;color:#ff8080;font-size:11px;font-weight:700;cursor:pointer;" onclick="clearAllSkills()">🗑️ Rensa</button>
+        </div>
+        <div class="skills-grid" id="mobSkillsGrid" style="margin-bottom:10px;"></div>
+        <button class="mob-btn-primary mob-btn-outline" onclick="openSkillsModal()">+ Hantera kompetenser</button>
+        <button class="mob-btn-primary mob-btn-ai" onclick="aiMatchSkills()" style="margin-top:6px;">🤖 AI-förslag på kompetenser</button>
+      </div>
+
+      <div class="mob-section">
+        <div class="mob-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Språk</span>
+          <button style="background:none;border:none;color:#ff8080;font-size:11px;font-weight:700;cursor:pointer;" onclick="clearAllLanguages()">🗑️ Rensa</button>
+        </div>
+        <div class="skills-grid" id="mobLanguagesGrid" style="margin-bottom:10px;"></div>
+        <button class="mob-btn-primary mob-btn-outline" onclick="openLanguagesModal()">+ Hantera språk</button>
+      </div>
+
+      <div class="mob-section">
+        <div class="mob-section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Körkort &amp; Licenser</span>
+          <button style="background:none;border:none;color:#ff8080;font-size:11px;font-weight:700;cursor:pointer;" onclick="clearAllLicenses()">🗑️ Rensa</button>
+        </div>
+        <div class="skills-grid" id="mobLicensesGrid" style="margin-bottom:10px;"></div>
+        <button class="mob-btn-primary mob-btn-outline" onclick="openLicensesModal()">+ Hantera körkort</button>
+      </div>
+
+      <div class="mob-section">
+        <div class="mob-section-title">Certifikationer</div>
+        <div id="mobCertList"></div>
+        <button class="mob-btn-primary mob-btn-outline" onclick="openCertModal()">+ Lägg till certifikat</button>
+      </div>
+
+      <div class="mob-section">
+        <div class="mob-section-title">Referenser</div>
+        <div id="mobRefList"></div>
+        <button class="mob-btn-primary mob-btn-outline" onclick="openRefModal()">+ Lägg till referens</button>
+        <button class="mob-btn-primary mob-btn-outline" style="border-color:rgba(62,180,137,0.4);color:rgba(62,180,137,0.8);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
+      </div>
+      <div class="mob-fortsatt">
+        <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;mer&#39;,&#39;profil&#39;)">
+          Fortsätt till Profil →
+        </button>
+      </div>
+    </div>
+
+    <!-- FLIK 4: Förhandsgranska -->
+    <div class="mob-panel" id="mobPanel-forhandsgranska" style="background:#f0ede6;padding:16px;">
+      <div style="text-align:center;margin-bottom:12px;">
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;">Förhandsgranskning</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <div id="mobCvPreviewWrap" style="transform-origin:top left; width:794px;">
+          <!-- CV-dokumentet klonas hit via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- FLIK 5: Exportera -->
+    <div class="mob-panel" id="mobPanel-export">
+
+      <div class="mob-section">
+        <div class="mob-section-title">Design-mall</div>
+        <div class="mob-template-grid" id="mobTemplateGrid">
+          <!-- Fylls av JS -->
+        </div>
+      </div>
+
+      <div class="mob-export-card">
+        <h3>📄 Ladda ner PDF</h3>
+        <p>Skapar ett professionellt CV-dokument som du kan spara på telefonen.</p>
+        <button class="mob-btn-primary mob-btn-export" onclick="generateAdvancedPDF()">
+          📄 Skapa &amp; ladda ner PDF
+        </button>
+      </div>
+
+      <div class="mob-export-card">
+        <h3>📤 Dela CV</h3>
+        <p>Dela ditt CV direkt via WhatsApp, e-post eller annan app.</p>
+        <button class="mob-btn-primary mob-btn-share mob-btn-primary" onclick="mobSharePDF()">
+          📤 Dela CV
+        </button>
+      </div>
+
+      <div class="mob-export-card" style="border-color:rgba(62,180,137,0.2);background:rgba(62,180,137,0.05);">
+        <h3 style="color:#3eb489;">⚙️ Inställningar</h3>
+        <p>Ange din Anthropic API-nyckel för att aktivera AI-funktioner.</p>
+        <button class="mob-btn-primary mob-btn-green" onclick="toggleSettingsPanel()">
+          ⚙️ Öppna inställningar
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- SLUT MOBIL UI -->
+
+
+  <script>
+  // =====================================================
+  // MOBIL JS — flik-navigation + synkronisering
+  // =====================================================
+
+  const MOB_TEMPLATES = [
+    { value: 'classic',     label: '📋 Klassisk' },
+    { value: 'minimal',     label: '✨ Minimal' },
+    { value: 'template-3',  label: '🎨 Modern Blå/Grön' },
+    { value: 'template-4',  label: '💫 Modern Lila/Cyan' },
+    { value: 'template-5',  label: '⚪ Minimalistisk' },
+    { value: 'template-6',  label: '📄 Traditionell 1' },
+    { value: 'template-7',  label: '📑 Traditionell 2' },
+    { value: 'template-8',  label: '🎯 Modern Kort' },
+    { value: 'template-9',  label: '🌟 Två-kolumn' },
+    { value: 'template-10', label: '🎨 Färgskatt' },
+  ];
+
+  function isMobile() { return window.innerWidth <= 768; }
+
+  // ── Flik-navigation ──────────────────────────────────
+  function mobSwitchTab(tab) {
+    if (!isMobile()) return;
+
+    // Kontrollera att fliken är upplåst
+    const btn = document.getElementById('tabBtn-' + tab);
+    if (btn && btn.classList.contains('mob-tab--locked')) return;
+
+    // Dölj alla paneler
+    document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('mob-panel--active'));
+    document.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
+
+    const panel = document.getElementById('mobPanel-' + tab);
+    if (panel) panel.classList.add('mob-panel--active');
+    if (btn)   btn.classList.add('mob-tab--active');
+
+    // Uppdatera vid flikbyte
+    if (tab === 'forhandsgranska') mobRefreshPreview();
+    if (tab === 'export') mobBuildTemplateGrid();
+    if (tab === 'utbildning') mobRenderEdu();
+    if (tab === 'profil') {
+      const el = document.getElementById('mob-summary');
+      if (el) el.value = cvData.summary || '';
+    }
+
+    // Markera besökt → lås upp nästa flik (sparas i localStorage)
+    mobMarkVisited(tab);
+  }
+
+  // ── Synka mobil-fält → cvData + desktop-fält ─────────
+  function mobSync(field, value) {
+    cvData[field] = value;
+    const desktopEl = document.getElementById(field);
+    if (desktopEl) desktopEl.value = value;
+    saveData();
+    updatePreview();
+  }
+
+  // ── Ladda mobil-fält från cvData ─────────────────────
+  function mobLoadFields() {
+    const fields = ['name','title','email','phone','summary'];
+    fields.forEach(f => {
+      const el = document.getElementById('mob-' + f);
+      if (el) el.value = cvData[f] || '';
+    });
+    mobRefreshLists();
+    mobRefreshToggle();
+    mobUpdateRemovePhotoBtn();
+  }
+
+  // ── Foto ─────────────────────────────────────────────
+  function mobTogglePhoto() {
+    const newVal = !cvData.showPhoto;
+    setShowPhoto(newVal);   // anropar befintlig funktion
+    mobRefreshToggle();
+  }
+
+  function mobRefreshToggle() {
+    const toggle = document.getElementById('mobPhotoToggle');
+    if (!toggle) return;
+    if (cvData.showPhoto) {
+      toggle.classList.add('mob-toggle--on');
+    } else {
+      toggle.classList.remove('mob-toggle--on');
+    }
+  }
+
+  function mobUploadPhoto() {
+    const file = document.getElementById('mobPhotoUpload').files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      cvData.photoData = e.target.result;
+      // Uppdatera desktop-bilden också
+      const desktopImg = document.getElementById('profilePhoto');
+      if (desktopImg) { desktopImg.src = cvData.photoData; desktopImg.style.display = 'block'; }
+      const removeBtn = document.getElementById('removePhotoBtn');
+      if (removeBtn) { removeBtn.disabled = false; removeBtn.removeAttribute('aria-disabled'); }
+      saveData();
+      updatePreview();
+      mobUpdateRemovePhotoBtn();
+      showToast('✅ Profilbild sparad!', 'success');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function mobRemovePhoto() {
+    cvData.photoData = null;
+    const desktopImg = document.getElementById('profilePhoto');
+    if (desktopImg) { desktopImg.src = ''; desktopImg.style.display = 'none'; }
+    const removeBtn = document.getElementById('removePhotoBtn');
+    if (removeBtn) { removeBtn.disabled = true; removeBtn.setAttribute('aria-disabled','true'); }
+    document.getElementById('mobPhotoUpload').value = '';
+    saveData();
+    updatePreview();
+    mobUpdateRemovePhotoBtn();
+    showToast('🗑️ Bild borttagen', 'success');
+  }
+
+  function mobUpdateRemovePhotoBtn() {
+    const btn = document.getElementById('mobRemovePhotoBtn');
+    if (!btn) return;
+    btn.style.display = cvData.photoData ? 'flex' : 'none';
+  }
+
+  // ── Rensa profiltext ─────────────────────────────────
+  function mobClearSummary() {
+    cvData.summary = '';
+    document.getElementById('mob-summary').value = '';
+    const desktopEl = document.getElementById('summary');
+    if (desktopEl) desktopEl.value = '';
+    saveData();
+    updatePreview();
+    showToast('🗑️ Profiltext rensad', 'success');
+  }
+
+  // ── Uppdatera listor (jobb, utb, etc) på mobil ───────
+  function mobRefreshLists() {
+    mobRenderJobs();
+    mobRenderEdu();
+    mobRenderRefs();
+    mobRenderCerts();
+    mobSyncGrid('mobSkillsGrid',    'skillsGrid');
+    mobSyncGrid('mobLanguagesGrid', 'languagesGrid');
+    mobSyncGrid('mobLicensesGrid',  'licensesGrid');
+  }
+
+  function mobSyncGrid(mobId, desktopId) {
+    const mob = document.getElementById(mobId);
+    const desk = document.getElementById(desktopId);
+    if (mob && desk) mob.innerHTML = desk.innerHTML;
+  }
+
+  function mobRenderJobs() {
+    const list = document.getElementById('mobJobsList');
+    if (!list) return;
+    if (!cvData.jobs || cvData.jobs.length === 0) {
+      list.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:12px;text-align:center;">Inga jobb tillagda ännu</div>';
+      return;
+    }
+    list.innerHTML = cvData.jobs.map((job, i) => `
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>${job.title}</strong>
+          <small>${job.company}${job.startYear ? ' · ' + job.startYear : ''}</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openJobModal(${i})">✏️</button>
+          <button class="mob-icon-btn" onclick="removeJob(${i}); mobRenderJobs();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function mobRenderEdu() {
+    const list = document.getElementById('mobEduList');
+    if (!list) return;
+    if (!cvData.education || cvData.education.length === 0) {
+      list.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:12px;text-align:center;">Ingen utbildning tillagd ännu</div>';
+      return;
+    }
+    list.innerHTML = cvData.education.map((edu, i) => `
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>${edu.degree}</strong>
+          <small>${edu.schoolName || edu.school}${edu.startYear ? ' · ' + edu.startYear : ''}</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openEduModal(${i})">✏️</button>
+          <button class="mob-icon-btn" onclick="removeEdu(${i}); mobRenderEdu();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function mobRenderRefs() {
+    const list = document.getElementById('mobRefList');
+    if (!list) return;
+    if (!cvData.references || cvData.references.length === 0) {
+      list.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:12px;text-align:center;">Inga referenser tillagda ännu</div>';
+      return;
+    }
+    list.innerHTML = cvData.references.map((ref, i) => `
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>${ref.name}</strong>
+          <small>${ref.title}</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openRefModal(${i})">✏️</button>
+          <button class="mob-icon-btn" onclick="removeRef(${i}); mobRenderRefs();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function mobRenderCerts() {
+    const list = document.getElementById('mobCertList');
+    if (!list) return;
+    if (!cvData.certifications || cvData.certifications.length === 0) {
+      list.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:12px;text-align:center;">Inga certifikat tillagda ännu</div>';
+      return;
+    }
+    list.innerHTML = cvData.certifications.map((cert, i) => `
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>${cert.name}</strong>
+          <small>${cert.issuer} · ${cert.date}</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openCertModal(${i})">✏️</button>
+          <button class="mob-icon-btn" onclick="removeCert(${i}); mobRenderCerts();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Förhandsgranskning: skala CV-dokumentet ──────────
+  function mobRefreshPreview() {
+    const wrap = document.getElementById('mobCvPreviewWrap');
+    if (!wrap) return;
+    const cvDoc = document.getElementById('cvDocument');
+    if (!cvDoc) return;
+    // Klona och visa
+    wrap.innerHTML = '';
+    const clone = cvDoc.cloneNode(true);
+    clone.style.borderRadius = '8px';
+    clone.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+    wrap.appendChild(clone);
+    // Skala för att passa skärmbredden
+    const panelW = document.getElementById('mobPanel-forhandsgranska').offsetWidth - 32;
+    const scale  = panelW / 794;
+    wrap.style.transform = 'scale(' + scale + ')';
+    wrap.style.transformOrigin = 'top left';
+    wrap.style.width = '794px';
+    wrap.parentElement.style.height = Math.round(cvDoc.scrollHeight * scale) + 'px';
+  }
+
+  // ── Mall-grid i Exportera-fliken ─────────────────────
+  function mobBuildTemplateGrid() {
+    const grid = document.getElementById('mobTemplateGrid');
+    if (!grid) return;
+    const current = cvData.template || 'classic';
+    grid.innerHTML = MOB_TEMPLATES.map(t => `
+      <button
+        class="mob-template-btn ${t.value === current ? 'mob-template-btn--active' : ''}"
+        onclick="mobSelectTemplate('${t.value}')"
+      >${t.label}</button>
+    `).join('');
+  }
+
+  function mobSelectTemplate(val) {
+    // Anropa befintlig funktion via select-elementet
+    const sel = document.getElementById('templateSelect');
+    if (sel) { sel.value = val; changeTemplate(); }
+    else { cvData.template = val; saveData(); updatePreview(); }
+    mobBuildTemplateGrid();
+  }
+
+  // ── Dela PDF ─────────────────────────────────────────
+  async function mobSharePDF() {
+    if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
+    showToast('⏳ Skapar PDF för delning...', 'info');
+    try {
+      // Återanvänd PDF-generatorn men fånga filen istället
+      // Vi triggar generateAdvancedPDF() men om Web Share API finns, dela direkt
+      if (!navigator.share) {
+        // Fallback: vanlig nedladdning
+        generateAdvancedPDF();
+        return;
+      }
+      // Generera PDF som blob
+      await generateAdvancedPDF();
+      // generateAdvancedPDF sparar filen — Web Share öppnas av OS
+      // (En framtida förbättring kan fånga blob och dela direkt)
+    } catch(e) {
+      showToast('❌ Kunde inte dela: ' + e.message, 'error');
+    }
+  }
+
+  // ── Patcha befintliga render-funktioner ──────────────
+  // När desktop-listor uppdateras, uppdatera mobil-listor också
+  const _origRenderJobs = typeof renderJobs === 'function' ? renderJobs : null;
+  const _origRenderEdu  = typeof renderEducation === 'function' ? renderEducation : null;
+  const _origRenderRefs = typeof renderRefs === 'function' ? renderRefs : null;
+  const _origRenderCerts= typeof renderCerts === 'function' ? renderCerts : null;
+  const _origRenderSkills= typeof renderSkills === 'function' ? renderSkills : null;
+  const _origRenderLangs= typeof renderLanguages === 'function' ? renderLanguages : null;
+  const _origRenderLics = typeof renderLicenses === 'function' ? renderLicenses : null;
+
+  // Patcha efter att DOM är klar
+  window.addEventListener('load', () => {
+    if (!isMobile()) return;
+
+    // Patcha render-funktioner
+    const origRJ = window.renderJobs;
+    window.renderJobs = function() { if(origRJ) origRJ(); mobRenderJobs(); };
+
+    const origRE = window.renderEducation;
+    window.renderEducation = function() { if(origRE) origRE(); mobRenderEdu(); };
+
+    // Patch selectProfileSummary to also update mob-summary on profil tab
+    const origSPSInner = window.selectProfileSummary;
+    window.selectProfileSummary = function(idx) {
+      if(origSPSInner) origSPSInner(idx);
+      const el = document.getElementById('mob-summary');
+      if (el) el.value = cvData.summary || '';
+    };
+
+    const origRR = window.renderRefs;
+    window.renderRefs = function() { if(origRR) origRR(); mobRenderRefs(); };
+
+    const origRC = window.renderCerts;
+    window.renderCerts = function() { if(origRC) origRC(); mobRenderCerts(); };
+
+    const origRS = window.renderSkills;
+    window.renderSkills = function() { if(origRS) origRS(); mobSyncGrid('mobSkillsGrid','skillsGrid'); };
+
+    const origRL = window.renderLanguages;
+    window.renderLanguages = function() { if(origRL) origRL(); mobSyncGrid('mobLanguagesGrid','languagesGrid'); };
+
+    const origRLic = window.renderLicenses;
+    window.renderLicenses = function() { if(origRLic) origRLic(); mobSyncGrid('mobLicensesGrid','licensesGrid'); };
+
+    // selectProfileSummary patched above
+
+    // Initial laddning av mobil-fält
+    setTimeout(() => {
+      mobLoadFields();
+      mobCheckUnlock();        // Ladda sparad upplåsningsstatus
+      mobRestoreDoneBadges();  // Återställ ✓-badges
+      mobCheckInfoDone();      // Aktivera fortsätt-knapp om data finns
+    }, 300);
+    mobBuildTemplateGrid();
+  });
+
+
+  // =====================================================
+  // PROGRESSIV UPPLÅSNING — sparas i localStorage
+  // =====================================================
+
+  const MOB_TAB_ORDER = ['info','jobb','utbildning','mer','profil','forhandsgranska','export'];
+  const MOB_ALWAYS_OPEN = new Set(['info','export']);
+  const MOB_UNLOCK_KEY = 'pathfinder_mob_unlocked';
+
+  // Ladda upplåsningsstatus från localStorage
+  function mobLoadUnlocked() {
+    try {
+      const saved = localStorage.getItem(MOB_UNLOCK_KEY);
+      if (saved) {
+        const arr = JSON.parse(saved);
+        arr.forEach(t => mobUnlocked.add(t));
+      }
+    } catch(e) {}
+    // Alltid öppna flikar
+    MOB_ALWAYS_OPEN.forEach(t => mobUnlocked.add(t));
+  }
+
+  function mobSaveUnlocked() {
+    try {
+      localStorage.setItem(MOB_UNLOCK_KEY, JSON.stringify([...mobUnlocked]));
+    } catch(e) {}
+  }
+
+  // Vilka flikar är upplåsta
+  const mobUnlocked = new Set(['info','export']);
+
+  // Lås upp nästa flik efter att användaren aktivt gör något
+  function mobUnlockNext(fromTab) {
+    const idx = MOB_TAB_ORDER.indexOf(fromTab);
+    if (idx >= 0 && idx < MOB_TAB_ORDER.length - 1) {
+      mobUnlocked.add(MOB_TAB_ORDER[idx + 1]);
+      mobSaveUnlocked();
+    }
+    mobRenderLocks();
+    mobUpdateProgress();
+  }
+
+  // Kallas vid start — återställer sparad status utan att låsa upp nytt
+  function mobCheckUnlock() {
+    mobLoadUnlocked();
+    mobRenderLocks();
+    mobUpdateProgress();
+  }
+
+  function mobMarkVisited(tab) {
+    // Besöka låser upp nästa — sparas
+    mobUnlockNext(tab);
+    mobMarkTabDone(tab);
+  }
+
+  function mobRenderLocks() {
+    MOB_TAB_ORDER.forEach(id => {
+      const btn = document.getElementById('tabBtn-' + id);
+      if (!btn) return;
+      const isUnlocked = MOB_ALWAYS_OPEN.has(id) || mobUnlocked.has(id);
+      btn.classList.toggle('mob-tab--locked', !isUnlocked);
+    });
+  }
+
+  function mobUpdateProgress() {
+    const trackable = MOB_TAB_ORDER.filter(t => !MOB_ALWAYS_OPEN.has(t));
+    const unlocked  = trackable.filter(t => mobUnlocked.has(t)).length;
+    const pct = Math.round((unlocked / trackable.length) * 100);
+    const bar = document.getElementById('mobProgressBar');
+    if (bar) bar.style.width = Math.max(pct, 5) + '%';
+  }
+
+  function mobMarkTabDone(tabId) {
+    const btn = document.getElementById('tabBtn-' + tabId);
+    if (btn) btn.classList.add('mob-tab--done');
+    // Återställ done-status från sparad data vid start
+  }
+
+  // Återställ done-badges från sparad unlock-data
+  function mobRestoreDoneBadges() {
+    mobUnlocked.forEach(id => mobMarkTabDone(id));
+  }
+
+
+  // ── Fortsätt-knapp logik ─────────────────────────────
+  function mobFortsatt(fromTab, toTab) {
+    mobMarkVisited(fromTab);
+    mobSwitchTab(toTab);
+    // Scrolla till toppen
+    const content = document.getElementById('mobileContent');
+    if (content) content.scrollTop = 0;
+  }
+
+  // Aktivera/inaktivera Fortsätt-knappen på Info-fliken
+  function mobCheckInfoDone() {
+    const btn = document.getElementById('mobFortsattInfo');
+    if (!btn) return;
+    const nameOk  = (document.getElementById('mob-name')  || {value:''}).value.trim().length > 0;
+    const titleOk = (document.getElementById('mob-title') || {value:''}).value.trim().length > 0;
+    if (nameOk && titleOk) {
+      btn.classList.remove('mob-fortsatt-btn--disabled');
+    } else {
+      btn.classList.add('mob-fortsatt-btn--disabled');
+    }
+  }
+
+  // Blockera klick på disabled fortsätt-knapp
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.mob-fortsatt-btn--disabled')) {
+      e.preventDefault();
+      e.stopPropagation();
+      showToast('⚠️ Fyll i namn och yrkestitel först', 'error');
+    }
+  }, true);
+
+  // Lyssna på resize
+  window.addEventListener('resize', () => {
+    if (isMobile()) {
+      mobLoadFields();
+    }
+  });
+  </script>
 
 </body></html>
