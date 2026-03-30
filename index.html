@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Pathfinder — AI-CV-Builder</title>
   <link rel="icon" type="image/svg+xml" href="pathfinder-favicon.svg">
 
@@ -199,7 +199,7 @@
       border-radius: 10px;
       padding: 12px 14px;
       color: #fff;
-      font-size: 14px;
+      font-size: 16px; /* 16px prevents iOS auto-zoom */
       font-family: inherit;
       outline: none;
       margin-bottom: 10px;
@@ -1731,6 +1731,7 @@
         position: fixed;
         top: 56px; left: 0; right: 0; bottom: 64px;
         overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         background: #1a1a2e;
       }
@@ -1738,7 +1739,7 @@
       /* ── Mobil panel (varje flik) ───────────────────── */
       .mob-panel {
         display: none;
-        padding: 20px 16px 32px;
+        padding: 20px 16px 100px;
         animation: mobFadeIn 0.2s ease;
       }
       .mob-panel--active { display: block; }
@@ -4652,6 +4653,7 @@
         showToast('⚠️ Skriv in en jobbtitel först!', 'error');
         return;
       }
+      showAiLoader('Matchar kompetenser...', 'AI söker rätt kompetenser för din titel');
 
       console.log('🔍 Söker efter:', title);
       
@@ -4678,12 +4680,14 @@
           saveData();
           renderSkills();
           updatePreview();
+          hideAiLoader();
           showToast(`✨ ${skills.length} kompetenser matchade!`, 'success');
           return;
         }
       }
       
       console.log('❌ Ingen match hittad');
+      hideAiLoader();
       showToast('⚠️ Kunde inte matcha kompetenser för denna titel', 'error');
     }
 
@@ -5540,7 +5544,37 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     // AI Autofill för jobbeskrivning — genererar unika meningar via AI
-    async function aiAutofillJobDesc() {
+    // =====================================================
+    // AI CACHE — sparar API-svar i localStorage
+    // =====================================================
+    const AI_CACHE_KEY = 'pf_ai_cache';
+    const AI_CACHE_MAX = 50; // Max antal sparade svar
+
+    function aiCacheGet(key) {
+      try {
+        const cache = JSON.parse(localStorage.getItem(AI_CACHE_KEY) || '{}');
+        return cache[key] || null;
+      } catch(e) { return null; }
+    }
+
+    function aiCacheSet(key, value) {
+      try {
+        const cache = JSON.parse(localStorage.getItem(AI_CACHE_KEY) || '{}');
+        cache[key] = value;
+        // Rensa gamla poster om för många
+        const keys = Object.keys(cache);
+        if (keys.length > AI_CACHE_MAX) {
+          delete cache[keys[0]];
+        }
+        localStorage.setItem(AI_CACHE_KEY, JSON.stringify(cache));
+      } catch(e) {}
+    }
+
+    function aiCacheKey(...parts) {
+      return parts.filter(Boolean).join('|').toLowerCase().trim();
+    }
+
+        async function aiAutofillJobDesc() {
       const apiKey = getApiKey();
 
       const title    = document.getElementById('jobTitle').value.trim();
@@ -5604,6 +5638,19 @@ Ge bara profiltexten, ingen förklaringtext.`;
       if (btn) { btn.disabled = true; btn.textContent = '⏳ AI genererar...'; }
       showAiLoader('Genererar arbetsuppgifter...', 'AI skriver unika meningar för detta jobb');
 
+      // Kolla cache först
+      const jobCacheKey = aiCacheKey('job', title, company, startY, endY, String(duplicateCount));
+      const cached = aiCacheGet(jobCacheKey);
+      if (cached) {
+        if (cached.length >= 1) document.getElementById('jobDesc1').value = cached[0] || '';
+        if (cached.length >= 2) document.getElementById('jobDesc2').value = cached[1] || '';
+        if (cached.length >= 3) document.getElementById('jobDesc3').value = cached[2] || '';
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        hideAiLoader();
+        showToast('⚡ Hämtad från cache!', 'ai');
+        return;
+      }
+
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -5634,6 +5681,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
         if (tasks.length >= 2) document.getElementById('jobDesc2').value = tasks[1] || '';
         if (tasks.length >= 3) document.getElementById('jobDesc3').value = tasks[2] || '';
 
+        // Spara i cache
+        aiCacheSet(jobCacheKey, tasks);
         showToast('✨ Unika arbetsuppgifter genererade!', 'ai');
 
       } catch (error) {
@@ -5655,6 +5704,20 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('jobDesc2').value = '';
       document.getElementById('jobDesc3').value = '';
       showToast('🗑️ Arbetsuppgifter rensat!', 'success');
+    }
+
+    function displayProfileSummaryOptions(alts) {
+      const alt0 = document.getElementById('altText0');
+      const alt1 = document.getElementById('altText1');
+      const alt2 = document.getElementById('altText2');
+      if (alt0) alt0.textContent = alts[0] || '';
+      if (alt1) alt1.textContent = alts[1] || '';
+      if (alt2) alt2.textContent = alts[2] || '';
+      window.currentSummaryAlternatives = alts;
+      hideAiLoader();
+      const modal = document.getElementById('profilSummaryModal');
+      if (modal) modal.classList.add('active');
+      showToast('✨ Välj ett alternativ!', 'ai');
     }
 
     async function aiAutofillProfileSummary() {
@@ -5706,6 +5769,17 @@ Ge bara profiltexten, ingen förklaringtext.`;
       if (btn) { btn.disabled = true; btn.textContent = '⏳ AI genererar...'; }
       showAiLoader('Genererar profiltexter...', 'AI skapar 3 unika alternativ åt dig');
 
+      // Kolla cache
+      const profileCacheKey = aiCacheKey('profile', title, jobSummary.slice(0,80), skillsList.slice(0,40));
+      const cachedProfile = aiCacheGet(profileCacheKey);
+      if (cachedProfile) {
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        hideAiLoader();
+        displayProfileSummaryOptions(cachedProfile);
+        showToast('⚡ Hämtad från cache!', 'ai');
+        return;
+      }
+
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -5732,6 +5806,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         try { parsed = JSON.parse(rawText); } catch(e) { parsed = { alternativ: [] }; }
 
         const alts = parsed.alternativ || [];
+        aiCacheSet(profileCacheKey, alts);
         if (alts.length < 1) throw new Error('Inga alternativ returnerades');
 
         // Fyll i modal-rutorna
@@ -6689,58 +6764,99 @@ Ge bara profiltexten, ingen förklaringtext.`;
     display: none;
     position: fixed;
     inset: 0;
-    z-index: 9999;
-    background: rgba(10, 12, 28, 0.75);
-    backdrop-filter: blur(4px);
+    z-index: 99999;
+    background: rgba(10, 12, 28, 0.85);
     align-items: center;
     justify-content: center;
     flex-direction: column;
     gap: 20px;
   ">
     <div style="
-      background: linear-gradient(135deg, #1e2540 0%, #252f47 100%);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 20px;
-      padding: 40px 48px;
+      background: #1e2540;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 36px 44px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 18px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
-      min-width: 260px;
+      gap: 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      min-width: 240px;
+      max-width: 80vw;
     ">
-      <!-- Timglas-animation -->
-      <div id="aiLoadingHourglass" style="font-size: 48px; animation: hourglassSpin 2s ease-in-out infinite;">⏳</div>
-      <div id="aiLoadingTitle" style="
-        font-size: 16px;
-        font-weight: 700;
-        color: #fff;
-        text-align: center;
-        letter-spacing: 0.3px;
-      ">AI arbetar...</div>
+      <!-- Timglas SVG-animation -->
+      <div style="position:relative;width:56px;height:56px;">
+        <svg viewBox="0 0 56 56" width="56" height="56" style="animation:hourglassSpin 2s ease-in-out infinite;">
+          <defs>
+            <linearGradient id="hgGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3eb489"/>
+              <stop offset="100%" stop-color="#e85d26"/>
+            </linearGradient>
+          </defs>
+          <!-- Timglas-form -->
+          <path d="M14 6 L42 6 L28 28 L42 50 L14 50 L28 28 Z" fill="none" stroke="url(#hgGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- Sand övre -->
+          <path d="M16 8 L40 8 L28 24 Z" fill="#3eb489" opacity="0.3" id="sandTop" style="animation:sandDrain 2s ease-in-out infinite;"/>
+          <!-- Sand nedre -->
+          <path d="M28 32 L40 48 L16 48 Z" fill="#e85d26" opacity="0.5" id="sandBot" style="animation:sandFill 2s ease-in-out infinite;"/>
+          <!-- Droppe -->
+          <circle cx="28" cy="29" r="2" fill="#f0c040" style="animation:sandDrop 2s ease-in-out infinite;"/>
+        </svg>
+      </div>
+      <!-- AI-text med pulsande kompass -->
+      <div style="display:flex;align-items:center;gap:8px;">
+        <svg viewBox="0 0 20 20" width="18" height="18" style="animation:compassSpin 3s linear infinite;flex-shrink:0;">
+          <circle cx="10" cy="10" r="9" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          <polygon points="10,2 8.5,11 10,10 11.5,11" fill="#e85d26"/>
+          <polygon points="10,18 8.5,9 10,10 11.5,9" fill="rgba(255,255,255,0.3)"/>
+          <circle cx="10" cy="10" r="2" fill="#1e2540" stroke="#e85d26" stroke-width="1"/>
+          <circle cx="10" cy="10" r="1" fill="#e85d26"/>
+        </svg>
+        <div id="aiLoadingTitle" style="
+          font-size: 15px;
+          font-weight: 700;
+          color: #fff;
+          letter-spacing: 0.3px;
+        ">AI arbetar...</div>
+      </div>
       <div id="aiLoadingSubtitle" style="
         font-size: 12px;
-        color: rgba(255,255,255,0.45);
+        color: rgba(255,255,255,0.4);
         text-align: center;
-        max-width: 220px;
+        max-width: 200px;
         line-height: 1.5;
-      ">Vänligen vänta och undvik att klicka</div>
+      ">Vänligen vänta</div>
       <!-- Pulsande dots -->
-      <div style="display: flex; gap: 8px; margin-top: 4px;">
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:dotPulse 1.2s ease-in-out infinite;"></div>
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:dotPulse 1.2s ease-in-out 0.4s infinite;"></div>
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:dotPulse 1.2s ease-in-out 0.8s infinite;"></div>
+      <div style="display:flex;gap:8px;">
+        <div style="width:7px;height:7px;border-radius:50%;background:#3eb489;animation:dotPulse 1.2s ease-in-out infinite;"></div>
+        <div style="width:7px;height:7px;border-radius:50%;background:#3eb489;animation:dotPulse 1.2s ease-in-out 0.4s infinite;"></div>
+        <div style="width:7px;height:7px;border-radius:50%;background:#3eb489;animation:dotPulse 1.2s ease-in-out 0.8s infinite;"></div>
       </div>
     </div>
   </div>
 
   <style>
     @keyframes hourglassSpin {
-      0%   { transform: rotate(0deg);   }
-      40%  { transform: rotate(0deg);   }
-      50%  { transform: rotate(180deg); }
-      90%  { transform: rotate(180deg); }
-      100% { transform: rotate(360deg); }
+      0%,40%  { transform: rotate(0deg); }
+      50%,90% { transform: rotate(180deg); }
+      100%    { transform: rotate(360deg); }
+    }
+    @keyframes sandDrain {
+      0%,40%  { opacity: 0.3; transform: scaleY(1); }
+      90%,100%{ opacity: 0;   transform: scaleY(0); }
+    }
+    @keyframes sandFill {
+      0%     { opacity: 0;   transform: scaleY(0); transform-origin: bottom; }
+      50%,100%{ opacity: 0.5; transform: scaleY(1); transform-origin: bottom; }
+    }
+    @keyframes sandDrop {
+      0%,40%  { opacity: 1; transform: translateY(0); }
+      80%     { opacity: 0; transform: translateY(6px); }
+      100%    { opacity: 0; }
+    }
+    @keyframes compassSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
     }
     @keyframes dotPulse {
       0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
@@ -7315,11 +7431,34 @@ Ge bara profiltexten, ingen förklaringtext.`;
   async function mobGenerateAndSharePDF() {
     if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
     showToast('⏳ Skapar PDF...', 'info');
+    const mainContainer = document.querySelector('.main-container');
     try {
       const { jsPDF } = window.jspdf;
       const cvEl = document.getElementById('cvDocument');
       if (!cvEl) { showToast('❌ Kunde inte hitta CV', 'error'); return; }
-      const canvas = await html2canvas(cvEl, { scale: 2, useCORS: true, allowTaint: true });
+      // Gör cvDocument synligt temporärt för html2canvas
+      if (mainContainer) {
+        mainContainer.style.visibility = 'visible';
+        mainContainer.style.position = 'absolute';
+        mainContainer.style.left = '-9999px';
+        mainContainer.style.top = '0';
+        mainContainer.style.zIndex = '-1';
+      }
+      await new Promise(r => setTimeout(r, 100));
+      const canvas = await html2canvas(cvEl, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+      // Återställ
+      if (mainContainer) {
+        mainContainer.style.visibility = 'hidden';
+        mainContainer.style.position = 'fixed';
+        mainContainer.style.left = '-9999px';
+        mainContainer.style.zIndex = '';
+      }
       const imgData = canvas.toDataURL('image/jpeg', 0.92);
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pdfW = pdf.internal.pageSize.getWidth();
@@ -7336,11 +7475,15 @@ Ge bara profiltexten, ingen förklaringtext.`;
         });
         showToast('✅ Delat!', 'success');
       } else {
-        // Fallback: spara PDF lokalt
         pdf.save(fileName);
         showToast('📄 PDF sparad!', 'success');
       }
     } catch(e) {
+      if (mainContainer) {
+        mainContainer.style.visibility = 'hidden';
+        mainContainer.style.position = 'fixed';
+        mainContainer.style.left = '-9999px';
+      }
       if (e.name !== 'AbortError') showToast('❌ Fel: ' + e.message, 'error');
     }
   }
