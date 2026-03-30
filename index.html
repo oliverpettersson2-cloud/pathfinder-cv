@@ -1682,7 +1682,7 @@
       .nav-logo { font-size: 20px; }
 
       /* Hela main-containern göms — vi visar mobil-UI istället */
-      .main-container { display: none !important; }
+      .main-container { visibility: hidden; position: fixed; left: -9999px; top: 0; pointer-events: none; }
 
       /* ── Bottom Tab Bar ─────────────────────────────── */
       #mobileTabBar {
@@ -6819,9 +6819,9 @@ Ge bara profiltexten, ingen förklaringtext.`;
           <span class="mob-toggle-label">Visa profilbild</span>
           <button class="mob-toggle mob-toggle--on" id="mobPhotoToggle" onclick="mobTogglePhoto()"></button>
         </div>
-        <input type="file" id="mobPhotoUpload" accept="image/*" capture="user" onchange="mobUploadPhoto()" style="display:none;">
+        <input type="file" id="mobPhotoUpload" accept="image/*" onchange="mobUploadPhoto()" style="display:none;">
         <button class="mob-btn-primary mob-btn-green" onclick="document.getElementById(&#39;mobPhotoUpload&#39;).click()">
-          📷 Ladda upp eller ta foto
+          🖼️ Välj foto från bilder
         </button>
         <button class="mob-btn-primary mob-btn-danger" id="mobRemovePhotoBtn" onclick="mobRemovePhoto()" style="display:none;">
           🗑️ Ta bort bild
@@ -6971,13 +6971,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
     <!-- FLIK 5: Exportera -->
     <div class="mob-panel" id="mobPanel-export">
-
-      <div class="mob-section">
-        <div class="mob-section-title">Design-mall</div>
-        <div class="mob-template-grid" id="mobTemplateGrid">
-          <!-- Fylls av JS -->
-        </div>
-      </div>
 
       <div class="mob-export-card">
         <h3>📄 Ladda ner PDF</h3>
