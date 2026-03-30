@@ -2170,8 +2170,25 @@
   </div>
 
   <nav>
-    <div class="nav-logo">
-      <img src="pathfinder-logo.svg" alt="Pathfinder — AI-CV-Builder" height="44">
+    <div class="nav-logo" style="display:flex;align-items:center;gap:10px;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" width="34" height="34">
+        <circle cx="17" cy="17" r="15" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
+        <circle cx="17" cy="17" r="10" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+        <line x1="17" y1="2" x2="17" y2="6" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <line x1="17" y1="28" x2="17" y2="32" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <line x1="2" y1="17" x2="6" y2="17" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <line x1="28" y1="17" x2="32" y2="17" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <line x1="17" y1="7" x2="17" y2="27" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"/>
+        <line x1="7" y1="17" x2="27" y2="17" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"/>
+        <polygon points="17,5 14,19 17,16 20,19" fill="#e85d26"/>
+        <polygon points="17,29 14,15 17,18 20,15" fill="rgba(255,255,255,0.2)"/>
+        <circle cx="17" cy="17" r="3" fill="#1a1a2e" stroke="#e85d26" stroke-width="1.5"/>
+        <circle cx="17" cy="17" r="1.5" fill="#e85d26"/>
+      </svg>
+      <div>
+        <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;line-height:1.1;">Path<span style="color:#f0c040;">finder</span></div>
+        <div style="font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.4);font-family:-apple-system,sans-serif;">CV &amp; Matchning med hjälp av AI</div>
+      </div>
     </div>
     <!-- STEG-INDIKATOR -->
     <div class="nav-steps" id="navSteps" role="navigation" aria-label="Steg i processen">
@@ -6931,12 +6948,23 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
     <!-- FLIK 4: Förhandsgranska -->
     <div class="mob-panel" id="mobPanel-forhandsgranska" style="background:#f0ede6;padding:16px;">
-      <div style="text-align:center;margin-bottom:12px;">
-        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;">Förhandsgranskning</span>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;display:block;margin-bottom:6px;">Design-mall</label>
+        <select id="mobTemplateSelect" onchange="mobSelectTemplateFromPreview(this.value)" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.15);background:#fff;font-size:14px;font-family:inherit;color:#1a1a2e;cursor:pointer;">
+          <option value="classic">Klassisk</option>
+          <option value="minimal">Minimal</option>
+          <option value="template-3">Modern Bla/Gron</option>
+          <option value="template-4">Modern Lila/Cyan</option>
+          <option value="template-5">Minimalistisk</option>
+          <option value="template-6">Traditionell 1</option>
+          <option value="template-7">Traditionell 2</option>
+          <option value="template-8">Modern Kort</option>
+          <option value="template-9">Tva-kolumn</option>
+          <option value="template-10">Fargskatt</option>
+        </select>
       </div>
-      <div style="overflow-x:auto;">
-        <div id="mobCvPreviewWrap" style="transform-origin:top left; width:794px;">
-          <!-- CV-dokumentet klonas hit via JS -->
+      <div id="mobPreviewContainer" style="overflow:hidden;width:100%;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+        <div id="mobCvPreviewWrap" style="transform-origin:top left;width:794px;">
         </div>
       </div>
     </div>
@@ -6967,13 +6995,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         </button>
       </div>
 
-      <div class="mob-export-card" style="border-color:rgba(62,180,137,0.2);background:rgba(62,180,137,0.05);">
-        <h3 style="color:#3eb489;">⚙️ Inställningar</h3>
-        <p>Ange din Anthropic API-nyckel för att aktivera AI-funktioner.</p>
-        <button class="mob-btn-primary mob-btn-green" onclick="toggleSettingsPanel()">
-          ⚙️ Öppna inställningar
-        </button>
-      </div>
+
 
     </div>
 
@@ -7225,19 +7247,26 @@ Ge bara profiltexten, ingen förklaringtext.`;
     if (!wrap) return;
     const cvDoc = document.getElementById('cvDocument');
     if (!cvDoc) return;
-    // Klona och visa
     wrap.innerHTML = '';
     const clone = cvDoc.cloneNode(true);
-    clone.style.borderRadius = '8px';
-    clone.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
     wrap.appendChild(clone);
-    // Skala för att passa skärmbredden
     const panelW = document.getElementById('mobPanel-forhandsgranska').offsetWidth - 32;
-    const scale  = panelW / 794;
+    const scale = panelW / 794;
     wrap.style.transform = 'scale(' + scale + ')';
     wrap.style.transformOrigin = 'top left';
     wrap.style.width = '794px';
-    wrap.parentElement.style.height = Math.round(cvDoc.scrollHeight * scale) + 'px';
+    const container = document.getElementById('mobPreviewContainer');
+    if (container) container.style.height = Math.round(cvDoc.scrollHeight * scale) + 'px';
+    // Sync mall-dropdown
+    const sel = document.getElementById('mobTemplateSelect');
+    if (sel) sel.value = cvData.template || 'classic';
+  }
+
+  function mobSelectTemplateFromPreview(val) {
+    const sel = document.getElementById('templateSelect');
+    if (sel) { sel.value = val; changeTemplate(); }
+    else { cvData.template = val; saveData(); updatePreview(); }
+    setTimeout(mobRefreshPreview, 300);
   }
 
   // ── Mall-grid i Exportera-fliken ─────────────────────
