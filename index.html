@@ -669,6 +669,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center top;
     }
 
     .cv-header-content {
@@ -6973,10 +6974,10 @@ Ge bara profiltexten, ingen förklaringtext.`;
     <div class="mob-panel" id="mobPanel-export" style="padding-bottom:40px;">
 
       <div class="mob-export-card">
-        <h3>📧 Maila mitt CV</h3>
-        <p>Genererar din PDF och öppnar din mail-app med CV:t bifogat — redo att skicka!</p>
-        <button class="mob-btn-primary mob-btn-export" onclick="mobMailPDF()" style="width:100%;">
-          📧 Maila mitt CV
+        <h3>📤 Dela mitt CV som PDF</h3>
+        <p>Skapar en PDF och öppnar delningsmenyn — välj Mail, WhatsApp, AirDrop eller annan app.</p>
+        <button class="mob-btn-primary mob-btn-export" id="mobShareBtn" style="width:100%;">
+          📤 Dela CV som PDF
         </button>
       </div>
 
@@ -7079,16 +7080,28 @@ Ge bara profiltexten, ingen förklaringtext.`;
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
-      cvData.photoData = e.target.result;
-      // Uppdatera desktop-bilden också
-      const desktopImg = document.getElementById('profilePhoto');
-      if (desktopImg) { desktopImg.src = cvData.photoData; desktopImg.style.display = 'block'; }
-      const removeBtn = document.getElementById('removePhotoBtn');
-      if (removeBtn) { removeBtn.disabled = false; removeBtn.removeAttribute('aria-disabled'); }
-      saveData();
-      updatePreview();
-      mobUpdateRemovePhotoBtn();
-      showToast('✅ Profilbild sparad!', 'success');
+      // Croppa till kvadrat automatiskt
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const size = Math.min(img.width, img.height);
+        canvas.width = 400;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d');
+        const sx = (img.width - size) / 2;
+        const sy = Math.max(0, (img.height - size) / 4); // lite uppåt för ansiktet
+        ctx.drawImage(img, sx, sy, size, size, 0, 0, 400, 400);
+        cvData.photoData = canvas.toDataURL('image/jpeg', 0.9);
+        const desktopImg = document.getElementById('profilePhoto');
+        if (desktopImg) { desktopImg.src = cvData.photoData; desktopImg.style.display = 'block'; }
+        const removeBtn = document.getElementById('removePhotoBtn');
+        if (removeBtn) { removeBtn.disabled = false; removeBtn.removeAttribute('aria-disabled'); }
+        saveData();
+        updatePreview();
+        mobUpdateRemovePhotoBtn();
+        showToast('✅ Profilbild sparad!', 'success');
+      };
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
@@ -7232,14 +7245,19 @@ Ge bara profiltexten, ingen förklaringtext.`;
     if (!cvDoc) return;
     wrap.innerHTML = '';
     const clone = cvDoc.cloneNode(true);
+    clone.style.pointerEvents = 'none';
     wrap.appendChild(clone);
     const panelW = document.getElementById('mobPanel-forhandsgranska').offsetWidth - 32;
     const scale = panelW / 794;
     wrap.style.transform = 'scale(' + scale + ')';
     wrap.style.transformOrigin = 'top left';
     wrap.style.width = '794px';
-    const container = document.getElementById('mobPreviewContainer');
-    if (container) container.style.height = Math.round(cvDoc.scrollHeight * scale) + 'px';
+    // Use setTimeout to let browser render clone before measuring height
+    setTimeout(() => {
+      const container = document.getElementById('mobPreviewContainer');
+      const cloneH = clone.offsetHeight || cvDoc.scrollHeight;
+      if (container) container.style.height = Math.round(cloneH * scale) + 'px';
+    }, 100);
     // Sync mall-dropdown
     const sel = document.getElementById('mobTemplateSelect');
     if (sel) sel.value = cvData.template || 'classic';
@@ -7294,18 +7312,13 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
   }
 
-  async function mobMailPDF() {
+  async function mobGenerateAndSharePDF() {
     if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
-    // Öppna mail direkt (måste ske synkront i click-handler)
-    const subject = encodeURIComponent('Mitt CV — ' + (cvData.name || ''));
-    const body = encodeURIComponent('Hej, bifogat hittar du mitt CV. Med vänliga hälsningar, ' + (cvData.name || ''));
-    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
-    // Generera och dela PDF via Web Share i bakgrunden
-    showToast('⏳ Skapar PDF för delning...', 'info');
+    showToast('⏳ Skapar PDF...', 'info');
     try {
       const { jsPDF } = window.jspdf;
       const cvEl = document.getElementById('cvDocument');
-      if (!cvEl) return;
+      if (!cvEl) { showToast('❌ Kunde inte hitta CV', 'error'); return; }
       const canvas = await html2canvas(cvEl, { scale: 2, useCORS: true, allowTaint: true });
       const imgData = canvas.toDataURL('image/jpeg', 0.92);
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -7313,24 +7326,30 @@ Ge bara profiltexten, ingen förklaringtext.`;
       const pdfH = (canvas.height * pdfW) / canvas.width;
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
       const blob = pdf.output('blob');
-      if (navigator.share && navigator.canShare) {
-        const file = new File([blob], (cvData.name || 'CV') + '.pdf', { type: 'application/pdf' });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: 'Mitt CV — ' + (cvData.name || ''),
-            text: 'Bifoga denna PDF i mailet!',
-            files: [file]
-          });
-          showToast('✅ PDF redo att bifoga!', 'success');
-          return;
-        }
+      const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_CV.pdf';
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Mitt CV — ' + (cvData.name || ''),
+          text: 'Här är mitt CV skapat med Pathfinder.',
+          files: [file]
+        });
+        showToast('✅ Delat!', 'success');
+      } else {
+        // Fallback: spara PDF lokalt
+        pdf.save(fileName);
+        showToast('📄 PDF sparad!', 'success');
       }
-      pdf.save((cvData.name || 'CV') + '.pdf');
-      showToast('📧 Mail öppnat + PDF sparad!', 'success');
     } catch(e) {
-      showToast('❌ Fel: ' + e.message, 'error');
+      if (e.name !== 'AbortError') showToast('❌ Fel: ' + e.message, 'error');
     }
   }
+
+  // Koppla share-knappen direkt vid laddning
+  window.addEventListener('load', () => {
+    const btn = document.getElementById('mobShareBtn');
+    if (btn) btn.addEventListener('click', mobGenerateAndSharePDF);
+  });
 
   // ── Patcha befintliga render-funktioner ──────────────
   // När desktop-listor uppdateras, uppdatera mobil-listor också
