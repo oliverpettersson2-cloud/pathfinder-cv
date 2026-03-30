@@ -6970,25 +6970,15 @@ Ge bara profiltexten, ingen förklaringtext.`;
     </div>
 
     <!-- FLIK 5: Exportera -->
-    <div class="mob-panel" id="mobPanel-export">
+    <div class="mob-panel" id="mobPanel-export" style="padding-bottom:40px;">
 
       <div class="mob-export-card">
-        <h3>📄 Ladda ner PDF</h3>
-        <p>Skapar ett professionellt CV-dokument som du kan spara på telefonen.</p>
-        <button class="mob-btn-primary mob-btn-export" onclick="generateAdvancedPDF()">
-          📄 Skapa &amp; ladda ner PDF
+        <h3>📧 Maila mitt CV</h3>
+        <p>Genererar din PDF och öppnar din mail-app med CV:t bifogat — redo att skicka!</p>
+        <button class="mob-btn-primary mob-btn-export" onclick="mobMailPDF()" style="width:100%;">
+          📧 Maila mitt CV
         </button>
       </div>
-
-      <div class="mob-export-card">
-        <h3>📤 Dela CV</h3>
-        <p>Dela ditt CV direkt via WhatsApp, e-post eller annan app.</p>
-        <button class="mob-btn-primary mob-btn-share mob-btn-primary" onclick="mobSharePDF()">
-          📤 Dela CV
-        </button>
-      </div>
-
-
 
     </div>
 
@@ -7301,6 +7291,44 @@ Ge bara profiltexten, ingen förklaringtext.`;
       // (En framtida förbättring kan fånga blob och dela direkt)
     } catch(e) {
       showToast('❌ Kunde inte dela: ' + e.message, 'error');
+    }
+  }
+
+  async function mobMailPDF() {
+    if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
+    // Öppna mail direkt (måste ske synkront i click-handler)
+    const subject = encodeURIComponent('Mitt CV — ' + (cvData.name || ''));
+    const body = encodeURIComponent('Hej, bifogat hittar du mitt CV. Med vänliga hälsningar, ' + (cvData.name || ''));
+    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+    // Generera och dela PDF via Web Share i bakgrunden
+    showToast('⏳ Skapar PDF för delning...', 'info');
+    try {
+      const { jsPDF } = window.jspdf;
+      const cvEl = document.getElementById('cvDocument');
+      if (!cvEl) return;
+      const canvas = await html2canvas(cvEl, { scale: 2, useCORS: true, allowTaint: true });
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+      const blob = pdf.output('blob');
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], (cvData.name || 'CV') + '.pdf', { type: 'application/pdf' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Mitt CV — ' + (cvData.name || ''),
+            text: 'Bifoga denna PDF i mailet!',
+            files: [file]
+          });
+          showToast('✅ PDF redo att bifoga!', 'success');
+          return;
+        }
+      }
+      pdf.save((cvData.name || 'CV') + '.pdf');
+      showToast('📧 Mail öppnat + PDF sparad!', 'success');
+    } catch(e) {
+      showToast('❌ Fel: ' + e.message, 'error');
     }
   }
 
