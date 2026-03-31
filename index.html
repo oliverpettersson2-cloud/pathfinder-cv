@@ -7432,41 +7432,75 @@ Ge bara profiltexten, ingen förklaringtext.`;
     if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
     showToast('⏳ Skapar PDF...', 'info');
     const mainContainer = document.querySelector('.main-container');
+    const cvEl = document.getElementById('cvDocument');
+    if (!cvEl) { showToast('❌ Kunde inte hitta CV', 'error'); return; }
+
+    // Spara originalstil
+    const origMainVis    = mainContainer ? mainContainer.style.cssText : '';
+    const origElWidth    = cvEl.style.width;
+    const origElMinWidth = cvEl.style.minWidth;
+    const origElPos      = cvEl.style.position;
+
     try {
       const { jsPDF } = window.jspdf;
-      const cvEl = document.getElementById('cvDocument');
-      if (!cvEl) { showToast('❌ Kunde inte hitta CV', 'error'); return; }
-      // Gör cvDocument synligt temporärt för html2canvas
+
+      // Gör main-container synlig men utanför skärm
       if (mainContainer) {
-        mainContainer.style.visibility = 'visible';
-        mainContainer.style.position = 'absolute';
-        mainContainer.style.left = '-9999px';
-        mainContainer.style.top = '0';
-        mainContainer.style.zIndex = '-1';
+        mainContainer.style.cssText = 'visibility:visible;position:fixed;left:-9999px;top:0;width:850px;z-index:-1;pointer-events:none;';
       }
-      await new Promise(r => setTimeout(r, 100));
+      // Tvinga cvDocument till A4-bredd
+      cvEl.style.width    = '794px';
+      cvEl.style.minWidth = '794px';
+      cvEl.style.position = 'relative';
+
+      // Vänta på att layouten ritas om
+      await new Promise(r => setTimeout(r, 300));
+
       const canvas = await html2canvas(cvEl, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        width: 794,
+        windowWidth: 850
       });
+
       // Återställ
-      if (mainContainer) {
-        mainContainer.style.visibility = 'hidden';
-        mainContainer.style.position = 'fixed';
-        mainContainer.style.left = '-9999px';
-        mainContainer.style.zIndex = '';
+      if (mainContainer) mainContainer.style.cssText = origMainVis;
+      cvEl.style.width    = origElWidth;
+      cvEl.style.minWidth = origElMinWidth;
+      cvEl.style.position = origElPos;
+
+      // Skapa PDF med korrekt A4-skalning
+      const pdf    = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdfW   = pdf.internal.pageSize.getWidth();   // 210mm
+      const pdfH   = pdf.internal.pageSize.getHeight();  // 297mm
+      const ratio  = canvas.width / canvas.height;
+      const imgH   = pdfW / ratio;
+
+      if (imgH <= pdfH) {
+        // Passar på en sida
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdfW, imgH);
+      } else {
+        // Fler sidor
+        let y = 0;
+        const pageImgH = pdfH * (canvas.width / pdfW);
+        while (y < canvas.height) {
+          const tmpCanvas = document.createElement('canvas');
+          tmpCanvas.width  = canvas.width;
+          tmpCanvas.height = Math.min(pageImgH, canvas.height - y);
+          tmpCanvas.getContext('2d').drawImage(canvas, 0, -y);
+          pdf.addImage(tmpCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdfW, pdfH);
+          y += pageImgH;
+          if (y < canvas.height) pdf.addPage();
+        }
       }
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-      const blob = pdf.output('blob');
+
+      const blob     = pdf.output('blob');
       const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_CV.pdf';
-      const file = new File([blob], fileName, { type: 'application/pdf' });
+      const file     = new File([blob], fileName, { type: 'application/pdf' });
+
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: 'Mitt CV — ' + (cvData.name || ''),
@@ -7479,11 +7513,11 @@ Ge bara profiltexten, ingen förklaringtext.`;
         showToast('📄 PDF sparad!', 'success');
       }
     } catch(e) {
-      if (mainContainer) {
-        mainContainer.style.visibility = 'hidden';
-        mainContainer.style.position = 'fixed';
-        mainContainer.style.left = '-9999px';
-      }
+      // Återställ vid fel
+      if (mainContainer) mainContainer.style.cssText = origMainVis;
+      cvEl.style.width    = origElWidth;
+      cvEl.style.minWidth = origElMinWidth;
+      cvEl.style.position = origElPos;
       if (e.name !== 'AbortError') showToast('❌ Fel: ' + e.message, 'error');
     }
   }
