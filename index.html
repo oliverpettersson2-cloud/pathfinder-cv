@@ -4450,6 +4450,7 @@
     }
 
     // Spara/Ladda data
+    let _saveDebounce = null;
     function saveData() {
       cvData.name = document.getElementById('name').value;
       cvData.title = document.getElementById('title').value;
@@ -4457,6 +4458,11 @@
       cvData.phone = document.getElementById('phone').value;
       cvData.summary = document.getElementById('summary').value;
       safeStorage.setItem('cvData', JSON.stringify(cvData));
+      // Auto-spara till Supabase med 3s debounce
+      if (window.authUserId) {
+        clearTimeout(_saveDebounce);
+        _saveDebounce = setTimeout(saveCVToSupabase, 3000);
+      }
     }
 
     // Uppdatera formulärfälten från cvData
@@ -6502,12 +6508,30 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     function authInit() {
+      // Kolla om magic link redirect (URL innehåller access_token)
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.replace('#', '?'));
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        const email = params.get('email') || '';
+        if (accessToken) {
+          // Hämta user info från token
+          authHandleMagicLinkRedirect(accessToken, refreshToken);
+          // Rensa URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          return;
+        }
+      }
+
       const saved = pfRead(AUTH_STORAGE_KEY);
       if (saved) {
         try {
           const user = JSON.parse(saved);
           if (user && user.email && user.loggedIn) {
-            authSetLoggedIn(user.email, false);
+            window.authUserId = user.userId || null;
+            window.authAccessToken = user.accessToken || null;
+            authSetLoggedIn(user.email, false, user.userId, user.accessToken);
             return;
           }
         } catch(e) {}
@@ -6515,6 +6539,29 @@ Ge bara profiltexten, ingen förklaringtext.`;
       // Visa auth overlay - steg 1 ar aktivt
       setNavStep(1);
       document.getElementById('authOverlay').classList.remove('hidden');
+    }
+
+    async function authHandleMagicLinkRedirect(accessToken, refreshToken) {
+      try {
+        // Hämta user från Supabase med access token
+        const resp = await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_user', accessToken })
+        });
+        const data = await resp.json();
+        const email = data.email || data.user?.email || '';
+        const userId = data.id || data.user?.id || '';
+        if (email) {
+          authSetLoggedIn(email, false, userId, accessToken);
+          document.getElementById('authOverlay').classList.add('hidden');
+          setNavStep(2);
+        } else {
+          authInit();
+        }
+      } catch(e) {
+        authInit();
+      }
     }
 
     async function authSendMagicLink() {
@@ -6532,40 +6579,31 @@ Ge bara profiltexten, ingen förklaringtext.`;
       btn.disabled = true;
       btn.innerHTML = '<span class="auth-spinner"></span>Skickar...';
 
-      // Generera 6-siffrig kod och spara i minnet
-      const code = String(Math.floor(100000 + Math.random() * 900000));
-      authCurrentEmail = email;
-      authExpectedCode = code;
-      authCodeExpiry = Date.now() + 10 * 60 * 1000; // 10 min
+      try {
+        const resp = await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'magic_link', email })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Kunde inte skicka länk');
 
-      // Simulera natverk (i produktion: POST till din backend for att skicka e-post)
-      await new Promise(r => setTimeout(r, 700));
+        authCurrentEmail = email;
 
-      // Visa koden direkt i UI (demo-lage - i produktion skickas den via e-post)
-      const demoCode = document.getElementById('authDemoCode');
-      const demoBox = document.getElementById('authDemoBox');
-      if (demoCode) demoCode.textContent = code;
-      if (demoBox) demoBox.style.display = 'block';
+        // Visa steg 2 - instruktion att kolla mailen
+        document.getElementById('authEmailDisplay').textContent = email;
+        const demoBox = document.getElementById('authDemoBox');
+        if (demoBox) demoBox.style.display = 'none';
+        document.getElementById('authStep1').classList.remove('active');
+        document.getElementById('authStep2').classList.add('active');
 
-      // Visa steg 2
-      document.getElementById('authEmailDisplay').textContent = email;
-      document.getElementById('authStep1').classList.remove('active');
-      document.getElementById('authStep2').classList.add('active');
-
-      // Fyll i koden automatiskt i rutorna
-      const digits = document.querySelectorAll('.code-digit');
-      code.split('').forEach((ch, i) => {
-        if (digits[i]) {
-          digits[i].value = ch;
-          digits[i].classList.add('filled');
-        }
-      });
-
-      // Fokusera sista rutan
-      setTimeout(() => { if (digits[5]) digits[5].focus(); }, 100);
+      } catch(e) {
+        errEl.textContent = e.message || 'Något gick fel, försök igen.';
+        errEl.classList.add('visible');
+      }
 
       btn.disabled = false;
-      btn.innerHTML = 'Skicka inloggningslank';
+      btn.innerHTML = 'Skicka inloggningslänk';
     }
 
     function codeKeydown(e, idx) {
@@ -6638,13 +6676,19 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('authOverlay').classList.remove('hidden');
     }
 
-    function authSetLoggedIn(email, isNew) {
-      // Spara session (med fallback om localStorage ar blockerat)
+    function authSetLoggedIn(email, isNew, userId, accessToken) {
+      // Spara session
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
+        userId: userId || null,
+        accessToken: accessToken || null,
         createdAt: Date.now()
       }));
+
+      // Spara userId globalt
+      window.authUserId = userId || null;
+      window.authAccessToken = accessToken || null;
 
       // Uppdatera steg-indikator
       setNavStep(2);
@@ -6654,13 +6698,54 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('authUserBadge').style.display = 'flex';
 
       const welcomeText = isNew
-        ? 'Konto skapat for ' + email + '. Valkommentill Pathfinder!'
-        : 'Du ar inloggad som ' + email;
+        ? 'Välkommen till Pathfinder, ' + email + '!'
+        : 'Du är inloggad som ' + email;
       document.getElementById('authWelcomeText').textContent = welcomeText;
 
       // Visa steg 3
       document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
       document.getElementById('authStep3').classList.add('active');
+
+      // Ladda CV från Supabase om userId finns
+      if (userId && accessToken) {
+        loadCVFromSupabase(userId, accessToken);
+      }
+    }
+
+    async function loadCVFromSupabase(userId, accessToken) {
+      try {
+        const resp = await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'load_cv', userId, accessToken })
+        });
+        const data = await resp.json();
+        if (data.cv) {
+          cvData = { ...cvData, ...data.cv };
+          saveData();
+          renderJobs(); renderEducation(); renderSkills();
+          renderLanguages(); renderLicenses(); renderCerts(); renderRefs();
+          updatePreview();
+          showToast('✅ CV laddat från ditt konto!', 'success');
+        }
+      } catch(e) {
+        console.log('Kunde inte ladda CV:', e.message);
+      }
+    }
+
+    async function saveCVToSupabase() {
+      const userId = window.authUserId;
+      const accessToken = window.authAccessToken;
+      if (!userId || !accessToken) return;
+      try {
+        await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'save_cv', userId, accessToken, cvData })
+        });
+      } catch(e) {
+        console.log('Kunde inte spara CV:', e.message);
+      }
     }
 
     function authEnterApp() {
@@ -7062,7 +7147,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         <button class="mob-btn-primary mob-btn-outline" onclick="openRefModal()">+ Lägg till referens</button>
         <button class="mob-btn-primary mob-btn-outline" style="border-color:rgba(62,180,137,0.4);color:rgba(62,180,137,0.8);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
       </div>
-      <div class="mob-fortsatt">
+      <div class="mob-fortsatt" style="margin-top:32px;">
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;mer&#39;,&#39;profil&#39;)">
           Fortsätt till Profil →
         </button>
@@ -7093,7 +7178,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
     </div>
 
     <!-- FLIK 5: Exportera -->
-    <div class="mob-panel" id="mobPanel-export" style="padding-bottom:40px;">
+    <div class="mob-panel" id="mobPanel-export" style="padding-bottom:120px;">
 
       <div class="mob-export-card">
         <h3>📤 Dela mitt CV som PDF</h3>
@@ -7436,7 +7521,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
   async function mobGenerateAndSharePDF() {
     if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
-    showToast('⏳ Skapar PDF...', 'info');
+    showAiLoader('Skapar PDF...', 'Genererar ditt CV-dokument');
     const mainContainer = document.querySelector('.main-container');
     const cvEl = document.getElementById('cvDocument');
     if (!cvEl) { showToast('❌ Kunde inte hitta CV', 'error'); return; }
@@ -7513,8 +7598,10 @@ Ge bara profiltexten, ingen förklaringtext.`;
           text: 'Här är mitt CV skapat med Pathfinder.',
           files: [file]
         });
+        hideAiLoader();
         showToast('✅ Delat!', 'success');
       } else {
+        hideAiLoader();
         pdf.save(fileName);
         showToast('📄 PDF sparad!', 'success');
       }
@@ -7524,6 +7611,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
       cvEl.style.width    = origElWidth;
       cvEl.style.minWidth = origElMinWidth;
       cvEl.style.position = origElPos;
+      hideAiLoader();
       if (e.name !== 'AbortError') showToast('❌ Fel: ' + e.message, 'error');
     }
   }
