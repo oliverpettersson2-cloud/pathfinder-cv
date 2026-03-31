@@ -2109,16 +2109,16 @@
   <div id="authOverlay" class="hidden">
     <div class="auth-card">
       <div class="auth-logo">Path<span>finder</span></div>
-      <div class="auth-tagline">AI-CV-Builder</div>
-      <div class="auth-tagline">Bygg ditt CV med AI</div>
+      <div class="auth-tagline" style="text-align:center;margin-bottom:24px;">AI-CV-Builder</div>
 
       <!-- STEG 1: E-postformular -->
-      <div id="authStep1" class="auth-step">
-        <div class="auth-title">Logga in eller skapa konto</div>
-        <div class="auth-subtitle">Ange din e-postadress sa skickar vi en inloggningslank och en 6-siffrig kod.</div>
-        <input type="email" id="authEmail" class="auth-input" placeholder="din@epost.se" autocomplete="email" inputmode="email">
-        <button class="auth-btn" id="authSendBtn" onclick="authSendMagicLink()">Skicka inloggningslank</button>
+      <div id="authStep1" class="auth-step active" style="text-align:center;">
+        <input type="email" id="authEmail" class="auth-input" placeholder="din@epost.se" autocomplete="email" inputmode="email" style="text-align:center;">
+        <button class="auth-btn" id="authSendBtn" onclick="authSendMagicLink()">Skicka inloggningslänk</button>
         <div id="authStep1Error" class="auth-error"></div>
+        <div style="margin-top:24px;font-size:13px;color:rgba(255,255,255,0.4);line-height:1.8;text-align:center;">
+          Bygg ditt CV med AI.<br>Bli matchad mot arbete &amp; utbildning!
+        </div>
       </div>
 
       <!-- STEG 2: Kod + Magic link skickad -->
