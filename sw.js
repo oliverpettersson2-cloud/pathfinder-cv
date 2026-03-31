@@ -22,8 +22,11 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Låt API-anrop alltid gå till nätverket
-  if (e.request.url.includes('/api/')) {
+  // Låt alla externa anrop gå direkt
+  if (e.request.url.includes('/api/') || 
+      e.request.url.includes('supabase.co') ||
+      e.request.url.includes('resend.') ||
+      e.request.url.includes('anthropic.com')) {
     return;
   }
   e.respondWith(
