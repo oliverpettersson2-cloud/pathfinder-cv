@@ -3,6 +3,10 @@
     "api/chat.js": {
       "memory": 512,
       "maxDuration": 30
+    },
+    "api/supabase.js": {
+      "memory": 512,
+      "maxDuration": 30
     }
   }
 }
