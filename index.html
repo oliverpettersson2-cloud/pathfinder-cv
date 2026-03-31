@@ -11,6 +11,9 @@
   <title>Pathfinder — AI-CV-Builder</title>
   <link rel="icon" type="image/svg+xml" href="pathfinder-favicon.svg">
 
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
   <!-- PDF Generation Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -6491,8 +6494,12 @@ Ge bara profiltexten, ingen förklaringtext.`;
     let authCurrentEmail = '';
     let authExpectedCode = '';
     let authCodeExpiry = 0;
-    // In-memory session fallback (fungerar nar localStorage ar blockerat)
     const _authMemory = {};
+
+    // ── Supabase klient (direkt från webbläsaren) ──────
+    const _supabaseUrl = 'https://hwrnjhfvhjegijwxnvzyb.supabase.co';
+    const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3cm5qaGZ2aGplZ2lqd3hudnp5YiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQzNDM4MDIzLCJleHAiOjIwNTkwMTQwMjN9.BAwMG1Yqyv-RaaKaWR3ijfYwz0QH8DhtbuFxo2EOwnQ';
+    const _sb = window.supabase ? window.supabase.createClient(_supabaseUrl, _supabaseKey) : null;
 
     function pfStore(key, value) {
       try { localStorage.setItem(key, value); } catch(e) {}
@@ -6580,17 +6587,15 @@ Ge bara profiltexten, ingen förklaringtext.`;
       btn.innerHTML = '<span class="auth-spinner"></span>Skickar...';
 
       try {
-        const resp = await fetch('/api/supabase', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'magic_link', email })
+        if (!_sb) throw new Error('Supabase inte laddat');
+        const origin = window.location.origin;
+        const { error } = await _sb.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: origin }
         });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || 'Kunde inte skicka länk');
+        if (error) throw new Error(error.message);
 
         authCurrentEmail = email;
-
-        // Visa steg 2 - instruktion att kolla mailen
         document.getElementById('authEmailDisplay').textContent = email;
         const demoBox = document.getElementById('authDemoBox');
         if (demoBox) demoBox.style.display = 'none';
@@ -6713,15 +6718,15 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     async function loadCVFromSupabase(userId, accessToken) {
+      if (!_sb) return;
       try {
-        const resp = await fetch('/api/supabase', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'load_cv', userId, accessToken })
-        });
-        const data = await resp.json();
-        if (data.cv) {
-          cvData = { ...cvData, ...data.cv };
+        const { data, error } = await _sb
+          .from('cv_data')
+          .select('cv_json')
+          .eq('user_id', userId)
+          .single();
+        if (data && data.cv_json) {
+          cvData = { ...cvData, ...data.cv_json };
           saveData();
           renderJobs(); renderEducation(); renderSkills();
           renderLanguages(); renderLicenses(); renderCerts(); renderRefs();
@@ -6735,17 +6740,32 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
     async function saveCVToSupabase() {
       const userId = window.authUserId;
-      const accessToken = window.authAccessToken;
-      if (!userId || !accessToken) return;
+      if (!userId || !_sb) return;
       try {
-        await fetch('/api/supabase', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'save_cv', userId, accessToken, cvData })
-        });
+        const { error } = await _sb.from('cv_data').upsert({
+          user_id: userId,
+          cv_json: cvData,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+        if (error) console.log('Spara fel:', error.message);
       } catch(e) {
         console.log('Kunde inte spara CV:', e.message);
       }
+    }
+
+    // Lyssna på Supabase auth events (magic link redirect)
+    if (_sb) {
+      _sb.auth.onAuthStateChange(async (event, session) => {
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+          const email = session.user.email;
+          const userId = session.user.id;
+          const accessToken = session.access_token;
+          window.authUserId = userId;
+          window.authAccessToken = accessToken;
+          authSetLoggedIn(email, false, userId, accessToken);
+          document.getElementById('authOverlay').classList.add('hidden');
+        }
+      });
     }
 
     function authEnterApp() {
