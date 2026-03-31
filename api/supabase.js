@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -7,99 +9,59 @@ export default async function handler(req, res) {
   const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    return res.status(500).json({ error: 'Supabase not configured', url: !!SUPABASE_URL, key: !!SUPABASE_ANON_KEY });
+    return res.status(500).json({ error: 'Missing env vars' });
   }
 
-  const body = req.body || {};
-  const { action, email, accessToken, userId, cvData } = body;
-
-  const baseHeaders = {
-    'Content-Type': 'application/json',
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-  };
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { action, email, accessToken, userId, cvData } = req.body || {};
 
   try {
-
     if (action === 'magic_link') {
       const origin = req.headers.origin || 'https://pathfinder-cv.vercel.app';
-      
-      // Testa med signInWithOtp via REST
-      const r = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
-        method: 'POST',
-        headers: baseHeaders,
-        body: JSON.stringify({
-          email: email,
-          create_user: true,
-          options: {
-            emailRedirectTo: origin
-          }
-        })
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: origin }
       });
-      
-      const text = await r.text();
-      let data = {};
-      try { data = JSON.parse(text); } catch(e) { data = { raw: text }; }
-      
-      // Logga för debugging
-      console.log('Supabase OTP response:', r.status, JSON.stringify(data));
-      
-      if (!r.ok) {
-        return res.status(r.status).json({ 
-          error: data.error_description || data.msg || data.message || text,
-          status: r.status,
-          details: data
-        });
-      }
+      if (error) return res.status(400).json({ error: error.message });
       return res.status(200).json({ success: true });
     }
 
     if (action === 'get_user') {
-      const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${accessToken}`
-        }
-      });
-      const data = await r.json();
-      return res.status(200).json(data);
+      const { data, error } = await supabase.auth.getUser(accessToken);
+      if (error) return res.status(400).json({ error: error.message });
+      return res.status(200).json(data.user);
     }
 
     if (action === 'save_cv') {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/cv_data`, {
-        method: 'POST',
-        headers: {
-          ...baseHeaders,
-          'Authorization': `Bearer ${accessToken}`,
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          cv_json: cvData,
-          updated_at: new Date().toISOString()
-        })
+      const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: `Bearer ${accessToken}` } }
       });
+      const { error } = await userClient.from('cv_data').upsert({
+        user_id: userId,
+        cv_json: cvData,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+      if (error) return res.status(400).json({ error: error.message });
       return res.status(200).json({ success: true });
     }
 
     if (action === 'load_cv') {
-      const r = await fetch(
-        `${SUPABASE_URL}/rest/v1/cv_data?user_id=eq.${userId}&select=cv_json&limit=1`,
-        {
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${accessToken}`
-          }
-        }
-      );
-      const data = await r.json();
-      return res.status(200).json({ cv: data[0]?.cv_json || null });
+      const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: `Bearer ${accessToken}` } }
+      });
+      const { data, error } = await userClient
+        .from('cv_data')
+        .select('cv_json')
+        .eq('user_id', userId)
+        .single();
+      if (error && error.code !== 'PGRST116') return res.status(400).json({ error: error.message });
+      return res.status(200).json({ cv: data?.cv_json || null });
     }
 
     return res.status(400).json({ error: 'Unknown action: ' + action });
 
   } catch (err) {
-    console.error('Supabase handler error:', err);
-    return res.status(500).json({ error: err.message, stack: err.stack });
+    console.error('Error:', err.message);
+    return res.status(500).json({ error: err.message });
   }
 }
