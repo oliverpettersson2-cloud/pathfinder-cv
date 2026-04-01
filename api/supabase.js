@@ -12,9 +12,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing env vars' });
   }
 
-  const { action, email, accessToken, userId, cvData } = req.body || {};
+  const { action, email, token, accessToken, userId, cvData } = req.body || {};
 
-  // Hjälpfunktion för HTTPS-anrop
   function makeRequest(url, options, body) {
     return new Promise((resolve, reject) => {
       const urlObj = new URL(url);
@@ -25,7 +24,6 @@ export default async function handler(req, res) {
         headers: options.headers || {},
         timeout: 10000
       };
-
       const req = https.request(reqOptions, (response) => {
         let data = '';
         response.on('data', chunk => data += chunk);
@@ -37,10 +35,8 @@ export default async function handler(req, res) {
           }
         });
       });
-
       req.on('error', reject);
       req.on('timeout', () => { req.destroy(); reject(new Error('Request timeout')); });
-
       if (body) req.write(typeof body === 'string' ? body : JSON.stringify(body));
       req.end();
     });
@@ -53,20 +49,45 @@ export default async function handler(req, res) {
   };
 
   try {
-    if (action === 'magic_link') {
+
+    // ── Skicka OTP-kod via mail ──────────────────────────
+    if (action === 'send_otp') {
       const origin = req.headers.origin || 'https://pathfinder-cv.vercel.app';
       const result = await makeRequest(
         `${SUPABASE_URL}/auth/v1/otp`,
         { method: 'POST', headers: baseHeaders },
-        { email, options: { emailRedirectTo: origin } }
+        { email, options: { shouldCreateUser: true } }
       );
-      console.log('OTP result:', result.status, JSON.stringify(result.data));
+      console.log('OTP send result:', result.status, JSON.stringify(result.data));
       if (result.status >= 400) {
-        return res.status(result.status).json({ error: result.data.error_description || result.data.msg || JSON.stringify(result.data) });
+        return res.status(result.status).json({
+          error: result.data.error_description || result.data.msg || result.data.message || JSON.stringify(result.data)
+        });
       }
       return res.status(200).json({ success: true });
     }
 
+    // ── Verifiera OTP-kod ────────────────────────────────
+    if (action === 'verify_otp') {
+      const result = await makeRequest(
+        `${SUPABASE_URL}/auth/v1/verify`,
+        { method: 'POST', headers: baseHeaders },
+        { email, token, type: 'email' }
+      );
+      console.log('OTP verify result:', result.status, JSON.stringify(result.data));
+      if (result.status >= 400) {
+        return res.status(result.status).json({
+          error: result.data.error_description || result.data.msg || result.data.message || 'Felaktig eller utgången kod'
+        });
+      }
+      // Returnera access_token och user
+      return res.status(200).json({
+        access_token: result.data.access_token,
+        user: result.data.user
+      });
+    }
+
+    // ── Hämta användare ──────────────────────────────────
     if (action === 'get_user') {
       const result = await makeRequest(
         `${SUPABASE_URL}/auth/v1/user`,
@@ -75,19 +96,31 @@ export default async function handler(req, res) {
       return res.status(200).json(result.data);
     }
 
+    // ── Spara CV ─────────────────────────────────────────
     if (action === 'save_cv') {
       const result = await makeRequest(
         `${SUPABASE_URL}/rest/v1/cv_data`,
-        { method: 'POST', headers: { ...baseHeaders, 'Authorization': `Bearer ${accessToken}`, 'Prefer': 'resolution=merge-duplicates' } },
+        {
+          method: 'POST',
+          headers: {
+            ...baseHeaders,
+            'Authorization': `Bearer ${accessToken}`,
+            'Prefer': 'resolution=merge-duplicates'
+          }
+        },
         { user_id: userId, cv_json: cvData, updated_at: new Date().toISOString() }
       );
       return res.status(200).json({ success: true });
     }
 
+    // ── Ladda CV ─────────────────────────────────────────
     if (action === 'load_cv') {
       const result = await makeRequest(
         `${SUPABASE_URL}/rest/v1/cv_data?user_id=eq.${userId}&select=cv_json&limit=1`,
-        { method: 'GET', headers: { ...baseHeaders, 'Authorization': `Bearer ${accessToken}` } }
+        {
+          method: 'GET',
+          headers: { ...baseHeaders, 'Authorization': `Bearer ${accessToken}` }
+        }
       );
       const data = Array.isArray(result.data) ? result.data : [];
       return res.status(200).json({ cv: data[0]?.cv_json || null });
