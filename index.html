@@ -2069,10 +2069,12 @@
         flex: 0 0 52px;
       }
       /* ── AI-SYV chatt ───────────────────────────────── */
+      #mobPanel-aisyv.mob-panel--active {
+        display: flex !important;
+      }
       #mobPanel-aisyv {
         padding: 0 !important;
         height: calc(100vh - 56px - 64px);
-        display: flex;
         flex-direction: column;
       }
       .syv-bubble {
@@ -7498,7 +7500,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
     </div>
 
     <!-- FLIK: AI-SYV -->
-    <div class="mob-panel" id="mobPanel-aisyv" style="padding:0; display:flex; flex-direction:column; height:100%;">
+    <div class="mob-panel" id="mobPanel-aisyv" style="padding:0; flex-direction:column; height:100%;">
 
       <!-- Header -->
       <div style="padding:16px 16px 12px; border-bottom:1px solid rgba(255,255,255,0.07); background:#1e2740;">
