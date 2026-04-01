@@ -862,6 +862,21 @@
       color: #fff;
     }
 
+    .toast.info {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    .toast.error {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .toast.ai {
+      background: var(--ai);
+      color: #fff;
+    }
+
     .toggle-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -6079,6 +6094,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     function showToast(msg, type = 'success') {
+      // Ta bort eventuella gamla toasts
+      document.querySelectorAll('.toast').forEach(t => t.remove());
       const toast = document.createElement('div');
       toast.className = `toast ${type} active`;
       toast.textContent = msg;
