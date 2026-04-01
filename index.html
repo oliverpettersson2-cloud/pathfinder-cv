@@ -375,32 +375,131 @@
     }
 
     /* ===== INSTÄLLNINGAR / KUGGHJUL ===== */
-    /* ===== SLUT INSTÄLLNINGAR (borttaget) ===== */
-
-    .nav-logout-btn {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 7px;
+    .nav-settings-btn {
+      background: none;
+      border: none;
       color: rgba(255,255,255,0.7);
       cursor: pointer;
-      padding: 5px 10px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      transition: background 0.2s, color 0.2s;
-      white-space: nowrap;
+      padding: 8px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s, background 0.2s, transform 0.3s;
     }
-    .nav-logout-btn:hover { background: rgba(255,80,80,0.2); color: #ff8080; border-color: rgba(255,80,80,0.3); }
+    .nav-settings-btn:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+      transform: rotate(45deg);
+    }
+    .nav-settings-btn:focus-visible { outline: 3px solid var(--accent2); }
 
-    .nav-email-label {
-      font-size: 11px;
-      color: rgba(255,255,255,0.45);
-      font-weight: 500;
-      max-width: 140px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .settings-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background: transparent;
     }
+    .settings-overlay.active { display: block; }
+
+    .settings-panel {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      width: 320px;
+      background: #1e2540;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+      z-index: 200;
+      opacity: 0;
+      transform: translateY(-10px) scale(0.97);
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .settings-panel.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+    .settings-panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .settings-panel__close {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .settings-panel__close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    .settings-panel__body { padding: 16px 20px 20px; }
+    .settings-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 8px;
+    }
+    .settings-api-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .settings-api-input {
+      flex: 1;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .settings-api-input:focus { border-color: var(--accent2); }
+    .settings-api-input::placeholder { color: rgba(255,255,255,0.25); font-family: inherit; }
+    .settings-api-toggle {
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      padding: 9px 10px;
+      display: flex;
+      align-items: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .settings-api-toggle:hover { background: rgba(255,255,255,0.14); color: #fff; }
+    .settings-hint {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+    .settings-status {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      min-height: 18px;
+    }
+    .settings-status.ok { color: var(--accent2); }
+    .settings-status.err { color: #ff6b6b; }
+    /* ===== SLUT INSTÄLLNINGAR ===== */
 
     /* ===== PROFILBILDSHANTERING: TVÅ KNAPPAR ===== */
     .photo-action-container {
@@ -1949,6 +2048,51 @@
         color: #3eb489;
       }
 
+      /* ── CV-undermeny ───────────────────────────────── */
+      #mobCVSubMenu {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 64px;
+        background: #252f47;
+        border-top: 2px solid #3eb489;
+        z-index: 501;
+        display: flex;
+        align-items: stretch;
+        box-shadow: 0 -4px 20px rgba(62,180,137,0.2);
+        animation: mobFadeIn 0.15s ease;
+      }
+      .mob-cv-back {
+        background: rgba(62,180,137,0.12) !important;
+        color: #3eb489 !important;
+        border-right: 1px solid rgba(255,255,255,0.08);
+        min-width: 52px;
+        flex: 0 0 52px;
+      }
+      /* ── Under arbete-panel ─────────────────────────── */
+      .mob-wip-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 40px 24px;
+        text-align: center;
+        color: rgba(255,255,255,0.5);
+      }
+      .mob-wip-panel__icon { font-size: 48px; }
+      .mob-wip-panel__title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.8); }
+      .mob-wip-panel__text { font-size: 14px; line-height: 1.5; }
+      .mob-wip-badge {
+        background: rgba(232,93,38,0.15);
+        color: #e85d26;
+        border: 1px solid rgba(232,93,38,0.3);
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
       /* Progress-bar längst upp */
       #mobProgressBar {
         position: fixed;
@@ -2137,14 +2281,40 @@
       </div>
     </div>
 
-    <!-- HÖGER SIDA: email + logga ut -->
-    <div id="authUserBadge" style="display:flex; align-items:center; gap:8px;">
-      <span id="authUserEmail" class="nav-email-label">oliver.pettersson2@gmail.com</span>
-      <button class="nav-logout-btn" onclick="authShowUserMenu()" aria-label="Logga ut">Logga ut</button>
+    <!-- HÖGER SIDA: kugghjul + användare -->
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="nav-settings-btn" onclick="toggleSettingsPanel()" aria-label="Inställningar" title="Inställningar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+      <button id="authUserBadge" class="auth-user-badge" onclick="authShowUserMenu()" style="display: flex;" aria-label="Inloggad anvandare">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span id="authUserEmail" style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">oliver.pettersson2@gmail.com</span>
+      </button>
     </div>
   </nav>
 
-
+  <!-- INSTÄLLNINGSPANEL: API-nyckel -->
+  <div id="settingsPanel" class="settings-panel" role="dialog" aria-label="Inställningar" aria-hidden="true">
+    <div class="settings-panel__header">
+      <span>⚙️ Inställningar</span>
+      <button class="settings-panel__close" onclick="toggleSettingsPanel()" aria-label="Stäng">✕</button>
+    </div>
+    <div class="settings-panel__body">
+      <label class="settings-label" for="apiKeyInput">Anthropic API-nyckel</label>
+      <div class="settings-api-row">
+        <input type="password" id="apiKeyInput" class="settings-api-input" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" oninput="saveApiKey()" aria-label="API-nyckel">
+        <button class="settings-api-toggle" onclick="toggleApiKeyVisibility()" title="Visa/dölj nyckel" aria-label="Visa eller dölj API-nyckel">
+          <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+      </div>
+      <p class="settings-hint">Nyckeln sparas lokalt i din webbläsare och används för AI-funktioner.</p>
+      <div id="apiKeyStatus" class="settings-status"></div>
+    </div>
+  </div>
+  <div id="settingsOverlay" class="settings-overlay" onclick="toggleSettingsPanel()"></div>
 
   <div class="main-container">
     <div class="sidebar">
@@ -6654,17 +6824,20 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     function authShowUserMenu() {
-      if (!confirm('Vill du logga ut?')) return;
-      pfRemove(AUTH_STORAGE_KEY);
-      window.authUserId = null;
-      window.authAccessToken = null;
-      document.getElementById('authUserBadge').style.display = 'none';
-      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-      document.getElementById('authStep1').classList.add('active');
-      document.getElementById('authEmail').value = '';
-      authCurrentEmail = '';
-      setNavStep(1);
-      document.getElementById('authOverlay').classList.remove('hidden');
+      const saved = pfRead(AUTH_STORAGE_KEY);
+      const email = saved ? JSON.parse(saved).email : '';
+      if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
+        pfRemove(AUTH_STORAGE_KEY);
+        window.authUserId = null;
+        window.authAccessToken = null;
+        document.getElementById('authUserBadge').style.display = 'none';
+        document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+        document.getElementById('authStep1').classList.add('active');
+        document.getElementById('authEmail').value = '';
+        authCurrentEmail = '';
+        setNavStep(1);
+        document.getElementById('authOverlay').classList.remove('hidden');
+      }
     }
     // ===== SLUT AUTENTISERING =====
 
@@ -6864,39 +7037,70 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
   <!-- Tab bar längst ner -->
   <div id="mobProgressBar" style="width:14%;"></div>
+
+  <!-- Huvud-navbar (5 knappar) -->
   <div id="mobileTabBar">
-    <button class="mob-tab mob-tab--active" id="tabBtn-info" onclick="mobSwitchTab(&#39;info&#39;)">
+    <!-- 1. Hej -->
+    <button class="mob-tab" id="tabBtn-hej" onclick="mobSwitchTab('hej')">
+      <span class="mob-tab__icon">👋</span>
+      <span>Hej</span>
+    </button>
+    <!-- 2. CV (öppnar undermeny) -->
+    <button class="mob-tab mob-tab--active" id="tabBtn-cv-menu" onclick="mobToggleCVMenu()">
+      <span class="mob-tab__icon">📄</span>
+      <span>CV</span>
+    </button>
+    <!-- 3. Matcha arbete -->
+    <button class="mob-tab" id="tabBtn-matcha" onclick="mobSwitchTab('matcha')">
+      <span class="mob-tab__icon">🎯</span>
+      <span>Matcha</span>
+    </button>
+    <!-- 4. AI-SYV -->
+    <button class="mob-tab" id="tabBtn-aisyv" onclick="mobSwitchTab('aisyv')">
+      <span class="mob-tab__icon">🤖</span>
+      <span>AI-SYV</span>
+    </button>
+    <!-- 5. Exportera -->
+    <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab('export')">
+      <span class="mob-tab__icon">📤</span>
+      <span>Exportera</span>
+    </button>
+  </div>
+
+  <!-- CV-undermeny (ersätter navbar när aktiv) -->
+  <div id="mobCVSubMenu" style="display:none;">
+    <button class="mob-tab mob-cv-back" onclick="mobCloseCVMenu()">
+      <span class="mob-tab__icon">←</span>
+      <span>Tillbaka</span>
+    </button>
+    <button class="mob-tab" id="tabBtn-info" onclick="mobSwitchSubTab('info')">
       <span class="mob-tab__icon">👤</span>
       <span>Info</span>
     </button>
-    <button class="mob-tab" id="tabBtn-jobb" onclick="mobSwitchTab(&#39;jobb&#39;)">
+    <button class="mob-tab" id="tabBtn-jobb" onclick="mobSwitchSubTab('jobb')">
       <span class="mob-tab__icon">💼</span>
       <span>Jobb</span>
       <span class="mob-tab__done">✓</span>
     </button>
-    <button class="mob-tab" id="tabBtn-utbildning" onclick="mobSwitchTab(&#39;utbildning&#39;)">
+    <button class="mob-tab" id="tabBtn-utbildning" onclick="mobSwitchSubTab('utbildning')">
       <span class="mob-tab__icon">🎓</span>
-      <span>Utbildning</span>
+      <span>Utb.</span>
       <span class="mob-tab__done">✓</span>
     </button>
-    <button class="mob-tab" id="tabBtn-mer" onclick="mobSwitchTab(&#39;mer&#39;)">
+    <button class="mob-tab" id="tabBtn-mer" onclick="mobSwitchSubTab('mer')">
       <span class="mob-tab__icon">📋</span>
       <span>Mer</span>
       <span class="mob-tab__done">✓</span>
     </button>
-    <button class="mob-tab" id="tabBtn-profil" onclick="mobSwitchTab(&#39;profil&#39;)">
+    <button class="mob-tab" id="tabBtn-profil" onclick="mobSwitchSubTab('profil')">
       <span class="mob-tab__icon">✍️</span>
       <span>Profil</span>
       <span class="mob-tab__done">✓</span>
     </button>
-    <button class="mob-tab" id="tabBtn-forhandsgranska" onclick="mobSwitchTab(&#39;forhandsgranska&#39;)">
+    <button class="mob-tab" id="tabBtn-forhandsgranska" onclick="mobSwitchSubTab('forhandsgranska')">
       <span class="mob-tab__icon">👁️</span>
-      <span>CV</span>
+      <span>Visa</span>
       <span class="mob-tab__done">✓</span>
-    </button>
-    <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
-      <span class="mob-tab__icon">📤</span>
-      <span>Exportera</span>
     </button>
   </div>
 
@@ -7073,14 +7277,96 @@ Ge bara profiltexten, ingen förklaringtext.`;
         </button>
       </div>
 
-      <div class="mob-export-card" style="margin-top:12px;">
-        <h3>⬇️ Ladda ner PDF</h3>
-        <p>Sparar PDF-filen direkt till din enhet.</p>
-        <button class="mob-btn-primary mob-btn-export" id="mobDownloadBtn" style="width:100%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-          ⬇️ Ladda ner PDF
-        </button>
-      </div>
+    </div>
 
+    <!-- FLIK: Hej -->
+    <div class="mob-panel" id="mobPanel-hej">
+      <div style="padding: 8px 0 24px;">
+
+        <!-- Hero -->
+        <div style="text-align:center; padding: 32px 16px 24px;">
+          <div style="font-size: 56px; margin-bottom: 12px; filter: drop-shadow(0 4px 12px rgba(62,180,137,0.4));">🧭</div>
+          <div style="font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px;">Välkommen till Pathfinder</div>
+          <div style="font-size: 14px; color: rgba(255,255,255,0.5); font-style: italic;">Ditt CV. På 5 minuter. Gratis.</div>
+        </div>
+
+        <!-- Tre steg -->
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 4px 24px;">
+
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px; display: flex; align-items: flex-start; gap: 14px;">
+            <div style="font-size: 28px; flex-shrink: 0; margin-top: 2px;">✍️</div>
+            <div>
+              <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">Du fyller i, AI fixar resten</div>
+              <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">Skriv in din info — namn, jobb, utbildning. AI skriver professionella arbetsbeskrivningar åt dig automatiskt.</div>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px; display: flex; align-items: flex-start; gap: 14px;">
+            <div style="font-size: 28px; flex-shrink: 0; margin-top: 2px;">🎨</div>
+            <div>
+              <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">Välj ett snyggt CV-tema</div>
+              <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">Tio professionella mallar att välja mellan. Klassiskt, modernt, minimalistiskt — du bestämmer stilen.</div>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px; display: flex; align-items: flex-start; gap: 14px;">
+            <div style="font-size: 28px; flex-shrink: 0; margin-top: 2px;">📤</div>
+            <div>
+              <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">Exportera och dela direkt</div>
+              <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">Skicka ditt CV via Mail, WhatsApp eller AirDrop — direkt från mobilen. Klart att skicka till arbetsgivare.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Separator -->
+        <div style="height: 1px; background: rgba(255,255,255,0.07); margin: 0 0 24px;"></div>
+
+        <!-- Varför Pathfinder -->
+        <div style="padding: 0 4px 24px;">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 14px;">Varför Pathfinder?</div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.6);">
+              <span style="color: #3eb489; font-size: 16px;">✓</span> Ingen inloggning krävs — kom igång direkt
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.6);">
+              <span style="color: #3eb489; font-size: 16px;">✓</span> Byggt för mobilen — fungerar utan dator
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.6);">
+              <span style="color: #3eb489; font-size: 16px;">✓</span> AI anpassad för svenska arbetsmarknaden
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.6);">
+              <span style="color: #3eb489; font-size: 16px;">✓</span> Dina uppgifter sparas lokalt — ingen server
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA-knapp -->
+        <button onclick="mobToggleCVMenu()" style="width:100%; padding: 18px; background: linear-gradient(135deg, #3eb489 0%, #2d9068 100%); color: #fff; font-size: 16px; font-weight: 800; border: none; border-radius: 16px; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 6px 24px rgba(62,180,137,0.35);">
+          Skapa mitt CV nu →
+        </button>
+
+      </div>
+    </div>
+
+    <!-- FLIK: Matcha arbete -->
+    <div class="mob-panel" id="mobPanel-matcha">
+      <div class="mob-wip-panel">
+        <div class="mob-wip-panel__icon">🎯</div>
+        <div class="mob-wip-panel__title">Matcha arbete</div>
+        <div class="mob-wip-panel__text">AI-driven jobbmatchning baserat på ditt CV och dina kompetenser. Kommer snart!</div>
+        <div class="mob-wip-badge">Under arbete</div>
+      </div>
+    </div>
+
+    <!-- FLIK: AI-SYV -->
+    <div class="mob-panel" id="mobPanel-aisyv">
+      <div class="mob-wip-panel">
+        <div class="mob-wip-panel__icon">🤖</div>
+        <div class="mob-wip-panel__title">AI-SYV</div>
+        <div class="mob-wip-panel__text">Din personliga studie- och yrkesvägledare driven av AI. Få råd, vägledning och karriärstöd dygnet runt.</div>
+        <div class="mob-wip-badge">Under arbete</div>
+      </div>
     </div>
 
   </div>
@@ -7107,33 +7393,72 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
   function isMobile() { return window.innerWidth <= 768; }
 
-  // ── Flik-navigation ──────────────────────────────────
-  function mobSwitchTab(tab) {
+  // ── CV-undermeny ─────────────────────────────────────
+  function mobToggleCVMenu() {
     if (!isMobile()) return;
+    const subMenu = document.getElementById('mobCVSubMenu');
+    const mainBar = document.getElementById('mobileTabBar');
+    subMenu.style.display = 'flex';
+    mainBar.style.display = 'none';
+    // Aktivera info som default om ingen sub-tab är aktiv
+    const anyActive = document.querySelector('#mobCVSubMenu .mob-tab--active');
+    if (!anyActive) mobSwitchSubTab('info');
+  }
 
-    // Kontrollera att fliken är upplåst
+  function mobCloseCVMenu() {
+    const subMenu = document.getElementById('mobCVSubMenu');
+    const mainBar = document.getElementById('mobileTabBar');
+    subMenu.style.display = 'none';
+    mainBar.style.display = 'flex';
+    // Markera CV-knappen som aktiv i huvud-navbar
+    document.querySelectorAll('#mobileTabBar .mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
+    const cvBtn = document.getElementById('tabBtn-cv-menu');
+    if (cvBtn) cvBtn.classList.add('mob-tab--active');
+  }
+
+  function mobSwitchSubTab(tab) {
+    if (!isMobile()) return;
     const btn = document.getElementById('tabBtn-' + tab);
     if (btn && btn.classList.contains('mob-tab--locked')) return;
 
     // Dölj alla paneler
     document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('mob-panel--active'));
-    document.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
+    // Avmarkera alla sub-knappar
+    document.querySelectorAll('#mobCVSubMenu .mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
 
     const panel = document.getElementById('mobPanel-' + tab);
     if (panel) panel.classList.add('mob-panel--active');
-    if (btn)   btn.classList.add('mob-tab--active');
+    if (btn) btn.classList.add('mob-tab--active');
 
-    // Uppdatera vid flikbyte
     if (tab === 'forhandsgranska') mobRefreshPreview();
-    if (tab === 'export') mobBuildTemplateGrid();
     if (tab === 'utbildning') mobRenderEdu();
     if (tab === 'profil') {
       const el = document.getElementById('mob-summary');
       if (el) el.value = cvData.summary || '';
     }
-
-    // Markera besökt → lås upp nästa flik (sparas i localStorage)
     mobMarkVisited(tab);
+  }
+
+  // ── Flik-navigation ──────────────────────────────────
+  function mobSwitchTab(tab) {
+    if (!isMobile()) return;
+
+    // Stäng CV-undermenyn om öppen
+    const subMenu = document.getElementById('mobCVSubMenu');
+    const mainBar = document.getElementById('mobileTabBar');
+    if (subMenu) subMenu.style.display = 'none';
+    if (mainBar) mainBar.style.display = 'flex';
+
+    // Dölj alla paneler
+    document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('mob-panel--active'));
+    document.querySelectorAll('#mobileTabBar .mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
+
+    const panel = document.getElementById('mobPanel-' + tab);
+    if (panel) panel.classList.add('mob-panel--active');
+    const btn = document.getElementById('tabBtn-' + tab);
+    if (btn) btn.classList.add('mob-tab--active');
+
+    if (tab === 'export') mobBuildTemplateGrid();
   }
 
   // ── Synka mobil-fält → cvData + desktop-fält ─────────
@@ -7476,17 +7801,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
   window.addEventListener('load', () => {
     const btn = document.getElementById('mobShareBtn');
     if (btn) btn.addEventListener('click', mobGenerateAndSharePDF);
-
-    const dlBtn = document.getElementById('mobDownloadBtn');
-    if (dlBtn) dlBtn.addEventListener('click', async () => {
-      if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
-      showToast('⏳ Skapar PDF...', 'info');
-      try {
-        await generateAdvancedPDF();
-      } catch(e) {
-        showToast('❌ Fel: ' + e.message, 'error');
-      }
-    });
   });
 
   // ── Patcha befintliga render-funktioner ──────────────
@@ -7541,6 +7855,10 @@ Ge bara profiltexten, ingen förklaringtext.`;
       mobCheckUnlock();        // Ladda sparad upplåsningsstatus
       mobRestoreDoneBadges();  // Återställ ✓-badges
       mobCheckInfoDone();      // Aktivera fortsätt-knapp om data finns
+      // Starta med Hej-panelen via huvud-navbar
+      if (isMobile()) {
+        mobSwitchTab('hej');
+      }
     }, 300);
     mobBuildTemplateGrid();
   });
@@ -7632,8 +7950,18 @@ Ge bara profiltexten, ingen förklaringtext.`;
   // ── Fortsätt-knapp logik ─────────────────────────────
   function mobFortsatt(fromTab, toTab) {
     mobMarkVisited(fromTab);
-    mobSwitchTab(toTab);
-    // Scrolla till toppen
+    // CV-sub-tabs navigeras via undermenyn
+    const cvSubTabs = ['info','jobb','utbildning','mer','profil','forhandsgranska'];
+    if (cvSubTabs.includes(toTab)) {
+      // Se till att undermenyn är öppen
+      const subMenu = document.getElementById('mobCVSubMenu');
+      const mainBar = document.getElementById('mobileTabBar');
+      if (subMenu) subMenu.style.display = 'flex';
+      if (mainBar) mainBar.style.display = 'none';
+      mobSwitchSubTab(toTab);
+    } else {
+      mobSwitchTab(toTab);
+    }
     const content = document.getElementById('mobileContent');
     if (content) content.scrollTop = 0;
   }
