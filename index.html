@@ -2,17 +2,8 @@
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#1a1a2e">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Pathfinder">
-  <link rel="apple-touch-icon" href="/icon-192.png">
   <title>Pathfinder — AI-CV-Builder</title>
   <link rel="icon" type="image/svg+xml" href="pathfinder-favicon.svg">
-
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
   <!-- PDF Generation Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -2112,16 +2103,16 @@
   <div id="authOverlay" class="hidden">
     <div class="auth-card">
       <div class="auth-logo">Path<span>finder</span></div>
-      <div class="auth-tagline" style="text-align:center;margin-bottom:24px;">AI-CV-Builder</div>
+      <div class="auth-tagline">AI-CV-Builder</div>
+      <div class="auth-tagline">Bygg ditt CV med AI</div>
 
       <!-- STEG 1: E-postformular -->
-      <div id="authStep1" class="auth-step active" style="text-align:center;">
-        <input type="email" id="authEmail" class="auth-input" placeholder="din@epost.se" autocomplete="email" inputmode="email" style="text-align:center;">
-        <button class="auth-btn" id="authSendBtn" onclick="authSendMagicLink()">Skicka inloggningslänk</button>
+      <div id="authStep1" class="auth-step">
+        <div class="auth-title">Logga in eller skapa konto</div>
+        <div class="auth-subtitle">Ange din e-postadress sa skickar vi en inloggningslank och en 6-siffrig kod.</div>
+        <input type="email" id="authEmail" class="auth-input" placeholder="din@epost.se" autocomplete="email" inputmode="email">
+        <button class="auth-btn" id="authSendBtn" onclick="authSendMagicLink()">Skicka inloggningslank</button>
         <div id="authStep1Error" class="auth-error"></div>
-        <div style="margin-top:24px;font-size:13px;color:rgba(255,255,255,0.4);line-height:1.8;text-align:center;">
-          Bygg ditt CV med AI.<br>Bli matchad mot arbete &amp; utbildning!
-        </div>
       </div>
 
       <!-- STEG 2: Kod + Magic link skickad -->
@@ -2154,7 +2145,7 @@
       </div>
 
       <!-- STEG 3: Inloggad -->
-      <div id="authStep3" class="auth-step">
+      <div id="authStep3" class="auth-step active">
         <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
         <div class="auth-subtitle" id="authWelcomeText">Du ar inloggad som oliver.pettersson2@gmail.com</div>
@@ -6489,17 +6480,10 @@ Ge bara profiltexten, ingen förklaringtext.`;
       }
     }
     // ===== SLUT STEG-INDIKATOR =====
-    // ===== AUTENTISERING: MAGIC LINK + KOD =====
+    // ===== AUTENTISERING: MAGIC LINK VIA /api/supabase =====
     const AUTH_STORAGE_KEY = 'pathfinder_auth';
     let authCurrentEmail = '';
-    let authExpectedCode = '';
-    let authCodeExpiry = 0;
     const _authMemory = {};
-
-    // ── Supabase klient (direkt från webbläsaren) ──────
-    const _supabaseUrl = 'https://knvqgczdvbzbtxtcpchy.supabase.co';
-    const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3cm5qaGZ2aGplZ2lqd3hudnp5YiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQzNDM4MDIzLCJleHAiOjIwNTkwMTQwMjN9.BAwMG1Yqyv-RaaKaWR3ijfYwz0QH8DhtbuFxo2EOwnQ';
-    const _sb = window.supabase ? window.supabase.createClient(_supabaseUrl, _supabaseKey) : null;
 
     function pfStore(key, value) {
       try { localStorage.setItem(key, value); } catch(e) {}
@@ -6520,12 +6504,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
       if (hash && hash.includes('access_token')) {
         const params = new URLSearchParams(hash.replace('#', '?'));
         const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        const email = params.get('email') || '';
         if (accessToken) {
-          // Hämta user info från token
-          authHandleMagicLinkRedirect(accessToken, refreshToken);
-          // Rensa URL
+          authHandleMagicLinkRedirect(accessToken);
           window.history.replaceState({}, document.title, window.location.pathname);
           return;
         }
@@ -6543,14 +6523,12 @@ Ge bara profiltexten, ingen förklaringtext.`;
           }
         } catch(e) {}
       }
-      // Visa auth overlay - steg 1 ar aktivt
       setNavStep(1);
       document.getElementById('authOverlay').classList.remove('hidden');
     }
 
-    async function authHandleMagicLinkRedirect(accessToken, refreshToken) {
+    async function authHandleMagicLinkRedirect(accessToken) {
       try {
-        // Hämta user från Supabase med access token
         const resp = await fetch('/api/supabase', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -6564,11 +6542,16 @@ Ge bara profiltexten, ingen förklaringtext.`;
           document.getElementById('authOverlay').classList.add('hidden');
           setNavStep(2);
         } else {
-          authInit();
+          authInitFallback();
         }
       } catch(e) {
-        authInit();
+        authInitFallback();
       }
+    }
+
+    function authInitFallback() {
+      setNavStep(1);
+      document.getElementById('authOverlay').classList.remove('hidden');
     }
 
     async function authSendMagicLink() {
@@ -6587,13 +6570,13 @@ Ge bara profiltexten, ingen förklaringtext.`;
       btn.innerHTML = '<span class="auth-spinner"></span>Skickar...';
 
       try {
-        if (!_sb) throw new Error('Supabase inte laddat');
-        const origin = window.location.origin;
-        const { error } = await _sb.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: origin }
+        const resp = await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'magic_link', email })
         });
-        if (error) throw new Error(error.message);
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Något gick fel');
 
         authCurrentEmail = email;
         document.getElementById('authEmailDisplay').textContent = email;
@@ -6627,7 +6610,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
       if (val) {
         e.target.classList.add('filled');
         if (idx < 5) digits[idx + 1].focus();
-        // Auto-verify nar alla 6 siffror fyllts i
         const full = Array.from(digits).map(d => d.value).join('');
         if (full.length === 6) authVerifyCode();
       } else {
@@ -6636,53 +6618,14 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     function authVerifyCode() {
-      const digits = document.querySelectorAll('.code-digit');
-      const entered = Array.from(digits).map(d => d.value).join('');
+      // OTP-koder hanteras av Supabase magic link — denna funktion
+      // används inte längre men behålls för bakåtkompatibilitet
       const errEl = document.getElementById('authStep2Error');
-      errEl.classList.remove('visible');
-
-      if (entered.length < 6) {
-        errEl.textContent = 'Ange alla 6 siffror.';
-        errEl.classList.add('visible');
-        return;
-      }
-
-      // Hamta sparad kod (fran minnet - fungerar utan localStorage)
-      let expectedCode = authExpectedCode;
-      let expiry = authCodeExpiry;
-
-      if (!expectedCode) {
-        errEl.textContent = 'Session utgangen. Borja om.';
-        errEl.classList.add('visible');
-        return;
-      }
-      if (Date.now() > expiry) {
-        errEl.textContent = 'Koden har gatt ut (10 min). Skicka en ny.';
-        errEl.classList.add('visible');
-        return;
-      }
-      if (entered !== expectedCode) {
-        errEl.textContent = 'Felaktig kod. Forsok igen.';
-        errEl.classList.add('visible');
-        // Skaka kodfälten
-        document.getElementById('codeInputs').style.animation = 'none';
-        setTimeout(() => { document.getElementById('codeInputs').style.animation = ''; }, 100);
-        return;
-      }
-
-      // Kod korrekt - rensa minnet
-      authExpectedCode = '';
-      authCodeExpiry = 0;
-      authSetLoggedIn(authCurrentEmail, true);
-    }
-
-    function authVerifyMagicLink(email, token) {
-      // Magic Link via URL fungerar ej pa file:// - anvand kodverifiering istallet
-      document.getElementById('authOverlay').classList.remove('hidden');
+      errEl.textContent = 'Använd länken i din e-post för att logga in.';
+      errEl.classList.add('visible');
     }
 
     function authSetLoggedIn(email, isNew, userId, accessToken) {
-      // Spara session
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
@@ -6691,14 +6634,11 @@ Ge bara profiltexten, ingen förklaringtext.`;
         createdAt: Date.now()
       }));
 
-      // Spara userId globalt
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
 
-      // Uppdatera steg-indikator
       setNavStep(2);
 
-      // Uppdatera UI
       document.getElementById('authUserEmail').textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
 
@@ -6707,26 +6647,25 @@ Ge bara profiltexten, ingen förklaringtext.`;
         : 'Du är inloggad som ' + email;
       document.getElementById('authWelcomeText').textContent = welcomeText;
 
-      // Visa steg 3
       document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
       document.getElementById('authStep3').classList.add('active');
 
-      // Ladda CV från Supabase om userId finns
+      // Ladda CV från Supabase om inloggad
       if (userId && accessToken) {
         loadCVFromSupabase(userId, accessToken);
       }
     }
 
     async function loadCVFromSupabase(userId, accessToken) {
-      if (!_sb) return;
       try {
-        const { data, error } = await _sb
-          .from('cv_data')
-          .select('cv_json')
-          .eq('user_id', userId)
-          .single();
-        if (data && data.cv_json) {
-          cvData = { ...cvData, ...data.cv_json };
+        const resp = await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'load_cv', accessToken, userId })
+        });
+        const result = await resp.json();
+        if (result.cv) {
+          cvData = { ...cvData, ...result.cv };
           saveData();
           renderJobs(); renderEducation(); renderSkills();
           renderLanguages(); renderLicenses(); renderCerts(); renderRefs();
@@ -6738,34 +6677,20 @@ Ge bara profiltexten, ingen förklaringtext.`;
       }
     }
 
+    let _saveDebounceSupabase = null;
     async function saveCVToSupabase() {
       const userId = window.authUserId;
-      if (!userId || !_sb) return;
+      const accessToken = window.authAccessToken;
+      if (!userId) return;
       try {
-        const { error } = await _sb.from('cv_data').upsert({
-          user_id: userId,
-          cv_json: cvData,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
-        if (error) console.log('Spara fel:', error.message);
+        await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'save_cv', accessToken, userId, cvData })
+        });
       } catch(e) {
         console.log('Kunde inte spara CV:', e.message);
       }
-    }
-
-    // Lyssna på Supabase auth events (magic link redirect)
-    if (_sb) {
-      _sb.auth.onAuthStateChange(async (event, session) => {
-        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
-          const email = session.user.email;
-          const userId = session.user.id;
-          const accessToken = session.access_token;
-          window.authUserId = userId;
-          window.authAccessToken = accessToken;
-          authSetLoggedIn(email, false, userId, accessToken);
-          document.getElementById('authOverlay').classList.add('hidden');
-        }
-      });
     }
 
     function authEnterApp() {
@@ -6792,6 +6717,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
       const email = saved ? JSON.parse(saved).email : '';
       if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
         pfRemove(AUTH_STORAGE_KEY);
+        window.authUserId = null;
+        window.authAccessToken = null;
         document.getElementById('authUserBadge').style.display = 'none';
         document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
         document.getElementById('authStep1').classList.add('active');
@@ -7167,7 +7094,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         <button class="mob-btn-primary mob-btn-outline" onclick="openRefModal()">+ Lägg till referens</button>
         <button class="mob-btn-primary mob-btn-outline" style="border-color:rgba(62,180,137,0.4);color:rgba(62,180,137,0.8);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
       </div>
-      <div class="mob-fortsatt" style="margin-top:32px;">
+      <div class="mob-fortsatt">
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;mer&#39;,&#39;profil&#39;)">
           Fortsätt till Profil →
         </button>
@@ -7198,7 +7125,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
     </div>
 
     <!-- FLIK 5: Exportera -->
-    <div class="mob-panel" id="mobPanel-export" style="padding-bottom:120px;">
+    <div class="mob-panel" id="mobPanel-export" style="padding-bottom:40px;">
 
       <div class="mob-export-card">
         <h3>📤 Dela mitt CV som PDF</h3>
@@ -7541,97 +7468,60 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
   async function mobGenerateAndSharePDF() {
     if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
-    showAiLoader('Skapar PDF...', 'Genererar ditt CV-dokument');
+    showToast('⏳ Skapar PDF...', 'info');
     const mainContainer = document.querySelector('.main-container');
-    const cvEl = document.getElementById('cvDocument');
-    if (!cvEl) { showToast('❌ Kunde inte hitta CV', 'error'); return; }
-
-    // Spara originalstil
-    const origMainVis    = mainContainer ? mainContainer.style.cssText : '';
-    const origElWidth    = cvEl.style.width;
-    const origElMinWidth = cvEl.style.minWidth;
-    const origElPos      = cvEl.style.position;
-
     try {
       const { jsPDF } = window.jspdf;
-
-      // Gör main-container synlig men utanför skärm
+      const cvEl = document.getElementById('cvDocument');
+      if (!cvEl) { showToast('❌ Kunde inte hitta CV', 'error'); return; }
+      // Gör cvDocument synligt temporärt för html2canvas
       if (mainContainer) {
-        mainContainer.style.cssText = 'visibility:visible;position:fixed;left:-9999px;top:0;width:850px;z-index:-1;pointer-events:none;';
+        mainContainer.style.visibility = 'visible';
+        mainContainer.style.position = 'absolute';
+        mainContainer.style.left = '-9999px';
+        mainContainer.style.top = '0';
+        mainContainer.style.zIndex = '-1';
       }
-      // Tvinga cvDocument till A4-bredd
-      cvEl.style.width    = '794px';
-      cvEl.style.minWidth = '794px';
-      cvEl.style.position = 'relative';
-
-      // Vänta på att layouten ritas om
-      await new Promise(r => setTimeout(r, 300));
-
+      await new Promise(r => setTimeout(r, 100));
       const canvas = await html2canvas(cvEl, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false,
-        width: 794,
-        windowWidth: 850
+        logging: false
       });
-
       // Återställ
-      if (mainContainer) mainContainer.style.cssText = origMainVis;
-      cvEl.style.width    = origElWidth;
-      cvEl.style.minWidth = origElMinWidth;
-      cvEl.style.position = origElPos;
-
-      // Skapa PDF med korrekt A4-skalning
-      const pdf    = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pdfW   = pdf.internal.pageSize.getWidth();   // 210mm
-      const pdfH   = pdf.internal.pageSize.getHeight();  // 297mm
-      const ratio  = canvas.width / canvas.height;
-      const imgH   = pdfW / ratio;
-
-      if (imgH <= pdfH) {
-        // Passar på en sida
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdfW, imgH);
-      } else {
-        // Fler sidor
-        let y = 0;
-        const pageImgH = pdfH * (canvas.width / pdfW);
-        while (y < canvas.height) {
-          const tmpCanvas = document.createElement('canvas');
-          tmpCanvas.width  = canvas.width;
-          tmpCanvas.height = Math.min(pageImgH, canvas.height - y);
-          tmpCanvas.getContext('2d').drawImage(canvas, 0, -y);
-          pdf.addImage(tmpCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdfW, pdfH);
-          y += pageImgH;
-          if (y < canvas.height) pdf.addPage();
-        }
+      if (mainContainer) {
+        mainContainer.style.visibility = 'hidden';
+        mainContainer.style.position = 'fixed';
+        mainContainer.style.left = '-9999px';
+        mainContainer.style.zIndex = '';
       }
-
-      const blob     = pdf.output('blob');
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+      const blob = pdf.output('blob');
       const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_CV.pdf';
-      const file     = new File([blob], fileName, { type: 'application/pdf' });
-
+      const file = new File([blob], fileName, { type: 'application/pdf' });
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: 'Mitt CV — ' + (cvData.name || ''),
           text: 'Här är mitt CV skapat med Pathfinder.',
           files: [file]
         });
-        hideAiLoader();
         showToast('✅ Delat!', 'success');
       } else {
-        hideAiLoader();
         pdf.save(fileName);
         showToast('📄 PDF sparad!', 'success');
       }
     } catch(e) {
-      // Återställ vid fel
-      if (mainContainer) mainContainer.style.cssText = origMainVis;
-      cvEl.style.width    = origElWidth;
-      cvEl.style.minWidth = origElMinWidth;
-      cvEl.style.position = origElPos;
-      hideAiLoader();
+      if (mainContainer) {
+        mainContainer.style.visibility = 'hidden';
+        mainContainer.style.position = 'fixed';
+        mainContainer.style.left = '-9999px';
+      }
       if (e.name !== 'AbortError') showToast('❌ Fel: ' + e.message, 'error');
     }
   }
@@ -7821,11 +7711,4 @@ Ge bara profiltexten, ingen förklaringtext.`;
   });
   </script>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-      });
-    }
-  </script>
 </body></html>
