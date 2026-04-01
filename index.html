@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_13.html -->
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_14.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,8 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="file:///C:/Users/olive/Downloads/pathfinder-favicon.svg">
 
   <!-- PDF Generation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
+  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
   
   
   <style>
@@ -375,131 +375,32 @@
     }
 
     /* ===== INSTÄLLNINGAR / KUGGHJUL ===== */
-    .nav-settings-btn {
-      background: none;
-      border: none;
+    /* ===== SLUT INSTÄLLNINGAR (borttaget) ===== */
+
+    .nav-logout-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 7px;
       color: rgba(255,255,255,0.7);
       cursor: pointer;
-      padding: 8px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.2s, background 0.2s, transform 0.3s;
-    }
-    .nav-settings-btn:hover {
-      color: #fff;
-      background: rgba(255,255,255,0.1);
-      transform: rotate(45deg);
-    }
-    .nav-settings-btn:focus-visible { outline: 3px solid var(--accent2); }
-
-    .settings-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 150;
-      background: transparent;
-    }
-    .settings-overlay.active { display: block; }
-
-    .settings-panel {
-      position: fixed;
-      top: 70px;
-      right: 20px;
-      width: 320px;
-      background: #1e2540;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
-      z-index: 200;
-      opacity: 0;
-      transform: translateY(-10px) scale(0.97);
-      pointer-events: none;
-      transition: opacity 0.2s, transform 0.2s;
-    }
-    .settings-panel.active {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: all;
-    }
-    .settings-panel__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px 12px;
-      font-size: 14px;
-      font-weight: 700;
-      color: #fff;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .settings-panel__close {
-      background: none;
-      border: none;
-      color: rgba(255,255,255,0.5);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: color 0.2s, background 0.2s;
-    }
-    .settings-panel__close:hover { color: #fff; background: rgba(255,255,255,0.1); }
-    .settings-panel__body { padding: 16px 20px 20px; }
-    .settings-label {
-      display: block;
+      padding: 5px 10px;
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.45);
-      margin-bottom: 8px;
-    }
-    .settings-api-row {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .settings-api-input {
-      flex: 1;
-      background: rgba(255,255,255,0.07);
-      border: 1.5px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
-      padding: 10px 12px;
-      color: #fff;
-      font-size: 13px;
-      font-family: 'Courier New', monospace;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .settings-api-input:focus { border-color: var(--accent2); }
-    .settings-api-input::placeholder { color: rgba(255,255,255,0.25); font-family: inherit; }
-    .settings-api-toggle {
-      background: rgba(255,255,255,0.07);
-      border: 1.5px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
-      color: rgba(255,255,255,0.6);
-      cursor: pointer;
-      padding: 9px 10px;
-      display: flex;
-      align-items: center;
-      transition: background 0.2s, color 0.2s;
-    }
-    .settings-api-toggle:hover { background: rgba(255,255,255,0.14); color: #fff; }
-    .settings-hint {
-      font-size: 11px;
-      color: rgba(255,255,255,0.35);
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-    .settings-status {
-      margin-top: 10px;
-      font-size: 12px;
       font-weight: 600;
-      min-height: 18px;
+      letter-spacing: 0.3px;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
     }
-    .settings-status.ok { color: var(--accent2); }
-    .settings-status.err { color: #ff6b6b; }
-    /* ===== SLUT INSTÄLLNINGAR ===== */
+    .nav-logout-btn:hover { background: rgba(255,80,80,0.2); color: #ff8080; border-color: rgba(255,80,80,0.3); }
+
+    .nav-email-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      font-weight: 500;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     /* ===== PROFILBILDSHANTERING: TVÅ KNAPPAR ===== */
     .photo-action-container {
@@ -2236,40 +2137,14 @@
       </div>
     </div>
 
-    <!-- HÖGER SIDA: kugghjul + användare -->
-    <div style="display:flex; align-items:center; gap:8px;">
-      <button class="nav-settings-btn" onclick="toggleSettingsPanel()" aria-label="Inställningar" title="Inställningar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-      </button>
-      <button id="authUserBadge" class="auth-user-badge" onclick="authShowUserMenu()" style="display: flex;" aria-label="Inloggad anvandare">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        <span id="authUserEmail" style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">oliver.pettersson2@gmail.com</span>
-      </button>
+    <!-- HÖGER SIDA: email + logga ut -->
+    <div id="authUserBadge" style="display:flex; align-items:center; gap:8px;">
+      <span id="authUserEmail" class="nav-email-label">oliver.pettersson2@gmail.com</span>
+      <button class="nav-logout-btn" onclick="authShowUserMenu()" aria-label="Logga ut">Logga ut</button>
     </div>
   </nav>
 
-  <!-- INSTÄLLNINGSPANEL: API-nyckel -->
-  <div id="settingsPanel" class="settings-panel" role="dialog" aria-label="Inställningar" aria-hidden="true">
-    <div class="settings-panel__header">
-      <span>⚙️ Inställningar</span>
-      <button class="settings-panel__close" onclick="toggleSettingsPanel()" aria-label="Stäng">✕</button>
-    </div>
-    <div class="settings-panel__body">
-      <label class="settings-label" for="apiKeyInput">Anthropic API-nyckel</label>
-      <div class="settings-api-row">
-        <input type="password" id="apiKeyInput" class="settings-api-input" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" oninput="saveApiKey()" aria-label="API-nyckel">
-        <button class="settings-api-toggle" onclick="toggleApiKeyVisibility()" title="Visa/dölj nyckel" aria-label="Visa eller dölj API-nyckel">
-          <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-        </button>
-      </div>
-      <p class="settings-hint">Nyckeln sparas lokalt i din webbläsare och används för AI-funktioner.</p>
-      <div id="apiKeyStatus" class="settings-status"></div>
-    </div>
-  </div>
-  <div id="settingsOverlay" class="settings-overlay" onclick="toggleSettingsPanel()"></div>
+
 
   <div class="main-container">
     <div class="sidebar">
@@ -6779,20 +6654,17 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     function authShowUserMenu() {
-      const saved = pfRead(AUTH_STORAGE_KEY);
-      const email = saved ? JSON.parse(saved).email : '';
-      if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
-        pfRemove(AUTH_STORAGE_KEY);
-        window.authUserId = null;
-        window.authAccessToken = null;
-        document.getElementById('authUserBadge').style.display = 'none';
-        document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-        document.getElementById('authStep1').classList.add('active');
-        document.getElementById('authEmail').value = '';
-        authCurrentEmail = '';
-        setNavStep(1);
-        document.getElementById('authOverlay').classList.remove('hidden');
-      }
+      if (!confirm('Vill du logga ut?')) return;
+      pfRemove(AUTH_STORAGE_KEY);
+      window.authUserId = null;
+      window.authAccessToken = null;
+      document.getElementById('authUserBadge').style.display = 'none';
+      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('authStep1').classList.add('active');
+      document.getElementById('authEmail').value = '';
+      authCurrentEmail = '';
+      setNavStep(1);
+      document.getElementById('authOverlay').classList.remove('hidden');
     }
     // ===== SLUT AUTENTISERING =====
 
@@ -7201,6 +7073,14 @@ Ge bara profiltexten, ingen förklaringtext.`;
         </button>
       </div>
 
+      <div class="mob-export-card" style="margin-top:12px;">
+        <h3>⬇️ Ladda ner PDF</h3>
+        <p>Sparar PDF-filen direkt till din enhet.</p>
+        <button class="mob-btn-primary mob-btn-export" id="mobDownloadBtn" style="width:100%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+          ⬇️ Ladda ner PDF
+        </button>
+      </div>
+
     </div>
 
   </div>
@@ -7596,6 +7476,17 @@ Ge bara profiltexten, ingen förklaringtext.`;
   window.addEventListener('load', () => {
     const btn = document.getElementById('mobShareBtn');
     if (btn) btn.addEventListener('click', mobGenerateAndSharePDF);
+
+    const dlBtn = document.getElementById('mobDownloadBtn');
+    if (dlBtn) dlBtn.addEventListener('click', async () => {
+      if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
+      showToast('⏳ Skapar PDF...', 'info');
+      try {
+        await generateAdvancedPDF();
+      } catch(e) {
+        showToast('❌ Fel: ' + e.message, 'error');
+      }
+    });
   });
 
   // ── Patcha befintliga render-funktioner ──────────────
