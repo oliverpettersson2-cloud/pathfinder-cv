@@ -6006,6 +6006,131 @@ ${styleTexts}
     }
     // ===== END SERVER-SIDE PDF HELPER =====
 
+
+    // ===== KLIENT-SIDE PDF HELPER (smart sidbrytning, A4) =====
+    async function _generateClientPDF() {
+      if (!window.jspdf) throw new Error('PDF-biblioteket ej laddat');
+      const { jsPDF } = window.jspdf;
+
+      const SCALE        = 2;
+      const A4_PX_W      = 794;
+      const MARGIN_MM    = 10;
+      const PAGE_W_MM    = 210;
+      const PAGE_H_MM    = 297;
+      const CONTENT_H_MM = PAGE_H_MM - MARGIN_MM * 2;
+      const PX_PER_MM    = A4_PX_W / (PAGE_W_MM - MARGIN_MM * 2);
+      const PAGE_PX_H    = CONTENT_H_MM * PX_PER_MM;
+
+      const cvElement = document.getElementById('cvDocument');
+      if (!cvElement) throw new Error('CV-element saknas');
+
+      // Gör main-container synlig temporärt (nödvändigt på mobil)
+      const mainContainer = document.querySelector('.main-container');
+      if (mainContainer) {
+        mainContainer.style.visibility = 'visible';
+        mainContainer.style.position   = 'absolute';
+        mainContainer.style.left       = '-9999px';
+        mainContainer.style.top        = '0';
+        mainContainer.style.zIndex     = '-1';
+      }
+
+      // Bygg temp-container
+      const tempContainer = document.createElement('div');
+      tempContainer.style.cssText =
+        'position:absolute;left:-9999px;top:0;width:' + A4_PX_W + 'px;background:#fff;padding:0;margin:0;';
+      const cvClone = cvElement.cloneNode(true);
+      cvClone.style.borderRadius = '0';
+      cvClone.style.boxShadow    = 'none';
+      tempContainer.appendChild(cvClone);
+      document.body.appendChild(tempContainer);
+
+      try {
+        await new Promise(r => setTimeout(r, 600));
+
+        const cloneOffsetTop = cvClone.getBoundingClientRect().top + window.scrollY;
+        function blockY(el) {
+          const r = el.getBoundingClientRect();
+          return { top: r.top + window.scrollY - cloneOffsetTop, bottom: r.bottom + window.scrollY - cloneOffsetTop };
+        }
+
+        const protected_blocks = [];
+        const hdr = cvClone.querySelector('.cv-header');
+        if (hdr) protected_blocks.push(blockY(hdr));
+        cvClone.querySelectorAll('.cv-section').forEach(s => {
+          const titleEl = s.querySelector('.cv-section-title');
+          const titleText = titleEl ? titleEl.textContent.trim().toUpperCase() : '';
+          const isJobSection = titleText.includes('ARBETS') || titleText.includes('ERFARENHET') || titleText.includes('JOBB');
+          if (!isJobSection) protected_blocks.push(blockY(s));
+        });
+        cvClone.querySelectorAll('.cv-entry').forEach(e => protected_blocks.push(blockY(e)));
+
+        const totalH = cvClone.scrollHeight;
+        const breaks = [0];
+        let cur = 0;
+        while (cur < totalH) {
+          let next = cur + PAGE_PX_H;
+          if (next >= totalH) break;
+          for (const blk of protected_blocks) {
+            if (next > blk.top + 2 && next < blk.bottom - 2) {
+              const before = blk.top - 8;
+              next = (before > cur + PAGE_PX_H * 0.3) ? before : blk.bottom + 8;
+              break;
+            }
+          }
+          breaks.push(Math.round(next));
+          cur = next;
+        }
+        breaks.push(totalH);
+
+        const fullCanvas = await html2canvas(cvClone, {
+          scale: SCALE, useCORS: true, allowTaint: true,
+          backgroundColor: '#ffffff', logging: false,
+          width: A4_PX_W, windowHeight: totalH, imageTimeout: 10000,
+          ignoreElements: el => el.classList && el.classList.contains('no-export')
+        });
+
+        if (!fullCanvas || fullCanvas.width === 0) throw new Error('Canvas rendering misslyckades');
+
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+        const imgWidthMm = PAGE_W_MM - MARGIN_MM * 2;
+        const canvasW = fullCanvas.width;
+
+        for (let p = 0; p < breaks.length - 1; p++) {
+          const srcTop    = Math.round(breaks[p] * SCALE);
+          const srcBottom = Math.round(breaks[p + 1] * SCALE);
+          const srcH      = srcBottom - srcTop;
+          if (srcH <= 0) continue;
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width  = canvasW;
+          pageCanvas.height = srcH;
+          const ctx = pageCanvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvasW, srcH);
+          ctx.drawImage(fullCanvas, 0, srcTop, canvasW, srcH, 0, 0, canvasW, srcH);
+          const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+          if (p > 0) pdf.addPage();
+          const sliceH_mm = (srcH / SCALE) / PX_PER_MM;
+          pdf.addImage(imgData, 'JPEG', MARGIN_MM, MARGIN_MM, imgWidthMm, sliceH_mm);
+        }
+
+        const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_' + new Date().getFullYear() + '.pdf';
+        const blob    = pdf.output('blob');
+        const dataUri = pdf.output('datauristring');
+        return { blob, fileName, dataUri };
+
+      } finally {
+        if (tempContainer && tempContainer.parentNode) document.body.removeChild(tempContainer);
+        if (mainContainer) {
+          mainContainer.style.visibility = '';
+          mainContainer.style.position   = '';
+          mainContainer.style.left       = '';
+          mainContainer.style.top        = '';
+          mainContainer.style.zIndex     = '';
+        }
+      }
+    }
+    // ===== END KLIENT-SIDE PDF HELPER =====
+
     // ===== ADVANCED PDF GENERATOR =====
     async function generateAdvancedPDF() {
       const btn = document.querySelector('.btn-pdf');
@@ -6055,151 +6180,21 @@ ${styleTexts}
           showToast('⏳ Genererar lokalt…', 'info');
         }
 
-        // ── Klient-side fallback (html2canvas + jsPDF) ────────────────────────
-
-        // ── Konstanter ─────────────────────────────────────────────────────
-        const SCALE       = 2;
-        const A4_PX_W     = 794;    // 210mm @ 96dpi
-        const MARGIN_MM   = 10;
-        const PAGE_W_MM   = 210;
-        const PAGE_H_MM   = 297;
-        const CONTENT_H_MM = PAGE_H_MM - MARGIN_MM * 2;  // 277 mm
-        // px per mm i innehållsytan (oSkalad)
-        const PX_PER_MM   = A4_PX_W / (PAGE_W_MM - MARGIN_MM * 2);  // ~4.1
-        const PAGE_PX_H   = CONTENT_H_MM * PX_PER_MM;               // ~1137 px
-
-        // ── Bygg temporär rendering-container ─────────────────────────────
-        const cvElement = document.getElementById('cvDocument');
-        if (!cvElement) throw new Error('CV-element kunde inte hittas!');
-
-        tempContainer = document.createElement('div');
-        tempContainer.style.cssText =
-          'position:absolute;left:-9999px;top:0;width:' + A4_PX_W + 'px;background:#fff;padding:0;margin:0;';
-        const cvClone = cvElement.cloneNode(true);
-        cvClone.style.borderRadius = '0';
-        cvClone.style.boxShadow    = 'none';
-        tempContainer.appendChild(cvClone);
-        document.body.appendChild(tempContainer);
-
-        // Låt webbläsaren rita klart
-        await new Promise(r => setTimeout(r, 600));
-
-        // ── Mät skyddade block (rubrik + innehåll hör ihop) ───────────────
-        const cloneOffsetTop = cvClone.getBoundingClientRect().top + window.scrollY;
-
-        function blockY(el) {
-          const r = el.getBoundingClientRect();
-          return {
-            top:    r.top  + window.scrollY - cloneOffsetTop,
-            bottom: r.bottom + window.scrollY - cloneOffsetTop
-          };
-        }
-
-        const protected_blocks = [];
-
-        // CV-header ska aldrig brytas
-        const hdr = cvClone.querySelector('.cv-header');
-        if (hdr) protected_blocks.push(blockY(hdr));
-
-        // Sektioner: alla UTOM arbetslivserfarenhet skyddas som helhet
-        // (rubrik + innehåll flyttas ihop till nästa sida)
-        cvClone.querySelectorAll('.cv-section').forEach(s => {
-          const titleEl = s.querySelector('.cv-section-title');
-          const titleText = titleEl ? titleEl.textContent.trim().toUpperCase() : '';
-          const isJobSection = titleText.includes('ARBETS') || titleText.includes('ERFARENHET') || titleText.includes('JOBB');
-          if (!isJobSection) {
-            protected_blocks.push(blockY(s));
-          }
-        });
-
-        // Varje enskilt jobb-entry skyddas (roll + företag + arbetsuppgifter håller ihop)
-        // Detta gäller ALLA cv-entry, inklusive jobb
-        cvClone.querySelectorAll('.cv-entry').forEach(e => protected_blocks.push(blockY(e)));
-
-        // ── Beräkna smarta sidbrytningspunkter ────────────────────────────
-        const totalH = cvClone.scrollHeight;
-        const breaks = [0];
-        let cur = 0;
-
-        while (cur < totalH) {
-          let next = cur + PAGE_PX_H;
-          if (next >= totalH) break;
-
-          // Flytta brytpunkten om den hamnar mitt i ett skyddat block
-          for (const blk of protected_blocks) {
-            if (next > blk.top + 2 && next < blk.bottom - 2) {
-              const before = blk.top - 8;
-              next = (before > cur + PAGE_PX_H * 0.3) ? before : blk.bottom + 8;
-              break;
-            }
-          }
-
-          breaks.push(Math.round(next));
-          cur = next;
-        }
-        breaks.push(totalH);
-
-        // ── Rendera hela klonen till stor canvas ───────────────────────────
-        const fullCanvas = await html2canvas(cvClone, {
-          scale:           SCALE,
-          useCORS:         true,
-          allowTaint:      true,
-          backgroundColor: '#ffffff',
-          logging:         false,
-          width:           A4_PX_W,
-          windowHeight:    totalH,
-          imageTimeout:    10000,
-          ignoreElements:  el => el.classList && el.classList.contains('no-export')
-        });
-
-        if (!fullCanvas || fullCanvas.width === 0 || fullCanvas.height === 0) {
-          throw new Error('Canvas rendering misslyckades – dokumentet är tomt');
-        }
-
-        // ── Bygg PDF sida för sida ─────────────────────────────────────────
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-
-        const imgWidthMm = PAGE_W_MM - MARGIN_MM * 2;   // 190 mm
-        const canvasW    = fullCanvas.width;             // A4_PX_W * SCALE
-
-        for (let p = 0; p < breaks.length - 1; p++) {
-          const srcTop    = Math.round(breaks[p]     * SCALE);
-          const srcBottom = Math.round(breaks[p + 1] * SCALE);
-          const srcH      = srcBottom - srcTop;
-          if (srcH <= 0) continue;
-
-          // Klipp ut slice
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width  = canvasW;
-          pageCanvas.height = srcH;
-          const ctx = pageCanvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvasW, srcH);
-          ctx.drawImage(fullCanvas, 0, srcTop, canvasW, srcH, 0, 0, canvasW, srcH);
-
-          const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-          if (!imgData || imgData.length < 100) throw new Error('Sida ' + (p+1) + ': bildkonvertering misslyckades');
-
-          if (p > 0) pdf.addPage();
-
-          // Höjd i mm: (srcH_oskalad / PX_PER_MM) = (srcH/SCALE) / PX_PER_MM
-          const sliceH_mm = (srcH / SCALE) / PX_PER_MM;
-          pdf.addImage(imgData, 'JPEG', MARGIN_MM, MARGIN_MM, imgWidthMm, sliceH_mm);
-        }
-
-        // ── Spara ─────────────────────────────────────────────────────────
-        const fileName = (cvData.name || 'CV') + '_' + new Date().getFullYear() + '.pdf';
+        // ── Klient-side fallback — delad A4-logik ────────────────────────────
+        const clientResult = await _generateClientPDF();
 
         if (isIOS && iosWindow) {
-          // iOS-fix: data URI öppnas i pre-öppnat fönster
-          const dataUri = pdf.output('datauristring');
-          iosWindow.location.href = dataUri;
+          iosWindow.location.href = clientResult.dataUri;
           showToast('✅ PDF öppnad — spara via dela-knappen', 'success');
         } else {
           if (iosWindow) { try { iosWindow.close(); } catch(e) {} }
-          pdf.save(fileName);
-          showToast('✅ PDF skapad: ' + fileName, 'success');
+          const a = document.createElement('a');
+          a.href = clientResult.dataUri;
+          a.download = clientResult.fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          showToast('✅ PDF skapad: ' + clientResult.fileName, 'success');
         }
 
       } catch (error) {
@@ -7851,48 +7846,15 @@ ${styleTexts}
       } catch (serverErr) {
         console.warn('Server misslyckades, kör klient-fallback:', serverErr.message);
 
-        // Klient-side fallback med html2canvas + jsPDF
-        if (!window.jspdf) throw new Error('PDF-biblioteket ej laddat');
-        const { jsPDF } = window.jspdf;
-        const cvEl = document.getElementById('cvDocument');
-        if (!cvEl) throw new Error('CV-element saknas');
+        // Klient-side fallback — använd full A4-logik med sidbrytning
+        const clientResult = await _generateClientPDF();
+        blob     = clientResult.blob;
+        fileName = clientResult.fileName;
 
-        // Gör main-container synlig temporärt för html2canvas
-        const mainContainer = document.querySelector('.main-container');
-        if (mainContainer) {
-          mainContainer.style.visibility = 'visible';
-          mainContainer.style.position = 'absolute';
-          mainContainer.style.left = '-9999px';
-          mainContainer.style.top = '0';
-          mainContainer.style.zIndex = '-1';
-        }
-        await new Promise(r => setTimeout(r, 200));
-
-        const canvas = await html2canvas(cvEl, {
-          scale: 2, useCORS: true, allowTaint: true,
-          backgroundColor: '#ffffff', logging: false
-        });
-
-        // Återställ
-        if (mainContainer) {
-          mainContainer.style.visibility = '';
-          mainContainer.style.position = '';
-          mainContainer.style.left = '';
-          mainContainer.style.top = '';
-          mainContainer.style.zIndex = '';
-        }
-        const imgData = canvas.toDataURL('image/jpeg', 0.92);
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const pdfW = pdf.internal.pageSize.getWidth();
-        const pdfH = (canvas.height * pdfW) / canvas.width;
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-        fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_CV.pdf';
-        blob = pdf.output('blob');
-
-        // iOS utan share: använd data URI direkt
+        // iOS utan share: öppna data URI direkt
         if (isIOS && !canShareFiles) {
           if (iosWindow) {
-            iosWindow.location.href = pdf.output('datauristring');
+            iosWindow.location.href = clientResult.dataUri;
             showToast('✅ PDF öppnad!', 'success');
           }
           return;
