@@ -7371,14 +7371,6 @@ ${styleTexts}
         <div id="mobSavedCVsList"></div>
       </div>
 
-      <!-- Detail-vy för ett valt CV -->
-      <div id="mobSavedCVDetail" style="display:none; position:fixed; left:0; right:0; bottom:56px; background:#1e2440; border-top: 1px solid rgba(255,255,255,0.12); border-radius:18px 18px 0 0; padding:20px 16px 28px; z-index:500;">
-        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 16px;"></div>
-        <div id="mobSavedCVDetailTitle" style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;"></div>
-        <div id="mobSavedCVDetailSub" style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:18px;"></div>
-        <button id="mobSavedCVShareBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:10px;">Spara/dela som PDF</button>
-        <button onclick="mobCloseSavedCVDetail()" style="width:100%;padding:12px;background:none;color:rgba(255,255,255,0.5);font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,0.15);border-radius:12px;cursor:pointer;">Stäng</button>
-      </div>
 
     </div>
 
@@ -8010,7 +8002,6 @@ ${styleTexts}
   function mobDeleteCVFromList(id) {
     let list = mobGetSavedCVs().filter(c => c.id !== id);
     mobPutSavedCVs(list);
-    mobCloseSavedCVDetail();
     mobRenderSavedCVs();
     showToast('CV borttaget', 'info');
   }
@@ -8028,45 +8019,33 @@ ${styleTexts}
     showToast('✅ CV laddat: ' + entry.title, 'success');
   }
 
-  let _activeSavedCVId = null;
-
   function mobShowSavedCVDetail(id) {
     const list = mobGetSavedCVs();
     const entry = list.find(c => c.id === id);
     if (!entry) return;
 
-    _activeSavedCVId = id;
-
-    // Ladda CV:t in i cvData så PDF:en genereras korrekt
+    // Ladda CV-datan
     Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
     saveData();
     updatePreview();
     mobLoadFields();
+    mobBuildTemplateGrid();
 
-    const titleEl = document.getElementById('mobSavedCVDetailTitle');
-    const subEl   = document.getElementById('mobSavedCVDetailSub');
-    if (titleEl) titleEl.textContent = entry.title;
-    if (subEl) {
-      const d = new Date(entry.savedAt);
-      subEl.textContent = 'Senast sparad ' + d.toLocaleDateString('sv-SE', {day:'numeric',month:'long'});
-    }
+    // Navigera till Visa-fliken (forhandsgranska) via CV-undermenyn
+    const subMenu = document.getElementById('mobCVSubMenu');
+    const mainBar = document.getElementById('mobileTabBar');
+    if (subMenu) subMenu.style.display = 'flex';
+    if (mainBar) mainBar.style.display = 'none';
 
-    const shareBtn = document.getElementById('mobSavedCVShareBtn');
-    if (shareBtn) {
-      shareBtn.onclick = () => {
-        mobCloseSavedCVDetail();
-        setTimeout(() => mobGenerateAndSharePDF(), 200);
-      };
-    }
+    document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('mob-panel--active'));
+    document.querySelectorAll('#mobCVSubMenu .mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
 
-    const detail = document.getElementById('mobSavedCVDetail');
-    if (detail) detail.style.display = 'block';
-  }
+    const panel = document.getElementById('mobPanel-forhandsgranska');
+    if (panel) panel.classList.add('mob-panel--active');
+    const btn = document.getElementById('tabBtn-forhandsgranska');
+    if (btn) btn.classList.add('mob-tab--active');
 
-  function mobCloseSavedCVDetail() {
-    const detail = document.getElementById('mobSavedCVDetail');
-    if (detail) detail.style.display = 'none';
-    _activeSavedCVId = null;
+    showToast('✅ ' + entry.title + ' öppnat — dela eller spara som PDF', 'success');
   }
 
   function mobRenderSavedCVs() {
