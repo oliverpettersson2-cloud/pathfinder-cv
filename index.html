@@ -9167,10 +9167,13 @@ ${styleTexts}
     matchaSelectedAdData = null;
     document.getElementById('matchaSelectedAd').style.display = 'none';
     document.getElementById('matchaManualSection').style.display = 'block';
-    document.getElementById('matchaSearch').value = '';
+    // Rensa sökresultat men behåll söktext så användaren kan justera
     document.getElementById('matchaSearchResults').style.display = 'none';
     document.getElementById('matchaRole').value = '';
     document.getElementById('matchaCompany').value = '';
+    // Fokusera sökfältet
+    const s = document.getElementById('matchaSearch');
+    if (s) { s.focus(); s.select(); }
   }
 
   // ===== JOBBMATCHNING =====
@@ -9186,6 +9189,33 @@ ${styleTexts}
       opt.textContent = cv.title || cv.id;
       sel.appendChild(opt);
     });
+    // Lyssna på CV-byte → uppdatera sökning
+    sel.onchange = () => matchaPreFillFromCV();
+    // Auto-fyll från aktivt CV
+    matchaPreFillFromCV();
+  }
+
+  function matchaGetSelectedCVData() {
+    const sel = document.getElementById('matchaCvSelect');
+    if (!sel || sel.value === '__active__') return cvData;
+    const saved = typeof mobGetSavedCVs === 'function' ? mobGetSavedCVs() : [];
+    const found = saved.find(c => c.id === sel.value);
+    return found ? found.data : cvData;
+  }
+
+  function matchaPreFillFromCV() {
+    const data = matchaGetSelectedCVData();
+    // Hämta yrkestitel: cvData.title eller senaste jobbets titel
+    const title = (data.title || '').trim() ||
+      (data.jobs && data.jobs.length ? (data.jobs[0].title || '') : '');
+    if (!title) return;
+    const searchEl = document.getElementById('matchaSearch');
+    if (!searchEl) return;
+    searchEl.value = title;
+    // Rensa ev. tidigare vald annons
+    matchaClearAd();
+    // Sök direkt
+    matchaDoSearch();
   }
 
   async function matchaCV() {
@@ -9204,13 +9234,7 @@ ${styleTexts}
     }
     if (!role || !company) { showToast('Fyll i tjanstetitel och foretag', 'error'); return; }
 
-    const selVal = document.getElementById('matchaCvSelect').value;
-    let selectedCV = cvData;
-    if (selVal !== '__active__') {
-      const saved = typeof mobGetSavedCVs === 'function' ? mobGetSavedCVs() : [];
-      const found = saved.find(c => c.id === selVal);
-      if (found) selectedCV = found.data;
-    }
+    const selectedCV = matchaGetSelectedCVData();
 
     const cvSummary = [
       selectedCV.name ? 'Namn: ' + selectedCV.name : '',
