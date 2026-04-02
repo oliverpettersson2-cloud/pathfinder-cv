@@ -6086,6 +6086,28 @@ ${styleTexts}
         }
         breaks.push(totalH);
 
+        // ── Post-process: om sista sidan är liten, flytta brytpunkten bakåt ──
+        // (t.ex. Certifikationer ensam → flytta brytningen en sektion bakåt)
+        if (breaks.length >= 3) {
+          const lastSliceH = breaks[breaks.length-1] - breaks[breaks.length-2];
+          if (lastSliceH < PAGE_PX_H * 0.3) {
+            const lastBreak = breaks[breaks.length-2];
+            let prevBlockTop = -1;
+            for (const blk of protected_blocks) {
+              if (blk.top < lastBreak - 10 && blk.top > prevBlockTop) {
+                prevBlockTop = blk.top;
+              }
+            }
+            if (prevBlockTop > 0) {
+              const newBreak = Math.round(prevBlockTop - 8);
+              const prevBreak = breaks.length > 3 ? breaks[breaks.length-3] : 0;
+              if (newBreak - prevBreak > PAGE_PX_H * 0.3) {
+                breaks[breaks.length-2] = newBreak;
+              }
+            }
+          }
+        }
+
         const fullCanvas = await html2canvas(cvClone, {
           scale: SCALE, useCORS: true, allowTaint: true,
           backgroundColor: '#ffffff', logging: false,
