@@ -1,8 +1,8 @@
 const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
+const path = require('path');
 
 module.exports = async (req, res) => {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -19,11 +19,25 @@ module.exports = async (req, res) => {
 
   let browser = null;
   try {
+    const executablePath = await chromium.executablePath();
+    const libPath = path.dirname(executablePath);
+
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--single-process',
+      ],
+      defaultViewport: { width: 1280, height: 800 },
+      executablePath,
       headless: true,
+      env: {
+        ...process.env,
+        LD_LIBRARY_PATH: libPath + ':' + (process.env.LD_LIBRARY_PATH || ''),
+      },
     });
 
     const page = await browser.newPage();
@@ -45,7 +59,6 @@ module.exports = async (req, res) => {
       format: 'A4',
       printBackground: true,
       margin: { top: '0mm', bottom: '0mm', left: '0mm', right: '0mm' },
-      preferCSSPageSize: false,
     });
 
     const safeFilename = filename.replace(/[^a-zA-Z0-9._\-åäöÅÄÖ ]/g, '_');
@@ -57,7 +70,7 @@ module.exports = async (req, res) => {
     res.status(200).send(Buffer.from(pdf));
 
   } catch (error) {
-    console.error('[pdf.js] PDF generation error:', error.message);
+    console.error('[pdf.js] error:', error.message);
     res.status(500).json({ error: 'PDF generation failed', message: error.message });
   } finally {
     if (browser) {
