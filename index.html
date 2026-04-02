@@ -7,8 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="file:///C:/Users/olive/Downloads/pathfinder-favicon.svg">
 
   <!-- PDF Generation Libraries -->
-  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
-  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   
   <style>
@@ -801,7 +801,12 @@
     .modal-buttons {
       display: flex;
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 16px;
+      position: sticky;
+      bottom: 0;
+      background: #1e2440;
+      padding: 12px 0 4px;
+      z-index: 2;
     }
 
     .modal-buttons button {
@@ -1706,17 +1711,18 @@
 
       /* Dölj desktop-nav steg-indikator på mobil */
       .nav-steps { display: none !important; }
-      /* Mobil navbar: email vänster | logo center | logga ut höger */
+      /* Mobil navbar: logo vänster | email + logga ut höger */
       nav { position: relative; }
       .nav-logo {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        text-align: center;
-        pointer-events: none;
+        position: static;
+        transform: none;
+        text-align: left;
+        pointer-events: auto;
+        order: 1;
+        flex-shrink: 0;
       }
-      .nav-auth-badge { order: 1; }
-      .nav-logout-btn { order: 3; margin-left: auto; }
+      .nav-auth-badge { order: 2; margin-left: auto; }
+      .nav-logout-btn { order: 3; margin-left: 6px; }
 
       /* Kompaktare navbar */
       nav { height: 56px; padding: 0 16px; }
@@ -4742,7 +4748,7 @@
       // Inget lokalt — fråga AI
       try {
         const prompt = [
-          'Generera 6-8 konkreta yrkeskompetenser på svenska för yrket: ' + titleRaw,
+          'Generera 5 konkreta yrkeskompetenser på svenska för yrket: ' + titleRaw,
           'Kompetenserna ska vara korta (1-3 ord), konkreta och relevanta för svensk arbetsmarknad.',
           'Svara ENBART med JSON: {"kompetenser": ["k1", "k2", "k3", "k4", "k5", "k6"]}'
         ].join('\n');
@@ -4763,7 +4769,7 @@
         const raw = data.content[0].text.trim().replace(/```json|```/g, '').trim();
         let parsed;
         try { parsed = JSON.parse(raw); } catch(e) { parsed = { kompetenser: [] }; }
-        const skills = (parsed.kompetenser || []).slice(0, 8);
+        const skills = (parsed.kompetenser || []).slice(0, 5);
         if (skills.length < 1) throw new Error('Inga kompetenser returnerades');
 
         cvData.skills = skills;
@@ -5618,7 +5624,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
       saveData();
       renderRefs();
       updatePreview();
-      showToast(cvData.refOnRequest ? '✅ Referenser lämnas på begäran tillagd' : '❌ Borttagen', 'success');
+      updateRefOnRequestBtn();
+      showToast(cvData.refOnRequest ? '✅ Referencer lämnas på begäran aktiverat' : 'Borttagen', cvData.refOnRequest ? 'success' : 'info');
     }
 
     function removeRefOnRequest() {
@@ -5626,6 +5633,40 @@ Ge bara profiltexten, ingen förklaringtext.`;
       saveData();
       renderRefs();
       updatePreview();
+      updateRefOnRequestBtn();
+    }
+
+    function updateRefOnRequestBtn() {
+      // Desktop
+      const dBtn = document.querySelector('[onclick="toggleRefOnRequest()"]');
+      if (dBtn) {
+        if (cvData.refOnRequest) {
+          dBtn.style.background = 'rgba(62,180,137,0.3)';
+          dBtn.style.borderColor = '#3eb489';
+          dBtn.style.color = '#3eb489';
+          dBtn.style.fontWeight = '700';
+        } else {
+          dBtn.style.background = 'rgba(62,180,137,0.1)';
+          dBtn.style.borderColor = 'rgba(62,180,137,0.3)';
+          dBtn.style.color = 'rgba(62,180,137,0.8)';
+          dBtn.style.fontWeight = '600';
+        }
+      }
+      // Mobil
+      const mBtn = document.querySelector('#mobPanel-mer [onclick="toggleRefOnRequest()"]');
+      if (mBtn) {
+        if (cvData.refOnRequest) {
+          mBtn.style.background = 'rgba(62,180,137,0.25)';
+          mBtn.style.borderColor = '#3eb489';
+          mBtn.style.color = '#3eb489';
+          mBtn.style.fontWeight = '700';
+        } else {
+          mBtn.style.background = '';
+          mBtn.style.borderColor = 'rgba(62,180,137,0.4)';
+          mBtn.style.color = 'rgba(62,180,137,0.8)';
+          mBtn.style.fontWeight = '600';
+        }
+      }
     }
 
     // AI Autofill för jobbeskrivning — genererar unika meningar via AI
@@ -5831,21 +5872,25 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
       const firstName = (cvData.name || '').trim().split(' ')[0] || '';
       const prompt = [
-        'Generera 3 olika profiltexter på svenska för en person med denna bakgrund:',
-        firstName ? 'Personens förnamn: ' + firstName + ' (inkludera gärna förnamnet naturligt i en av texterna)' : '',
+        'Du ska skriva 3 korta profiltexter på svenska för ett CV.',
+        'Texterna ska kännas äkta och mänskligt skrivna — INTE som AI-text.',
+        '',
+        'Info om personen:',
+        firstName ? 'Förnamn: ' + firstName : '',
         'Sökt titel: ' + title,
-        jobSummary ? 'Arbetslivserfarenhet:\n' + jobSummary : '',
+        jobSummary ? 'Erfarenhet:\n' + jobSummary : '',
         skillsList ? 'Kompetenser: ' + skillsList : '',
         eduList    ? 'Utbildning: ' + eduList    : '',
         '',
-        'Krav på varje profiltext:',
-        '- 2–3 meningar, professionell och engagerande ton',
-        '- Börja med varierande inledningar (inte alla med "Erfaren")',
-        '- De tre alternativen ska skilja sig tydligt i fokus och vinkling',
-        '- Alt 1: fokus på erfarenhet och bredd',
-        '- Alt 2: fokus på drivkraft och resultat',
-        '- Alt 3: fokus på personliga styrkor och samarbete',
-        '- Basera enbart på angiven info, hitta inte på fakta',
+        'VIKTIGA REGLER:',
+        '- Skriv ALLTID i första person (jag/mig/min — ALDRIG "han/hon/de" eller tredjeperson)',
+        firstName ? '- Alt 1 ska börja med "' + firstName + ' heter jag" eller liknande varm personlig inledning' : '- Alt 1: varm, personlig inledning i jagform',
+        '- Alt 2: börja med en konkret styrka eller passion, fortfarande i jagform',
+        '- Alt 3: fokus på samarbete och vad du bidrar med, jagform',
+        '- 2–3 meningar per alternativ, naturligt talspråk nära, inte stelt "CV-språk"',
+        '- Variera inledningarna kraftigt — inga upprepningar',
+        '- Basera enbart på given info, hitta inte på fakta',
+        '- Undvik klichéer som "driven", "passionerad", "dedikerad"',
         '',
         'Svara BARA med JSON: {"alternativ": ["text1", "text2", "text3"]}'
       ].filter(Boolean).join('\n');
@@ -7580,6 +7625,7 @@ ${styleTexts}
     mobRefreshToggle();
     mobUpdateRemovePhotoBtn();
     setTimeout(mobCheckInfoDone, 100);
+    setTimeout(() => { if (typeof updateRefOnRequestBtn === 'function') updateRefOnRequestBtn(); }, 250);
   }
 
   // ── Foto ─────────────────────────────────────────────
