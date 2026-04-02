@@ -7857,10 +7857,30 @@ ${styleTexts}
         const cvEl = document.getElementById('cvDocument');
         if (!cvEl) throw new Error('CV-element saknas');
 
+        // Gör main-container synlig temporärt för html2canvas
+        const mainContainer = document.querySelector('.main-container');
+        if (mainContainer) {
+          mainContainer.style.visibility = 'visible';
+          mainContainer.style.position = 'absolute';
+          mainContainer.style.left = '-9999px';
+          mainContainer.style.top = '0';
+          mainContainer.style.zIndex = '-1';
+        }
+        await new Promise(r => setTimeout(r, 200));
+
         const canvas = await html2canvas(cvEl, {
           scale: 2, useCORS: true, allowTaint: true,
           backgroundColor: '#ffffff', logging: false
         });
+
+        // Återställ
+        if (mainContainer) {
+          mainContainer.style.visibility = '';
+          mainContainer.style.position = '';
+          mainContainer.style.left = '';
+          mainContainer.style.top = '';
+          mainContainer.style.zIndex = '';
+        }
         const imgData = canvas.toDataURL('image/jpeg', 0.92);
         const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pdfW = pdf.internal.pageSize.getWidth();
