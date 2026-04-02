@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///C:/Users/olive/Downloads/index_api_1.html -->
+<!-- saved from url=(0049)file:///C:/Users/olive/Downloads/index_api_6.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,8 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="file:///C:/Users/olive/Downloads/pathfinder-favicon.svg">
 
   <!-- PDF Generation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
+  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
   
   
   <style>
@@ -2425,7 +2425,7 @@
     <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display: flex; cursor:pointer;" aria-label="Inloggad anvandare">
       <!-- Desktop: ikon + email -->
       <svg class="mob-hide" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      <span id="authUserEmail" class="mob-hide" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+      <span id="authUserEmail" class="mob-hide" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">oliver.pettersson2@gmail.com</span>
       <!-- Mobil: liten grön "Profil"-badge -->
       <span class="mob-profil" style="display:none; align-items:center; gap:5px; font-size:11px; font-weight:700; color:#3eb489;">
         <span style="width:8px;height:8px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>
@@ -4614,17 +4614,30 @@
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        cvData.photoData = e.target.result;
-        const profilePhoto = document.getElementById('profilePhoto');
-        profilePhoto.src = cvData.photoData;
-        profilePhoto.style.display = 'block';
-        // Aktivera "Ta bort bild"-knappen när en bild finns
-        const removeBtn = document.getElementById('removePhotoBtn');
-        removeBtn.disabled = false;
-        removeBtn.removeAttribute('aria-disabled');
-        saveData();
-        updatePreview();
-        showToast('✅ Profilbild sparad!', 'success');
+        const img = new Image();
+        img.onload = function() {
+          // Komprimera: max 600x600px, JPEG kvalitet 85%
+          const MAX = 600;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          cvData.photoData = canvas.toDataURL('image/jpeg', 0.85);
+          const profilePhoto = document.getElementById('profilePhoto');
+          profilePhoto.src = cvData.photoData;
+          profilePhoto.style.display = 'block';
+          const removeBtn = document.getElementById('removePhotoBtn');
+          removeBtn.disabled = false;
+          removeBtn.removeAttribute('aria-disabled');
+          saveData();
+          updatePreview();
+          showToast('✅ Profilbild sparad!', 'success');
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
@@ -4920,8 +4933,7 @@
         hideAiLoader();
         showToast(`✨ ${skills.length} AI-kompetenser för ${titleRaw}!`, 'success');
       } catch(err) {
-        hideAiLoader();
-        showToast('⚠️ Kunde inte hämta kompetenser: ' + err.message, 'error');
+        showAiError('Försök igen om en liten stund');
       }
     }
 
@@ -5956,15 +5968,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
       } catch (error) {
         console.error('aiAutofillJobDesc fel:', error);
-        if (error.message.includes('401') || error.message.includes('invalid_api_key')) {
-          showToast('⚠️ Ogiltig API-nyckel', 'error');
-          
-        } else {
-          showToast('❌ ' + (error.message || 'Något gick fel'), 'error');
-        }
-      } finally {
+        showAiError('Försök igen om en liten stund');
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
-        hideAiLoader();
       }
     }
 
@@ -6102,15 +6107,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
       } catch (error) {
         console.error('aiAutofillProfileSummary fel:', error);
-        if (error.message.includes('401') || error.message.includes('invalid_api_key')) {
-          showToast('⚠️ Ogiltig API-nyckel', 'error');
-          
-        } else {
-          showToast('❌ ' + (error.message || 'Något gick fel'), 'error');
-        }
-      } finally {
+        showAiError('Försök igen om en liten stund');
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
-        hideAiLoader();
       }
     }
 
@@ -6794,16 +6792,9 @@ ${styleTexts}
 
       } catch (error) {
         console.error('Pathfinder AI-fel:', error);
-        if (error.message.includes('401') || error.message.includes('invalid_api_key')) {
-          showToast('Ogiltig API-nyckel - kontrollera installningar', 'error');
-          
-        } else {
-          showToast('Fel: ' + (error.message || 'Nagot gick fel'), 'error');
-        }
-      } finally {
+        showAiError('Försök igen om en liten stund');
         btn.disabled = false;
         btn.textContent = 'AI Analysera';
-        hideAiLoader();
       }
     }
     // ===== SLUT PATHFINDER AI-MODUL =====
@@ -7312,6 +7303,55 @@ ${styleTexts}
       document.getElementById('aiLoadingOverlay').style.display = 'none';
       document.body.style.pointerEvents = '';
       document.body.style.removeProperty('pointer-events');
+    }
+
+    function showAiError(msg) {
+      const overlay = document.getElementById('aiLoadingOverlay');
+      // Byt ikon till ❌
+      const iconEl = overlay.querySelector('div[style*="position:relative"]');
+      if (iconEl) iconEl.innerHTML = '<div style="font-size:48px;line-height:1;">❌</div>';
+      // Uppdatera texter
+      const titleEl = document.getElementById('aiLoadingTitle');
+      const subtitleEl = document.getElementById('aiLoadingSubtitle');
+      const compassEl = overlay.querySelector('svg[viewBox="0 0 20 20"]');
+      if (compassEl) compassEl.style.display = 'none';
+      if (titleEl) titleEl.textContent = 'Ber om ursäkt för tekniska problem';
+      if (subtitleEl) {
+        subtitleEl.textContent = msg || 'Försök igen om en liten stund';
+        subtitleEl.style.color = 'rgba(255,255,255,0.6)';
+        subtitleEl.style.maxWidth = '240px';
+      }
+      // Göm dots, visa stäng-knapp
+      const dotsEl = overlay.querySelector('div[style*="gap:8px"]');
+      if (dotsEl) dotsEl.style.display = 'none';
+      // Lägg till stäng-knapp om den inte finns
+      let closeBtn = document.getElementById('aiErrorCloseBtn');
+      if (!closeBtn) {
+        closeBtn = document.createElement('button');
+        closeBtn.id = 'aiErrorCloseBtn';
+        closeBtn.textContent = 'Stäng';
+        closeBtn.style.cssText = 'margin-top:8px;padding:10px 28px;border-radius:12px;border:none;background:#e85d26;color:#fff;font-size:15px;font-weight:700;cursor:pointer;';
+        closeBtn.onclick = hideAiError;
+        overlay.querySelector('div[style*="border-radius:24px"]').appendChild(closeBtn);
+      }
+      closeBtn.style.display = 'block';
+      overlay.style.display = 'flex';
+      document.body.style.pointerEvents = 'none';
+      overlay.style.pointerEvents = 'all';
+    }
+
+    function hideAiError() {
+      // Återställ overlay till normalt läge
+      const overlay = document.getElementById('aiLoadingOverlay');
+      const iconEl = overlay.querySelector('div[style*="position:relative"]');
+      if (iconEl) iconEl.innerHTML = `<svg viewBox="0 0 56 56" width="56" height="56" style="animation:hourglassSpin 2s ease-in-out infinite;"><defs><linearGradient id="hgGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3eb489"></stop><stop offset="100%" stop-color="#e85d26"></stop></linearGradient></defs><path d="M14 6 L42 6 L28 28 L42 50 L14 50 L28 28 Z" fill="none" stroke="url(#hgGrad)" stroke-width="2.5" stroke-linejoin="round"></path><path d="M16 8 L40 8 L28 24 Z" fill="#3eb489" opacity="0.3" style="animation:sandDrain 2s ease-in-out infinite;"></path><path d="M28 32 L40 48 L16 48 Z" fill="#e85d26" opacity="0.5" style="animation:sandFill 2s ease-in-out infinite;"></path><circle cx="28" cy="29" r="2" fill="#f0c040" style="animation:sandDrop 2s ease-in-out infinite;"></circle></svg>`;
+      const compassEl = overlay.querySelector('svg[viewBox="0 0 20 20"]');
+      if (compassEl) compassEl.style.display = '';
+      const dotsEl = overlay.querySelector('div[style*="gap:8px"]');
+      if (dotsEl) dotsEl.style.display = '';
+      const closeBtn = document.getElementById('aiErrorCloseBtn');
+      if (closeBtn) closeBtn.style.display = 'none';
+      hideAiLoader();
     }
   </script>
   <!-- ===== SLUT AI-LADDNINGSOVERLAY ===== -->
