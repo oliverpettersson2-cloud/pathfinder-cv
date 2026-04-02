@@ -8659,8 +8659,64 @@ ${styleTexts}
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
   }
 
+  // Nyckelord per bransch för filtrering mot utbildningslistan
+  const SYV_AREA_KEYWORDS = {
+    'Vård & omsorg':           ['underskötersk', 'barnskötare', 'stödpedagog', 'behandlingsassistent', 'vård', 'omsorg', 'hemtjänst', 'sfi + under'],
+    'Transport & logistik':    ['truck', 'lager', 'lastbil', 'buss', 'lokför', 'taxi', 'transport', 'godshantering', 'yrkesförare', 'c-körkort + y'],
+    'Bygg & anläggning':       ['murare', 'målare', 'plåt', 'elektriker', 'mark', 'bygg', 'anläggning', 'fastighetsskötare'],
+    'Teknik & industri':       ['svetsare', 'cnc', 'lackerare', 'vvs', 'mekaniker', 'industri', 'teknik', 'underhåll'],
+    'IT & data':               ['systemutvecklare', 'nätverkstekniker', 'it-support', 'digital mark', 'it &', 'data'],
+    'Handel & service':        ['butikssäljare', 'butik', 'handel', 'kundtjänst', 'vaktare', 'väktare', 'service', 'sfi + kök'],
+    'Restaurang & kök':        ['kock', 'restaurang', 'servering', 'café', 'bagare', 'kök'],
+    'Ekonomi':                 ['redovisning', 'ekonom', 'löneadmin', 'ekonomiassistent'],
+    'Korta kurser':            ['2-4 v', '3-6 mån', '8-16 v', '10 v', '10-15 v', 'kort kurs'],
+    'Kombinationsutbildningar':['kombination', 'lärlings', 'sfi +', 'amu', 'parallell', 'paket', 'flex'],
+  };
+
   function syvAreaClick(area) {
-    syvQuick(area + ' — vilka utbildningar finns i Familjen Helsingborg just nu?');
+    // Visa splash → chatt om splash är aktiv
+    const splash = document.getElementById('syvSplash');
+    const msgs = document.getElementById('syvMessages');
+    if (splash && splash.style.display !== 'none') {
+      splash.style.display = 'none';
+      if (msgs) msgs.style.display = 'flex';
+    }
+
+    // Filtrera utbildningar för detta område
+    const keywords = SYV_AREA_KEYWORDS[area] || [area.toLowerCase()];
+    const alla = (syvUtbildningar && syvUtbildningar.utbildningar) ? syvUtbildningar.utbildningar : [];
+    const match = alla.filter(function(u) {
+      var haystack = (u.namn + ' ' + u.typ + ' ' + (u.info||'')).toLowerCase();
+      return keywords.some(function(kw) { return haystack.includes(kw.toLowerCase()); });
+    });
+
+    // Visa som botbubbla med programkort
+    syvAddBotBubble(syvRenderProgramList(area, match));
+
+    // Lägg till frågan i historik så AI:n vet sammanhanget
+    syvHistory.push({ role: 'user', content: 'Visa utbildningar inom: ' + area });
+    var listTxt = match.length > 0
+      ? match.map(function(u){ return u.namn + ' (' + u.kommun + ', ' + u.typ + ')'; }).join(', ')
+      : 'Inga hittade i statisk lista.';
+    syvHistory.push({ role: 'assistant', content: 'Här är utbildningarna inom ' + area + ': ' + listTxt });
+  }
+
+  function syvRenderProgramList(area, programs) {
+    if (programs.length === 0) {
+      return '<b>' + area + '</b><br><br>Inga kurser i listan just nu. Fråga mig så söker jag!<br><br>' +
+        '<button class="syv-reply-btn" onclick="syvReplyOpt(this)" data-val="Berätta om utbildningar inom ' + area + '">Berätta mer</button>';
+    }
+    var cards = programs.map(function(u) {
+      return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 12px;margin-bottom:6px;">' +
+        '<div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:2px;">' + u.namn + '</div>' +
+        '<div style="font-size:11px;color:#3eb489;margin-bottom:3px;">' + u.typ + ' · ' + u.kommun + '</div>' +
+        (u.info ? '<div style="font-size:11px;color:rgba(255,255,255,0.5);">' + u.info + '</div>' : '') +
+        '</div>';
+    }).join('');
+
+    return '<b>' + area + '</b> — ' + programs.length + ' utbildningar' +
+      '<br><br>' + cards +
+      '<button class="syv-reply-btn" style="margin-top:4px;" onclick="syvReplyOpt(this)" data-val="Berätta mer om utbildningar inom ' + area + ' — vad passar mig?">💬 Berätta mer & hjälp mig välja</button>';
   }
 
   function syvQuick(msg) {
