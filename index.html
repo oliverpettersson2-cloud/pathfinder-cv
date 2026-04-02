@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_14.html -->
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_15.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,8 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="file:///C:/Users/olive/Downloads/pathfinder-favicon.svg">
 
   <!-- PDF Generation Libraries -->
-  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
-  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   
   <style>
@@ -2068,76 +2068,6 @@
         min-width: 52px;
         flex: 0 0 52px;
       }
-      /* ── AI-SYV chatt ───────────────────────────────── */
-      #mobPanel-aisyv.mob-panel--active {
-        display: flex !important;
-      }
-      #mobPanel-aisyv {
-        padding: 0 !important;
-        height: calc(100vh - 56px - 64px);
-        flex-direction: column;
-      }
-      .syv-bubble {
-        max-width: 82%;
-        padding: 10px 14px;
-        border-radius: 18px;
-        font-size: 14px;
-        line-height: 1.5;
-        animation: mobFadeIn 0.2s ease;
-      }
-      .syv-bubble--ai {
-        background: rgba(124,58,237,0.18);
-        border: 1px solid rgba(124,58,237,0.25);
-        color: rgba(255,255,255,0.9);
-        border-bottom-left-radius: 4px;
-        align-self: flex-start;
-      }
-      .syv-bubble--user {
-        background: linear-gradient(135deg, #3eb489, #2d9068);
-        color: #fff;
-        border-bottom-right-radius: 4px;
-        align-self: flex-end;
-      }
-      .syv-bubble--typing {
-        background: rgba(124,58,237,0.12);
-        border: 1px solid rgba(124,58,237,0.2);
-        align-self: flex-start;
-        color: rgba(255,255,255,0.5);
-        font-style: italic;
-        font-size: 13px;
-      }
-      .syv-quick {
-        background: rgba(124,58,237,0.12);
-        border: 1px solid rgba(124,58,237,0.25);
-        color: rgba(255,255,255,0.7);
-        border-radius: 20px;
-        padding: 6px 12px;
-        font-size: 12px;
-        font-family: inherit;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-      .syv-quick:active { background: rgba(124,58,237,0.3); }
-      .syv-kartlaggning {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 10px;
-      }
-      .syv-kartlaggning button {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.12);
-        color: rgba(255,255,255,0.85);
-        border-radius: 12px;
-        padding: 10px 14px;
-        font-size: 13px;
-        font-family: inherit;
-        cursor: pointer;
-        text-align: left;
-        transition: all 0.2s;
-      }
-      .syv-kartlaggning button:active { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.4); }
-
       /* ── Under arbete-panel ─────────────────────────── */
       .mob-wip-panel {
         display: flex;
@@ -4793,119 +4723,49 @@
       document.getElementById('licensesModal').classList.add('active');
     }
 
-    // ── Kompetens-cache (sparas i localStorage) ──────────
-    const SKILLS_CACHE_KEY = 'pathfinder_skills_cache';
-
-    function skillsCacheLoad() {
-      try { return JSON.parse(localStorage.getItem(SKILLS_CACHE_KEY) || '{}'); }
-      catch(e) { return {}; }
-    }
-
-    function skillsCacheSave(cache) {
-      try { localStorage.setItem(SKILLS_CACHE_KEY, JSON.stringify(cache)); }
-      catch(e) {}
-    }
-
-    function skillsCacheKey(title) {
-      return title.toLowerCase().trim().replace(/\s+/g, '_');
-    }
-
-    // Räkna ut vilka kompetenser som förekommer i FLERA jobb → prioritera dem
-    function crossJobSkills() {
-      const freq = {};
-      (cvData.jobs || []).forEach(job => {
-        const key = skillsCacheKey(job.title || '');
-        const cache = skillsCacheLoad();
-        if (cache[key]) {
-          cache[key].forEach(s => { freq[s] = (freq[s] || 0) + 1; });
-        }
-      });
-      // Returnera kompetenser som dyker upp i 2+ jobb, sorterat på frekvens
-      return Object.entries(freq)
-        .filter(([, count]) => count > 1)
-        .sort((a, b) => b[1] - a[1])
-        .map(([skill]) => skill);
-    }
-
-    async function aiMatchSkills() {
-      const title = document.getElementById('title').value.trim();
-
+    function aiMatchSkills() {
+      const title = document.getElementById('title').value.trim().toLowerCase();
+      
       if (!title) {
         showToast('⚠️ Skriv in en jobbtitel först!', 'error');
         return;
       }
+      showAiLoader('Matchar kompetenser...', 'AI söker rätt kompetenser för din titel');
 
-      const cacheKey = skillsCacheKey(title);
-      const cache = skillsCacheLoad();
-
-      // Kolla cache först
-      if (cache[cacheKey]) {
-        const cross = crossJobSkills();
-        // Sätt ihop: cross-job-kompetenser först, sen cachade, max 5 unika
-        const merged = [...new Set([...cross, ...cache[cacheKey]])].slice(0, 5);
-        cvData.skills = merged;
-        saveData();
-        renderSkills();
-        updatePreview();
-        showToast(`✨ ${merged.length} kompetenser matchade!`, 'success');
-        return;
+      console.log('🔍 Söker efter:', title);
+      
+      // Sök efter matchande jobbroll - mer flexibel matching
+      for (let [jobKey, skills] of Object.entries(SKILL_MATCHER)) {
+        const jobKeyLower = jobKey.toLowerCase();
+        console.log('Tester mot:', jobKeyLower);
+        
+        // Normalisera båda strängar (ta bort &, -, "och", "och")
+        const normalizedTitle = title.replace(/[&\-]/g, ' ').replace(/\s+/g, ' ').trim();
+        const normalizedKey = jobKeyLower.replace(/[&\-]/g, ' ').replace(/och/g, '').replace(/\s+/g, ' ').trim();
+        
+        console.log('Normaliserad titel:', normalizedTitle);
+        console.log('Normaliserad nyckel:', normalizedKey);
+        
+        // Flera matchningsstrategier
+        if (title.includes(jobKeyLower) || 
+            jobKeyLower.includes(title) ||
+            normalizedTitle.includes(normalizedKey) ||
+            normalizedKey.includes(normalizedTitle)) {
+          
+          console.log('✅ MATCH HITTAD!', jobKey);
+          cvData.skills = skills;
+          saveData();
+          renderSkills();
+          updatePreview();
+          hideAiLoader();
+          showToast(`✨ ${skills.length} kompetenser matchade!`, 'success');
+          return;
+        }
       }
-
-      showAiLoader('Matchar kompetenser...', 'AI hittar rätt kompetenser för ' + title);
-
-      try {
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'claude-opus-4-6',
-            max_tokens: 200,
-            messages: [{
-              role: 'user',
-              content: `Du hjälper någon skriva CV på svenska. Ge exakt 5 kompetenser för jobbet "${title}".
-
-Regler:
-- Skriv enkelt och naturligt, INTE HR-jargong
-- Rätt: "Gillar att hjälpa andra", "Bra på att lyssna", "Van vid högt tempo"
-- Fel: "Kommunikativ förmåga", "Serviceinriktad", "Resultatdriven"
-- Max 4 ord per kompetens
-- Svara BARA med JSON-array, inga förklaringar
-
-Exempel svar: ["Bra på kundkontakt","Jobbar bra i team","Snabb att lära","Lugn under press","Ordningsam"]`
-            }]
-          })
-        });
-
-        if (!response.ok) throw new Error('API-fel: ' + response.status);
-
-        const data = await response.json();
-        const clean = data.content[0].text.trim().replace(/```json|```/g, '').trim();
-        const skills = JSON.parse(clean);
-
-        if (!Array.isArray(skills) || skills.length === 0) throw new Error('Ogiltigt svar');
-
-        const top5 = skills.slice(0, 5);
-
-        // Spara i cache
-        cache[cacheKey] = top5;
-        skillsCacheSave(cache);
-
-        // Mixa med cross-job kompetenser
-        const cross = crossJobSkills();
-        const merged = [...new Set([...cross, ...top5])].slice(0, 5);
-
-        cvData.skills = merged;
-        saveData();
-        renderSkills();
-        updatePreview();
-        hideAiLoader();
-        showToast(`✨ ${merged.length} kompetenser matchade!`, 'success');
-
-      } catch (err) {
-        console.error('aiMatchSkills error:', err);
-        hideAiLoader();
-        showToast('❌ Kunde inte hämta kompetenser. Försök igen.', 'error');
-      }
+      
+      console.log('❌ Ingen match hittad');
+      hideAiLoader();
+      showToast('⚠️ Kunde inte matcha kompetenser för denna titel', 'error');
     }
 
     // Advanced AI profil-generator med API
@@ -6105,19 +5965,97 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
     // Export
 
+    // ===== SERVER-SIDE PDF HELPER =====
+    async function _generateServerPDF() {
+      const cvEl = document.getElementById('cvDocument');
+      if (!cvEl) throw new Error('CV-element saknas');
+
+      // Samla all CSS från <style>-taggar
+      const styleTexts = Array.from(document.querySelectorAll('style'))
+        .map(s => s.textContent)
+        .join('\n');
+
+      // Bygg självständigt HTML-dokument
+      const html = `<!DOCTYPE html>
+<html lang="sv"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; padding: 0; background: white; }
+${styleTexts}
+</style>
+</head><body>${cvEl.outerHTML}</body></html>`;
+
+      const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_' + new Date().getFullYear() + '.pdf';
+
+      const response = await fetch('/api/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html, filename: fileName }),
+      });
+
+      if (!response.ok) {
+        let errMsg = 'HTTP ' + response.status;
+        try { const e = await response.json(); errMsg = e.message || errMsg; } catch(e) {}
+        throw new Error(errMsg);
+      }
+
+      const blob = await response.blob();
+      if (!blob || blob.size < 100) throw new Error('Tom PDF från servern');
+      return { blob, fileName };
+    }
+    // ===== END SERVER-SIDE PDF HELPER =====
+
     // ===== ADVANCED PDF GENERATOR =====
     async function generateAdvancedPDF() {
       const btn = document.querySelector('.btn-pdf');
       const originalHTML = btn ? btn.innerHTML : '📄 Skapa PDF';
       let tempContainer = null;
+
+      if (!cvData.name) {
+        showToast('⚠️ Fyll i ditt namn först', 'error');
+        return;
+      }
+
+      // ── iOS: öppna fönster INNAN async (måste ske i user-gesture-kontext) ───
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      let iosWindow = null;
+      if (isIOS) {
+        iosWindow = window.open('', '_blank');
+        if (iosWindow) {
+          iosWindow.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;padding:40px;text-align:center;background:#f5f2eb}.sp{display:inline-block;width:36px;height:36px;border:4px solid #e85d26;border-top-color:transparent;border-radius:50%;animation:s 0.8s linear infinite}@keyframes s{to{transform:rotate(360deg)}}</style></head><body><div class="sp"></div><p style="color:#555;margin-top:20px">Genererar PDF…</p></body></html>');
+        }
+      }
+
       try {
-        if (!cvData.name) {
-          showToast('⚠️ Fyll i ditt namn först', 'error');
+        if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Arbetar...'; }
+        showToast('⏳ Genererar PDF...', 'info');
+
+        // ── Försök server-side PDF (fixar iOS + bättre kvalitet) ─────────────
+        try {
+          const { blob, fileName } = await _generateServerPDF();
+          const url = URL.createObjectURL(blob);
+          if (isIOS && iosWindow) {
+            iosWindow.location.href = url;
+          } else {
+            if (iosWindow) iosWindow.close();
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+          }
+          showToast('✅ PDF skapad!', 'success');
           return;
+        } catch (serverErr) {
+          console.warn('Server-PDF misslyckades, faller tillbaka på klient:', serverErr.message);
+          if (iosWindow) { try { iosWindow.close(); } catch(e) {} iosWindow = null; }
+          showToast('⏳ Genererar lokalt…', 'info');
         }
 
-        showToast('⏳ Genererar professionell PDF...', 'info');
-        if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Arbetar...'; }
+        // ── Klient-side fallback (html2canvas + jsPDF) ────────────────────────
 
         // ── Konstanter ─────────────────────────────────────────────────────
         const SCALE       = 2;
@@ -6256,10 +6194,11 @@ Ge bara profiltexten, ingen förklaringtext.`;
         showToast('✅ PDF skapad: ' + fileName, 'success');
 
       } catch (error) {
-        console.error('PDF Error:', error);
+        console.error('PDF Error (klient):', error);
+        if (iosWindow) { try { iosWindow.close(); } catch(e) {} }
         let msg = '❌ ' + (error.message || 'Något gick fel');
-        if (error.message.includes('Canvas'))           msg = '❌ Rendering misslyckades – uppdatera sidan och försök igen';
-        if (error.message.includes('bildkonvertering')) msg = '❌ Bildkonvertering misslyckades – dokumentet kan vara för stort';
+        if (error.message && error.message.includes('Canvas'))           msg = '❌ Rendering misslyckades – uppdatera sidan';
+        if (error.message && error.message.includes('bildkonvertering')) msg = '❌ Bildkonvertering misslyckades';
         showToast(msg, 'error');
       } finally {
         if (btn) { btn.disabled = false; btn.innerHTML = originalHTML; }
@@ -7181,7 +7120,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
   <!-- Huvud-navbar (5 knappar) -->
   <div id="mobileTabBar">
     <!-- 1. Hej -->
-    <button class="mob-tab" id="tabBtn-hej" onclick="mobSwitchTab('hej')">
+    <button class="mob-tab" id="tabBtn-hej" onclick="mobSwitchTab(&#39;hej&#39;)">
       <span class="mob-tab__icon">👋</span>
       <span>Hej</span>
     </button>
@@ -7191,17 +7130,17 @@ Ge bara profiltexten, ingen förklaringtext.`;
       <span>CV</span>
     </button>
     <!-- 3. Matcha arbete -->
-    <button class="mob-tab" id="tabBtn-matcha" onclick="mobSwitchTab('matcha')">
+    <button class="mob-tab" id="tabBtn-matcha" onclick="mobSwitchTab(&#39;matcha&#39;)">
       <span class="mob-tab__icon">🎯</span>
       <span>Matcha</span>
     </button>
     <!-- 4. AI-SYV -->
-    <button class="mob-tab" id="tabBtn-aisyv" onclick="mobSwitchTab('aisyv')">
+    <button class="mob-tab" id="tabBtn-aisyv" onclick="mobSwitchTab(&#39;aisyv&#39;)">
       <span class="mob-tab__icon">🤖</span>
       <span>AI-SYV</span>
     </button>
     <!-- 5. Exportera -->
-    <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab('export')">
+    <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
       <span class="mob-tab__icon">📤</span>
       <span>Exportera</span>
     </button>
@@ -7213,31 +7152,31 @@ Ge bara profiltexten, ingen förklaringtext.`;
       <span class="mob-tab__icon">←</span>
       <span>Tillbaka</span>
     </button>
-    <button class="mob-tab" id="tabBtn-info" onclick="mobSwitchSubTab('info')">
+    <button class="mob-tab" id="tabBtn-info" onclick="mobSwitchSubTab(&#39;info&#39;)">
       <span class="mob-tab__icon">👤</span>
       <span>Info</span>
     </button>
-    <button class="mob-tab" id="tabBtn-jobb" onclick="mobSwitchSubTab('jobb')">
+    <button class="mob-tab" id="tabBtn-jobb" onclick="mobSwitchSubTab(&#39;jobb&#39;)">
       <span class="mob-tab__icon">💼</span>
       <span>Jobb</span>
       <span class="mob-tab__done">✓</span>
     </button>
-    <button class="mob-tab" id="tabBtn-utbildning" onclick="mobSwitchSubTab('utbildning')">
+    <button class="mob-tab" id="tabBtn-utbildning" onclick="mobSwitchSubTab(&#39;utbildning&#39;)">
       <span class="mob-tab__icon">🎓</span>
       <span>Utb.</span>
       <span class="mob-tab__done">✓</span>
     </button>
-    <button class="mob-tab" id="tabBtn-mer" onclick="mobSwitchSubTab('mer')">
+    <button class="mob-tab" id="tabBtn-mer" onclick="mobSwitchSubTab(&#39;mer&#39;)">
       <span class="mob-tab__icon">📋</span>
       <span>Mer</span>
       <span class="mob-tab__done">✓</span>
     </button>
-    <button class="mob-tab" id="tabBtn-profil" onclick="mobSwitchSubTab('profil')">
+    <button class="mob-tab" id="tabBtn-profil" onclick="mobSwitchSubTab(&#39;profil&#39;)">
       <span class="mob-tab__icon">✍️</span>
       <span>Profil</span>
       <span class="mob-tab__done">✓</span>
     </button>
-    <button class="mob-tab" id="tabBtn-forhandsgranska" onclick="mobSwitchSubTab('forhandsgranska')">
+    <button class="mob-tab" id="tabBtn-forhandsgranska" onclick="mobSwitchSubTab(&#39;forhandsgranska&#39;)">
       <span class="mob-tab__icon">👁️</span>
       <span>Visa</span>
       <span class="mob-tab__done">✓</span>
@@ -7500,40 +7439,13 @@ Ge bara profiltexten, ingen förklaringtext.`;
     </div>
 
     <!-- FLIK: AI-SYV -->
-    <div class="mob-panel" id="mobPanel-aisyv" style="padding:0; flex-direction:column; height:100%;">
-
-      <!-- Header -->
-      <div style="padding:16px 16px 12px; border-bottom:1px solid rgba(255,255,255,0.07); background:#1e2740;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#3eb489);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div>
-          <div>
-            <div style="font-size:14px;font-weight:800;color:#fff;">AI-SYV</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);">Studie- &amp; yrkesvägledare · Familjen Helsingborg</div>
-          </div>
-          <button onclick="syv_reset()" style="margin-left:auto;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;">Börja om</button>
-        </div>
+    <div class="mob-panel" id="mobPanel-aisyv">
+      <div class="mob-wip-panel">
+        <div class="mob-wip-panel__icon">🤖</div>
+        <div class="mob-wip-panel__title">AI-SYV</div>
+        <div class="mob-wip-panel__text">Din personliga studie- och yrkesvägledare driven av AI. Få råd, vägledning och karriärstöd dygnet runt.</div>
+        <div class="mob-wip-badge">Under arbete</div>
       </div>
-
-      <!-- Chattflöde -->
-      <div id="syvChat" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:8px;"></div>
-
-      <!-- Snabbfrågor -->
-      <div id="syvQuickBtns" style="padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid rgba(255,255,255,0.06);">
-        <button class="syv-quick" onclick="syv_quick('Vilka utbildningar passar mig?')">Vilka utbildningar passar mig?</button>
-        <button class="syv-quick" onclick="syv_quick('Hur söker jag jobb i Helsingborg?')">Hur söker jag jobb?</button>
-        <button class="syv-quick" onclick="syv_quick('Vad kan jag studera på komvux?')">Komvux</button>
-        <button class="syv-quick" onclick="syv_quick('Berätta om vuxenutbildning i Helsingborg')">Vuxenutbildning HBG</button>
-      </div>
-
-      <!-- Inmatning -->
-      <div style="padding:10px 12px 16px;display:flex;gap:8px;background:#1a1a2e;">
-        <textarea id="syvInput" placeholder="Skriv din fråga..." rows="1"
-          style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 14px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;line-height:1.4;"
-          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();syv_send();}"></textarea>
-        <button onclick="syv_send()" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;border-radius:12px;width:44px;height:44px;color:#fff;font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">↑</button>
-      </div>
-
     </div>
 
   </div>
@@ -7906,44 +7818,25 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
   async function mobGenerateAndSharePDF() {
     if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
+
+    // iOS: öppna fönster INNAN async om share inte finns (user-gesture-kontext)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const canShareFiles = navigator.share && navigator.canShare;
+    let iosWindow = null;
+    if (isIOS && !canShareFiles) {
+      iosWindow = window.open('', '_blank');
+      if (iosWindow) {
+        iosWindow.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;padding:40px;text-align:center;background:#f5f2eb}.sp{display:inline-block;width:36px;height:36px;border:4px solid #e85d26;border-top-color:transparent;border-radius:50%;animation:s 0.8s linear infinite}@keyframes s{to{transform:rotate(360deg)}}</style></head><body><div class="sp"></div><p style="color:#555;margin-top:20px">Genererar PDF…</p></body></html>');
+      }
+    }
+
     showToast('⏳ Skapar PDF...', 'info');
-    const mainContainer = document.querySelector('.main-container');
     try {
-      const { jsPDF } = window.jspdf;
-      const cvEl = document.getElementById('cvDocument');
-      if (!cvEl) { showToast('❌ Kunde inte hitta CV', 'error'); return; }
-      // Gör cvDocument synligt temporärt för html2canvas
-      if (mainContainer) {
-        mainContainer.style.visibility = 'visible';
-        mainContainer.style.position = 'absolute';
-        mainContainer.style.left = '-9999px';
-        mainContainer.style.top = '0';
-        mainContainer.style.zIndex = '-1';
-      }
-      await new Promise(r => setTimeout(r, 100));
-      const canvas = await html2canvas(cvEl, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false
-      });
-      // Återställ
-      if (mainContainer) {
-        mainContainer.style.visibility = 'hidden';
-        mainContainer.style.position = 'fixed';
-        mainContainer.style.left = '-9999px';
-        mainContainer.style.zIndex = '';
-      }
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-      const blob = pdf.output('blob');
-      const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_CV.pdf';
+      const { blob, fileName } = await _generateServerPDF();
       const file = new File([blob], fileName, { type: 'application/pdf' });
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+
+      if (canShareFiles && navigator.canShare({ files: [file] })) {
+        if (iosWindow) { try { iosWindow.close(); } catch(e) {} }
         await navigator.share({
           title: 'Mitt CV — ' + (cvData.name || ''),
           text: 'Här är mitt CV skapat med Pathfinder.',
@@ -7951,15 +7844,25 @@ Ge bara profiltexten, ingen förklaringtext.`;
         });
         showToast('✅ Delat!', 'success');
       } else {
-        pdf.save(fileName);
-        showToast('📄 PDF sparad!', 'success');
+        // Fallback: öppna PDF
+        const url = URL.createObjectURL(blob);
+        if (isIOS && iosWindow) {
+          iosWindow.location.href = url;
+          showToast('📄 PDF öppnad — spara via dela-knappen', 'success');
+        } else {
+          if (iosWindow) { try { iosWindow.close(); } catch(e) {} }
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          showToast('📄 PDF sparad!', 'success');
+        }
       }
     } catch(e) {
-      if (mainContainer) {
-        mainContainer.style.visibility = 'hidden';
-        mainContainer.style.position = 'fixed';
-        mainContainer.style.left = '-9999px';
-      }
+      if (iosWindow) { try { iosWindow.close(); } catch(err) {} }
       if (e.name !== 'AbortError') showToast('❌ Fel: ' + e.message, 'error');
     }
   }
@@ -8161,155 +8064,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
       mobLoadFields();
     }
   });
-
-  // =====================================================
-  // AI-SYV — chatt-logik
-  // =====================================================
-
-  const SYV_SYSTEM = `Du är en AI-driven studie- och yrkesvägledare kopplad till Familjen Helsingborg (Helsingborgs stad och dess verksamheter). Du hjälper människor som söker arbete eller vill utbilda sig i Helsingborgsregionen.
-
-Du pratar BARA om utbildning som leder till arbete. Allt du rekommenderar ska ha ett tydligt syfte — att hjälpa personen komma in på arbetsmarknaden eller byta jobb.
-
-Dina ämnen:
-- Yrkesutbildningar, komvux, SFI, KY-utbildningar, folkhögskola — alltid kopplat till vilket jobb det leder till
-- Arbetsmarknad, jobbsökning och vad arbetsgivare söker
-- Karriärvägar och vad olika utbildningar öppnar för dörrar
-- Omvärldsanalys — vilka branscher växer, var finns jobben
-- Helsingborgs kommuns insatser för utbildning och arbete
-
-Du rekommenderar ALDRIG utbildning utan att koppla den till konkreta jobb och arbetsmarknad.
-Om någon frågar om något annat, svara: "Det kan jag tyvärr inte hjälpa till med — men fråga mig gärna om utbildning eller jobb!"
-
-Prata enkelt och mänskligt. Inga krångliga ord. Korta svar. Använd gärna punktlistor.
-Visa alltid omtanke och uppmuntran.`;
-
-  let syvHistory = [];
-  let syvKartlaggning = {};
-  let syvKartlaggningStep = 0;
-
-  const SYV_KARTLAGGNING = [
-    {
-      fraga: "Jobbar du idag, eller är du arbetssökande?",
-      alternativ: ["Jag jobbar", "Jag söker jobb", "Jag studerar", "Jag är sjukskriven / föräldraledig"]
-    },
-    {
-      fraga: "Vad är ditt mål just nu?",
-      alternativ: ["Hitta ett jobb snabbt", "Byta karriär", "Utbilda mig vidare", "Vet inte riktigt"]
-    },
-    {
-      fraga: "Vilken utbildningsnivå har du?",
-      alternativ: ["Grundskola", "Gymnasieutbildning", "Yrkesutbildning / KY", "Högskoleutbildning"]
-    },
-    {
-      fraga: "Vilka områden är du intresserad av?",
-      alternativ: ["Vård & omsorg", "Teknik & IT", "Handel & service", "Bygg & industri", "Utbildning & socialt arbete", "Annat / vet inte"]
-    }
-  ];
-
-  function syv_init() {
-    syvHistory = [];
-    syvKartlaggning = {};
-    syvKartlaggningStep = 0;
-    const chat = document.getElementById('syvChat');
-    if (!chat) return;
-    chat.innerHTML = '';
-    syv_addBubble('ai', '👋 Hej och välkommen!\n\nJag är din personliga AI-vägledare — ihopkopplad med Familjen Helsingborg, men kan svara på det mesta kring utbildning och arbete.\n\nLåt mig ställa några korta frågor så kan jag guida dig rätt. 🎯');
-    setTimeout(() => syv_kartlaggning_step(), 700);
-  }
-
-  function syv_kartlaggning_step() {
-    if (syvKartlaggningStep >= SYV_KARTLAGGNING.length) {
-      syv_kartlaggning_done();
-      return;
-    }
-    const step = SYV_KARTLAGGNING[syvKartlaggningStep];
-    const btns = step.alternativ.map(a =>
-      `<button onclick="syv_kartlaggning_svar('${a.replace(/'/g, "\\'")}')">${a}</button>`
-    ).join('');
-    syv_addBubble('ai', step.fraga + '<div class="syv-kartlaggning">' + btns + '</div>');
-  }
-
-  function syv_kartlaggning_svar(svar) {
-    const step = SYV_KARTLAGGNING[syvKartlaggningStep];
-    syvKartlaggning[step.fraga] = svar;
-    syv_addBubble('user', svar);
-    document.querySelectorAll('.syv-kartlaggning').forEach(el => el.remove());
-    syvKartlaggningStep++;
-    setTimeout(() => syv_kartlaggning_step(), 400);
-  }
-
-  function syv_kartlaggning_done() {
-    const sammanfattning = Object.values(syvKartlaggning).join(' · ');
-    syvHistory.push({ role: 'user', content: '[Bakgrund om mig: ' + sammanfattning + ']' });
-    syvHistory.push({ role: 'assistant', content: 'Tack! Nu vet jag lite mer om dig. Vad vill du veta mer om?' });
-    syv_addBubble('ai', 'Tack! Nu vet jag lite mer om dig. 💪\n\nVad vill du veta mer om? Välj en snabbfråga nedan eller skriv fritt!');
-  }
-
-  function syv_addBubble(role, html) {
-    const chat = document.getElementById('syvChat');
-    if (!chat) return;
-    const div = document.createElement('div');
-    div.className = 'syv-bubble syv-bubble--' + role;
-    div.innerHTML = html.replace(/\n/g, '<br>');
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-  }
-
-  function syv_quick(text) {
-    document.getElementById('syvInput').value = text;
-    syv_send();
-  }
-
-  async function syv_send() {
-    const input = document.getElementById('syvInput');
-    const text = (input.value || '').trim();
-    if (!text) return;
-    input.value = '';
-    input.style.height = 'auto';
-
-    syv_addBubble('user', text);
-    syvHistory.push({ role: 'user', content: text });
-
-    const chat = document.getElementById('syvChat');
-    const typing = document.createElement('div');
-    typing.className = 'syv-bubble syv-bubble--typing';
-    typing.id = 'syvTyping';
-    typing.textContent = 'Skriver...';
-    chat.appendChild(typing);
-    chat.scrollTop = chat.scrollHeight;
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-opus-4-6',
-          max_tokens: 500,
-          system: SYV_SYSTEM,
-          messages: syvHistory
-        })
-      });
-      const data = await res.json();
-      const reply = data.content[0].text.trim();
-      document.getElementById('syvTyping') && document.getElementById('syvTyping').remove();
-      syv_addBubble('ai', reply);
-      syvHistory.push({ role: 'assistant', content: reply });
-      if (syvHistory.length > 20) syvHistory = syvHistory.slice(-20);
-    } catch(e) {
-      document.getElementById('syvTyping') && document.getElementById('syvTyping').remove();
-      syv_addBubble('ai', 'Oj, något gick fel. Försök igen om en stund!');
-    }
-  }
-
-  function syv_reset() { syv_init(); }
-
-  // Initiera när AI-SYV-fliken öppnas
-  const _origMobSwitchTabSYV = mobSwitchTab;
-  window.mobSwitchTab = function(tab) {
-    _origMobSwitchTabSYV(tab);
-    if (tab === 'aisyv' && syvHistory.length === 0) syv_init();
-  };
-
   </script>
 
 </body></html>
