@@ -6013,8 +6013,8 @@ ${styleTexts}
       const { jsPDF } = window.jspdf;
 
       const SCALE        = 2;
-      const A4_PX_W      = 794;
-      const MARGIN_MM    = 10;
+      const A4_PX_W      = 920;   // Bredare rendering → mindre text i PDF
+      const MARGIN_MM    = 8;
       const PAGE_W_MM    = 210;
       const PAGE_H_MM    = 297;
       const CONTENT_H_MM = PAGE_H_MM - MARGIN_MM * 2;
@@ -6041,6 +6041,10 @@ ${styleTexts}
       const cvClone = cvElement.cloneNode(true);
       cvClone.style.borderRadius = '0';
       cvClone.style.boxShadow    = 'none';
+      // Justera radavstånd för PDF
+      const pdfStyle = document.createElement('style');
+      pdfStyle.textContent = '.cv-summary, .cv-profile, p { line-height: 1.45 !important; }';
+      cvClone.prepend(pdfStyle);
       tempContainer.appendChild(cvClone);
       document.body.appendChild(tempContainer);
 
