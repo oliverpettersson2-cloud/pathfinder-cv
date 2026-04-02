@@ -7660,11 +7660,8 @@ ${styleTexts}
           <div id="matchaKeywords" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
         </div>
         <div class="mob-section">
-          <div class="mob-section-title">Anpassad profiltext</div>
-          <div id="matchaSuggestedText" style="background:rgba(62,180,137,0.08);border:1.5px solid rgba(62,180,137,0.25);border-radius:12px;padding:14px;font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);margin-bottom:12px;"></div>
-          <button class="mob-btn-primary mob-btn-green" onclick="matchaApplyText()" style="width:100%;">
-            ✅ Använd denna profiltext
-          </button>
+          <div class="mob-section-title">Välj ett alternativ</div>
+          <div id="matchaAlternatives"></div>
         </div>
       </div>
 
@@ -9086,7 +9083,6 @@ ${styleTexts}
   });
 
   // ===== JOBBMATCHNING =====
-  let matchaSuggestedTextValue = '';
 
   function matchaPopulateCvSelect() {
     const sel = document.getElementById('matchaCvSelect');
@@ -9114,13 +9110,15 @@ ${styleTexts}
     }
 
     const cvSummary = [
-      selectedCV.summary ? 'Profiltext: ' + selectedCV.summary : '',
+      selectedCV.name ? 'Namn: ' + selectedCV.name : '',
       selectedCV.title ? 'Yrkestitel: ' + selectedCV.title : '',
+      selectedCV.summary ? 'Nuvarande profiltext: ' + selectedCV.summary : '',
       selectedCV.skills && selectedCV.skills.length ? 'Kompetenser: ' + selectedCV.skills.join(', ') : '',
-      selectedCV.jobs && selectedCV.jobs.length ? 'Erfarenhet: ' + selectedCV.jobs.map(j => j.title + (j.company ? ' pa ' + j.company : '')).join('; ') : ''
+      selectedCV.jobs && selectedCV.jobs.length ? 'Erfarenhet: ' + selectedCV.jobs.map(j => j.title + (j.company ? ' pa ' + j.company : '') + (j.desc1 ? ' - ' + j.desc1 : '')).join('; ') : '',
+      selectedCV.education && selectedCV.education.length ? 'Utbildning: ' + selectedCV.education.map(e => e.degree + (e.school ? ' vid ' + e.school : '')).join('; ') : ''
     ].filter(Boolean).join('\n');
 
-    showAiLoader('Analyserar annons...', 'AI matchar ditt CV mot tjansen');
+    showAiLoader('Analyserar annons...', 'AI skriver 3 personliga alternativ');
     document.getElementById('matchaResult').style.display = 'none';
 
     try {
@@ -9129,11 +9127,11 @@ ${styleTexts}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-opus-4-5',
-          max_tokens: 1000,
-          system: 'Du ar en CV-expert. Svara ALLTID med giltig JSON och inget annat. Inga backticks, inga forklaringar.',
+          max_tokens: 1500,
+          system: 'Du ar en CV-expert som skriver personliga och direkta sokbrev-inledningar pa svenska. Svara ALLTID med giltig JSON och inget annat. Inga backticks.',
           messages: [{
             role: 'user',
-            content: 'CV:\n' + cvSummary + '\n\nJobbannons:\n' + adText + '\n\nSvara med JSON: {"keywords": [{"word": "...", "status": "match|partial|missing"}], "profileText": "..."} dar profileText ar en anpassad profiltext pa svenska (2-4 meningar) som naturligt vaver in annonsens krav. Max 8 keywords.'
+            content: 'CV:\n' + cvSummary + '\n\nJobbannons:\n' + adText + '\n\nSvara med JSON: {"company": "foretagsnamn eller Tom strang om okant", "role": "tjanstenamn", "keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1", "alt2", "alt3"]}\n\nAlternativen ska vara personliga profiltexter (3-5 meningar) riktade direkt mot just detta foretag och tjanst. Inled garna med nagot i stil med "Jag soker tjansten som [roll] hos [foretag] eftersom..." eller "Med min bakgrund inom... ar jag overtygad om att jag kan bidra med... hos [foretag]." Varje alternativ ska ha olika vinkel: ett mer erfarenhetsfokuserat, ett mer motivationsfokuserat, ett mer kompetens/resultatfokuserat. Max 8 keywords.'
           }]
         })
       });
@@ -9144,6 +9142,7 @@ ${styleTexts}
       let parsed;
       try { parsed = JSON.parse(raw); } catch(e) { throw new Error('Kunde inte tolka AI-svar'); }
 
+      // Nyckelord
       const kwEl = document.getElementById('matchaKeywords');
       kwEl.innerHTML = '';
       const colors = {
@@ -9159,8 +9158,20 @@ ${styleTexts}
         kwEl.appendChild(span);
       });
 
-      matchaSuggestedTextValue = parsed.profileText || '';
-      document.getElementById('matchaSuggestedText').textContent = matchaSuggestedTextValue;
+      // 3 alternativ
+      const altEl = document.getElementById('matchaAlternatives');
+      altEl.innerHTML = '';
+      const labels = ['Erfarenhetsfokus', 'Motivationsfokus', 'Kompetens & resultat'];
+      (parsed.alternatives || []).forEach((alt, i) => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;margin-bottom:12px;';
+        card.innerHTML =
+          '<div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:8px;">' + (labels[i] || 'Alternativ ' + (i+1)) + '</div>' +
+          '<div style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);margin-bottom:12px;">' + alt + '</div>' +
+          '<button class="mob-btn-primary mob-btn-green" style="width:100%;font-size:13px;" onclick="matchaApplyText(' + JSON.stringify(alt) + ')">Anvand detta alternativ</button>';
+        altEl.appendChild(card);
+      });
+
       document.getElementById('matchaResult').style.display = 'block';
       hideAiLoader();
 
@@ -9169,13 +9180,13 @@ ${styleTexts}
     }
   }
 
-  function matchaApplyText() {
-    if (!matchaSuggestedTextValue) return;
-    cvData.summary = matchaSuggestedTextValue;
+  function matchaApplyText(text) {
+    if (!text) return;
+    cvData.summary = text;
     const summaryEl = document.getElementById('summary');
-    if (summaryEl) summaryEl.value = matchaSuggestedTextValue;
+    if (summaryEl) summaryEl.value = text;
     const mobSummaryEl = document.getElementById('mobSummary');
-    if (mobSummaryEl) mobSummaryEl.value = matchaSuggestedTextValue;
+    if (mobSummaryEl) mobSummaryEl.value = text;
     saveData();
     updatePreview();
     showToast('Profiltext uppdaterad!', 'success');
