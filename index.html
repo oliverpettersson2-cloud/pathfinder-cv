@@ -7358,10 +7358,10 @@ ${styleTexts}
     <div class="mob-panel" id="mobPanel-export" style="padding-bottom:100px; padding-top:16px;">
 
       <div class="mob-export-card">
-        <h3>📤 Dela mitt CV som PDF</h3>
-        <p>Skapar en PDF och öppnar delningsmenyn — välj Mail, WhatsApp, AirDrop eller annan app.</p>
+        <h3>📄 Öppna mitt CV som PDF</h3>
+        <p>Skapar en PDF och öppnar den i webbläsaren — tryck sedan på dela-ikonen för att spara till Filer.</p>
         <button class="mob-btn-primary mob-btn-export" id="mobShareBtn" style="width:100%;">
-          📤 Dela CV som PDF
+          📄 Öppna CV som PDF
         </button>
       </div>
 
@@ -7828,9 +7828,10 @@ ${styleTexts}
   async function mobGenerateAndSharePDF() {
     if (!cvData.name) { showToast('⚠️ Fyll i ditt namn först', 'error'); return; }
 
-    // iOS: öppna fönster INNAN async om share inte finns (user-gesture-kontext)
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const canShareFiles = navigator.share && navigator.canShare;
+    const canShareFiles = !!(navigator.share && navigator.canShare);
+
+    // Pre-öppna fönster på iOS när share inte finns (måste ske i user-gesture)
     let iosWindow = null;
     if (isIOS && !canShareFiles) {
       iosWindow = window.open('', '_blank');
@@ -7841,9 +7842,44 @@ ${styleTexts}
 
     showToast('⏳ Skapar PDF...', 'info');
     try {
-      const { blob, fileName } = await _generateServerPDF();
-      const file = new File([blob], fileName, { type: 'application/pdf' });
+      let blob, fileName;
 
+      // Försök server-side
+      try {
+        ({ blob, fileName } = await _generateServerPDF());
+      } catch (serverErr) {
+        console.warn('Server misslyckades, kör klient-fallback:', serverErr.message);
+
+        // Klient-side fallback med html2canvas + jsPDF
+        if (!window.jspdf) throw new Error('PDF-biblioteket ej laddat');
+        const { jsPDF } = window.jspdf;
+        const cvEl = document.getElementById('cvDocument');
+        if (!cvEl) throw new Error('CV-element saknas');
+
+        const canvas = await html2canvas(cvEl, {
+          scale: 2, useCORS: true, allowTaint: true,
+          backgroundColor: '#ffffff', logging: false
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pdfW = pdf.internal.pageSize.getWidth();
+        const pdfH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+        fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_CV.pdf';
+        blob = pdf.output('blob');
+
+        // iOS utan share: använd data URI direkt
+        if (isIOS && !canShareFiles) {
+          if (iosWindow) {
+            iosWindow.location.href = pdf.output('datauristring');
+            showToast('✅ PDF öppnad!', 'success');
+          }
+          return;
+        }
+      }
+
+      // Dela eller ladda ned
+      const file = new File([blob], fileName, { type: 'application/pdf' });
       if (canShareFiles && navigator.canShare({ files: [file] })) {
         if (iosWindow) { try { iosWindow.close(); } catch(e) {} }
         await navigator.share({
@@ -7853,7 +7889,6 @@ ${styleTexts}
         });
         showToast('✅ Delat!', 'success');
       } else {
-        // Fallback: öppna PDF
         const url = URL.createObjectURL(blob);
         if (isIOS && iosWindow) {
           iosWindow.location.href = url;
@@ -7861,11 +7896,8 @@ ${styleTexts}
         } else {
           if (iosWindow) { try { iosWindow.close(); } catch(e) {} }
           const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          a.href = url; a.download = fileName;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
           setTimeout(() => URL.revokeObjectURL(url), 2000);
           showToast('📄 PDF sparad!', 'success');
         }
