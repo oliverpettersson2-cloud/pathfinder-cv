@@ -7645,13 +7645,32 @@ ${styleTexts}
         <select id="matchaCvSelect" class="mob-input" style="margin-bottom:0;"></select>
       </div>
 
-      <div class="mob-section" style="margin-top:16px;">
-        <div class="mob-section-title">Klistra in jobbannonsen</div>
-        <textarea id="matchaAdText" class="mob-input" rows="6" placeholder="Klistra in hela annonsen här..." style="resize:vertical;min-height:120px;"></textarea>
+      <div class="mob-section" style="margin-top:14px;">
+        <div class="mob-section-title">Sök jobbannons</div>
+        <div style="position:relative;">
+          <input id="matchaSearch" type="text" class="mob-input" placeholder="T.ex. undersköterska Helsingborg..." style="margin-bottom:0;padding-right:44px;" oninput="matchaSearchDebounce()">
+          <div id="matchaSearchSpinner" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;border:2px solid rgba(255,255,255,0.15);border-top-color:#3eb489;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+        </div>
+        <div id="matchaSearchResults" style="display:none;margin-top:6px;border-radius:12px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.1);"></div>
       </div>
 
-      <button class="mob-btn-primary mob-btn-ai" onclick="matchaCV()" style="width:100%;margin-bottom:20px;">
-        🎯 Matcha mot annons
+      <div id="matchaSelectedAd" style="display:none;margin-top:14px;background:rgba(62,180,137,0.08);border:1.5px solid rgba(62,180,137,0.25);border-radius:12px;padding:12px 14px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(62,180,137,0.7);margin-bottom:4px;">Vald annons</div>
+        <div id="matchaSelectedTitle" style="font-size:14px;font-weight:600;color:#fff;"></div>
+        <div id="matchaSelectedCompany" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;"></div>
+        <button onclick="matchaClearAd()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;margin-top:6px;padding:0;">✕ Välj annan</button>
+      </div>
+
+      <div id="matchaManualSection" style="margin-top:14px;">
+        <div class="mob-section">
+          <div class="mob-section-title">Eller fyll i manuellt</div>
+          <input id="matchaRole" type="text" class="mob-input" placeholder="Tjänstetitel..." style="margin-bottom:8px;">
+          <input id="matchaCompany" type="text" class="mob-input" placeholder="Företag..." style="margin-bottom:0;">
+        </div>
+      </div>
+
+      <button class="mob-btn-primary mob-btn-ai" onclick="matchaCV()" style="width:100%;margin-bottom:20px;margin-top:16px;">
+        🎯 Generera 3 alternativ
       </button>
 
       <div id="matchaResult" style="display:none;">
@@ -9084,6 +9103,78 @@ ${styleTexts}
 
   // ===== JOBBMATCHNING =====
 
+  // JobTech-sökning
+  let matchaSearchTimer = null;
+  let matchaSelectedAdData = null;
+
+  function matchaSearchDebounce() {
+    clearTimeout(matchaSearchTimer);
+    matchaSearchTimer = setTimeout(matchaDoSearch, 400);
+  }
+
+  async function matchaDoSearch() {
+    const q = (document.getElementById('matchaSearch').value || '').trim();
+    const resultsEl = document.getElementById('matchaSearchResults');
+    const spinner = document.getElementById('matchaSearchSpinner');
+    if (q.length < 2) { resultsEl.style.display = 'none'; return; }
+
+    spinner.style.display = 'block';
+    try {
+      const resp = await fetch('https://jobsearch.api.jobtechdev.se/search?q=' + encodeURIComponent(q) + '&limit=5&offset=0');
+      if (!resp.ok) throw new Error('API-fel');
+      const data = await resp.json();
+      spinner.style.display = 'none';
+      const hits = data.hits || [];
+      if (!hits.length) { resultsEl.innerHTML = '<div style="padding:12px;font-size:13px;color:rgba(255,255,255,0.4);">Inga annonser hittades</div>'; resultsEl.style.display = 'block'; return; }
+      resultsEl.innerHTML = '';
+      hits.forEach(hit => {
+        const el = document.createElement('div');
+        el.style.cssText = 'padding:12px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.04);transition:background 0.15s;';
+        el.onmouseover = () => el.style.background = 'rgba(62,180,137,0.1)';
+        el.onmouseout = () => el.style.background = 'rgba(255,255,255,0.04)';
+        const title = hit.headline || '';
+        const company = (hit.employer && hit.employer.name) || '';
+        const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
+        el.innerHTML = '<div style="font-size:13px;font-weight:600;color:#fff;">' + title + '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">' + company + (muni ? ' · ' + muni : '') + '</div>';
+        el.onclick = () => matchaSelectAd(hit);
+        resultsEl.appendChild(el);
+      });
+      resultsEl.style.display = 'block';
+    } catch(e) {
+      spinner.style.display = 'none';
+      resultsEl.innerHTML = '<div style="padding:12px;font-size:13px;color:rgba(232,93,38,0.8);">Kunde inte hämta annonser</div>';
+      resultsEl.style.display = 'block';
+    }
+  }
+
+  function matchaSelectAd(hit) {
+    matchaSelectedAdData = hit;
+    const title = hit.headline || '';
+    const company = (hit.employer && hit.employer.name) || '';
+    const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
+    document.getElementById('matchaSelectedTitle').textContent = title;
+    document.getElementById('matchaSelectedCompany').textContent = company + (muni ? ' · ' + muni : '');
+    document.getElementById('matchaSelectedAd').style.display = 'block';
+    document.getElementById('matchaSearchResults').style.display = 'none';
+    document.getElementById('matchaManualSection').style.display = 'none';
+    // Fyll även manuella fält
+    document.getElementById('matchaRole').value = title;
+    document.getElementById('matchaCompany').value = company;
+  }
+
+  function matchaClearAd() {
+    matchaSelectedAdData = null;
+    document.getElementById('matchaSelectedAd').style.display = 'none';
+    document.getElementById('matchaManualSection').style.display = 'block';
+    document.getElementById('matchaSearch').value = '';
+    document.getElementById('matchaSearchResults').style.display = 'none';
+    document.getElementById('matchaRole').value = '';
+    document.getElementById('matchaCompany').value = '';
+  }
+
+  // ===== JOBBMATCHNING =====
+
   function matchaPopulateCvSelect() {
     const sel = document.getElementById('matchaCvSelect');
     if (!sel) return;
@@ -9098,8 +9189,20 @@ ${styleTexts}
   }
 
   async function matchaCV() {
-    const adText = (document.getElementById('matchaAdText').value || '').trim();
-    if (!adText) { showToast('Klistra in en jobbannons forst', 'error'); return; }
+    // Hämta role/company från vald annons eller manuella fält
+    let role, company, adText;
+    if (matchaSelectedAdData) {
+      role = matchaSelectedAdData.headline || '';
+      company = (matchaSelectedAdData.employer && matchaSelectedAdData.employer.name) || '';
+      adText = (matchaSelectedAdData.description && matchaSelectedAdData.description.text) || '';
+      // Trimma annonstexten till max 1500 tecken
+      if (adText.length > 1500) adText = adText.substring(0, 1500) + '...';
+    } else {
+      role = (document.getElementById('matchaRole').value || '').trim();
+      company = (document.getElementById('matchaCompany').value || '').trim();
+      adText = '';
+    }
+    if (!role || !company) { showToast('Fyll i tjanstetitel och foretag', 'error'); return; }
 
     const selVal = document.getElementById('matchaCvSelect').value;
     let selectedCV = cvData;
@@ -9118,7 +9221,9 @@ ${styleTexts}
       selectedCV.education && selectedCV.education.length ? 'Utbildning: ' + selectedCV.education.map(e => e.degree + (e.school ? ' vid ' + e.school : '')).join('; ') : ''
     ].filter(Boolean).join('\n');
 
-    showAiLoader('Analyserar annons...', 'AI skriver 3 personliga alternativ');
+    const prompt = 'CV:\n' + cvSummary + '\n\nSoker: ' + role + ' hos ' + company + (adText ? '\nAnnonsinfo: ' + adText : '') + '\n\nSvara med JSON: {"keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1", "alt2", "alt3"]}\n\nAlternativen ska vara personliga profiltexter (3-5 meningar) direkt riktade mot ' + company + ' och rollen som ' + role + '. Inled t.ex. med "Jag soker tjansten som ' + role + ' hos ' + company + ' eftersom..." eller liknande. Tre olika vinklar: 1) erfarenhetsfokus, 2) motivationsfokus, 3) kompetens och resultat. Max 6 keywords.';
+
+    showAiLoader('Genererar alternativ...', 'AI skriver 3 personliga texter');
     document.getElementById('matchaResult').style.display = 'none';
 
     try {
@@ -9126,13 +9231,10 @@ ${styleTexts}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-opus-4-5',
+          model: 'claude-sonnet-4-6',
           max_tokens: 1500,
-          system: 'Du ar en CV-expert som skriver personliga och direkta sokbrev-inledningar pa svenska. Svara ALLTID med giltig JSON och inget annat. Inga backticks.',
-          messages: [{
-            role: 'user',
-            content: 'CV:\n' + cvSummary + '\n\nJobbannons:\n' + adText + '\n\nSvara med JSON: {"company": "foretagsnamn eller Tom strang om okant", "role": "tjanstenamn", "keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1", "alt2", "alt3"]}\n\nAlternativen ska vara personliga profiltexter (3-5 meningar) riktade direkt mot just detta foretag och tjanst. Inled garna med nagot i stil med "Jag soker tjansten som [roll] hos [foretag] eftersom..." eller "Med min bakgrund inom... ar jag overtygad om att jag kan bidra med... hos [foretag]." Varje alternativ ska ha olika vinkel: ett mer erfarenhetsfokuserat, ett mer motivationsfokuserat, ett mer kompetens/resultatfokuserat. Max 8 keywords.'
-          }]
+          system: 'Du ar en CV-expert. Svara ALLTID med giltig JSON och inget annat. Inga markdown-backticks, inga forklaringar utanfor JSON.',
+          messages: [{ role: 'user', content: prompt }]
         })
       });
 
