@@ -1,7 +1,6 @@
-// api/utbildningar.js — Utbildningsdata för Familjen Helsingborg
-// Försöker Skolverket API, faller annars tillbaka på kuraterad statisk lista
-
-const FH_MUNICIPALITIES = [1283, 1282, 1284, 1292, 1260, 1256, 1285, 1252, 1265, 1277, 1266];
+// api/utbildningar.js
+// Returnerar kuraterad lista över utbildningar i Familjen Helsingborg
+// Skolverkets beta-API är instabilt — använder statisk lista som uppdateras manuellt
 
 const FH_STATIC = [
   { namn: 'Undersköterska', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Skyddad yrkestitel. ~1 år.' },
@@ -38,53 +37,18 @@ const FH_AREAS = [
   { namn: 'Ekonomi', emoji: '📊' },
 ];
 
-async function trySkolverk() {
-  const munStr = FH_MUNICIPALITIES.join(',');
-  const headers = {
-    'accept': 'application/vnd.skolverket.plannededucations.api.v3.hal+json',
-    'User-Agent': 'Pathfinder-CV/1.0'
-  };
-  const url = `https://api.skolverket.se/planned-educations/v3/education-events?municipalityCode=${munStr}&page=0&size=100`;
-  const res = await fetch(url, { headers, signal: AbortSignal.timeout(5000) });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  const items = data._embedded?.educationEvents || data.educationEvents || [];
-  return items.map(ev => ({
-    namn: ev.name || ev.educationEventName || '-',
-    kommun: ev.municipalityName || String(ev.municipalityCode || ''),
-    typ: ev.educationType || 'Komvux',
-    info: ev.entryRequirements || ''
-  })).filter(u => u.namn !== '-');
-}
-
-module.exports = async (req, res) => {
+module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=7200');
+  res.setHeader('Cache-Control', 's-maxage=86400');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-  let utbildningar = [];
-  let kalla = 'Statisk lista (skanevux.se)';
-
-  try {
-    const live = await trySkolverk();
-    if (live.length > 0) {
-      utbildningar = live;
-      kalla = 'Skolverket Planned Educations API (realtid)';
-    } else {
-      throw new Error('Inga poster');
-    }
-  } catch (e) {
-    utbildningar = FH_STATIC;
-    kalla = 'Kuraterad lista — se skanevux.se for aktuella program';
-  }
-
   res.json({
-    kalla,
+    kalla: 'Kuraterad lista (skanevux.se)',
     hamtad: new Date().toISOString().slice(0, 10),
-    antal: utbildningar.length,
+    antal: FH_STATIC.length,
     omraden: FH_AREAS,
-    utbildningar,
+    utbildningar: FH_STATIC,
     ansok: 'https://skanevux.se',
-    info: 'Alla i Familjen Helsingborgs 11 kommuner kan soka samtliga komvux yrkesutbildningar via en gemensam ansokan.'
+    info: 'Alla i Familjen Helsingborgs 11 kommuner kan soka samtliga komvux yrkesutbildningar via en gemensam ansokan pa Helsingborg.se.'
   });
 };
