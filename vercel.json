@@ -8,6 +8,10 @@
     "api/supabase.js": {
       "memory": 512,
       "maxDuration": 30
+    },
+    "api/pdf.js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
   }
 }
