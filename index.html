@@ -1706,6 +1706,17 @@
 
       /* Dölj desktop-nav steg-indikator på mobil */
       .nav-steps { display: none !important; }
+      /* Mobil navbar: email vänster | logo center | logga ut höger */
+      nav { position: relative; }
+      .nav-logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        pointer-events: none;
+      }
+      .nav-auth-badge { order: 1; }
+      .nav-logout-btn { order: 3; margin-left: auto; }
 
       /* Kompaktare navbar */
       nav { height: 56px; padding: 0 16px; }
@@ -2176,9 +2187,9 @@
   <!-- ===== AUTENTISERINGSOVERLAY ===== -->
   <div id="authOverlay" class="hidden">
     <div class="auth-card">
-      <div class="auth-logo">Path<span>finder</span></div>
-      <div class="auth-tagline">AI-CV-Builder</div>
-      <div class="auth-tagline">Bygg ditt CV med AI</div>
+      <div class="auth-logo">Path<span>finder</span> <span style="font-weight:400; font-style:italic; font-size:0.75em;">AI</span></div>
+      <div class="auth-tagline">Gör ett CV med AI på 15 minuter, en kvart.</div>
+      <div class="auth-tagline">Vi matchar ditt CV mot utbildning &amp; jobbannonser.</div>
 
       <!-- STEG 1: E-postformular -->
       <div id="authStep1" class="auth-step">
@@ -2260,7 +2271,7 @@
       </svg>
       <div>
         <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;line-height:1.1;">Path<span style="color:#f0c040;">finder</span></div>
-        <div style="font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.4);font-family:-apple-system,sans-serif;">CV &amp; Matchning med hjälp av AI</div>
+        <div style="font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.4);font-family:-apple-system,sans-serif;">Din väg mot arbete &amp; studier</div>
       </div>
     </div>
     <!-- STEG-INDIKATOR -->
@@ -2281,14 +2292,13 @@
       </div>
     </div>
 
-    <!-- HÖGER SIDA: email + logga ut -->
-    <div style="display:flex; align-items:center; gap:6px;">
-      <div id="authUserBadge" class="auth-user-badge" style="display: flex; cursor:default;" aria-label="Inloggad anvandare">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        <span id="authUserEmail" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
-      </div>
-      <button onclick="authShowUserMenu()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'" aria-label="Logga ut">Logga ut</button>
+    <!-- EMAIL (vänster på mobil, höger på desktop) -->
+    <div id="authUserBadge" class="auth-user-badge nav-auth-badge" style="display: flex; cursor:default;" aria-label="Inloggad anvandare">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span id="authUserEmail" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
     </div>
+    <!-- LOGGA UT (höger) -->
+    <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'" aria-label="Logga ut">Logga ut</button>
   </nav>
 
   <!-- INSTÄLLNINGSPANEL: API-nyckel -->
@@ -7142,10 +7152,10 @@ ${styleTexts}
       <span class="mob-tab__icon">🤖</span>
       <span>AI-SYV</span>
     </button>
-    <!-- 5. Exportera -->
+    <!-- 5. Sparat -->
     <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
-      <span class="mob-tab__icon">📤</span>
-      <span>Exportera</span>
+      <span class="mob-tab__icon">💾</span>
+      <span>Sparat</span>
     </button>
   </div>
 
@@ -7364,49 +7374,70 @@ ${styleTexts}
 
     <!-- FLIK: Hej -->
     <div class="mob-panel" id="mobPanel-hej">
-      <div style="padding: 8px 0 24px;">
+      <div style="padding: 8px 16px 32px;">
 
         <!-- Hero -->
-        <div style="text-align:center; padding: 32px 16px 24px;">
-          <div style="font-size: 56px; margin-bottom: 12px; filter: drop-shadow(0 4px 12px rgba(62,180,137,0.4));">🧭</div>
-          <div style="font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px;">Välkommen till Pathfinder</div>
-          <div style="font-size: 14px; color: rgba(255,255,255,0.5); font-style: italic;">Ditt CV. På 5 minuter. Gratis.</div>
+        <div style="text-align:center; padding: 28px 0 20px;">
+          <div style="font-size: 52px; margin-bottom: 10px; filter: drop-shadow(0 4px 12px rgba(62,180,137,0.4));">🧭</div>
+          <div style="font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px;">Path<span style="color: #f0c040;">finder</span> AI</div>
+          <div style="font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.6;">Gör ett CV med AI på 15 minuter, en kvart.<br>Vi matchar ditt CV mot utbildning &amp; jobbannonser.</div>
         </div>
 
-        <!-- Tre steg -->
-        <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 4px 24px;">
+        <!-- Klickbara kort -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
 
-          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px; display: flex; align-items: flex-start; gap: 14px;">
-            <div style="font-size: 28px; flex-shrink: 0; margin-top: 2px;">✍️</div>
-            <div>
-              <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">Du fyller i, AI fixar resten</div>
-              <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">Skriv in din info — namn, jobb, utbildning. AI skriver professionella arbetsbeskrivningar åt dig automatiskt.</div>
+          <!-- CV-kortet -->
+          <div onclick="mobToggleCVMenu()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; active:background:rgba(255,255,255,0.12);">
+            <div style="font-size: 24px; flex-shrink: 0;">✍️</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                <div style="font-size: 13px; font-weight: 700; color: #fff;">Nytt CV? AI hjälper dig</div>
+                <span style="font-size: 14px; color: rgba(255,255,255,0.3);">›</span>
+              </div>
+              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.5; margin-bottom: 10px;">Fyll i namn, jobb och utbildning — AI hjälper dig med resten. 10 mallar att välja bland, spara som PDF direkt eller dela direkt.</div>
+              <div style="display: flex; justify-content: flex-end;">
+                <button onclick="event.stopPropagation(); mobToggleCVMenu();" style="padding: 6px 13px; background: rgba(62,180,137,0.15); color: #3eb489; font-size: 11px; font-weight: 700; border: 1px solid rgba(62,180,137,0.35); border-radius: 8px; cursor: pointer;">Skapa CV →</button>
+              </div>
             </div>
           </div>
 
-          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px; display: flex; align-items: flex-start; gap: 14px;">
-            <div style="font-size: 28px; flex-shrink: 0; margin-top: 2px;">🎨</div>
-            <div>
-              <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">Välj ett snyggt CV-tema</div>
-              <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">Tio professionella mallar att välja mellan. Klassiskt, modernt, minimalistiskt — du bestämmer stilen.</div>
+          <!-- Matcha-kortet -->
+          <div onclick="mobSwitchTab('matcha')" style="background: rgba(232,93,38,0.1); border: 1px solid rgba(232,93,38,0.22); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+            <div style="font-size: 24px; flex-shrink: 0;">🎯</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <div style="font-size: 13px; font-weight: 700; color: #e85d26;">Matcha Annonsen</div>
+                <span style="font-size: 14px; color: rgba(232,93,38,0.5);">›</span>
+              </div>
+              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4;">Klistra in en jobbannons — AI anpassar ditt CV direkt mot den tjänsten.</div>
             </div>
           </div>
 
-          <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 18px; display: flex; align-items: flex-start; gap: 14px;">
-            <div style="font-size: 28px; flex-shrink: 0; margin-top: 2px;">📤</div>
-            <div>
-              <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">Exportera och dela direkt</div>
-              <div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">Skicka ditt CV via Mail, WhatsApp eller AirDrop — direkt från mobilen. Klart att skicka till arbetsgivare.</div>
+          <!-- AI-SYV-kortet -->
+          <div onclick="mobSwitchTab('aisyv')" style="background: rgba(62,180,137,0.1); border: 1px solid rgba(62,180,137,0.22); border-radius: 14px; padding: 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+            <div style="font-size: 24px; flex-shrink: 0;">🤖</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <div style="font-size: 13px; font-weight: 700; color: #3eb489;">AI-SYV</div>
+                <span style="font-size: 14px; color: rgba(62,180,137,0.5);">›</span>
+              </div>
+              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4;">Din digitala karriärvägledare — fråga mig om utbildning, jag är kopplad mot Familjen Helsingborg och många andra utbildningssamordnare.</div>
+            </div>
+          </div>
+
+          <!-- Sparat-kortet -->
+          <div onclick="mobSwitchTab('export')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+            <div style="font-size: 24px; flex-shrink: 0;">💾</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <div style="font-size: 13px; font-weight: 700; color: #fff;">Sparat</div>
+                <span style="font-size: 14px; color: rgba(255,255,255,0.3);">›</span>
+              </div>
+              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4;">Dina sparade CV:n — öppna, redigera eller dela när som helst.</div>
             </div>
           </div>
 
         </div>
-
-        <!-- CTA-knapp -->
-        <button onclick="mobToggleCVMenu()" style="width:100%; padding: 18px; background: linear-gradient(135deg, #3eb489 0%, #2d9068 100%); color: #fff; font-size: 16px; font-weight: 800; border: none; border-radius: 16px; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 6px 24px rgba(62,180,137,0.35);">
-          Skapa mitt CV nu →
-        </button>
-
       </div>
     </div>
 
