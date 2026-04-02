@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_15.html -->
+<!-- saved from url=(0049)file:///C:/Users/olive/Downloads/index_api_1.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,8 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="file:///C:/Users/olive/Downloads/pathfinder-favicon.svg">
 
   <!-- PDF Generation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
+  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
   
   
   <style>
@@ -2295,10 +2295,10 @@
     <!-- EMAIL (vänster på mobil, höger på desktop) -->
     <div id="authUserBadge" class="auth-user-badge nav-auth-badge" style="display: flex; cursor:default;" aria-label="Inloggad anvandare">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      <span id="authUserEmail" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+      <span id="authUserEmail" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">oliver.pettersson2@gmail.com</span>
     </div>
     <!-- LOGGA UT (höger) -->
-    <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'" aria-label="Logga ut">Logga ut</button>
+    <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color=&#39;rgba(255,255,255,0.7)&#39;" onmouseout="this.style.color=&#39;rgba(255,255,255,0.35)&#39;" aria-label="Logga ut">Logga ut</button>
   </nav>
 
   <!-- INSTÄLLNINGSPANEL: API-nyckel -->
@@ -7356,18 +7356,28 @@ ${styleTexts}
         <div id="mobCvPreviewWrap" style="transform-origin:top left;width:794px;">
         </div>
       </div>
-      <button id="mobShareBtn"
-        style="margin-top:16px;width:100%;padding:16px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:16px;font-weight:700;border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 15px rgba(16,185,129,0.35);">
-        📄 Spara CV som PDF
+      <button id="mobShareBtn" style="margin-top:16px;width:100%;padding:16px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:16px;font-weight:700;border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 15px rgba(16,185,129,0.35);">
+        Spara CV/dela som PDF
+      </button>
+      <button onclick="mobSaveCVToList()" style="margin-top:10px;width:100%;padding:13px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,0.18);border-radius:12px;cursor:pointer;">
+        Spara CV-version till listan
       </button>
     </div>
 
-    <!-- FLIK 5: Exportera -->
+    <!-- FLIK 5: Sparade CV -->
     <div class="mob-panel" id="mobPanel-export" style="padding-bottom:100px; padding-top:16px;">
 
-      <div class="mob-export-card">
-        <h3>📄 Exportera CV</h3>
-        <p>Gå till <strong>Förhandsgranska</strong>-fliken och tryck på "Spara CV som PDF" för att ladda ned ditt CV.</p>
+      <div style="padding: 0 4px;">
+        <div id="mobSavedCVsList"></div>
+      </div>
+
+      <!-- Detail-vy för ett valt CV -->
+      <div id="mobSavedCVDetail" style="display:none; position:fixed; left:0; right:0; bottom:56px; background:#1e2440; border-top: 1px solid rgba(255,255,255,0.12); border-radius:18px 18px 0 0; padding:20px 16px 28px; z-index:500;">
+        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 16px;"></div>
+        <div id="mobSavedCVDetailTitle" style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;"></div>
+        <div id="mobSavedCVDetailSub" style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:18px;"></div>
+        <button id="mobSavedCVShareBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:10px;">Spara/dela som PDF</button>
+        <button onclick="mobCloseSavedCVDetail()" style="width:100%;padding:12px;background:none;color:rgba(255,255,255,0.5);font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,0.15);border-radius:12px;cursor:pointer;">Stäng</button>
       </div>
 
     </div>
@@ -7402,7 +7412,7 @@ ${styleTexts}
           </div>
 
           <!-- Matcha-kortet -->
-          <div onclick="mobSwitchTab('matcha')" style="background: rgba(232,93,38,0.1); border: 1px solid rgba(232,93,38,0.22); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+          <div onclick="mobSwitchTab(&#39;matcha&#39;)" style="background: rgba(232,93,38,0.1); border: 1px solid rgba(232,93,38,0.22); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
             <div style="font-size: 24px; flex-shrink: 0;">🎯</div>
             <div style="flex: 1;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
@@ -7414,7 +7424,7 @@ ${styleTexts}
           </div>
 
           <!-- AI-SYV-kortet -->
-          <div onclick="mobSwitchTab('aisyv')" style="background: rgba(62,180,137,0.1); border: 1px solid rgba(62,180,137,0.22); border-radius: 14px; padding: 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+          <div onclick="mobSwitchTab(&#39;aisyv&#39;)" style="background: rgba(62,180,137,0.1); border: 1px solid rgba(62,180,137,0.22); border-radius: 14px; padding: 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
             <div style="font-size: 24px; flex-shrink: 0;">🤖</div>
             <div style="flex: 1;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
@@ -7426,7 +7436,7 @@ ${styleTexts}
           </div>
 
           <!-- Sparat-kortet -->
-          <div onclick="mobSwitchTab('export')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+          <div onclick="mobSwitchTab(&#39;export&#39;)" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
             <div style="font-size: 24px; flex-shrink: 0;">💾</div>
             <div style="flex: 1;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
@@ -7550,7 +7560,7 @@ ${styleTexts}
     const btn = document.getElementById('tabBtn-' + tab);
     if (btn) btn.classList.add('mob-tab--active');
 
-    if (tab === 'export') mobBuildTemplateGrid();
+    if (tab === 'export') { mobBuildTemplateGrid(); mobRenderSavedCVs(); }
   }
 
   // ── Synka mobil-fält → cvData + desktop-fält ─────────
@@ -7904,6 +7914,211 @@ ${styleTexts}
     const btn = document.getElementById('mobShareBtn');
     if (btn) btn.addEventListener('click', mobGenerateAndSharePDF);
   });
+
+  // =====================================================
+  // SPARADE CV:N — max 3 st, namngivna efter yrket
+  // =====================================================
+  const SAVED_CVS_KEY = 'pathfinder_saved_cvs';
+
+  function mobGetSavedCVs() {
+    try {
+      const raw = localStorage.getItem(SAVED_CVS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  }
+
+  function mobPutSavedCVs(list) {
+    try { localStorage.setItem(SAVED_CVS_KEY, JSON.stringify(list)); } catch(e) {}
+  }
+
+  function mobSaveCVToList() {
+    const title = (cvData.title || '').trim();
+    if (!title) { showToast('⚠️ Fyll i en yrkestitel under Info först', 'error'); return; }
+    if (!cvData.name) { showToast('⚠️ Fyll i ditt namn under Info först', 'error'); return; }
+
+    let list = mobGetSavedCVs();
+    // Kolla om det redan finns ett CV med samma titel → uppdatera
+    const existing = list.findIndex(c => c.title === title);
+    const snapshot = {
+      id: existing >= 0 ? list[existing].id : 'cv_' + Date.now(),
+      title: title,
+      savedAt: Date.now(),
+      data: JSON.parse(JSON.stringify(cvData))
+    };
+
+    if (existing >= 0) {
+      list[existing] = snapshot;
+      mobPutSavedCVs(list);
+      showToast('✅ CV-version uppdaterad: ' + title, 'success');
+      mobRenderSavedCVs();
+    } else if (list.length >= 3) {
+      // Lista full — fråga användaren vilken som ska ersättas
+      list.sort((a,b) => a.savedAt - b.savedAt);
+      const oldest = list[0];
+      mobConfirmReplace(oldest, snapshot);
+    } else {
+      list.push(snapshot);
+      mobPutSavedCVs(list);
+      showToast('✅ CV-version sparad: ' + title, 'success');
+      mobRenderSavedCVs();
+    }
+  }
+
+  function mobConfirmReplace(oldest, snapshot) {
+    const d = new Date(oldest.savedAt);
+    const dateStr = d.toLocaleDateString('sv-SE', {day:'numeric', month:'long'});
+    const modal = document.createElement('div');
+    modal.id = 'mobReplaceModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;align-items:flex-end;';
+    modal.innerHTML = `
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.55);" onclick="document.getElementById('mobReplaceModal').remove()"></div>
+      <div style="position:relative;width:100%;background:#1e2440;border-radius:18px 18px 0 0;border-top:1px solid rgba(255,255,255,0.12);padding:20px 16px 36px;z-index:1;">
+        <div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 18px;"></div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Lista är full (3/3)</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:20px;">
+          Du har redan 3 sparade CV:n. Vill du ta bort det äldsta för att ge plats åt det nya?
+          <br><br>
+          <span style="color:rgba(255,255,255,0.35);font-size:12px;">Tar bort: <strong style="color:rgba(255,255,255,0.6);">${oldest.title}</strong> (sparat ${dateStr})</span>
+        </div>
+        <button onclick="mobDoReplace()" style="width:100%;padding:14px;background:#e85d26;color:#fff;font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:10px;">
+          Ta bort äldsta &amp; spara nytt
+        </button>
+        <button onclick="document.getElementById('mobReplaceModal').remove()" style="width:100%;padding:12px;background:none;color:rgba(255,255,255,0.5);font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,0.15);border-radius:12px;cursor:pointer;">
+          Avbryt
+        </button>
+      </div>`;
+    document.body.appendChild(modal);
+    // Spara pending snapshot på window tillfälligt
+    window._mobPendingSnapshot = snapshot;
+    window._mobOldestId = oldest.id;
+  }
+
+  function mobDoReplace() {
+    const modal = document.getElementById('mobReplaceModal');
+    if (modal) modal.remove();
+    const snapshot = window._mobPendingSnapshot;
+    if (!snapshot) return;
+    let list = mobGetSavedCVs().filter(c => c.id !== window._mobOldestId);
+    list.push(snapshot);
+    mobPutSavedCVs(list);
+    showToast('✅ CV-version sparad: ' + snapshot.title, 'success');
+    mobRenderSavedCVs();
+    window._mobPendingSnapshot = null;
+    window._mobOldestId = null;
+  }
+
+  function mobDeleteCVFromList(id) {
+    let list = mobGetSavedCVs().filter(c => c.id !== id);
+    mobPutSavedCVs(list);
+    mobCloseSavedCVDetail();
+    mobRenderSavedCVs();
+    showToast('CV borttaget', 'info');
+  }
+
+  function mobLoadCVFromList(id) {
+    const list = mobGetSavedCVs();
+    const entry = list.find(c => c.id === id);
+    if (!entry) return;
+    // Ladda datan in i cvData
+    Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+    saveData();
+    updatePreview();
+    mobLoadFields();
+    mobBuildTemplateGrid();
+    showToast('✅ CV laddat: ' + entry.title, 'success');
+  }
+
+  let _activeSavedCVId = null;
+
+  function mobShowSavedCVDetail(id) {
+    const list = mobGetSavedCVs();
+    const entry = list.find(c => c.id === id);
+    if (!entry) return;
+
+    _activeSavedCVId = id;
+
+    // Ladda CV:t in i cvData så PDF:en genereras korrekt
+    Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+    saveData();
+    updatePreview();
+    mobLoadFields();
+
+    const titleEl = document.getElementById('mobSavedCVDetailTitle');
+    const subEl   = document.getElementById('mobSavedCVDetailSub');
+    if (titleEl) titleEl.textContent = entry.title;
+    if (subEl) {
+      const d = new Date(entry.savedAt);
+      subEl.textContent = 'Senast sparad ' + d.toLocaleDateString('sv-SE', {day:'numeric',month:'long'});
+    }
+
+    const shareBtn = document.getElementById('mobSavedCVShareBtn');
+    if (shareBtn) {
+      shareBtn.onclick = () => {
+        mobCloseSavedCVDetail();
+        setTimeout(() => mobGenerateAndSharePDF(), 200);
+      };
+    }
+
+    const detail = document.getElementById('mobSavedCVDetail');
+    if (detail) detail.style.display = 'block';
+  }
+
+  function mobCloseSavedCVDetail() {
+    const detail = document.getElementById('mobSavedCVDetail');
+    if (detail) detail.style.display = 'none';
+    _activeSavedCVId = null;
+  }
+
+  function mobRenderSavedCVs() {
+    const container = document.getElementById('mobSavedCVsList');
+    if (!container) return;
+
+    const list = mobGetSavedCVs();
+    const count = list.length;
+    const MAX = 3;
+
+    let html = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.4);margin-bottom:12px;padding:0 2px;">Dina sparade CV (${count}/${MAX})</div>`;
+
+    // Sortera: nyast först
+    const sorted = [...list].sort((a,b) => b.savedAt - a.savedAt);
+
+    sorted.forEach(entry => {
+      const d = new Date(entry.savedAt);
+      const dateStr = _mobRelDate(d);
+      html += `
+        <div onclick="mobShowSavedCVDetail('${entry.id}')"
+             style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+          <div style="width:36px;height:36px;border-radius:10px;background:#1a1a2e;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${entry.title}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Senast ändrad ${dateStr}</div>
+          </div>
+          <span style="color:rgba(255,255,255,0.3);font-size:18px;">›</span>
+        </div>`;
+    });
+
+    if (count < MAX) {
+      html += `
+        <div onclick="mobSwitchSubTab('info'); mobCloseCVMenu && mobCloseCVMenu(); mobToggleCVMenu && mobToggleCVMenu();"
+             style="background:none;border:1px dashed rgba(255,255,255,0.2);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;color:rgba(255,255,255,0.4);">+</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.4);">Skapa ett nytt CV</div>
+        </div>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  function _mobRelDate(d) {
+    const now = new Date();
+    const diff = Math.floor((now - d) / 86400000);
+    if (diff === 0) return 'idag';
+    if (diff === 1) return 'igår';
+    if (diff < 7) return diff + ' dagar sedan';
+    return d.toLocaleDateString('sv-SE', {day:'numeric',month:'short'});
+  }
 
   // ── Patcha befintliga render-funktioner ──────────────
   // När desktop-listor uppdateras, uppdatera mobil-listor också
