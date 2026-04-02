@@ -7658,7 +7658,10 @@ ${styleTexts}
             <div style="font-size:13px;font-weight:700;color:#fff;">Utbildningsvägledaren</div>
             <div style="font-size:10px;color:#f0c040;">Familjen Helsingborg · 11 kommuner</div>
           </div>
-          <button onclick="syvClearChat()" style="margin-left:auto;background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.35);color:#f0c040;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:8px;font-family:inherit;font-weight:600;">↺ Börja om</button>
+          <div style="margin-left:auto;display:flex;gap:6px;">
+            <button id="syvSavedBtn" onclick="syvShowSaved()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.25);font-size:11px;cursor:pointer;padding:4px 10px;border-radius:8px;font-family:inherit;font-weight:600;">🔖</button>
+            <button onclick="syvClearChat()" style="background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.35);color:#f0c040;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:8px;font-family:inherit;font-weight:600;">↺ Börja om</button>
+          </div>
         </div>
       </div>
 
@@ -7751,7 +7754,7 @@ ${styleTexts}
     if (btn) btn.classList.add('mob-tab--active');
 
     if (tab === 'forhandsgranska') mobRefreshPreview();
-    if (tab === 'aisyv') { syvFetchUtbildningar(); }
+    if (tab === 'aisyv') { syvFetchUtbildningar(); syvUpdateSavedBtn(); }
     if (tab === 'utbildning') mobRenderEdu();
     if (tab === 'profil') {
       const el = document.getElementById('mob-summary');
@@ -8659,6 +8662,71 @@ ${styleTexts}
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
   }
 
+  // ── Sparade utbildningar ─────────────────────────────────────────
+  function syvGetSaved() {
+    try { return JSON.parse(localStorage.getItem('pf_saved_edu') || '[]'); } catch(e) { return []; }
+  }
+  function syvSetSaved(arr) {
+    localStorage.setItem('pf_saved_edu', JSON.stringify(arr));
+    syvUpdateSavedBtn();
+  }
+  function syvIsSaved(namn, kommun) {
+    return syvGetSaved().some(function(s){ return s.namn === namn && s.kommun === kommun; });
+  }
+  function syvToggleSave(btn, namn, typ, kommun, info) {
+    var saved = syvGetSaved();
+    var idx = saved.findIndex(function(s){ return s.namn === namn && s.kommun === kommun; });
+    if (idx >= 0) {
+      saved.splice(idx, 1);
+      btn.textContent = '🏷️';
+    } else {
+      saved.push({ namn, typ, kommun, info, sparad: new Date().toLocaleDateString('sv-SE') });
+      btn.textContent = '🔖';
+    }
+    syvSetSaved(saved);
+  }
+  function syvUpdateSavedBtn() {
+    var btn = document.getElementById('syvSavedBtn');
+    if (!btn) return;
+    var n = syvGetSaved().length;
+    btn.textContent = n > 0 ? '🔖 ' + n : '🔖';
+    btn.style.color = n > 0 ? '#f0c040' : 'rgba(255,255,255,0.25)';
+  }
+  function syvShowSaved() {
+    var saved = syvGetSaved();
+    var splash = document.getElementById('syvSplash');
+    var msgs = document.getElementById('syvMessages');
+    if (splash && splash.style.display !== 'none') {
+      splash.style.display = 'none';
+      if (msgs) msgs.style.display = 'flex';
+    }
+    if (saved.length === 0) {
+      syvAddBotBubble('Du har inga sparade utbildningar ännu. Tryck på 🏷️ på en utbildning för att spara den!');
+      return;
+    }
+    var cards = saved.map(function(u) {
+      var safeNamn = u.namn.replace(/"/g,'&quot;');
+      var safeKomm = u.kommun.replace(/"/g,'&quot;');
+      return '<div style="background:rgba(240,192,64,0.08);border:1px solid rgba(240,192,64,0.2);border-radius:12px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;">' +
+        '<div style="flex:1;">' +
+          '<div style="font-weight:700;font-size:13px;color:#fff;">' + u.namn + '</div>' +
+          '<div style="font-size:11px;color:#f0c040;">' + u.typ + ' · ' + u.kommun + '</div>' +
+          (u.info ? '<div style="font-size:11px;color:rgba(255,255,255,0.45);">' + u.info + '</div>' : '') +
+          '<div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:3px;">Sparad ' + u.sparad + '</div>' +
+        '</div>' +
+        '<button onclick="syvRemoveSaved(this,\"' + safeNamn + '\",\"' + safeKomm + '\")" style="background:none;border:none;font-size:16px;cursor:pointer;color:rgba(255,255,255,0.3);padding:0;">✕</button>' +
+        '</div>';
+    }).join('');
+    syvAddBotBubble('<b>🔖 Sparade utbildningar (' + saved.length + ')</b><br><br>' + cards +
+      '<br><button class="syv-reply-btn" onclick="syvReplyOpt(this)" data-val="Hjälp mig välja bland mina sparade utbildningar">💬 Hjälp mig välja bland dessa</button>');
+  }
+  function syvRemoveSaved(btn, namn, kommun) {
+    var saved = syvGetSaved().filter(function(s){ return !(s.namn === namn && s.kommun === kommun); });
+    syvSetSaved(saved);
+    var card = btn.closest('div[style*="rgba(240,192,64"]');
+    if (card) card.remove();
+  }
+
   // Nyckelord per bransch för filtrering mot utbildningslistan
   const SYV_AREA_KEYWORDS = {
     'Vård & omsorg':           ['underskötersk', 'barnskötare', 'stödpedagog', 'behandlingsassistent', 'vård', 'omsorg', 'hemtjänst', 'sfi + under'],
@@ -8707,10 +8775,20 @@ ${styleTexts}
         '<button class="syv-reply-btn" onclick="syvReplyOpt(this)" data-val="Berätta om utbildningar inom ' + area + '">Berätta mer</button>';
     }
     var cards = programs.map(function(u) {
-      return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 12px;margin-bottom:6px;">' +
-        '<div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:2px;">' + u.namn + '</div>' +
-        '<div style="font-size:11px;color:#3eb489;margin-bottom:3px;">' + u.typ + ' · ' + u.kommun + '</div>' +
-        (u.info ? '<div style="font-size:11px;color:rgba(255,255,255,0.5);">' + u.info + '</div>' : '') +
+      var safeNamn = u.namn.replace(/"/g,'&quot;');
+      var safeTyp  = u.typ.replace(/"/g,'&quot;');
+      var safeKomm = u.kommun.replace(/"/g,'&quot;');
+      var safeInfo = (u.info||'').replace(/"/g,'&quot;');
+      var saved = syvIsSaved(u.namn, u.kommun);
+      return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;">' +
+        '<div style="flex:1;">' +
+          '<div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:2px;">' + u.namn + '</div>' +
+          '<div style="font-size:11px;color:#3eb489;margin-bottom:3px;">' + u.typ + ' · ' + u.kommun + '</div>' +
+          (u.info ? '<div style="font-size:11px;color:rgba(255,255,255,0.5);">' + u.info + '</div>' : '') +
+        '</div>' +
+        '<button onclick="syvToggleSave(this,\"' + safeNamn + '\",\"' + safeTyp + '\",\"' + safeKomm + '\",\"' + safeInfo + '\")" ' +
+          'style="background:none;border:none;font-size:20px;cursor:pointer;flex-shrink:0;padding:0;line-height:1;" ' +
+          'title="Spara">' + (saved ? '🔖' : '🏷️') + '</button>' +
         '</div>';
     }).join('');
 
