@@ -8559,6 +8559,14 @@ ${styleTexts}
     '→ Jobba med barn',
     '→ Jobba med funktionsnedsättning',
     '',
+    'När någon säger att de vill "komma in på arbetsmarknaden": svara med "Bra tanke! Att utbilda sig för att bli mer attraktiv på arbetsmarknaden är helt rätt steg att gå!"',
+    '',
+    'VIKTIGT om länkar: Skriv alltid den riktiga URL:en när du hänvisar, så att användaren kan klicka:',
+    '- Komvux yrkesutbildningar → https://skanevux.se',
+    '- YH-utbildningar → https://myh.se',
+    '- Ansökan Helsingborg → https://helsingborg.se/forskola-och-utbildning/vuxenutbildning/',
+    '- CSN → https://csn.se',
+    '',
     'Svara INTE på frågor om CV, jobb eller löner. Säg: "Jag hjälper bara med utbildning."'
   ].join('\n');
 
@@ -8809,6 +8817,8 @@ ${styleTexts}
     s = s.replace(/^#{1,3}\s*/gm, '');
     // Bold **text**
     s = s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    // Make URLs clickable
+    s = s.replace(/(https?:\/\/[^\s<,)]+)/g, '<a href="$1" target="_blank" style="color:#3eb489;text-decoration:underline;">$1</a>');
     // Convert "→ text" lines to clickable buttons
     s = s.replace(/^→\s*(.+)$/gm, function(_, opt) {
       var safe = opt.trim().replace(/"/g, '&quot;');
