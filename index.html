@@ -1711,18 +1711,20 @@
 
       /* Dölj desktop-nav steg-indikator på mobil */
       .nav-steps { display: none !important; }
-      /* Mobil navbar: logo vänster | email + logga ut höger */
+      /* Mobil navbar: [Profil] vänster | Pathfinder center | [Logga ut] höger */
       nav { position: relative; }
       .nav-logo {
-        position: static;
-        transform: none;
-        text-align: left;
-        pointer-events: auto;
-        order: 1;
-        flex-shrink: 0;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        pointer-events: none;
       }
-      .nav-auth-badge { order: 2; margin-left: auto; }
-      .nav-logout-btn { order: 3; margin-left: 6px; }
+      .nav-auth-badge { order: 1; }
+      .nav-logout-btn { order: 3; margin-left: auto; }
+      /* På mobil: dölj email-texten och ikonen, visa bara "Profil"-badge */
+      .nav-auth-badge .mob-hide { display: none !important; }
+      .nav-auth-badge .mob-profil { display: flex !important; }
 
       /* Kompaktare navbar */
       nav { height: 56px; padding: 0 16px; }
@@ -2284,10 +2286,16 @@
       </div>
     </div>
 
-    <!-- EMAIL (vänster på mobil, höger på desktop) -->
-    <div id="authUserBadge" class="auth-user-badge nav-auth-badge" style="display: flex; cursor:default;" aria-label="Inloggad anvandare">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      <span id="authUserEmail" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">oliver.pettersson2@gmail.com</span>
+    <!-- PROFIL-BADGE (mobil: grön fyrkant "Profil" | desktop: email) -->
+    <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display: flex; cursor:pointer;" aria-label="Inloggad anvandare">
+      <!-- Desktop: ikon + email -->
+      <svg class="mob-hide" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span id="authUserEmail" class="mob-hide" style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+      <!-- Mobil: liten grön "Profil"-badge -->
+      <span class="mob-profil" style="display:none; align-items:center; gap:5px; font-size:11px; font-weight:700; color:#3eb489;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>
+        Profil
+      </span>
     </div>
     <!-- LOGGA UT (höger) -->
     <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color=&#39;rgba(255,255,255,0.7)&#39;" onmouseout="this.style.color=&#39;rgba(255,255,255,0.35)&#39;" aria-label="Logga ut">Logga ut</button>
@@ -4748,7 +4756,7 @@
       // Inget lokalt — fråga AI
       try {
         const prompt = [
-          'Generera 5 konkreta yrkeskompetenser på svenska för yrket: ' + titleRaw,
+          'Generera 4 konkreta yrkeskompetenser på svenska för yrket: ' + titleRaw,
           'Kompetenserna ska vara korta (1-3 ord), konkreta och relevanta för svensk arbetsmarknad.',
           'Svara ENBART med JSON: {"kompetenser": ["k1", "k2", "k3", "k4", "k5", "k6"]}'
         ].join('\n');
@@ -4769,7 +4777,7 @@
         const raw = data.content[0].text.trim().replace(/```json|```/g, '').trim();
         let parsed;
         try { parsed = JSON.parse(raw); } catch(e) { parsed = { kompetenser: [] }; }
-        const skills = (parsed.kompetenser || []).slice(0, 5);
+        const skills = (parsed.kompetenser || []).slice(0, 4);
         if (skills.length < 1) throw new Error('Inga kompetenser returnerades');
 
         cvData.skills = skills;
@@ -6892,7 +6900,8 @@ ${styleTexts}
 
       setNavStep(2);
 
-      document.getElementById('authUserEmail').textContent = email;
+      const emailEl = document.getElementById('authUserEmail');
+      if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
 
       const welcomeText = isNew
