@@ -1711,8 +1711,14 @@
 
       /* Dölj desktop-nav steg-indikator på mobil */
       .nav-steps { display: none !important; }
-      /* Mobil navbar: [Profil] vänster | Pathfinder center | [Logga ut] höger */
-      nav { position: relative; }
+      /* Mobil navbar: fast, kan ej svepas bort */
+      nav {
+        position: fixed !important;
+        top: 0; left: 0; right: 0;
+        touch-action: none;
+        -webkit-overflow-scrolling: auto;
+        z-index: 200;
+      }
       .nav-logo {
         position: absolute;
         left: 50%;
@@ -2130,6 +2136,43 @@
       transition: all 0.2s;
     }
     .syv-quick:active { background: rgba(62,180,137,0.25); }
+    .syv-wizard-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .syv-step-btn {
+      background: rgba(62,180,137,0.12);
+      border: 1.5px solid rgba(62,180,137,0.3);
+      color: #fff;
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .syv-step-btn:active { background: rgba(62,180,137,0.35); border-color: #3eb489; }
+    .syv-area-chip {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.7);
+      padding: 5px 11px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .syv-area-chip:active { background: rgba(62,180,137,0.2); border-color: rgba(62,180,137,0.5); color: #3eb489; }
+    #syvAreas::-webkit-scrollbar { display: none; }
 
     .mob-wip-panel {
         display: flex;
@@ -7556,29 +7599,32 @@ ${styleTexts}
     </div>
 
     <!-- FLIK: AI-SYV -->
-    <div class="mob-panel" id="mobPanel-aisyv" style="display:flex;flex-direction:column;height:calc(100vh - 56px - 64px);padding:0;">
+    <div class="mob-panel" id="mobPanel-aisyv" style="display:flex;flex-direction:column;height:calc(100vh - 56px - 64px);padding:0;overflow:hidden;">
 
       <!-- Header -->
-      <div style="padding:12px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+      <div style="padding:10px 16px 8px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:#1a1f35;">
         <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">🎓</div>
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎓</div>
           <div>
-            <div style="font-size:14px;font-weight:700;color:#fff;">Utbildningsvägledaren</div>
-            <div style="font-size:10px;color:#3eb489;">Familjen Helsingborg · Skolverket · Realtid</div>
+            <div style="font-size:13px;font-weight:700;color:#fff;">Utbildningsvägledaren</div>
+            <div style="font-size:10px;color:#3eb489;">Familjen Helsingborg · 11 kommuner</div>
           </div>
-          <button onclick="syvClearChat()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.25);font-size:11px;cursor:pointer;padding:4px 8px;border-radius:6px;">Börja om</button>
+          <button onclick="syvClearChat()" style="margin-left:auto;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;padding:4px 10px;border-radius:8px;font-family:inherit;">↺ Börja om</button>
         </div>
       </div>
 
-      <!-- Meddelanden -->
-      <div id="syvMessages" style="flex:1;overflow-y:auto;padding:12px 16px 8px;display:flex;flex-direction:column;gap:10px;"></div>
+      <!-- Inriktningar (visas alltid, scrollbar horisontellt) -->
+      <div id="syvAreas" style="padding:8px 16px 6px;flex-shrink:0;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,0.06);"></div>
 
-      <!-- Vägledningssteg (visas bara i wizard-läge) -->
-      <div id="syvWizard" style="padding:8px 16px;flex-shrink:0;"></div>
+      <!-- Meddelandefeed -->
+      <div id="syvMessages" style="flex:1;overflow-y:auto;padding:12px 16px 8px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;"></div>
+
+      <!-- Wizard-frågor (renderas inuti messages, detta är tomt) -->
+      <div id="syvWizard" style="display:none;"></div>
 
       <!-- Inmatning -->
-      <div style="padding:8px 16px 16px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;display:flex;gap:8px;align-items:flex-end;">
-        <textarea id="syvInput" rows="1" placeholder="Eller skriv fritt..." style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;max-height:100px;overflow-y:auto;line-height:1.4;" oninput="syvAutoResize(this)" onkeydown="if(event.key===&#39;Enter&#39;&amp;&amp;!event.shiftKey){event.preventDefault();syvSend();}"></textarea>
+      <div style="padding:8px 16px 14px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;display:flex;gap:8px;align-items:flex-end;background:#1a1f35;">
+        <textarea id="syvInput" rows="1" placeholder="Skriv din fråga..." style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;max-height:100px;overflow-y:auto;line-height:1.4;" oninput="syvAutoResize(this)" onkeydown="if(event.key===&#39;Enter&#39;&amp;&amp;!event.shiftKey){event.preventDefault();syvSend();}"></textarea>
         <button id="syvSendBtn" onclick="syvSend()" style="width:42px;height:42px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
       </div>
     </div>
@@ -8417,6 +8463,7 @@ ${styleTexts}
         const data = await res.json();
         syvUtbildningar = data;
         console.log('[SYV] Utbildningsdata hämtad:', data.antal, 'utbildningar');
+        syvRenderAreas();
       }
     } catch (e) {
       console.warn('[SYV] Kunde inte hämta utbildningsdata:', e.message);
@@ -8469,13 +8516,11 @@ ${styleTexts}
     let eduCtx = '';
     if (syvUtbildningar && syvUtbildningar.antal > 0) {
       const lista = syvUtbildningar.utbildningar.slice(0, 40)
-        .map(u => u.namn + ' (' + u.kommun + (u.start ? ', start: ' + u.start : '') + (u.platser ? ', ' + u.platser + ' platser' : '') + ')')
+        .map(u => u.namn + ' (' + u.kommun + (u.typ ? ', ' + u.typ : '') + (u.info ? ' — ' + u.info : '') + ')')
         .join('; ');
-      eduCtx = '\n\n[AKTUELLA YRKESUTBILDNINGAR I FAMILJEN HELSINGBORG (hämtat ' +
-        syvUtbildningar.hämtad + ' från Skolverket, ' + syvUtbildningar.antal + ' st): ' + lista +
-        '. Ansökan: ' + syvUtbildningar.ansökan + ']';
+      eduCtx = '\n\n[UTBILDNINGAR I FAMILJEN HELSINGBORG (' + syvUtbildningar.hamtad + ', källa: ' + syvUtbildningar.kalla + ', ' + syvUtbildningar.antal + ' st): ' + lista + '. Ansökan: ' + (syvUtbildningar.ansok || 'skanevux.se') + '. ' + (syvUtbildningar.info || '') + ']';
     } else if (syvUtbildningar === null) {
-      eduCtx = '\n\n[Utbildningsdata laddas... Använd web_search för att hitta aktuella utbildningar på skanevux.se]';
+      eduCtx = '\n\n[Utbildningsdata laddas — sök på skanevux.se för aktuella program i Familjen Helsingborg]';
     }
 
     return (ctx ? '\n\n[ANVÄNDARPROFIL: ' + ctx + ']' : '') + eduCtx;
@@ -8484,6 +8529,10 @@ ${styleTexts}
   function syvAutoResize(el) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function syvAreaClick(area) {
+    syvQuick(area + ' — vilka utbildningar finns i Familjen Helsingborg just nu?');
   }
 
   function syvQuick(msg) {
@@ -8504,33 +8553,43 @@ ${styleTexts}
   }
 
   function syvInitWizard() {
-    // Välkomstbubbla
     const msgs = document.getElementById('syvMessages');
     if (!msgs) return;
     msgs.innerHTML = '';
-    syvAddBotBubble('Hej! 👋 Jag är din utbildningsvägledare och hjälper dig hitta konkreta utbildningar i Familjen Helsingborg.<br><br>Svara på tre korta frågor nedan — eller skriv direkt i chatten om du redan vet vad du söker. 🎓');
     syvWizardStep = 0;
     syvWizardAnswers = {};
+    syvAddBotBubble('Hej! 👋 Jag hjälper dig hitta rätt utbildning i Familjen Helsingborg.<br><br>Svara på frågorna nedan — eller skriv fritt i chatten om du vet vad du söker.');
+    syvRenderAreas();
     syvRenderStep();
   }
 
-  function syvRenderStep() {
-    const wizard = document.getElementById('syvWizard');
-    if (!wizard) return;
-    if (syvWizardStep >= SYV_STEPS.length) {
-      wizard.innerHTML = '';
-      return;
-    }
-    const step = SYV_STEPS[syvWizardStep];
-    const progress = syvWizardStep + 1;
-    var btns = step.alternativ.map(function(a) {
-      var safe = a.replace(/'/g, "\\'");
-      return '<button class="syv-quick" onclick="syvAnswer(\'' + step.id + '\',\'' + safe + '\')">' + a + '</button>';
+  function syvRenderAreas() {
+    const el = document.getElementById('syvAreas');
+    if (!el || !syvUtbildningar || !syvUtbildningar.omraden) return;
+    el.innerHTML = syvUtbildningar.omraden.map(function(o) {
+      var safe = o.namn.replace(/'/g, "\'");
+      return '<button class="syv-area-chip" data-area="' + safe.replace(/"/g,'&quot;') + '" onclick="syvAreaClick(this.dataset.area)">' + o.emoji + ' ' + o.namn + '</button>';
     }).join('');
-    wizard.innerHTML = '<div style="margin-bottom:6px;">' +
-      '<div style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:8px;">' + step.fråga + '</div>' + +
-      '<div style="display:flex;flex-wrap:wrap;gap:6px;">' + btns + '</div>' +
-      '</div>';
+  }
+
+  function syvRenderStep() {
+    if (syvWizardStep >= SYV_STEPS.length) return;
+    const step = SYV_STEPS[syvWizardStep];
+    const msgs = document.getElementById('syvMessages');
+    if (!msgs) return;
+    const card = document.createElement('div');
+    card.className = 'syv-wizard-card';
+    card.id = 'syvStep-' + step.id;
+    var btns = step.alternativ.map(function(a) {
+      var safe = a.replace(/'/g, "\'");
+      return '<button class="syv-step-btn" data-step="' + step.id + '" data-val="' + safe.replace(/"/g,'&quot;') + '" onclick="syvAnswer(this.dataset.step,this.dataset.val)">' + a + '</button>';
+    }).join('');
+    card.innerHTML =
+      '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:5px;">Fråga ' + (syvWizardStep+1) + ' av ' + SYV_STEPS.length + '</div>' +
+      '<div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:12px;">' + step['fråga'] + '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;">' + btns + '</div>';
+    msgs.appendChild(card);
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
   function syvAnswer(stepId, value) {
