@@ -1,143 +1,90 @@
-// api/utbildningar.js
-// Hämtar utbildningsdata från Skolverket Planned Educations API (v3)
-// för alla kommuner i Familjen Helsingborg
-// Uppdateras dagligen (Skolverket synkar sina data varje natt)
+// api/utbildningar.js — Utbildningsdata för Familjen Helsingborg
+// Försöker Skolverket API, faller annars tillbaka på kuraterad statisk lista
 
 const FH_MUNICIPALITIES = [1283, 1282, 1284, 1292, 1260, 1256, 1285, 1252, 1265, 1277, 1266];
-const FH_NAMES = {
-  1283: 'Helsingborg', 1282: 'Landskrona', 1284: 'Höganäs', 1292: 'Ängelholm',
-  1260: 'Bjuv', 1256: 'Båstad', 1285: 'Klippan', 1252: 'Perstorp',
-  1265: 'Svalöv', 1277: 'Åstorp', 1266: 'Örkelljunga'
-};
 
-const PE_BASE = 'https://api.skolverket.se/planned-educations/v3';
-const PE_HEADERS = {
-  'accept': 'application/vnd.skolverket.plannededucations.api.v3.hal+json',
-  'User-Agent': 'Pathfinder-CV/1.0 (educational guidance app; contact@pathfinderai.se)'
-};
+const FH_STATIC = [
+  { namn: 'Undersköterska', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Skyddad yrkestitel. ~1 år.' },
+  { namn: 'Undersköterska', kommun: 'Landskrona', typ: 'Komvux yrkesutp.', info: 'Skyddad yrkestitel.' },
+  { namn: 'Undersköterska', kommun: 'Ängelholm', typ: 'Komvux yrkesutp.', info: 'Skyddad yrkestitel.' },
+  { namn: 'Barnskötare', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Förskola & fritids.' },
+  { namn: 'Stödpedagog / Behandlingsassistent', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'LSS & socialvård.' },
+  { namn: 'Lagerlogistiker', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Inkl. truckkörkort.' },
+  { namn: 'Truckförare / Lagerarbetare', kommun: 'Landskrona', typ: 'Komvux yrkesutp.', info: 'Truckkörkort ingår.' },
+  { namn: 'Yrkesförare lastbil (C)', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'C-körkort ingår.' },
+  { namn: 'Murare', kommun: 'Ängelholm', typ: 'Komvux yrkesutp.', info: 'Hög efterfrågan.' },
+  { namn: 'Målare', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Bygg & industri.' },
+  { namn: 'Fastighetsskötare', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Teknisk förvaltning.' },
+  { namn: 'Svetsare', kommun: 'Ängelholm', typ: 'Komvux yrkesutp.', info: 'MIG/MAG & TIG.' },
+  { namn: 'CNC-operatör', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Industriell tillverkning.' },
+  { namn: 'Lackerare / Billackerare', kommun: 'Ängelholm', typ: 'Komvux yrkesutp.', info: 'Fordonslackering.' },
+  { namn: 'Kock / Restaurangbiträde', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Restaurang & storkök.' },
+  { namn: 'Lokalvårdare', kommun: 'Bjuv', typ: 'Komvux yrkesutp.', info: 'Kan kombineras med SFI.' },
+  { namn: 'Butikssäljare', kommun: 'Helsingborg', typ: 'Komvux yrkesutp.', info: 'Detaljhandel.' },
+  { namn: 'Systemutvecklare', kommun: 'Helsingborg', typ: 'YH 2 år', info: 'Yrkeshögskola, hög lön.' },
+  { namn: 'Nätverkstekniker / IT-support', kommun: 'Helsingborg', typ: 'YH 2 år', info: 'Yrkeshögskola.' },
+  { namn: 'Digital marknadsförare', kommun: 'Helsingborg', typ: 'YH 2 år', info: 'SEO, SoMe, Ads.' },
+  { namn: 'Redovisningsekonom', kommun: 'Helsingborg', typ: 'YH 2 år', info: 'Yrkeshögskola.' },
+];
 
-// ── Hjälpfunktion: hämta en sida från PE-API ─────────────────────────────────
-async function fetchPE(path) {
-  const url = `${PE_BASE}${path}`;
-  const res = await fetch(url, { headers: PE_HEADERS, signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`PE API ${res.status}: ${path}`);
-  return res.json();
-}
+const FH_AREAS = [
+  { namn: 'Vård & omsorg', emoji: '🏥' },
+  { namn: 'Transport & logistik', emoji: '🚛' },
+  { namn: 'Bygg & anläggning', emoji: '🏗️' },
+  { namn: 'Teknik & industri', emoji: '⚙️' },
+  { namn: 'IT & data', emoji: '💻' },
+  { namn: 'Handel & service', emoji: '🛍️' },
+  { namn: 'Restaurang & kök', emoji: '🍳' },
+  { namn: 'Ekonomi', emoji: '📊' },
+];
 
-// ── Hämta skolenheter (komvux/YH) i Familjen Helsingborg ─────────────────────
-async function getSchoolUnits() {
+async function trySkolverk() {
   const munStr = FH_MUNICIPALITIES.join(',');
-  try {
-    // Hämta komvux-enheter
-    const kvData = await fetchPE(
-      `/compact-school-units?municipalityCode=${munStr}&schoolType=KV&page=0&size=100`
-    );
-    return (kvData._embedded?.compactSchoolUnits || kvData.compactSchoolUnits || []);
-  } catch (e) {
-    console.error('School units error:', e.message);
-    return [];
-  }
-}
-
-// ── Hämta utbildningsprogram för en skolenhet ─────────────────────────────────
-async function getTrainingPrograms(schoolUnitCode) {
-  try {
-    const data = await fetchPE(`/school-units/${schoolUnitCode}/training-programs?page=0&size=50`);
-    return data._embedded?.trainingPrograms || data.trainingPrograms || [];
-  } catch {
-    return [];
-  }
-}
-
-// ── Alternativ: hämta utbildningstillfällen direkt ───────────────────────────
-async function getEducationEvents() {
-  const munStr = FH_MUNICIPALITIES.join(',');
-  try {
-    const data = await fetchPE(
-      `/education-events?municipalityCode=${munStr}&page=0&size=100`
-    );
-    return data._embedded?.educationEvents || data.educationEvents || [];
-  } catch (e) {
-    console.error('Education events error:', e.message);
-    return [];
-  }
-}
-
-// ── Simplifierar rådata till vad SYV-AI:n behöver ────────────────────────────
-function simplify(raw, municipalityCode) {
-  const kommunNamn = FH_NAMES[municipalityCode] || String(municipalityCode);
-  return {
-    namn: raw.name || raw.educationEventName || raw.trainingProgramName || '–',
-    kommun: kommunNamn,
-    typ: raw.educationType || raw.schoolType || 'Komvux',
-    start: raw.startDate || raw.plannedStartDate || null,
-    platser: raw.seats || raw.numberOfSeats || null,
-    studietakt: raw.studyPace || raw.pace || null,
-    behörighet: raw.entryRequirements || raw.prerequisites || null,
-    url: raw.applicationUrl || raw.url || 'https://skanevux.se'
+  const headers = {
+    'accept': 'application/vnd.skolverket.plannededucations.api.v3.hal+json',
+    'User-Agent': 'Pathfinder-CV/1.0'
   };
+  const url = `https://api.skolverket.se/planned-educations/v3/education-events?municipalityCode=${munStr}&page=0&size=100`;
+  const res = await fetch(url, { headers, signal: AbortSignal.timeout(5000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  const items = data._embedded?.educationEvents || data.educationEvents || [];
+  return items.map(ev => ({
+    namn: ev.name || ev.educationEventName || '-',
+    kommun: ev.municipalityName || String(ev.municipalityCode || ''),
+    typ: ev.educationType || 'Komvux',
+    info: ev.entryRequirements || ''
+  })).filter(u => u.namn !== '-');
 }
 
-// ── Huvud-handler ─────────────────────────────────────────────────────────────
 module.exports = async (req, res) => {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
-  // Cache 1 timme (Skolverket uppdaterar dagligen)
   res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=7200');
-
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
+  let utbildningar = [];
+  let kalla = 'Statisk lista (skanevux.se)';
+
   try {
-    const utbildningar = [];
-
-    // Strategi 1: hämta via education-events endpoint
-    const events = await getEducationEvents();
-    if (events.length > 0) {
-      for (const ev of events) {
-        const munCode = ev.municipalityCode || ev.municipality?.code;
-        utbildningar.push(simplify(ev, munCode));
-      }
+    const live = await trySkolverk();
+    if (live.length > 0) {
+      utbildningar = live;
+      kalla = 'Skolverket Planned Educations API (realtid)';
+    } else {
+      throw new Error('Inga poster');
     }
-
-    // Strategi 2 (fallback): hämta via school-units → training-programs
-    if (utbildningar.length === 0) {
-      const units = await getSchoolUnits();
-      for (const unit of units.slice(0, 15)) { // Max 15 enheter för att hålla nere latens
-        const programs = await getTrainingPrograms(unit.schoolUnitCode || unit.code);
-        for (const prog of programs) {
-          utbildningar.push(simplify(prog, unit.municipalityCode || unit.municipality?.code));
-        }
-        if (utbildningar.length >= 60) break;
-      }
-    }
-
-    // Deduplicera på namn+kommun
-    const seen = new Set();
-    const unique = utbildningar.filter(u => {
-      const key = `${u.namn}|${u.kommun}`;
-      if (seen.has(key)) return false;
-      seen.add(key); return true;
-    });
-
-    res.json({
-      källa: 'Skolverket Planned Educations API',
-      hämtad: new Date().toISOString().slice(0, 10),
-      antal: unique.length,
-      kommuner: Object.values(FH_NAMES),
-      utbildningar: unique,
-      ansökan: 'https://helsingborg.se/forskola-och-utbildning/vuxenutbildning/utbildningar/yrkesutbildningar-pa-gymnasial-niva/'
-    });
-
-  } catch (err) {
-    console.error('utbildningar.js fel:', err);
-    // Returnera tom lista — SYV faller tillbaka på web_search
-    res.json({
-      källa: 'Skolverket (tillfälligt otillgänglig)',
-      hämtad: new Date().toISOString().slice(0, 10),
-      antal: 0,
-      utbildningar: [],
-      ansökan: 'https://skanevux.se'
-    });
+  } catch (e) {
+    utbildningar = FH_STATIC;
+    kalla = 'Kuraterad lista — se skanevux.se for aktuella program';
   }
+
+  res.json({
+    kalla,
+    hamtad: new Date().toISOString().slice(0, 10),
+    antal: utbildningar.length,
+    omraden: FH_AREAS,
+    utbildningar,
+    ansok: 'https://skanevux.se',
+    info: 'Alla i Familjen Helsingborgs 11 kommuner kan soka samtliga komvux yrkesutbildningar via en gemensam ansokan.'
+  });
 };
