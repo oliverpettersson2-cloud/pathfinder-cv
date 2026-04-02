@@ -1615,12 +1615,12 @@
     .auth-user-badge {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: rgba(62,180,137,0.1);
       border: 1px solid rgba(62,180,137,0.2);
       border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 12px;
+      padding: 4px 10px;
+      font-size: 10px;
       color: #3eb489;
       font-weight: 600;
       cursor: pointer;
@@ -2254,21 +2254,7 @@
   </div>
 
   <nav>
-    <div class="nav-logo" style="display:flex;align-items:center;gap:10px;">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" width="34" height="34">
-        <circle cx="17" cy="17" r="15" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"></circle>
-        <circle cx="17" cy="17" r="10" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"></circle>
-        <line x1="17" y1="2" x2="17" y2="6" stroke="rgba(255,255,255,0.3)" stroke-width="1"></line>
-        <line x1="17" y1="28" x2="17" y2="32" stroke="rgba(255,255,255,0.3)" stroke-width="1"></line>
-        <line x1="2" y1="17" x2="6" y2="17" stroke="rgba(255,255,255,0.3)" stroke-width="1"></line>
-        <line x1="28" y1="17" x2="32" y2="17" stroke="rgba(255,255,255,0.3)" stroke-width="1"></line>
-        <line x1="17" y1="7" x2="17" y2="27" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"></line>
-        <line x1="7" y1="17" x2="27" y2="17" stroke="rgba(255,255,255,0.1)" stroke-width="0.8"></line>
-        <polygon points="17,5 14,19 17,16 20,19" fill="#e85d26"></polygon>
-        <polygon points="17,29 14,15 17,18 20,15" fill="rgba(255,255,255,0.2)"></polygon>
-        <circle cx="17" cy="17" r="3" fill="#1a1a2e" stroke="#e85d26" stroke-width="1.5"></circle>
-        <circle cx="17" cy="17" r="1.5" fill="#e85d26"></circle>
-      </svg>
+    <div class="nav-logo" style="display:flex;align-items:center;">
       <div>
         <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;line-height:1.1;">Path<span style="color:#f0c040;">finder</span></div>
         <div style="font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.4);font-family:-apple-system,sans-serif;">Din väg mot arbete &amp; studier</div>
@@ -4728,49 +4714,66 @@
       document.getElementById('licensesModal').classList.add('active');
     }
 
-    function aiMatchSkills() {
-      const title = document.getElementById('title').value.trim().toLowerCase();
-      
+    async function aiMatchSkills() {
+      const titleRaw = document.getElementById('title').value.trim();
+      const title = titleRaw.toLowerCase();
+
       if (!title) {
         showToast('⚠️ Skriv in en jobbtitel först!', 'error');
         return;
       }
       showAiLoader('Matchar kompetenser...', 'AI söker rätt kompetenser för din titel');
 
-      console.log('🔍 Söker efter:', title);
-      
-      // Sök efter matchande jobbroll - mer flexibel matching
+      // Snabb lokal matchning först
       for (let [jobKey, skills] of Object.entries(SKILL_MATCHER)) {
         const jobKeyLower = jobKey.toLowerCase();
-        console.log('Tester mot:', jobKeyLower);
-        
-        // Normalisera båda strängar (ta bort &, -, "och", "och")
         const normalizedTitle = title.replace(/[&\-]/g, ' ').replace(/\s+/g, ' ').trim();
         const normalizedKey = jobKeyLower.replace(/[&\-]/g, ' ').replace(/och/g, '').replace(/\s+/g, ' ').trim();
-        
-        console.log('Normaliserad titel:', normalizedTitle);
-        console.log('Normaliserad nyckel:', normalizedKey);
-        
-        // Flera matchningsstrategier
-        if (title.includes(jobKeyLower) || 
-            jobKeyLower.includes(title) ||
-            normalizedTitle.includes(normalizedKey) ||
-            normalizedKey.includes(normalizedTitle)) {
-          
-          console.log('✅ MATCH HITTAD!', jobKey);
+        if (title.includes(jobKeyLower) || jobKeyLower.includes(title) ||
+            normalizedTitle.includes(normalizedKey) || normalizedKey.includes(normalizedTitle)) {
           cvData.skills = skills;
-          saveData();
-          renderSkills();
-          updatePreview();
+          saveData(); renderSkills(); updatePreview();
           hideAiLoader();
           showToast(`✨ ${skills.length} kompetenser matchade!`, 'success');
           return;
         }
       }
-      
-      console.log('❌ Ingen match hittad');
-      hideAiLoader();
-      showToast('⚠️ Kunde inte matcha kompetenser för denna titel', 'error');
+
+      // Inget lokalt — fråga AI
+      try {
+        const prompt = [
+          'Generera 6-8 konkreta yrkeskompetenser på svenska för yrket: ' + titleRaw,
+          'Kompetenserna ska vara korta (1-3 ord), konkreta och relevanta för svensk arbetsmarknad.',
+          'Svara ENBART med JSON: {"kompetenser": ["k1", "k2", "k3", "k4", "k5", "k6"]}'
+        ].join('\n');
+
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 300,
+            system: PATHFINDER_SYSTEM_PROMPT,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+
+        if (!response.ok) throw new Error('API-fel: ' + response.status);
+        const data = await response.json();
+        const raw = data.content[0].text.trim().replace(/```json|```/g, '').trim();
+        let parsed;
+        try { parsed = JSON.parse(raw); } catch(e) { parsed = { kompetenser: [] }; }
+        const skills = (parsed.kompetenser || []).slice(0, 8);
+        if (skills.length < 1) throw new Error('Inga kompetenser returnerades');
+
+        cvData.skills = skills;
+        saveData(); renderSkills(); updatePreview();
+        hideAiLoader();
+        showToast(`✨ ${skills.length} AI-kompetenser för ${titleRaw}!`, 'success');
+      } catch(err) {
+        hideAiLoader();
+        showToast('⚠️ Kunde inte hämta kompetenser: ' + err.message, 'error');
+      }
     }
 
     // Advanced AI profil-generator med API
@@ -5826,8 +5829,10 @@ Ge bara profiltexten, ingen förklaringtext.`;
         [e.degree, e.school].filter(Boolean).join(' på ')
       ).join(', ') || '';
 
+      const firstName = (cvData.name || '').trim().split(' ')[0] || '';
       const prompt = [
         'Generera 3 olika profiltexter på svenska för en person med denna bakgrund:',
+        firstName ? 'Personens förnamn: ' + firstName + ' (inkludera gärna förnamnet naturligt i en av texterna)' : '',
         'Sökt titel: ' + title,
         jobSummary ? 'Arbetslivserfarenhet:\n' + jobSummary : '',
         skillsList ? 'Kompetenser: ' + skillsList : '',
@@ -7359,7 +7364,7 @@ ${styleTexts}
       <button id="mobShareBtn" style="margin-top:16px;width:100%;padding:16px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:16px;font-weight:700;border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 15px rgba(16,185,129,0.35);">
         Spara CV/dela som PDF
       </button>
-      <button onclick="mobSaveCVToList()" style="margin-top:10px;width:100%;padding:13px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,0.18);border-radius:12px;cursor:pointer;">
+      <button onclick="mobSaveCVToList()" style="margin-top:10px;width:100%;padding:13px;background:#f0c040;color:#1a1a2e;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;">
         Spara CV-version till listan
       </button>
     </div>
@@ -8029,21 +8034,15 @@ ${styleTexts}
     saveData();
     updatePreview();
     mobLoadFields();
-    mobBuildTemplateGrid();
 
-    // Navigera till Visa-fliken (forhandsgranska) via CV-undermenyn
+    // Öppna CV-undermenyn
     const subMenu = document.getElementById('mobCVSubMenu');
     const mainBar = document.getElementById('mobileTabBar');
     if (subMenu) subMenu.style.display = 'flex';
     if (mainBar) mainBar.style.display = 'none';
 
-    document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('mob-panel--active'));
-    document.querySelectorAll('#mobCVSubMenu .mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
-
-    const panel = document.getElementById('mobPanel-forhandsgranska');
-    if (panel) panel.classList.add('mob-panel--active');
-    const btn = document.getElementById('tabBtn-forhandsgranska');
-    if (btn) btn.classList.add('mob-tab--active');
+    // Navigera till Visa via sub-tab (anropar mobRefreshPreview internt)
+    mobSwitchSubTab('forhandsgranska');
 
     showToast('✅ ' + entry.title + ' öppnat — dela eller spara som PDF', 'success');
   }
