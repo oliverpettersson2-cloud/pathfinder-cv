@@ -7691,7 +7691,7 @@ ${styleTexts}
     if (btn) btn.classList.add('mob-tab--active');
 
     if (tab === 'forhandsgranska') mobRefreshPreview();
-    if (tab === 'aisyv') { syvFetchUtbildningar(); if (syvHistory.length === 0) syvInitWizard(); }
+    if (tab === 'aisyv') { syvFetchUtbildningar(); setTimeout(function(){ if (syvHistory.length === 0) syvInitWizard(); }, 50); }
     if (tab === 'utbildning') mobRenderEdu();
     if (tab === 'profil') {
       const el = document.getElementById('mob-summary');
@@ -8436,8 +8436,8 @@ ${styleTexts}
   const SYV_STEPS = [
     {
       id: 'mål',
-      fråga: 'Vad är ditt mål med utbildningen?',
-      alternativ: ['Byta yrke helt', 'Komma in på arbetsmarknaden', 'Vidareutbilda mig i mitt yrke', 'Vet inte riktigt']
+      fråga: 'Vad är ditt mål?',
+      alternativ: ['🔄 Byta yrke', '🚀 Komma in på arbetsmarknaden', '📈 Vidareutbilda mig', '🤷 Vet inte — hjälp mig']
     },
     {
       id: 'område',
@@ -8558,7 +8558,7 @@ ${styleTexts}
     msgs.innerHTML = '';
     syvWizardStep = 0;
     syvWizardAnswers = {};
-    syvAddBotBubble('Hej! 👋 Jag hjälper dig hitta rätt utbildning i Familjen Helsingborg.<br><br>Svara på frågorna nedan — eller skriv fritt i chatten om du vet vad du söker.');
+    syvAddBotBubble('Hej! 👋 Vad är ditt mål med utbildningen?');
     syvRenderAreas();
     syvRenderStep();
   }
