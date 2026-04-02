@@ -8748,17 +8748,15 @@ ${styleTexts}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1200,
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 800,
           system: systemWithCtx,
-          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           messages: syvHistory
         })
       });
 
       if (!response.ok) throw new Error('API-fel: ' + response.status);
       const data = await response.json();
-      // Collect all text blocks (web_search adds tool_use/tool_result blocks too)
       const reply = (data.content || [])
         .filter(b => b.type === 'text')
         .map(b => b.text)
