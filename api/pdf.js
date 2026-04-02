@@ -23,16 +23,14 @@ module.exports = async (req, res) => {
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
+      headless: true,
     });
 
     const page = await browser.newPage();
 
-    // Blockera externa resurser för snabbare generering
     await page.setRequestInterception(true);
     page.on('request', (req) => {
       const type = req.resourceType();
-      // Tillåt stilmallar och fonter, blockera bilder och scripts
       if (['image', 'media', 'websocket'].includes(type)) {
         req.abort();
       } else {
@@ -41,8 +39,6 @@ module.exports = async (req, res) => {
     });
 
     await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 25000 });
-
-    // Ge lite tid för CSS att appliceras
     await new Promise(r => setTimeout(r, 500));
 
     const pdf = await page.pdf({
@@ -52,7 +48,6 @@ module.exports = async (req, res) => {
       preferCSSPageSize: false,
     });
 
-    // Säkra filnamnet
     const safeFilename = filename.replace(/[^a-zA-Z0-9._\-åäöÅÄÖ ]/g, '_');
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -66,7 +61,7 @@ module.exports = async (req, res) => {
     res.status(500).json({ error: 'PDF generation failed', message: error.message });
   } finally {
     if (browser) {
-      try { await browser.close(); } catch (e) { /* ignorera */ }
+      try { await browser.close(); } catch (e) { }
     }
   }
 };
