@@ -2088,7 +2088,50 @@
         flex: 0 0 52px;
       }
       /* ── Under arbete-panel ─────────────────────────── */
-      .mob-wip-panel {
+      /* ===== AI-SYV CHATT ===== */
+    .syv-msg { display: flex; }
+    .syv-msg--bot { justify-content: flex-start; }
+    .syv-msg--user { justify-content: flex-end; }
+    .syv-bubble {
+      max-width: 82%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .syv-bubble--bot {
+      background: rgba(62,180,137,0.12);
+      border: 1px solid rgba(62,180,137,0.2);
+      color: rgba(255,255,255,0.9);
+      border-bottom-left-radius: 4px;
+    }
+    .syv-bubble--user {
+      background: linear-gradient(135deg, #3eb489, #10b981);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .syv-bubble--typing {
+      background: rgba(62,180,137,0.08);
+      border: 1px solid rgba(62,180,137,0.15);
+      color: rgba(255,255,255,0.5);
+      font-style: italic;
+    }
+    .syv-quick {
+      background: rgba(62,180,137,0.1);
+      border: 1px solid rgba(62,180,137,0.25);
+      color: #3eb489;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .syv-quick:active { background: rgba(62,180,137,0.25); }
+
+    .mob-wip-panel {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -7513,12 +7556,49 @@ ${styleTexts}
     </div>
 
     <!-- FLIK: AI-SYV -->
-    <div class="mob-panel" id="mobPanel-aisyv">
-      <div class="mob-wip-panel">
-        <div class="mob-wip-panel__icon">🤖</div>
-        <div class="mob-wip-panel__title">AI-SYV</div>
-        <div class="mob-wip-panel__text">Din personliga studie- och yrkesvägledare driven av AI. Få råd, vägledning och karriärstöd dygnet runt.</div>
-        <div class="mob-wip-badge">Under arbete</div>
+    <div class="mob-panel" id="mobPanel-aisyv" style="display:flex;flex-direction:column;height:calc(100vh - 56px - 64px);padding:0;">
+
+      <!-- Header -->
+      <div style="padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎓</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#fff;">AI Studie- &amp; Yrkesvägledare</div>
+            <div style="font-size:11px;color:#3eb489;">Alltid tillgänglig · Gratis · Personlig</div>
+          </div>
+          <button onclick="syvClearChat()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;padding:4px 8px;border-radius:6px;" title="Rensa chatt">Rensa</button>
+        </div>
+      </div>
+
+      <!-- Meddelanden -->
+      <div id="syvMessages" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;">
+        <!-- Välkomstmeddelande -->
+        <div class="syv-msg syv-msg--bot">
+          <div class="syv-bubble syv-bubble--bot">
+            Hej! Jag är din AI-vägledare 👋<br><br>
+            Jag kan hjälpa dig med:<br>
+            • <b>Karriärvägledning</b> – vilket yrke passar mig?<br>
+            • <b>Utbildning</b> – vilka kurser eller program kan jag söka?<br>
+            • <b>CV-råd</b> – hur stärker jag mitt CV?<br>
+            • <b>Jobbsökning</b> – tips och strategier<br><br>
+            Vad kan jag hjälpa dig med?
+          </div>
+        </div>
+      </div>
+
+      <!-- Snabbfrågor -->
+      <div id="syvQuickBtns" style="padding:8px 16px;display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;flex-shrink:0;-webkit-overflow-scrolling:touch;">
+        <button class="syv-quick" onclick="syvQuick(&#39;Vilket yrke passar mig baserat på mitt CV?&#39;)">🎯 Vilket yrke passar mig?</button>
+        <button class="syv-quick" onclick="syvQuick(&#39;Vilka yrkesutbildningar finns i Familjen Helsingborg just nu?&#39;)">🏫 Utbildningar FH</button>
+        <button class="syv-quick" onclick="syvQuick(&#39;Vilka YH-utbildningar finns i nordvästra Skåne?&#39;)">🎓 YH-utbildningar</button>
+        <button class="syv-quick" onclick="syvQuick(&#39;Ge mig tips för jobbsökning&#39;)">💼 Jobbsökningstips</button>
+        <button class="syv-quick" onclick="syvQuick(&#39;Hur stärker jag mitt CV?&#39;)">✨ Stärk mitt CV</button>
+      </div>
+
+      <!-- Inmatning -->
+      <div style="padding:10px 16px 16px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;display:flex;gap:8px;align-items:flex-end;">
+        <textarea id="syvInput" rows="1" placeholder="Skriv din fråga..." style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;max-height:120px;overflow-y:auto;line-height:1.4;" oninput="syvAutoResize(this)" onkeydown="if(event.key===&#39;Enter&#39;&amp;&amp;!event.shiftKey){event.preventDefault();syvSend();}"></textarea>
+        <button id="syvSendBtn" onclick="syvSend()" style="width:42px;height:42px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
       </div>
     </div>
 
@@ -7584,6 +7664,7 @@ ${styleTexts}
     if (btn) btn.classList.add('mob-tab--active');
 
     if (tab === 'forhandsgranska') mobRefreshPreview();
+    if (tab === 'aisyv') syvFetchUtbildningar();
     if (tab === 'utbildning') mobRenderEdu();
     if (tab === 'profil') {
       const el = document.getElementById('mob-summary');
@@ -8317,6 +8398,220 @@ ${styleTexts}
   }
 
   // Aktivera/inaktivera Fortsätt-knappen på Info-fliken
+  // =====================================================
+  // AI-SYV — Studie- och Yrkesvägledare chatt
+  // =====================================================
+  let syvHistory = []; // {role, content}
+  let syvUtbildningar = null;  // cachas efter första hämtning
+  let syvUtbildningarFetching = false;
+
+  async function syvFetchUtbildningar() {
+    if (syvUtbildningar !== null || syvUtbildningarFetching) return;
+    syvUtbildningarFetching = true;
+    try {
+      const res = await fetch('/api/utbildningar');
+      if (res.ok) {
+        const data = await res.json();
+        syvUtbildningar = data;
+        console.log('[SYV] Utbildningsdata hämtad:', data.antal, 'utbildningar');
+      }
+    } catch (e) {
+      console.warn('[SYV] Kunde inte hämta utbildningsdata:', e.message);
+      syvUtbildningar = { utbildningar: [], antal: 0 };
+    } finally {
+      syvUtbildningarFetching = false;
+    }
+  }
+
+  const SYV_SYSTEM = [
+    'Du är en empatisk och kunnig AI-driven Studie- och Yrkesvägledare (SYV) i Pathfinder, en CV-app för nordvästra Skåne.',
+    'Du hjälper arbetssökande med karriärvägledning, utbildning och jobbsökning.',
+    '',
+    'VIKTIGAST — SÖK ALLTID AKTUELL DATA:',
+    'När användaren frågar om utbildningar, kurser eller yrkesutbildningar: SÖK PÅ WEBBEN för att hitta aktuell information.',
+    'Prioriterade källor att söka på:',
+    '- skanevux.se — Familjen Helsingborgs samlade utbud av komvux yrkesutbildningar',
+    '- familjenhelsingborg.se/utbildning — regionens utbildningssidor',
+    '- myh.se — yrkeshögskoleutbildningar (YH) i nordvästra Skåne',
+    '- arbetsformedlingen.se — arbetsmarknadsutbildningar',
+    '- skolverket.se/utbildningsguiden — alla utbildningar i Sverige',
+    '',
+    'Familjen Helsingborg = 11 kommuner: Helsingborg, Landskrona, Höganäs, Ängelholm, Bjuv, Båstad, Klippan, Perstorp, Svalöv, Åstorp, Örkelljunga.',
+    'Invånare i dessa kommuner kan söka ALLA komvux yrkesutbildningar i hela Familjen Helsingborg via en gemensam ansökan på helsingborg.se.',
+    '',
+    'DITT UPPDRAG:',
+    '- Ge personlig vägledning baserat på användarens bakgrund och frågor.',
+    '- Hämta RIKTIGA och AKTUELLA utbildningar — sök på webben, hittta inte på.',
+    '- Ge konkreta tips: utbildningsnamn, var man ansöker, behörighetskrav, studiemedel (CSN).',
+    '',
+    'TON OCH STIL:',
+    '- Varm, uppmuntrande och konkret — som en riktig SYV.',
+    '- Håll svaren kortfattade och handlingsbara.',
+    '- Max en följdfråga per svar.',
+    '- Skriv alltid på svenska.',
+    '',
+    'BEGRÄNSNINGAR:',
+    '- Ge aldrig juridiska råd.',
+    '- Hitta ALDRIG på utbildningar — sök och verifiera.',
+    '- Om du är osäker — säg det och hänvisa till rätt myndighet.'
+  ].join('\n');
+
+  function syvGetCVContext() {
+    // CV-data
+    const name = cvData && cvData.name ? cvData.name.split(' ')[0] : '';
+    const title = (cvData || {}).title || '';
+    const jobs = ((cvData || {}).jobs || []).map(j => j.title + (j.company ? ' på ' + j.company : '')).join(', ');
+    const edu = ((cvData || {}).education || []).map(e => e.degree || e.school).filter(Boolean).join(', ');
+    const skills = ((cvData || {}).skills || []).join(', ');
+    let ctx = '';
+    if (name) ctx += 'Användaren heter ' + name + '.';
+    if (title) ctx += ' Söker jobb som: ' + title + '.';
+    if (jobs) ctx += ' Erfarenhet: ' + jobs + '.';
+    if (edu) ctx += ' Utbildning: ' + edu + '.';
+    if (skills) ctx += ' Kompetenser: ' + skills + '.';
+
+    // Injicera realtidsdata om utbildningar från Skolverket
+    let eduCtx = '';
+    if (syvUtbildningar && syvUtbildningar.antal > 0) {
+      const lista = syvUtbildningar.utbildningar.slice(0, 40)
+        .map(u => u.namn + ' (' + u.kommun + (u.start ? ', start: ' + u.start : '') + (u.platser ? ', ' + u.platser + ' platser' : '') + ')')
+        .join('; ');
+      eduCtx = '\n\n[AKTUELLA YRKESUTBILDNINGAR I FAMILJEN HELSINGBORG (hämtat ' +
+        syvUtbildningar.hämtad + ' från Skolverket, ' + syvUtbildningar.antal + ' st): ' + lista +
+        '. Ansökan: ' + syvUtbildningar.ansökan + ']';
+    } else if (syvUtbildningar === null) {
+      eduCtx = '\n\n[Utbildningsdata laddas... Använd web_search för att hitta aktuella utbildningar på skanevux.se]';
+    }
+
+    return (ctx ? '\n\n[ANVÄNDARPROFIL: ' + ctx + ']' : '') + eduCtx;
+  }
+
+  function syvAutoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function syvQuick(msg) {
+    document.getElementById('syvInput').value = msg;
+    // Hide quick buttons after first use
+    const qb = document.getElementById('syvQuickBtns');
+    if (qb) qb.style.display = 'none';
+    syvSend();
+  }
+
+  function syvClearChat() {
+    syvHistory = [];
+    const msgs = document.getElementById('syvMessages');
+    if (!msgs) return;
+    msgs.innerHTML = '<div class="syv-msg syv-msg--bot"><div class="syv-bubble syv-bubble--bot">Hej igen! Vad kan jag hjälpa dig med? 😊</div></div>';
+    const qb = document.getElementById('syvQuickBtns');
+    if (qb) qb.style.display = 'flex';
+  }
+
+  async function syvSend() {
+    const input = document.getElementById('syvInput');
+    const msgs = document.getElementById('syvMessages');
+    const sendBtn = document.getElementById('syvSendBtn');
+    if (!input || !msgs) return;
+
+    const text = input.value.trim();
+    if (!text) return;
+    syvFetchUtbildningar(); // Säkerställ att vi har aktuell utbildningsdata
+
+    // Rensa input
+    input.value = '';
+    input.style.height = 'auto';
+    sendBtn.disabled = true;
+    sendBtn.style.opacity = '0.5';
+
+    // Visa användarmeddelande
+    const userDiv = document.createElement('div');
+    userDiv.className = 'syv-msg syv-msg--user';
+    userDiv.innerHTML = '<div class="syv-bubble syv-bubble--user">' + syvEscape(text) + '</div>';
+    msgs.appendChild(userDiv);
+
+    // Visa "skriver..."-indikator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'syv-msg syv-msg--bot';
+    typingDiv.id = 'syvTyping';
+    typingDiv.innerHTML = '<div class="syv-bubble syv-bubble--bot syv-bubble--typing">' + (syvUtbildningar === null ? '🔍 Söker utbildningar...' : '🤔 Tänker...') + '</div>';
+    msgs.appendChild(typingDiv);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // Lägg till i historik
+    syvHistory.push({ role: 'user', content: text });
+
+    // Bygg systemPrompt med CV-kontext
+    const systemWithCtx = SYV_SYSTEM + syvGetCVContext();
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1200,
+          system: systemWithCtx,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: syvHistory
+        })
+      });
+
+      if (!response.ok) throw new Error('API-fel: ' + response.status);
+      const data = await response.json();
+      // Collect all text blocks (web_search adds tool_use/tool_result blocks too)
+      const reply = (data.content || [])
+        .filter(b => b.type === 'text')
+        .map(b => b.text)
+        .join('\n')
+        .trim() || 'Inget svar';
+
+      // Ta bort typing-indikator
+      const typing = document.getElementById('syvTyping');
+      if (typing) typing.remove();
+
+      // Visa svar
+      const botDiv = document.createElement('div');
+      botDiv.className = 'syv-msg syv-msg--bot';
+      botDiv.innerHTML = '<div class="syv-bubble syv-bubble--bot">' + syvFormat(reply) + '</div>';
+      msgs.appendChild(botDiv);
+
+      // Lägg till svar i historik (bara text, inte tool-blocks)
+      syvHistory.push({ role: 'assistant', content: reply });
+
+      // Begränsa historik till 20 meddelanden
+      if (syvHistory.length > 20) syvHistory = syvHistory.slice(-20);
+
+    } catch (err) {
+      const typing = document.getElementById('syvTyping');
+      if (typing) typing.remove();
+      const errDiv = document.createElement('div');
+      errDiv.className = 'syv-msg syv-msg--bot';
+      errDiv.innerHTML = '<div class="syv-bubble syv-bubble--bot syv-bubble--typing">Något gick fel. Försök igen! (' + err.message + ')</div>';
+      msgs.appendChild(errDiv);
+    }
+
+    sendBtn.disabled = false;
+    sendBtn.style.opacity = '1';
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function syvEscape(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  function syvFormat(str) {
+    // Escape HTML
+    let s = str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    // Bold **text**
+    s = s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    // Bullet •
+    s = s.replace(/^[•\-] (.+)/gm, '• $1');
+    // Newlines
+    s = s.replace(/\n/g, '<br>');
+    return s;
+  }
+
   function mobCheckInfoDone() {
     const btn = document.getElementById('mobFortsattInfo');
     if (!btn) return;
