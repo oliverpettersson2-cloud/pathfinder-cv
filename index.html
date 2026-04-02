@@ -4614,30 +4614,17 @@
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          // Komprimera: max 600x600px, JPEG kvalitet 85%
-          const MAX = 600;
-          let w = img.width, h = img.height;
-          if (w > MAX || h > MAX) {
-            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-            else { w = Math.round(w * MAX / h); h = MAX; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          cvData.photoData = canvas.toDataURL('image/jpeg', 0.85);
-          const profilePhoto = document.getElementById('profilePhoto');
-          profilePhoto.src = cvData.photoData;
-          profilePhoto.style.display = 'block';
-          const removeBtn = document.getElementById('removePhotoBtn');
-          removeBtn.disabled = false;
-          removeBtn.removeAttribute('aria-disabled');
-          saveData();
-          updatePreview();
-          showToast('✅ Profilbild sparad!', 'success');
-        };
-        img.src = e.target.result;
+        cvData.photoData = e.target.result;
+        const profilePhoto = document.getElementById('profilePhoto');
+        profilePhoto.src = cvData.photoData;
+        profilePhoto.style.display = 'block';
+        // Aktivera "Ta bort bild"-knappen när en bild finns
+        const removeBtn = document.getElementById('removePhotoBtn');
+        removeBtn.disabled = false;
+        removeBtn.removeAttribute('aria-disabled');
+        saveData();
+        updatePreview();
+        showToast('✅ Profilbild sparad!', 'success');
       };
       reader.readAsDataURL(file);
     }
@@ -4933,7 +4920,8 @@
         hideAiLoader();
         showToast(`✨ ${skills.length} AI-kompetenser för ${titleRaw}!`, 'success');
       } catch(err) {
-        showAiError('Försök igen om en liten stund');
+        hideAiLoader();
+        showToast('⚠️ Kunde inte hämta kompetenser: ' + err.message, 'error');
       }
     }
 
@@ -5968,8 +5956,15 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
       } catch (error) {
         console.error('aiAutofillJobDesc fel:', error);
-        showAiError('Försök igen om en liten stund');
+        if (error.message.includes('401') || error.message.includes('invalid_api_key')) {
+          showToast('⚠️ Ogiltig API-nyckel', 'error');
+          
+        } else {
+          showToast('❌ ' + (error.message || 'Något gick fel'), 'error');
+        }
+      } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        hideAiLoader();
       }
     }
 
@@ -6107,8 +6102,15 @@ Ge bara profiltexten, ingen förklaringtext.`;
 
       } catch (error) {
         console.error('aiAutofillProfileSummary fel:', error);
-        showAiError('Försök igen om en liten stund');
+        if (error.message.includes('401') || error.message.includes('invalid_api_key')) {
+          showToast('⚠️ Ogiltig API-nyckel', 'error');
+          
+        } else {
+          showToast('❌ ' + (error.message || 'Något gick fel'), 'error');
+        }
+      } finally {
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        hideAiLoader();
       }
     }
 
@@ -6792,9 +6794,16 @@ ${styleTexts}
 
       } catch (error) {
         console.error('Pathfinder AI-fel:', error);
-        showAiError('Försök igen om en liten stund');
+        if (error.message.includes('401') || error.message.includes('invalid_api_key')) {
+          showToast('Ogiltig API-nyckel - kontrollera installningar', 'error');
+          
+        } else {
+          showToast('Fel: ' + (error.message || 'Nagot gick fel'), 'error');
+        }
+      } finally {
         btn.disabled = false;
         btn.textContent = 'AI Analysera';
+        hideAiLoader();
       }
     }
     // ===== SLUT PATHFINDER AI-MODUL =====
@@ -7304,55 +7313,6 @@ ${styleTexts}
       document.body.style.pointerEvents = '';
       document.body.style.removeProperty('pointer-events');
     }
-
-    function showAiError(msg) {
-      const overlay = document.getElementById('aiLoadingOverlay');
-      // Byt ikon till ❌
-      const iconEl = overlay.querySelector('div[style*="position:relative"]');
-      if (iconEl) iconEl.innerHTML = '<div style="font-size:48px;line-height:1;">❌</div>';
-      // Uppdatera texter
-      const titleEl = document.getElementById('aiLoadingTitle');
-      const subtitleEl = document.getElementById('aiLoadingSubtitle');
-      const compassEl = overlay.querySelector('svg[viewBox="0 0 20 20"]');
-      if (compassEl) compassEl.style.display = 'none';
-      if (titleEl) titleEl.textContent = 'Ber om ursäkt för tekniska problem';
-      if (subtitleEl) {
-        subtitleEl.textContent = msg || 'Försök igen om en liten stund';
-        subtitleEl.style.color = 'rgba(255,255,255,0.6)';
-        subtitleEl.style.maxWidth = '240px';
-      }
-      // Göm dots, visa stäng-knapp
-      const dotsEl = overlay.querySelector('div[style*="gap:8px"]');
-      if (dotsEl) dotsEl.style.display = 'none';
-      // Lägg till stäng-knapp om den inte finns
-      let closeBtn = document.getElementById('aiErrorCloseBtn');
-      if (!closeBtn) {
-        closeBtn = document.createElement('button');
-        closeBtn.id = 'aiErrorCloseBtn';
-        closeBtn.textContent = 'Stäng';
-        closeBtn.style.cssText = 'margin-top:8px;padding:10px 28px;border-radius:12px;border:none;background:#e85d26;color:#fff;font-size:15px;font-weight:700;cursor:pointer;';
-        closeBtn.onclick = hideAiError;
-        overlay.querySelector('div[style*="border-radius:24px"]').appendChild(closeBtn);
-      }
-      closeBtn.style.display = 'block';
-      overlay.style.display = 'flex';
-      document.body.style.pointerEvents = 'none';
-      overlay.style.pointerEvents = 'all';
-    }
-
-    function hideAiError() {
-      // Återställ overlay till normalt läge
-      const overlay = document.getElementById('aiLoadingOverlay');
-      const iconEl = overlay.querySelector('div[style*="position:relative"]');
-      if (iconEl) iconEl.innerHTML = `<svg viewBox="0 0 56 56" width="56" height="56" style="animation:hourglassSpin 2s ease-in-out infinite;"><defs><linearGradient id="hgGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3eb489"></stop><stop offset="100%" stop-color="#e85d26"></stop></linearGradient></defs><path d="M14 6 L42 6 L28 28 L42 50 L14 50 L28 28 Z" fill="none" stroke="url(#hgGrad)" stroke-width="2.5" stroke-linejoin="round"></path><path d="M16 8 L40 8 L28 24 Z" fill="#3eb489" opacity="0.3" style="animation:sandDrain 2s ease-in-out infinite;"></path><path d="M28 32 L40 48 L16 48 Z" fill="#e85d26" opacity="0.5" style="animation:sandFill 2s ease-in-out infinite;"></path><circle cx="28" cy="29" r="2" fill="#f0c040" style="animation:sandDrop 2s ease-in-out infinite;"></circle></svg>`;
-      const compassEl = overlay.querySelector('svg[viewBox="0 0 20 20"]');
-      if (compassEl) compassEl.style.display = '';
-      const dotsEl = overlay.querySelector('div[style*="gap:8px"]');
-      if (dotsEl) dotsEl.style.display = '';
-      const closeBtn = document.getElementById('aiErrorCloseBtn');
-      if (closeBtn) closeBtn.style.display = 'none';
-      hideAiLoader();
-    }
   </script>
   <!-- ===== SLUT AI-LADDNINGSOVERLAY ===== -->
 
@@ -7678,13 +7638,36 @@ ${styleTexts}
     </div>
 
     <!-- FLIK: Matcha arbete -->
-    <div class="mob-panel" id="mobPanel-matcha">
-      <div class="mob-wip-panel">
-        <div class="mob-wip-panel__icon">🎯</div>
-        <div class="mob-wip-panel__title">Matcha arbete</div>
-        <div class="mob-wip-panel__text">AI-driven jobbmatchning baserat på ditt CV och dina kompetenser. Kommer snart!</div>
-        <div class="mob-wip-badge">Under arbete</div>
+    <div class="mob-panel" id="mobPanel-matcha" style="padding:20px 16px;overflow-y:auto;">
+
+      <div class="mob-section">
+        <div class="mob-section-title">Välj CV att utgå från</div>
+        <select id="matchaCvSelect" class="mob-input" style="margin-bottom:0;"></select>
       </div>
+
+      <div class="mob-section" style="margin-top:16px;">
+        <div class="mob-section-title">Klistra in jobbannonsen</div>
+        <textarea id="matchaAdText" class="mob-input" rows="6" placeholder="Klistra in hela annonsen här..." style="resize:vertical;min-height:120px;"></textarea>
+      </div>
+
+      <button class="mob-btn-primary mob-btn-ai" onclick="matchaCV()" style="width:100%;margin-bottom:20px;">
+        🎯 Matcha mot annons
+      </button>
+
+      <div id="matchaResult" style="display:none;">
+        <div class="mob-section">
+          <div class="mob-section-title">Nyckelord från annonsen</div>
+          <div id="matchaKeywords" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+        <div class="mob-section">
+          <div class="mob-section-title">Anpassad profiltext</div>
+          <div id="matchaSuggestedText" style="background:rgba(62,180,137,0.08);border:1.5px solid rgba(62,180,137,0.25);border-radius:12px;padding:14px;font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);margin-bottom:12px;"></div>
+          <button class="mob-btn-primary mob-btn-green" onclick="matchaApplyText()" style="width:100%;">
+            ✅ Använd denna profiltext
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <!-- FLIK: AI-SYV -->
@@ -7823,6 +7806,7 @@ ${styleTexts}
     if (btn) btn.classList.add('mob-tab--active');
 
     if (tab === 'export') { mobBuildTemplateGrid(); mobRenderSavedCVs(); }
+    if (tab === 'matcha') { matchaPopulateCvSelect(); }
   }
 
   // ── Synka mobil-fält → cvData + desktop-fält ─────────
@@ -9100,6 +9084,104 @@ ${styleTexts}
       mobLoadFields();
     }
   });
+
+  // ===== JOBBMATCHNING =====
+  let matchaSuggestedTextValue = '';
+
+  function matchaPopulateCvSelect() {
+    const sel = document.getElementById('matchaCvSelect');
+    if (!sel) return;
+    sel.innerHTML = '<option value="__active__">Aktiv (nuvarande)</option>';
+    const saved = typeof mobGetSavedCVs === 'function' ? mobGetSavedCVs() : [];
+    saved.forEach(cv => {
+      const opt = document.createElement('option');
+      opt.value = cv.id;
+      opt.textContent = cv.title || cv.id;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function matchaCV() {
+    const adText = (document.getElementById('matchaAdText').value || '').trim();
+    if (!adText) { showToast('Klistra in en jobbannons forst', 'error'); return; }
+
+    const selVal = document.getElementById('matchaCvSelect').value;
+    let selectedCV = cvData;
+    if (selVal !== '__active__') {
+      const saved = typeof mobGetSavedCVs === 'function' ? mobGetSavedCVs() : [];
+      const found = saved.find(c => c.id === selVal);
+      if (found) selectedCV = found.data;
+    }
+
+    const cvSummary = [
+      selectedCV.summary ? 'Profiltext: ' + selectedCV.summary : '',
+      selectedCV.title ? 'Yrkestitel: ' + selectedCV.title : '',
+      selectedCV.skills && selectedCV.skills.length ? 'Kompetenser: ' + selectedCV.skills.join(', ') : '',
+      selectedCV.jobs && selectedCV.jobs.length ? 'Erfarenhet: ' + selectedCV.jobs.map(j => j.title + (j.company ? ' pa ' + j.company : '')).join('; ') : ''
+    ].filter(Boolean).join('\n');
+
+    showAiLoader('Analyserar annons...', 'AI matchar ditt CV mot tjansen');
+    document.getElementById('matchaResult').style.display = 'none';
+
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-opus-4-5',
+          max_tokens: 1000,
+          system: 'Du ar en CV-expert. Svara ALLTID med giltig JSON och inget annat. Inga backticks, inga forklaringar.',
+          messages: [{
+            role: 'user',
+            content: 'CV:\n' + cvSummary + '\n\nJobbannons:\n' + adText + '\n\nSvara med JSON: {"keywords": [{"word": "...", "status": "match|partial|missing"}], "profileText": "..."} dar profileText ar en anpassad profiltext pa svenska (2-4 meningar) som naturligt vaver in annonsens krav. Max 8 keywords.'
+          }]
+        })
+      });
+
+      if (!resp.ok) throw new Error('API-fel ' + resp.status);
+      const data = await resp.json();
+      const raw = (data.content || []).map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch(e) { throw new Error('Kunde inte tolka AI-svar'); }
+
+      const kwEl = document.getElementById('matchaKeywords');
+      kwEl.innerHTML = '';
+      const colors = {
+        match: 'background:rgba(62,180,137,0.2);color:#3eb489;border:1px solid rgba(62,180,137,0.3);',
+        partial: 'background:rgba(240,192,64,0.15);color:#f0c040;border:1px solid rgba(240,192,64,0.3);',
+        missing: 'background:rgba(232,93,38,0.15);color:#e85d26;border:1px solid rgba(232,93,38,0.3);'
+      };
+      const icons = { match: 'ok', partial: '~', missing: 'ej' };
+      (parsed.keywords || []).forEach(k => {
+        const span = document.createElement('span');
+        span.style.cssText = (colors[k.status] || colors.missing) + 'border-radius:99px;padding:4px 10px;font-size:12px;font-weight:600;';
+        span.textContent = icons[k.status] + ' ' + k.word;
+        kwEl.appendChild(span);
+      });
+
+      matchaSuggestedTextValue = parsed.profileText || '';
+      document.getElementById('matchaSuggestedText').textContent = matchaSuggestedTextValue;
+      document.getElementById('matchaResult').style.display = 'block';
+      hideAiLoader();
+
+    } catch(err) {
+      showAiError('Forsok igen om en liten stund');
+    }
+  }
+
+  function matchaApplyText() {
+    if (!matchaSuggestedTextValue) return;
+    cvData.summary = matchaSuggestedTextValue;
+    const summaryEl = document.getElementById('summary');
+    if (summaryEl) summaryEl.value = matchaSuggestedTextValue;
+    const mobSummaryEl = document.getElementById('mobSummary');
+    if (mobSummaryEl) mobSummaryEl.value = matchaSuggestedTextValue;
+    saveData();
+    updatePreview();
+    showToast('Profiltext uppdaterad!', 'success');
+    document.getElementById('matchaResult').style.display = 'none';
+  }
+  // ===== SLUT JOBBMATCHNING =====
   </script>
 
 </body></html>
