@@ -6051,7 +6051,7 @@ ${styleTexts}
           return;
         } catch (serverErr) {
           console.warn('Server-PDF misslyckades, faller tillbaka på klient:', serverErr.message);
-          if (iosWindow) { try { iosWindow.close(); } catch(e) {} iosWindow = null; }
+          // Stäng INTE iosWindow — används i klient-fallback nedan
           showToast('⏳ Genererar lokalt…', 'info');
         }
 
@@ -6190,8 +6190,17 @@ ${styleTexts}
 
         // ── Spara ─────────────────────────────────────────────────────────
         const fileName = (cvData.name || 'CV') + '_' + new Date().getFullYear() + '.pdf';
-        pdf.save(fileName);
-        showToast('✅ PDF skapad: ' + fileName, 'success');
+
+        if (isIOS && iosWindow) {
+          // iOS-fix: data URI öppnas i pre-öppnat fönster
+          const dataUri = pdf.output('datauristring');
+          iosWindow.location.href = dataUri;
+          showToast('✅ PDF öppnad — spara via dela-knappen', 'success');
+        } else {
+          if (iosWindow) { try { iosWindow.close(); } catch(e) {} }
+          pdf.save(fileName);
+          showToast('✅ PDF skapad: ' + fileName, 'success');
+        }
 
       } catch (error) {
         console.error('PDF Error (klient):', error);
