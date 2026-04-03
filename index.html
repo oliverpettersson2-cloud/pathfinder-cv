@@ -9593,8 +9593,11 @@ ${styleTexts}
     const container = document.getElementById('matchaCvCards');
     if (!container) return;
     const saved = typeof mobGetSavedCVs === 'function' ? mobGetSavedCVs() : [];
-    const allCVs = [{ id: '__active__', title: cvData.title || 'Aktivt CV', subtitle: cvData.name || '' }];
-    saved.forEach(cv => allCVs.push({ id: cv.id, title: cv.title || cv.id, subtitle: cv.data && cv.data.name || '' }));
+    // Visa bara sparade CV (max 3) — inget separat "Aktivt CV"-alternativ
+    const allCVs = saved.map(cv => ({ id: cv.id, title: cv.title || cv.id, subtitle: cv.data && cv.data.name || '' }));
+    if (allCVs.length === 0) allCVs.push({ id: '__active__', title: cvData.title || 'Aktivt CV', subtitle: cvData.name || '' });
+    // Sätt default till första om inget är valt
+    if (!allCVs.find(c => c.id === _matchaSelectedCVId)) _matchaSelectedCVId = allCVs[0].id;
 
     container.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:8px;';
     container.innerHTML = '';
