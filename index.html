@@ -2512,7 +2512,7 @@
   <nav id="mainNav">
     <!-- Rad 1: Profil-badge | Logga | Logga ut -->
     <div class="mob-nav-row1">
-      <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;" aria-label="Inloggad anvandare">
+      <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;margin-left:0;padding-left:4px;" aria-label="Inloggad anvandare">
         <svg class="mob-hide" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">oliver.pettersson2@gmail.com</span>
         <span class="mob-profil" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#3eb489;">
@@ -7928,7 +7928,7 @@ ${styleTexts}
           <div id="matchaInfoTitle" style="font-size:16px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:3px;"></div>
           <div id="matchaInfoMeta" style="font-size:11px;color:rgba(255,255,255,0.5);"></div>
         </div>
-        <button onclick="matchaCloseInfoModal()" style="background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;padding:4px 10px;border-radius:8px;margin-left:10px;line-height:1;">✕</button>
+        <button onclick="matchaCloseInfoModal()" style="background:rgba(220,50,50,0.12);border:1.5px solid rgba(220,50,50,0.3);color:rgba(255,80,80,0.9);font-size:11px;font-weight:800;cursor:pointer;padding:5px 10px;border-radius:8px;margin-left:10px;white-space:nowrap;letter-spacing:0.3px;">Ta bort</button>
       </div>
 
       <!-- Chips -->
@@ -7939,7 +7939,7 @@ ${styleTexts}
 
       <!-- Länk till annons -->
       <a id="matchaInfoLink" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);border-radius:10px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:12px;box-sizing:border-box;">
-        🔗 Öppna jobbannonsen
+        🔗 Öppna för att läsa hela jobbannonsen
       </a>
 
       <!-- CTA — en knapp -->
@@ -10258,7 +10258,8 @@ ${styleTexts}
     const adText = (hit.description && hit.description.text) || '';
     if (!adText) { summaryEl.innerHTML = ''; return; }
 
-    summaryEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:11px;padding:8px 0;">Sammanfattar annonsen...</div>';
+    summaryEl.innerHTML = '';
+    showAiLoader('Sammanfattar annonsen...', 'AI läser igenom och extraherar nyckelinfo');
 
     try {
       const resp = await fetch('/api/chat', {
@@ -10276,12 +10277,14 @@ ${styleTexts}
       });
       const data = await resp.json();
       const text = data.content?.[0]?.text || '';
+      hideAiLoader();
       if (text) {
         summaryEl.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.8;color:#fff;">' + text + '</div>';
       } else {
         summaryEl.innerHTML = '';
       }
     } catch(e) {
+      hideAiLoader();
       summaryEl.innerHTML = '';
     }
   }
