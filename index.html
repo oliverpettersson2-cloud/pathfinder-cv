@@ -9496,7 +9496,49 @@ ${styleTexts}
       matchaRenderStep3Ads();
     };
 
-    card.onclick = (e) => { if (!e.target.closest('.matcha-valj-btn')) btn.click(); };
+    // Expanderbar sammanfattning — dold tills man klickar på kortet
+    const expandBox = document.createElement('div');
+    expandBox.style.cssText = 'display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);';
+
+    // Snippet
+    if (snippet) {
+      const snipEl = document.createElement('div');
+      snipEl.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:8px;';
+      snipEl.textContent = snippet;
+      expandBox.appendChild(snipEl);
+    }
+
+    // Fakta-chips
+    function chip(label, color) {
+      const c = document.createElement('span');
+      c.style.cssText = 'display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;margin:2px;background:' + (color||'rgba(255,255,255,0.07)') + ';color:rgba(255,255,255,0.6);';
+      c.textContent = label;
+      return c;
+    }
+    const chipsRow = document.createElement('div');
+    chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;';
+    const hours = (hit.working_hours_type && hit.working_hours_type.label) || '';
+    if (hours) chipsRow.appendChild(chip('⏱ ' + hours));
+    const emp = (hit.employment_type && hit.employment_type.label) || '';
+    if (emp) chipsRow.appendChild(chip('📋 ' + emp));
+    if (hit.driving_license_required) chipsRow.appendChild(chip('🚗 Körkort krävs'));
+    else if (hit.driving_license_required === false) chipsRow.appendChild(chip('🚗 Inget körkort'));
+    const sal = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
+    chipsRow.appendChild(chip('💰 ' + (sal || 'Lön ej uppgiven')));
+    if (chipsRow.children.length > 0) expandBox.appendChild(chipsRow);
+    if (snippet || chipsRow.children.length > 0) card.appendChild(expandBox);
+
+    // Klick på kortet (ej välj-knapp) → toggle expand
+    let expanded = false;
+    card.onclick = (e) => {
+      if (e.target.closest('.matcha-valj-btn')) return;
+      expanded = !expanded;
+      expandBox.style.display = expanded ? 'block' : 'none';
+      card.style.background = expanded
+        ? (_matchaSelectedAds.find(a => a.id === hit.id) ? 'rgba(62,180,137,0.1)' : 'rgba(255,255,255,0.07)')
+        : (_matchaSelectedAds.find(a => a.id === hit.id) ? 'rgba(62,180,137,0.07)' : 'rgba(255,255,255,0.04)');
+    };
+
     updateCardState();
     card.appendChild(btn);
     return card;
