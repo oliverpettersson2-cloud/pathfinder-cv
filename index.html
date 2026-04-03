@@ -1732,7 +1732,7 @@
         align-items: center;
         justify-content: space-between;
         height: 52px;
-        padding: 0 14px;
+        padding: 0 4px;
         flex-shrink: 0;
       }
       .nav-logo {
@@ -7799,32 +7799,32 @@ ${styleTexts}
         <input id="matchaCvSelect" type="hidden">
 
         <!-- Hur Matcha fungerar -->
-        <div style="margin-bottom:20px;">
-          <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:12px;">Hur det fungerar</div>
+        <div style="margin-top:24px;margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:14px;">Hur det fungerar</div>
 
-          <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;flex-direction:column;gap:12px;">
 
-            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;">
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
               <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
               <div>
-                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">Välj ditt CV</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Välj vilket CV du vill matcha mot jobbannonser.</div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Välj ditt CV ovan</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;">Välj vilket av dina sparade CV du vill matcha mot jobbet — det är grunden AI utgår från.</div>
               </div>
             </div>
 
-            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;">
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
               <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
               <div>
-                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">Sök & välj annonser</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Sök på yrke eller nyckelord. Välj de annonser som intresserar dig — du kan välja flera.</div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Sök & välj annonser</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;">Sökningen är förinställd på yrket i ditt CV — men du kan söka fritt på vilket yrke eller nyckelord du vill. Välj en eller flera annonser.</div>
               </div>
             </div>
 
-            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;">
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
               <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
               <div>
-                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">AI anpassar ditt CV</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">AI läser annonsen och skriver en skräddarsydd profiltext som matchar just det jobbet.</div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">AI anpassar ditt CV</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;">AI läser annonsen och skriver en skräddarsydd profiltext som matchar just det jobbet.</div>
               </div>
             </div>
 
@@ -7918,8 +7918,8 @@ ${styleTexts}
       </div><!-- /matchaStep3 -->
 
   <!-- Matcha Info Modal -->
-  <div id="matchaInfoModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;touch-action:none;" onclick="if(event.target===this)matchaCloseInfoModal()">
-    <div style="background:#1a1a2e;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:75vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 24px;border-top:2px solid rgba(62,180,137,0.3);" onclick="event.stopPropagation()">
+  <div id="matchaInfoModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-start;justify-content:center;touch-action:none;" onclick="if(event.target===this)matchaCloseInfoModal()">
+    <div style="background:#1a1a2e;border-radius:0 0 20px 20px;width:100%;max-width:520px;max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 24px;border-bottom:2px solid rgba(62,180,137,0.3);margin-top:52px;" onclick="event.stopPropagation()">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
         <div style="flex:1;">
           <div id="matchaInfoTitle" style="font-size:16px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:3px;"></div>
