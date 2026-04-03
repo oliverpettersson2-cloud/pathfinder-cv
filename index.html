@@ -9547,63 +9547,113 @@ ${styleTexts}
     const initials = company.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
     const [bg, fg] = matchaAvatarColor(company || title);
     const score = matchaCalcScore(hit);
-    const snippet = matchaSnippet(hit);
-
-    // Färg på match-badge
-    let scoreBg = 'rgba(255,255,255,0.08)';
-    let scoreColor = 'rgba(255,255,255,0.35)';
-    if (score !== null) {
-      if (score >= 60)      { scoreBg = 'rgba(62,180,137,0.18)'; scoreColor = '#3eb489'; }
-      else if (score >= 35) { scoreBg = 'rgba(240,192,64,0.15)'; scoreColor = '#f0c040'; }
-      else                  { scoreBg = 'rgba(255,255,255,0.06)'; scoreColor = 'rgba(255,255,255,0.35)'; }
-    }
-    const scoreBadge = score !== null
-      ? '<span style="flex-shrink:0;font-size:10px;font-weight:800;padding:3px 7px;border-radius:20px;background:' + scoreBg + ';color:' + scoreColor + ';">' + score + '% match</span>'
-      : '';
 
     const card = document.createElement('div');
     card.style.cssText = 'padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:background 0.15s,border-color 0.15s;';
-    card.onmouseover = () => { card.style.background = 'rgba(62,180,137,0.07)'; card.style.borderColor = 'rgba(62,180,137,0.2)'; };
-    card.onmouseout  = () => { card.style.background = 'rgba(255,255,255,0.04)'; card.style.borderColor = 'rgba(255,255,255,0.07)'; };
-    card.innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px;">' +
-        '<div style="width:36px;height:36px;border-radius:9px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:' + fg + ';flex-shrink:0;">' + initials + '</div>' +
-        '<div style="flex:1;min-width:0;">' +
-          '<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + title + '</div>' +
-          '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
-            '<span>' + company + '</span>' +
-            (muni ? '<span style="display:flex;align-items:center;gap:3px;"><span style="width:4px;height:4px;border-radius:50%;background:#3eb489;display:inline-block;"></span>' + muni + '</span>' : '') +
-            (hit.webpage_url ? '<a href="' + hit.webpage_url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#3eb489;font-weight:700;text-decoration:none;font-size:10px;margin-left:auto;padding:2px 7px;border:1px solid rgba(62,180,137,0.4);border-radius:6px;background:rgba(62,180,137,0.08);">Annons ↗</a>' : '') +
-          '</div>' +
-        '</div>' +
 
-      '</div>' +
-      '';
-    // Uppdatera kort-utseende baserat på om annonsen är vald
+    // Header — titel + bolag + ort
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    header.innerHTML =
+      '<div style="width:36px;height:36px;border-radius:9px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:' + fg + ';flex-shrink:0;">' + initials + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + title + '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">' +
+          company + (muni ? ' · ' + muni : '') +
+        '</div>' +
+      '</div>';
+    card.appendChild(header);
+
+    // Expanderbar sektion — dold vid start
+    const expandBox = document.createElement('div');
+    expandBox.style.cssText = 'display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);';
+
+    // Chips
+    function chip(label) {
+      const c = document.createElement('span');
+      c.style.cssText = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.1);';
+      c.textContent = label;
+      return c;
+    }
+    const chipsRow = document.createElement('div');
+    chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;';
+    const hours = (hit.working_hours_type && hit.working_hours_type.label) || '';
+    if (hours) chipsRow.appendChild(chip('⏱ ' + hours));
+    const emp = (hit.employment_type && hit.employment_type.label) || '';
+    if (emp) chipsRow.appendChild(chip('📋 ' + emp));
+    if (hit.driving_license_required) chipsRow.appendChild(chip('🚗 Körkort krävs'));
+    else if (hit.driving_license_required === false) chipsRow.appendChild(chip('🚗 Körkort ej krav'));
+    const sal = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
+    if (sal) chipsRow.appendChild(chip('💰 ' + sal));
+    const dur = (hit.duration && hit.duration.label) || '';
+    if (dur && dur !== 'Tillsvidare') chipsRow.appendChild(chip('📅 ' + dur));
+    expandBox.appendChild(chipsRow);
+
+    // AI-sammanfattning container
+    const summaryContainer = document.createElement('div');
+    summaryContainer.style.cssText = 'margin-bottom:12px;';
+    expandBox.appendChild(summaryContainer);
+
+    // Knapp: Sammanfatta
+    const summarizeBtn = document.createElement('button');
+    summarizeBtn.textContent = '✨ Sammanfatta jobbannonsen';
+    summarizeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:all 0.15s;';
+    summarizeBtn.onclick = async (e) => {
+      e.stopPropagation();
+      const adText = (hit.description && hit.description.text) || '';
+      if (!adText) { showToast('Ingen annonstext tillgänglig', 'error'); return; }
+      summarizeBtn.style.display = 'none';
+      showAiLoader('Sammanfattar annonsen...', 'AI läser och extraherar nyckelinfo');
+      try {
+        const resp = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 600,
+            system: 'Du ar en jobbannons-sammanfattare. Svara pa svenska. Svara BARA med kompakt HTML utan inledning.',
+            messages: [{ role: 'user', content: 'Sammanfatta denna jobbannons pa svenska. Inkludera: Arbetsuppgifter, Krav, Profil, Startdatum, Hur du soker (e-post eller extern lank), Kontaktperson. HTML-format: <b>Rubrik:</b> kort text. Max 2 meningar/del. Hoppa over delar som saknas. Annons: ' + adText.substring(0, 3000) }]
+          })
+        });
+        hideAiLoader();
+        const data = await resp.json();
+        const text = data.content?.[0]?.text || '';
+        if (text) {
+          summaryContainer.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + text + '</div>';
+        }
+      } catch(e) {
+        hideAiLoader();
+        summarizeBtn.style.display = 'block';
+      }
+    };
+    expandBox.appendChild(summarizeBtn);
+
+    // Knapp: Matcha CV
+    const matchaBtn = document.createElement('button');
+    matchaBtn.className = 'matcha-valj-btn';
+    matchaBtn.style.cssText = 'width:100%;padding:11px;background:#3eb489;border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;transition:all 0.15s;';
+
     function updateCardState() {
       const idx = _matchaSelectedAds.findIndex(a => a.id === hit.id);
       const isSelected = idx >= 0;
-      card.style.borderColor = isSelected ? '#3eb489' : 'rgba(255,255,255,0.07)';
-      card.style.background  = isSelected ? 'rgba(62,180,137,0.07)' : 'rgba(255,255,255,0.04)';
-      btn.textContent = isSelected ? '✓ Vald (' + (idx+1) + '/3)' : '+ Välj';
-      btn.style.background = isSelected ? 'rgba(62,180,137,0.2)' : '#3eb489';
-      btn.style.border = isSelected ? '1.5px solid #3eb489' : 'none';
-      btn.style.color = isSelected ? '#3eb489' : '#fff';
+      card.style.borderColor = isSelected ? '#3eb489' : (expanded ? 'rgba(62,180,137,0.2)' : 'rgba(255,255,255,0.07)');
+      card.style.background  = isSelected ? 'rgba(62,180,137,0.1)' : (expanded ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.04)');
+      matchaBtn.innerHTML = isSelected ? '✓ Vald (' + (idx+1) + '/3) — klicka för att avmarkera' : '🎯 Matcha CV med detta jobb';
+      matchaBtn.style.background = isSelected ? 'rgba(62,180,137,0.2)' : '#3eb489';
+      matchaBtn.style.border = isSelected ? '1.5px solid #3eb489' : 'none';
+      matchaBtn.style.color = isSelected ? '#3eb489' : '#fff';
     }
 
-    const btn = document.createElement('button');
-    btn.className = 'matcha-valj-btn';
-    btn.style.cssText = 'margin-top:10px;width:100%;padding:9px;background:#3eb489;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:9px;cursor:pointer;font-family:inherit;transition:all 0.15s;';
-
-    btn.onclick = (e) => {
+    matchaBtn.onclick = (e) => {
       e.stopPropagation();
       const idx = _matchaSelectedAds.findIndex(a => a.id === hit.id);
       if (idx >= 0) {
-        // Avmarkera
         _matchaSelectedAds.splice(idx, 1);
       } else if (_matchaSelectedAds.length < 3) {
-        // Lägg till
         _matchaSelectedAds.push(hit);
+        // Stäng kortet efter val
+        expanded = false;
+        expandBox.style.display = 'none';
       } else {
         showToast('Max 3 annonser valda', 'error'); return;
       }
@@ -9611,66 +9661,19 @@ ${styleTexts}
       matchaUpdateStep2Bar();
       matchaRenderStep3Ads();
     };
+    expandBox.appendChild(matchaBtn);
+    card.appendChild(expandBox);
 
-    // Expanderbar sammanfattning — dold tills man klickar på kortet
-    const expandBox = document.createElement('div');
-    expandBox.style.cssText = 'display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);';
-
-    // Snippet
-    if (snippet) {
-      const snipEl = document.createElement('div');
-      snipEl.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:8px;';
-      snipEl.textContent = snippet;
-      expandBox.appendChild(snipEl);
-    }
-
-    // Fakta-chips
-    function chip(label, color) {
-      const c = document.createElement('span');
-      c.style.cssText = 'display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;margin:2px;background:' + (color||'rgba(255,255,255,0.07)') + ';color:rgba(255,255,255,0.6);';
-      c.textContent = label;
-      return c;
-    }
-    const chipsRow = document.createElement('div');
-    chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;';
-    const hours = (hit.working_hours_type && hit.working_hours_type.label) || '';
-    if (hours) chipsRow.appendChild(chip('⏱ ' + hours));
-    const emp = (hit.employment_type && hit.employment_type.label) || '';
-    if (emp) chipsRow.appendChild(chip('📋 ' + emp));
-    if (hit.driving_license_required) chipsRow.appendChild(chip('🚗 Körkort krävs'));
-    else if (hit.driving_license_required === false) chipsRow.appendChild(chip('🚗 Inget körkort'));
-    const sal = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
-    chipsRow.appendChild(chip('💰 ' + (sal || 'Lön ej uppgiven')));
-    if (chipsRow.children.length > 0) expandBox.appendChild(chipsRow);
-    if (snippet || chipsRow.children.length > 0) card.appendChild(expandBox);
-
-    // Klick på kortet (ej välj-knapp) → öppna info-modal (samma som steg 3)
+    // Klick på kortet → toggle expand
+    let expanded = false;
     card.onclick = (e) => {
-      if (e.target.closest('.matcha-valj-btn')) return;
-      // Bygg ett factsEl från chips för modal
-      const modalFacts = document.createElement('div');
-      modalFacts.style.display = 'none';
-      function mchip(label, color) {
-        const c = document.createElement('div');
-        c.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700;background:' + (color||'rgba(255,255,255,0.07)') + ';color:' + (color ? '#fff' : 'rgba(255,255,255,0.55)') + ';border:1px solid ' + (color ? color : 'rgba(255,255,255,0.1)') + ';';
-        c.textContent = label;
-        return c;
-      }
-      const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
-      if (hoursType) modalFacts.appendChild(mchip('⏱ ' + hoursType));
-      const empType = (hit.employment_type && hit.employment_type.label) || '';
-      if (empType) modalFacts.appendChild(mchip('📋 ' + empType));
-      if (hit.driving_license_required) modalFacts.appendChild(mchip('🚗 Körkort krävs', 'rgba(240,192,64,0.5)'));
-      else if (hit.driving_license_required === false) modalFacts.appendChild(mchip('🚗 Körkort ej krav'));
-      const salDesc = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
-      modalFacts.appendChild(mchip('💰 ' + (salDesc || 'Lön ej uppgiven')));
-      const dur = (hit.duration && hit.duration.label) || '';
-      if (dur && dur !== 'Tillsvidare') modalFacts.appendChild(mchip('📅 ' + dur));
-      matchaShowInfoModal(hit, modalFacts, null);
+      if (e.target.closest('.matcha-valj-btn') || e.target.closest('button')) return;
+      expanded = !expanded;
+      expandBox.style.display = expanded ? 'block' : 'none';
+      updateCardState();
     };
 
     updateCardState();
-    card.appendChild(btn);
     return card;
   }
 
