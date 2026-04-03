@@ -9553,13 +9553,15 @@ ${styleTexts}
       const altEl = document.getElementById('matchaAlternatives');
       altEl.innerHTML = '';
       const labels = ['Erfarenhetsfokus', 'Motivationsfokus', 'Kompetens & resultat'];
-      (parsed.alternatives || []).forEach((alt, i) => {
+      // Spara texterna i en global array och referera med index – undviker problem med citattecken i onclick
+      window._matchaAlts = parsed.alternatives || [];
+      window._matchaAlts.forEach((alt, i) => {
         const card = document.createElement('div');
         card.style.cssText = 'background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;margin-bottom:12px;';
         card.innerHTML =
           '<div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:8px;">' + (labels[i] || 'Alternativ ' + (i+1)) + '</div>' +
           '<div style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);margin-bottom:12px;">' + alt + '</div>' +
-          '<button class="mob-btn-primary mob-btn-green" style="width:100%;font-size:13px;" onclick="matchaApplyText(' + JSON.stringify(alt) + ')">Anvand detta alternativ</button>';
+          '<button class="mob-btn-primary mob-btn-green" style="width:100%;font-size:13px;" onclick="matchaApplyText(window._matchaAlts[' + i + '])">Använd detta alternativ</button>';
         altEl.appendChild(card);
       });
 
