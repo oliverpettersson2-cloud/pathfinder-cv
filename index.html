@@ -10265,11 +10265,13 @@ ${styleTexts}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 600,
+          system: 'Du ar en jobbannons-sammanfattare. Svara pa svenska. Svara BARA med kompakt HTML utan inledning eller forklaringar.',
           messages: [{
             role: 'user',
             content: 'Sammanfatta denna jobbannons pa svenska. Inkludera: Arbetsuppgifter, Krav, Profil, Startdatum, Hur du soker jobbet (via extern hemsida-lank ELLER e-post — ange adressen tydligt), Kontaktperson (namn + telefon/email). HTML-format: <b>Rubrik:</b> text. Max 2 meningar/del. Hoppa over delar som saknas. Annons: ' + adText.substring(0, 3000)
-          }],
-          system: 'Du ar en jobbannons-sammanfattare. Svara pa svenska. Svara BARA med kompakt HTML utan inledning eller forklaringar.'
+          }]
         })
       });
       const data = await resp.json();
