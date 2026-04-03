@@ -1852,9 +1852,23 @@
 
       .mob-tab__icon { font-size: 18px; line-height: 1; }
 
-      .mob-tab--active { color: #3eb489; }
-      .mob-tab--active .mob-tab__icon { 
-        filter: drop-shadow(0 0 6px rgba(62,180,137,0.5));
+      .mob-tab--active {
+        color: #3eb489;
+        background: rgba(62,180,137,0.08);
+        border-radius: 10px;
+        position: relative;
+      }
+      .mob-tab--active::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 20%; right: 20%;
+        height: 2.5px;
+        background: #3eb489;
+        border-radius: 0 0 3px 3px;
+      }
+      .mob-tab--active .mob-tab__icon {
+        filter: drop-shadow(0 0 8px rgba(62,180,137,0.6));
+        transform: scale(1.1);
       }
 
       /* ── Mobil innehållsyta ─────────────────────────── */
@@ -9458,7 +9472,7 @@ ${styleTexts}
           '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
             '<span>' + company + '</span>' +
             (muni ? '<span style="display:flex;align-items:center;gap:3px;"><span style="width:4px;height:4px;border-radius:50%;background:#3eb489;display:inline-block;"></span>' + muni + '</span>' : '') +
-            (hit.webpage_url ? '<a href="' + hit.webpage_url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#3eb489;font-weight:700;text-decoration:none;font-size:11px;margin-left:2px;">Annons ↗</a>' : '') +
+            (hit.webpage_url ? '<a href="' + hit.webpage_url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#3eb489;font-weight:700;text-decoration:none;font-size:10px;margin-left:auto;padding:2px 7px;border:1px solid rgba(62,180,137,0.4);border-radius:6px;background:rgba(62,180,137,0.08);">Annons ↗</a>' : '') +
           '</div>' +
         '</div>' +
 
