@@ -9458,6 +9458,7 @@ ${styleTexts}
           '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
             '<span>' + company + '</span>' +
             (muni ? '<span style="display:flex;align-items:center;gap:3px;"><span style="width:4px;height:4px;border-radius:50%;background:#3eb489;display:inline-block;"></span>' + muni + '</span>' : '') +
+            (hit.webpage_url ? '<a href="' + hit.webpage_url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#3eb489;font-weight:700;text-decoration:none;font-size:11px;margin-left:2px;">Annons ↗</a>' : '') +
           '</div>' +
         '</div>' +
 
