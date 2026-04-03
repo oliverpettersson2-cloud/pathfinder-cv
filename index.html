@@ -2519,13 +2519,13 @@
           <span style="width:8px;height:8px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>Profil
         </span>
       </div>
-      <div class="nav-logo" style="display:flex;align-items:center;">
-        <div>
+      <div class="nav-logo" style="display:flex;align-items:center;flex:1;justify-content:center;">
+        <div style="text-align:center;">
           <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;line-height:1.1;">Path<span style="color:#f0c040;">finder</span></div>
           <div class="mob-hide" style="font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.4);font-family:-apple-system,sans-serif;">Din väg mot arbete &amp; studier</div>
         </div>
       </div>
-      <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color=&#39;rgba(255,255,255,0.7)&#39;" onmouseout="this.style.color=&#39;rgba(255,255,255,0.35)&#39;" aria-label="Logga ut">Logga ut</button>
+      <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:rgba(220,60,60,0.12);border:1.5px solid rgba(220,60,60,0.35);color:rgba(255,100,100,0.9);font-size:11px;font-weight:700;cursor:pointer;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:all 0.2s;letter-spacing:0.2px;" onmouseover="this.style.background='rgba(220,60,60,0.22)';this.style.borderColor='rgba(220,60,60,0.6)';this.style.color='#ff8080'" onmouseout="this.style.background='rgba(220,60,60,0.12)';this.style.borderColor='rgba(220,60,60,0.35)';this.style.color='rgba(255,100,100,0.9)'" aria-label="Logga ut">Logga ut</button>
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
     <div id="mobCVSteps">
@@ -4751,14 +4751,14 @@
       showToast('🗑️ Profilbild borttagen', 'success');
     }
 
-    function setShowPhoto(show) {
+    function setShowPhoto(show, silent) {
       cvData.showPhoto = show;
       document.getElementById('photoYesBtn').classList.toggle('active', show);
       document.getElementById('photoNoBtn').classList.toggle('active', !show);
       document.getElementById('photoUploadSection').style.display = show ? 'block' : 'none';
       saveData();
       updatePreview();
-      showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
+      if (!silent) showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
     }
 
     // Spara/Ladda data
@@ -5257,7 +5257,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         removeBtn.removeAttribute('aria-disabled');
       }
       
-      setShowPhoto(cvData.showPhoto === true);
+      setShowPhoto(cvData.showPhoto === true, true);
       renderJobs();
       renderEducation();
       renderLanguages();
@@ -7797,6 +7797,40 @@ ${styleTexts}
         <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:12px;">Välj CV att matcha mot</div>
         <div id="matchaCvCards" style="margin-bottom:20px;"></div>
         <input id="matchaCvSelect" type="hidden">
+
+        <!-- Hur Matcha fungerar -->
+        <div style="margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:12px;">Hur det fungerar</div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;">
+              <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">Välj ditt CV</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Välj vilket CV du vill matcha mot jobbannonser.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;">
+              <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">Sök & välj annonser</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Sök på yrke eller nyckelord. Välj de annonser som intresserar dig — du kan välja flera.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:12px 14px;">
+              <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">AI anpassar ditt CV</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">AI läser annonsen och skriver en skräddarsydd profiltext som matchar just det jobbet.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         <button onclick="matchaSwitchTab(2)" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Välj CV &amp; Sök jobb →</button>
       </div>
 
@@ -7861,7 +7895,7 @@ ${styleTexts}
         <span style="font-size:20px;flex-shrink:0;">🤖</span>
         <div>
           <div style="font-size:12px;font-weight:800;color:rgba(162,155,254,0.9);margin-bottom:3px;">Så fungerar AI-matchningen</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;">AI läser igenom jobbannonsen och jämför den med ditt CV. Sedan skriver den en skräddarsydd profiltext och lyfter fram dina mest relevanta erfarenheter — anpassat just för det jobbet.</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;">AI läser igenom jobbannonsen och jämför den med ditt CV — och skriver en skräddarsydd profiltext anpassad just för det jobbet.</div>
         </div>
       </div>
 
@@ -7884,21 +7918,21 @@ ${styleTexts}
       </div><!-- /matchaStep3 -->
 
   <!-- Matcha Info Modal -->
-  <div id="matchaInfoModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;" onclick="if(event.target===this)matchaCloseInfoModal()">
+  <div id="matchaInfoModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;" onclick="if(event.target===this)matchaCloseInfoModal()">
     <div style="background:#1a1a2e;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:24px 20px 32px;border-top:2px solid rgba(62,180,137,0.3);">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
         <div style="flex:1;">
           <div id="matchaInfoTitle" style="font-size:17px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:4px;"></div>
-          <div id="matchaInfoMeta" style="font-size:12px;color:rgba(255,255,255,0.45);"></div>
+          <div id="matchaInfoMeta" style="font-size:12px;color:rgba(255,255,255,0.5);"></div>
         </div>
         <button onclick="matchaCloseInfoModal()" style="background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;padding:4px 10px;border-radius:8px;margin-left:12px;line-height:1;">✕</button>
       </div>
 
       <!-- Chips -->
-      <div id="matchaInfoChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
+      <div id="matchaInfoChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;"></div>
 
-      <!-- Annonstext -->
-      <div id="matchaInfoAdText" style="display:none;margin-bottom:16px;max-height:160px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;font-size:11px;line-height:1.7;color:rgba(255,255,255,0.6);white-space:pre-wrap;"></div>
+      <!-- AI-sammanfattning -->
+      <div id="matchaInfoSummary" style="margin-bottom:14px;"></div>
 
       <!-- Länk till annons -->
       <a id="matchaInfoLink" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);border-radius:12px;color:#3eb489;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:20px;box-sizing:border-box;">
@@ -10100,7 +10134,7 @@ ${styleTexts}
       metaEl.textContent = company + (muni ? ' · ' + muni : '');
       section.appendChild(metaEl);
 
-      // Fakta-chips byggs upp men visas bara i modal
+      // Fakta-chips byggs men visas bara i modal
       const factsEl = document.createElement('div');
       factsEl.style.cssText = 'display:none;flex-wrap:wrap;gap:6px;margin-top:8px;';
 
@@ -10174,16 +10208,17 @@ ${styleTexts}
     });
   }
 
-  function matchaShowInfoModal(hit, factsEl, adIdx) {
+  async function matchaShowInfoModal(hit, factsEl, adIdx) {
     const modal = document.getElementById('matchaInfoModal');
     if (!modal) return;
 
+    // Title + meta
     document.getElementById('matchaInfoTitle').textContent = hit.headline || '';
     const company = (hit.employer && hit.employer.name) || '';
-    const muni    = (hit.workplace_address && hit.workplace_address.municipality) || '';
+    const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
     document.getElementById('matchaInfoMeta').textContent = [company, muni].filter(Boolean).join(' · ');
 
-    // Länk
+    // Link
     const linkEl = document.getElementById('matchaInfoLink');
     const url = hit.webpage_url || '';
     linkEl.href = url || '#';
@@ -10194,24 +10229,43 @@ ${styleTexts}
     chipsContainer.innerHTML = '';
     Array.from(factsEl.children).forEach(chip => chipsContainer.appendChild(chip.cloneNode(true)));
 
-    // Annonstext
-    const adText = (hit.description && hit.description.text) || '';
-    const adTextEl = document.getElementById('matchaInfoAdText');
-    if (adText) { adTextEl.textContent = adText.substring(0, 2000); adTextEl.style.display = 'block'; }
-    else { adTextEl.style.display = 'none'; }
+    // Buttons
+    document.getElementById('matchaInfoAdaptBtn').onclick = () => { matchaCloseInfoModal(); matchaCVForAd(adIdx); };
+    document.getElementById('matchaInfoGenBtn').onclick = () => { matchaCloseInfoModal(); matchaCVForAd(adIdx); };
 
-    // Knappar
-    document.getElementById('matchaInfoAdaptBtn').onclick = () => {
-      matchaCloseInfoModal();
-      matchaCVForAd(adIdx);
-    };
-    document.getElementById('matchaInfoGenBtn').onclick = () => {
-      matchaCloseInfoModal();
-      matchaCVForAd(adIdx);
-    };
-
+    // Show modal immediately
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+
+    // AI summary of ad text
+    const summaryEl = document.getElementById('matchaInfoSummary');
+    const adText = (hit.description && hit.description.text) || '';
+    if (!adText) { summaryEl.innerHTML = ''; return; }
+
+    summaryEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:11px;padding:8px 0;">Sammanfattar annonsen...</div>';
+
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{
+            role: 'user',
+            content: 'Sammanfatta annonsen pa svenska. Visa: Arbetsuppgifter, Krav, Profil, Start, Kontakt (om det finns). HTML format med <b>rubrik:</b> + kort text. Max 3 meningar/del. Annons: ' + adText.substring(0, 3000)
+          }],
+          system: 'Du är en jobbannons-sammanfattare. Svara ALLTID på svenska. Svara BARA med HTML-formaterad sammanfattning, inga förklaringar.'
+        })
+      });
+      const data = await resp.json();
+      const text = data.content?.[0]?.text || '';
+      if (text) {
+        summaryEl.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.8;color:#fff;">' + text + '</div>';
+      } else {
+        summaryEl.innerHTML = '';
+      }
+    } catch(e) {
+      summaryEl.innerHTML = '';
+    }
   }
 
   function matchaCloseInfoModal() {
