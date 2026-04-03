@@ -7747,41 +7747,46 @@ ${styleTexts}
     <!-- FLIK: Matcha arbete -->
     <div class="mob-panel" id="mobPanel-matcha" style="padding:0;overflow-y:auto;">
 
-      <!-- Header -->
-      <div style="padding:20px 16px 0;">
+      <!-- Steg-flikar -->
+      <div style="display:flex;border-bottom:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.2);">
+        <button id="matchaTab1" onclick="matchaSwitchTab(1)" style="flex:1;padding:12px 4px;background:none;border:none;border-bottom:2px solid #3eb489;color:#3eb489;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.3px;">1 · Välj CV</button>
+        <button id="matchaTab2" onclick="matchaSwitchTab(2)" style="flex:1;padding:12px 4px;background:none;border:none;border-bottom:2px solid transparent;color:rgba(255,255,255,0.3);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.3px;">2 · Sök jobb</button>
+        <button id="matchaTab3" onclick="matchaSwitchTab(3)" style="flex:1;padding:12px 4px;background:none;border:none;border-bottom:2px solid transparent;color:rgba(255,255,255,0.3);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.3px;">3 · Matcha CV</button>
+      </div>
+
+      <!-- STEG 1: Välj CV -->
+      <div id="matchaStep1" style="padding:20px 16px;">
         <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:12px;">Välj CV att matcha mot</div>
-        <div id="matchaCvCards" style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px;"></div>
+        <div id="matchaCvCards" style="margin-bottom:20px;"></div>
         <input id="matchaCvSelect" type="hidden">
+        <button onclick="matchaSwitchTab(2)" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Välj CV &amp; Sök jobb →</button>
       </div>
 
-      <!-- Söksektionen — Platsbanken-stil -->
-      <div style="background:rgba(10,14,30,0.7);border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);padding:18px 16px;">
-        <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;">Sök på ett eller flera ord</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">Skriv t.ex. lärare Helsingborg</div>
-        <!-- Sökfält med grön knapp -->
-        <div style="display:flex;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.3);">
-          <input id="matchaSearch" type="text" placeholder="Yrke eller nyckelord..." oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search"
-            style="flex:1;padding:14px 16px;background:#fff;border:none;color:#1a1a2e;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;min-width:0;">
-          <button onclick="matchaDoSearch()" style="padding:14px 20px;background:#4caf50;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;font-family:inherit;">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="white" stroke-width="1.8"></circle><path d="M11 11L14 14" stroke="white" stroke-width="1.8" stroke-linecap="round"></path></svg>
-            Sök
-          </button>
+      <!-- STEG 2: Sök jobb -->
+      <div id="matchaStep2" style="display:none;padding:0;">
+        <!-- Söksektionen — Platsbanken-stil -->
+        <div style="background:rgba(10,14,30,0.7);padding:18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);">
+          <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;">Sök på ett eller flera ord</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">Skriv t.ex. lärare Helsingborg</div>
+          <div style="display:flex;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.3);">
+            <input id="matchaSearch" type="text" placeholder="Yrke eller nyckelord..." oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search"
+              style="flex:1;padding:14px 16px;background:#fff;border:none;color:#1a1a2e;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;min-width:0;">
+            <button onclick="matchaDoSearch()" style="padding:14px 20px;background:#4caf50;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;font-family:inherit;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="white" stroke-width="1.8"></circle><path d="M11 11L14 14" stroke="white" stroke-width="1.8" stroke-linecap="round"></path></svg>
+              Sök
+            </button>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
+            <button id="matchaChipHbg" onclick="matchaSetFilter('hbg')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Helsingborg</button>
+            <button id="matchaChipLocal" onclick="matchaSetFilter('fam')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #3eb489;background:rgba(62,180,137,0.15);color:#3eb489;font-family:inherit;">
+              <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.8" r="2" stroke="#3eb489" stroke-width="1.3"></circle><path d="M5 8.5C5 8.5 1.8 6.2 1.8 3.8a3.2 3.2 0 016.4 0C8.2 6.2 5 8.5 5 8.5z" stroke="#3eb489" stroke-width="1.3" fill="none"></path></svg>
+              Familjen Hbg
+            </button>
+            <button id="matchaChipSkane" onclick="matchaSetFilter('skane')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Skåne</button>
+            <button id="matchaChipAll" onclick="matchaSetFilter('all')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Hela Sverige</button>
+          </div>
         </div>
-        <!-- Geografiska filter -->
-        <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
-          <button id="matchaChipHbg" onclick="matchaSetFilter('hbg')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Helsingborg</button>
-          <button id="matchaChipLocal" onclick="matchaSetFilter('fam')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #3eb489;background:rgba(62,180,137,0.15);color:#3eb489;font-family:inherit;">
-            <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.8" r="2" stroke="#3eb489" stroke-width="1.3"></circle><path d="M5 8.5C5 8.5 1.8 6.2 1.8 3.8a3.2 3.2 0 016.4 0C8.2 6.2 5 8.5 5 8.5z" stroke="#3eb489" stroke-width="1.3" fill="none"></path></svg>
-            Familjen Hbg
-          </button>
-          <button id="matchaChipSkane" onclick="matchaSetFilter('skane')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Skåne</button>
-          <button id="matchaChipAll" onclick="matchaSetFilter('all')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Hela Sverige</button>
-        </div>
-      </div>
-
-      <div style="padding:0 16px;">
-
-      </div>
+        <div style="padding:0 16px;">
       <div id="matchaSkeleton" style="display:none;margin-top:14px;">
         <div style="display:flex;gap:10px;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:7px;">
           <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.07);flex-shrink:0;animation:matchaShimmer 1.3s ease-in-out infinite;"></div>
@@ -7801,6 +7806,11 @@ ${styleTexts}
       <div id="matchaVisaFler" style="display:none;margin-top:8px;">
         <button onclick="matchaVisaFlerAnnonser()" style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Visa fler annonser</button>
       </div>
+
+      </div><!-- /steg2-inner -->
+
+      <!-- STEG 3: Matcha CV -->
+      <div id="matchaStep3" style="display:none;padding:16px;">
 
       <div id="matchaSelectedAd" style="display:none;margin-top:14px;background:rgba(62,180,137,0.08);border:1.5px solid rgba(62,180,137,0.25);border-radius:12px;padding:12px 14px;">
         <div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(62,180,137,0.7);margin-bottom:4px;">Vald annons</div>
@@ -7842,7 +7852,8 @@ ${styleTexts}
         <span style="font-size:10px;color:rgba(255,255,255,0.18);letter-spacing:0.5px;">via JobTech / Platsbanken</span>
       </div>
 
-    </div>
+      </div><!-- /matchaStep3 -->
+    </div><!-- /mobPanel-matcha -->
 
     <!-- FLIK: AI-SYV -->
     <div class="mob-panel" id="mobPanel-aisyv" style="flex-direction:column;height:calc(100vh - 56px - 64px);padding:0;overflow:hidden;">
@@ -8537,12 +8548,11 @@ ${styleTexts}
     const sorted = [...list].sort((a,b) => b.savedAt - a.savedAt);
     sorted.forEach(entry => {
       const dateStr = _mobRelDate(new Date(entry.savedAt));
+      const cvEmoji = matchaCvEmoji ? matchaCvEmoji(entry.title) : '📄';
       html += `
         <div onclick="mobShowSavedCVDetail('${entry.id}')"
              style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px;border-radius:14px;cursor:pointer;text-align:center;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);position:relative;">
-          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          </div>
+          <div style="font-size:30px;line-height:1;">${cvEmoji}</div>
           <div style="font-size:11px;font-weight:700;color:#fff;line-height:1.3;word-break:break-word;">${entry.title}</div>
           <div style="font-size:10px;color:rgba(255,255,255,0.3);">${dateStr}</div>
         </div>`;
@@ -9566,6 +9576,8 @@ ${styleTexts}
     document.getElementById('matchaVisaFler').style.display = 'none';
     document.getElementById('matchaRole').value = title;
     document.getElementById('matchaCompany').value = company;
+    // Gå automatiskt till steg 3
+    matchaSwitchTab(3);
   }
 
   function matchaToggleAdText() {
@@ -9590,6 +9602,24 @@ ${styleTexts}
 
   let _matchaSelectedCVId = '__active__';
 
+  // Välj emoji baserat på CV-titel
+  function matchaCvEmoji(title) {
+    const t = (title || '').toLowerCase();
+    if (t.includes('lärare') || t.includes('pedagog') || t.includes('skola')) return '📚';
+    if (t.includes('sjuk') || t.includes('vård') || t.includes('läkare') || t.includes('omsorg')) return '🏥';
+    if (t.includes('ingenjör') || t.includes('teknik') || t.includes('it') || t.includes('data')) return '💻';
+    if (t.includes('chef') || t.includes('ledare') || t.includes('manager')) return '💼';
+    if (t.includes('bygg') || t.includes('snickare') || t.includes('elektriker')) return '🔧';
+    if (t.includes('kock') || t.includes('kök') || t.includes('restaurang')) return '🍳';
+    if (t.includes('säljare') || t.includes('butik') || t.includes('handel')) return '🛍️';
+    if (t.includes('chaufför') || t.includes('transport') || t.includes('förare')) return '🚛';
+    if (t.includes('barn') || t.includes('förskola')) return '🧒';
+    const emojis = ['📄','🎯','⭐','🚀','💡','🎨','🌟'];
+    let h = 0;
+    for (let c of (title||'')) h = (h*31 + c.charCodeAt(0)) & 0xffff;
+    return emojis[h % emojis.length];
+  }
+
   function matchaPopulateCvSelect() {
     const container = document.getElementById('matchaCvCards');
     if (!container) return;
@@ -9604,13 +9634,12 @@ ${styleTexts}
     container.innerHTML = '';
     allCVs.forEach(cv => {
       const isActive = cv.id === _matchaSelectedCVId;
+      const emoji = matchaCvEmoji(cv.title);
       const card = document.createElement('div');
-      card.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 8px;border-radius:12px;cursor:pointer;transition:all 0.15s;text-align:center;border:1.5px solid ' + (isActive ? '#3eb489' : 'rgba(255,255,255,0.08)') + ';background:' + (isActive ? 'rgba(62,180,137,0.12)' : 'rgba(255,255,255,0.04)') + ';position:relative;';
+      card.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 8px;border-radius:12px;cursor:pointer;transition:all 0.15s;text-align:center;border:1.5px solid ' + (isActive ? '#3eb489' : 'rgba(255,255,255,0.08)') + ';background:' + (isActive ? 'rgba(62,180,137,0.12)' : 'rgba(255,255,255,0.04)') + ';position:relative;';
       card.innerHTML =
-        (isActive ? '<div style="position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:#3eb489;"></div>' : '') +
-        '<div style="width:36px;height:36px;border-radius:9px;background:' + (isActive ? 'rgba(62,180,137,0.22)' : 'rgba(255,255,255,0.07)') + ';display:flex;align-items:center;justify-content:center;">' +
-          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="' + (isActive ? '#3eb489' : 'rgba(255,255,255,0.35)') + '" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
-        '</div>' +
+        (isActive ? '<div style="position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#3eb489;"></div>' : '') +
+        '<div style="font-size:28px;line-height:1;">' + emoji + '</div>' +
         '<div style="font-size:11px;font-weight:700;color:' + (isActive ? '#fff' : 'rgba(255,255,255,0.5)') + ';line-height:1.3;word-break:break-word;">' + cv.title + '</div>';
       card.onclick = () => { _matchaSelectedCVId = cv.id; matchaPopulateCvSelect(); matchaPreFillFromCV(); };
       container.appendChild(card);
@@ -9800,6 +9829,26 @@ ${styleTexts}
     const open = box.style.display !== 'none';
     box.style.display = open ? 'none' : 'block';
     if (btn) btn.textContent = open ? '📄 Läs annons' : '▲ Stäng annons';
+  }
+
+  // Matcha steg-navigation
+  let _matchaCurrentTab = 1;
+  function matchaSwitchTab(n) {
+    _matchaCurrentTab = n;
+    [1,2,3].forEach(i => {
+      const step = document.getElementById('matchaStep' + i);
+      const tab  = document.getElementById('matchaTab'  + i);
+      if (step) step.style.display = i === n ? (i === 2 ? 'block' : 'block') : 'none';
+      if (tab) {
+        tab.style.color       = i === n ? '#3eb489' : 'rgba(255,255,255,0.3)';
+        tab.style.borderBottom = i === n ? '2px solid #3eb489' : '2px solid transparent';
+      }
+    });
+    // Byt till steg 2 → starta sökning om inte gjort
+    if (n === 2) {
+      const s = document.getElementById('matchaSearch');
+      if (s && s.value.length > 1) matchaDoSearch();
+    }
   }
 
   // ===== SLUT JOBBMATCHNING =====
