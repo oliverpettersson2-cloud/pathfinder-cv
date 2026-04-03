@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)file:///C:/Users/olive/Downloads/index_api_6.html -->
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_19.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,8 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="file:///C:/Users/olive/Downloads/pathfinder-favicon.svg">
 
   <!-- PDF Generation Libraries -->
-  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
-  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
+  <script src="file:///C:/Users/olive/Downloads/index_files/html2canvas.min.js.ladda%20ned"></script>
+  <script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
   
   
   <style>
@@ -1733,8 +1733,64 @@
       .nav-auth-badge .mob-hide { display: none !important; }
       .nav-auth-badge .mob-profil { display: flex !important; }
 
-      /* Kompaktare navbar */
-      nav { height: 56px; padding: 0 16px; }
+      /* Kompaktare navbar — högre när CV-läge */
+      nav { height: 56px; padding: 0 16px; transition: height 0.2s; }
+      nav.mob-cv-mode { height: 92px; }
+
+      /* CV-stegindikator */
+      .mob-cvstep {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        cursor: pointer;
+        padding-bottom: 0;
+        position: relative;
+      }
+      .mob-cvstep__lbl {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.25);
+        transition: color 0.2s;
+      }
+      .mob-cvstep__dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.07);
+        border: 1.5px solid rgba(255,255,255,0.12);
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: rgba(255,255,255,0.25);
+        font-weight: 700;
+      }
+      .mob-cvstep__bar {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+        border-radius: 2px 2px 0 0;
+        background: transparent;
+        transition: background 0.2s;
+      }
+      .mob-cvstep.active .mob-cvstep__lbl { color: #3eb489; }
+      .mob-cvstep.active .mob-cvstep__dot {
+        background: rgba(62,180,137,0.15);
+        border-color: #3eb489;
+        color: #3eb489;
+      }
+      .mob-cvstep.active .mob-cvstep__bar { background: #3eb489; }
+      .mob-cvstep.done .mob-cvstep__lbl { color: rgba(62,180,137,0.5); }
+      .mob-cvstep.done .mob-cvstep__dot {
+        background: #3eb489;
+        border-color: #3eb489;
+        color: #fff;
+      }
       .nav-logo { font-size: 20px; }
 
       /* Hela main-containern göms — vi visar mobil-UI istället */
@@ -2422,6 +2478,17 @@
       </div>
     </div>
 
+    <!-- CV-STEGINDIKATOR (mobil only, visas under loggan när CV-läge aktivt) -->
+    <div id="mobCVSteps" style="display:none;position:absolute;left:0;right:0;bottom:0;height:36px;overflow:hidden;">
+      <div style="display:flex;align-items:flex-end;height:100%;">
+        <div class="mob-cvstep" id="mobCVStep-info"     onclick="mobSwitchSubTab('info')"            data-tab="info">           <span class="mob-cvstep__lbl">Profil</span>   <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+        <div class="mob-cvstep" id="mobCVStep-jobb"     onclick="mobSwitchSubTab('jobb')"            data-tab="jobb">           <span class="mob-cvstep__lbl">Jobb</span>     <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+        <div class="mob-cvstep" id="mobCVStep-utbildning" onclick="mobSwitchSubTab('utbildning')"    data-tab="utbildning">     <span class="mob-cvstep__lbl">Utb.</span>     <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+        <div class="mob-cvstep" id="mobCVStep-mer"      onclick="mobSwitchSubTab('mer')"             data-tab="mer">            <span class="mob-cvstep__lbl">Mer</span>      <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+        <div class="mob-cvstep" id="mobCVStep-profil"   onclick="mobSwitchSubTab('profil')"          data-tab="profil">         <span class="mob-cvstep__lbl">Text</span>     <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+        <div class="mob-cvstep" id="mobCVStep-forhandsgranska" onclick="mobSwitchSubTab('forhandsgranska')" data-tab="forhandsgranska"><span class="mob-cvstep__lbl">Visa</span>     <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+      </div>
+    </div>
     <!-- PROFIL-BADGE (mobil: grön fyrkant "Profil" | desktop: email) -->
     <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display: flex; cursor:pointer;" aria-label="Inloggad anvandare">
       <!-- Desktop: ikon + email -->
@@ -7333,7 +7400,7 @@ ${styleTexts}
       <span>Hej</span>
     </button>
     <!-- 2. CV (öppnar undermeny) -->
-    <button class="mob-tab mob-tab--active" id="tabBtn-cv-menu" onclick="mobToggleCVMenu()">
+    <button class="mob-tab mob-tab--active" id="tabBtn-cv-menu" onclick="mobOpenCV()">
       <span class="mob-tab__icon">📄</span>
       <span>CV</span>
     </button>
@@ -7650,15 +7717,15 @@ ${styleTexts}
         <div class="mob-section-title">Sök jobbannons</div>
         <div style="position:relative;">
           <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none;" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="7" cy="7" r="4.5" stroke="white" stroke-width="1.5"/>
-            <path d="M11 11L14 14" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="7" cy="7" r="4.5" stroke="white" stroke-width="1.5"></circle>
+            <path d="M11 11L14 14" stroke="white" stroke-width="1.5" stroke-linecap="round"></path>
           </svg>
           <input id="matchaSearch" type="text" class="mob-input" placeholder="Yrke eller nyckelord..." style="margin-bottom:0;padding-left:38px;" oninput="matchaSearchDebounce()">
         </div>
 
         <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;">
           <button id="matchaChipLocal" onclick="matchaSetFilter(true)" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(62,180,137,0.5);background:rgba(62,180,137,0.12);color:#3eb489;font-family:inherit;">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.8" r="2" stroke="#3eb489" stroke-width="1.2"/><path d="M5 8.5C5 8.5 1.8 6.2 1.8 3.8a3.2 3.2 0 016.4 0C8.2 6.2 5 8.5 5 8.5z" stroke="#3eb489" stroke-width="1.2" fill="none"/></svg>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.8" r="2" stroke="#3eb489" stroke-width="1.2"></circle><path d="M5 8.5C5 8.5 1.8 6.2 1.8 3.8a3.2 3.2 0 016.4 0C8.2 6.2 5 8.5 5 8.5z" stroke="#3eb489" stroke-width="1.2" fill="none"></path></svg>
             Familjen Helsingborg
           </button>
           <button id="matchaChipAll" onclick="matchaSetFilter(false)" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">
@@ -7787,41 +7854,72 @@ ${styleTexts}
   function isMobile() { return window.innerWidth <= 768; }
 
   // ── CV-undermeny ─────────────────────────────────────
-  function mobToggleCVMenu() {
+  // Öppna CV-läge — visar steg-indikator i nav, öppnar senast aktiv sub-tab
+  let _mobLastCVTab = 'info';
+  function mobOpenCV() {
     if (!isMobile()) return;
-    const subMenu = document.getElementById('mobCVSubMenu');
-    const mainBar = document.getElementById('mobileTabBar');
-    subMenu.style.display = 'flex';
-    mainBar.style.display = 'none';
-    // Aktivera info som default om ingen sub-tab är aktiv
-    const anyActive = document.querySelector('#mobCVSubMenu .mob-tab--active');
-    if (!anyActive) mobSwitchSubTab('info');
+    mobEnterCVMode();
+    mobSwitchSubTab(_mobLastCVTab || 'info');
   }
 
-  function mobCloseCVMenu() {
-    const subMenu = document.getElementById('mobCVSubMenu');
-    const mainBar = document.getElementById('mobileTabBar');
-    subMenu.style.display = 'none';
-    mainBar.style.display = 'flex';
-    // Markera CV-knappen som aktiv i huvud-navbar
+  function mobEnterCVMode() {
+    document.querySelector('nav').classList.add('mob-cv-mode');
+    const steps = document.getElementById('mobCVSteps');
+    if (steps) steps.style.display = 'block';
+    // Markera CV-knappen aktiv i bottenbar
     document.querySelectorAll('#mobileTabBar .mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
     const cvBtn = document.getElementById('tabBtn-cv-menu');
     if (cvBtn) cvBtn.classList.add('mob-tab--active');
   }
+
+  function mobExitCVMode() {
+    document.querySelector('nav').classList.remove('mob-cv-mode');
+    const steps = document.getElementById('mobCVSteps');
+    if (steps) steps.style.display = 'none';
+  }
+
+  // Uppdatera steg-indikatorn
+  const MOB_CV_STEPS = ['info','jobb','utbildning','mer','profil','forhandsgranska'];
+  function mobUpdateCVSteps(activeTab) {
+    const activeIdx = MOB_CV_STEPS.indexOf(activeTab);
+    MOB_CV_STEPS.forEach((tab, i) => {
+      const el = document.getElementById('mobCVStep-' + tab);
+      if (!el) return;
+      const dot = el.querySelector('.mob-cvstep__dot');
+      el.classList.remove('active','done');
+      if (i < activeIdx) {
+        el.classList.add('done');
+        dot.textContent = '✓';
+      } else if (i === activeIdx) {
+        el.classList.add('active');
+        dot.textContent = i + 1;
+      } else {
+        dot.textContent = i + 1;
+      }
+    });
+  }
+
+  // Gammal funktion behålls för bakåtkompatibilitet (anropas på några ställen)
+  function mobToggleCVMenu() { mobOpenCV(); }
+  function mobCloseCVMenu() { mobExitCVMode(); }
 
   function mobSwitchSubTab(tab) {
     if (!isMobile()) return;
     const btn = document.getElementById('tabBtn-' + tab);
     if (btn && btn.classList.contains('mob-tab--locked')) return;
 
+    // Säkerställ att CV-läget är aktivt
+    mobEnterCVMode();
+    _mobLastCVTab = tab;
+
     // Dölj alla paneler
     document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('mob-panel--active'));
-    // Avmarkera alla sub-knappar
-    document.querySelectorAll('#mobCVSubMenu .mob-tab').forEach(b => b.classList.remove('mob-tab--active'));
 
     const panel = document.getElementById('mobPanel-' + tab);
     if (panel) panel.classList.add('mob-panel--active');
-    if (btn) btn.classList.add('mob-tab--active');
+
+    // Uppdatera steg-indikatorn
+    mobUpdateCVSteps(tab);
 
     if (tab === 'forhandsgranska') mobRefreshPreview();
     if (tab === 'aisyv') { syvFetchUtbildningar(); syvUpdateSavedBtn(); }
@@ -7837,11 +7935,8 @@ ${styleTexts}
   function mobSwitchTab(tab) {
     if (!isMobile()) return;
 
-    // Stäng CV-undermenyn om öppen
-    const subMenu = document.getElementById('mobCVSubMenu');
-    const mainBar = document.getElementById('mobileTabBar');
-    if (subMenu) subMenu.style.display = 'none';
-    if (mainBar) mainBar.style.display = 'flex';
+    // Lämna CV-läget
+    mobExitCVMode();
 
     // Dölj alla paneler
     document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('mob-panel--active'));
