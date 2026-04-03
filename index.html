@@ -6411,7 +6411,49 @@ ${styleTexts}
           pdf.addImage(imgData, 'JPEG', MARGIN_MM, MARGIN_MM, imgWidthMm, sliceH_mm);
         }
 
-        const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_' + new Date().getFullYear() + '.pdf';
+        // ── Annonstextbilaga (om aktivt matchat CV + toggle på) ──
+        const adText = window._activeMatchedAdText || '';
+        const includeAd = !!(adText && (window._mobAdPdfForced || false));
+        if (includeAd) {
+          pdf.addPage();
+          const margin = 15;
+          const pageW = 210;
+          const maxW = pageW - margin * 2;
+          let yPos = margin;
+
+          // Rubrik
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(13);
+          pdf.setTextColor(30, 36, 64);
+          const adTitle = window._activeMatchedAdTitle ? window._activeMatchedAdTitle.replace('Matchat CV – ', '') : 'Jobbannons';
+          pdf.text('Jobbannons: ' + adTitle, margin, yPos);
+          yPos += 8;
+
+          // Linje
+          pdf.setDrawColor(62, 180, 137);
+          pdf.setLineWidth(0.5);
+          pdf.line(margin, yPos, pageW - margin, yPos);
+          yPos += 6;
+
+          // Annonstext
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(9);
+          pdf.setTextColor(60, 60, 60);
+          const lines = pdf.splitTextToSize(adText, maxW);
+          const lineH = 4.5;
+          const pageH = 297;
+          lines.forEach(line => {
+            if (yPos + lineH > pageH - margin) {
+              pdf.addPage();
+              yPos = margin;
+            }
+            pdf.text(line, margin, yPos);
+            yPos += lineH;
+          });
+        }
+
+        const adSuffix = includeAd ? '_med_annons' : '';
+        const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_' + new Date().getFullYear() + adSuffix + '.pdf';
         const blob    = pdf.output('blob');
         const dataUri = pdf.output('datauristring');
         return { blob, fileName, dataUri };
@@ -8335,8 +8377,30 @@ ${styleTexts}
     if (!entry) return;
     Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
     saveData(); updatePreview(); mobLoadFields();
+    // Spara annonstext globalt för PDF-export
+    window._activeMatchedAdText = entry.adText || '';
+    window._activeMatchedAdTitle = entry.title || '';
+    // Visa/dölj annons-toggle i förhandsgranskning
+    const toggle = document.getElementById('mobAdPdfToggleRow');
+    if (toggle) toggle.style.display = entry.adText ? 'flex' : 'none';
+    const cb = document.getElementById('mobAdPdfToggle');
+    if (cb) cb.checked = true; // default: inkludera
     mobOpenCV(); mobSwitchSubTab('forhandsgranska');
     showToast('✅ ' + entry.title + ' öppnat', 'success');
+  }
+
+  function mobShowSavedCVDetail(id) {
+    const list = mobGetSavedCVs();
+    const entry = list.find(c => c.id === id);
+    if (!entry) return;
+    Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+    saveData(); updatePreview(); mobLoadFields(); mobBuildTemplateGrid();
+    // Inget matchat CV — dölj annons-toggle
+    window._activeMatchedAdText = '';
+    const toggle = document.getElementById('mobAdPdfToggleRow');
+    if (toggle) toggle.style.display = 'none';
+    mobOpenCV(); mobSwitchSubTab('forhandsgranska');
+    showToast('✅ ' + entry.title + ' öppnat — dela eller spara som PDF', 'success');
   }
 
   function mobGetSavedCVs() {
@@ -8446,23 +8510,7 @@ ${styleTexts}
     showToast('✅ CV laddat: ' + entry.title, 'success');
   }
 
-  function mobShowSavedCVDetail(id) {
-    const list = mobGetSavedCVs();
-    const entry = list.find(c => c.id === id);
-    if (!entry) return;
 
-    // Ladda CV-datan
-    Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
-    saveData();
-    updatePreview();
-    mobLoadFields();
-
-    // Öppna CV-läget med steg-indikator och visa förhandsgranskning
-    mobOpenCV();
-    mobSwitchSubTab('forhandsgranska');
-
-    showToast('✅ ' + entry.title + ' öppnat — dela eller spara som PDF', 'success');
-  }
 
   function mobRenderSavedCVs() {
     const container = document.getElementById('mobSavedCVsList');
@@ -8531,13 +8579,14 @@ ${styleTexts}
               </div>
               <button onclick="mobDeleteMatchedCV('${entry.id}')" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0;">✕</button>
             </div>
-            ${hasAdText ? `<div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-              <button onclick="mobToggleMatchedAdText('${entry.id}')" id="matchedAdBtn_${entry.id}" style="background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);color:#3eb489;font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:20px;font-family:inherit;">📄 Läs annons</button>
-              ${hasUrl ? `<a href="${entry.jobUrl}" target="_blank" rel="noopener" style="font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;">↗ Extern länk</a>` : ''}
+            <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+              <button onclick="mobExportMatchedPDF('${entry.id}')" style="flex:1;padding:9px 12px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">📄 Spara PDF${hasAdText ? ' + annons' : ''}</button>
+              ${hasAdText ? `<button onclick="mobToggleMatchedAdText('${entry.id}')" id="matchedAdBtn_${entry.id}" style="padding:9px 12px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);color:#3eb489;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">📋 Läs</button>` : ''}
+              ${hasUrl ? `<a href="${entry.jobUrl}" target="_blank" rel="noopener" style="padding:9px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:12px;font-weight:600;border-radius:10px;text-decoration:none;display:inline-block;">↗</a>` : ''}
             </div>
-            <div id="matchedAdBox_${entry.id}" style="display:none;margin-top:10px;max-height:240px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;">
+            ${hasAdText ? `<div id="matchedAdBox_${entry.id}" style="display:none;margin-top:10px;max-height:240px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;">
               <div style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.7);white-space:pre-wrap;">${entry.adText.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-            </div>` : (hasUrl ? `<div style="margin-top:8px;"><a href="${entry.jobUrl}" target="_blank" rel="noopener" style="font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;">↗ Öppna annons</a></div>` : '')}
+            </div>` : ''}
           </div>`;
       });
     }
@@ -9650,6 +9699,29 @@ ${styleTexts}
       mobRenderSavedCVs();
     }
   }
+  async function mobExportMatchedPDF(id) {
+    const entry = mobGetMatchedCVs().find(c => c.id === id);
+    if (!entry) return;
+    // Ladda CV-data utan att byta vy
+    const prevData = JSON.parse(JSON.stringify(cvData));
+    Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+    updatePreview();
+    // Sätt annonstext globalt
+    window._activeMatchedAdText = entry.adText || '';
+    window._activeMatchedAdTitle = entry.title || '';
+    window._mobAdPdfForced = true; // override toggle
+    showToast('⏳ Skapar PDF...', 'info');
+    try {
+      await mobGenerateAndSharePDF();
+    } finally {
+      // Återställ cvData
+      Object.assign(cvData, prevData);
+      updatePreview();
+      window._activeMatchedAdText = '';
+      window._mobAdPdfForced = false;
+    }
+  }
+
   function mobToggleMatchedAdText(id) {
     const box = document.getElementById('matchedAdBox_' + id);
     const btn = document.getElementById('matchedAdBtn_' + id);
