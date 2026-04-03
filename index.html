@@ -8,7 +8,7 @@
 
   <!-- PDF Generation Libraries -->
   <script src="file:///C:/Users/olive/Downloads/index_files/html2canvas.min.js.ladda%20ned"></script>
-  <script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   
   <style>
@@ -10272,6 +10272,12 @@ ${styleTexts}
     showToast('✅ Sparat som "' + matchTitle + '"', 'success');
   }
 
+  function matchaGoToStep3() {
+    const modal = document.getElementById('matchaMaxModal');
+    if (modal) modal.style.display = 'none';
+    setTimeout(() => matchaSwitchTab(3), 50);
+  }
+
   // ===== SLUT JOBBMATCHNING =====
   </script>
 
@@ -10281,7 +10287,7 @@ ${styleTexts}
       <div style="font-size:28px;text-align:center;margin-bottom:14px;">🎯</div>
       <div style="font-size:16px;font-weight:800;color:#fff;text-align:center;margin-bottom:10px;">3 annonser valda!</div>
       <div style="font-size:13px;color:rgba(255,255,255,0.55);text-align:center;line-height:1.6;margin-bottom:24px;">Du har valt det maximala antalet annonser. Vill du matcha dessa mot ditt CV, eller fortsätta söka efter fler jobb?</div>
-      <button onclick="matchaSwitchTab(3); document.getElementById('matchaMaxModal').style.display='none';" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+      <button onclick="matchaGoToStep3()" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
         Matcha mot CV →
       </button>
       <button onclick="document.getElementById('matchaMaxModal').style.display='none';" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
