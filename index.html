@@ -9557,7 +9557,7 @@ ${styleTexts}
     header.innerHTML =
       '<div style="width:36px;height:36px;border-radius:9px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:' + fg + ';flex-shrink:0;">' + initials + '</div>' +
       '<div style="flex:1;min-width:0;">' +
-        '<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + title + '</div>' +
+        '<div style="font-size:13px;font-weight:700;color:#fff;line-height:1.3;">' + title + '</div>' +
         '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">' +
           company + (muni ? ' · ' + muni : '') +
         '</div>' +
@@ -9638,7 +9638,7 @@ ${styleTexts}
       const isSelected = idx >= 0;
       card.style.borderColor = isSelected ? '#3eb489' : (expanded ? 'rgba(62,180,137,0.2)' : 'rgba(255,255,255,0.07)');
       card.style.background  = isSelected ? 'rgba(62,180,137,0.1)' : (expanded ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.04)');
-      matchaBtn.innerHTML = isSelected ? '✓ Vald (' + (idx+1) + '/3) — klicka för att avmarkera' : '🎯 Matcha CV med detta jobb';
+      matchaBtn.innerHTML = isSelected ? '✓ Sparad (' + (idx+1) + '/3) — klicka för att ta bort' : '💾 Spara för att matcha mot CV';
       matchaBtn.style.background = isSelected ? 'rgba(62,180,137,0.2)' : '#3eb489';
       matchaBtn.style.border = isSelected ? '1.5px solid #3eb489' : 'none';
       matchaBtn.style.color = isSelected ? '#3eb489' : '#fff';
