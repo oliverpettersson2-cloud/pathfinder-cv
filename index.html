@@ -8313,6 +8313,26 @@ ${styleTexts}
   // SPARADE CV:N — max 3 st, namngivna efter yrket
   // =====================================================
   const SAVED_CVS_KEY = 'pathfinder_saved_cvs';
+  const MATCHED_CVS_KEY = 'pathfinder_matched_cvs';
+
+  function mobGetMatchedCVs() {
+    try { const r = localStorage.getItem(MATCHED_CVS_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+  }
+  function mobPutMatchedCVs(list) {
+    try { localStorage.setItem(MATCHED_CVS_KEY, JSON.stringify(list)); } catch(e) {}
+  }
+  function mobDeleteMatchedCV(id) {
+    mobPutMatchedCVs(mobGetMatchedCVs().filter(c => c.id !== id));
+    mobRenderSavedCVs();
+  }
+  function mobShowMatchedCVDetail(id) {
+    const entry = mobGetMatchedCVs().find(c => c.id === id);
+    if (!entry) return;
+    Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+    saveData(); updatePreview(); mobLoadFields();
+    mobOpenCV(); mobSwitchSubTab('forhandsgranska');
+    showToast('✅ ' + entry.title + ' öppnat', 'success');
+  }
 
   function mobGetSavedCVs() {
     try {
@@ -8444,17 +8464,16 @@ ${styleTexts}
     if (!container) return;
 
     const list = mobGetSavedCVs();
+    const mlist = mobGetMatchedCVs();
     const count = list.length;
     const MAX = 3;
 
+    // ── Sparade CV:n ───────────────────────────────────
     let html = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.4);margin-bottom:12px;padding:0 2px;">Dina sparade CV (${count}/${MAX})</div>`;
 
-    // Sortera: nyast först
     const sorted = [...list].sort((a,b) => b.savedAt - a.savedAt);
-
     sorted.forEach(entry => {
-      const d = new Date(entry.savedAt);
-      const dateStr = _mobRelDate(d);
+      const dateStr = _mobRelDate(new Date(entry.savedAt));
       html += `
         <div onclick="mobShowSavedCVDetail('${entry.id}')"
              style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;">
@@ -8471,11 +8490,40 @@ ${styleTexts}
 
     if (count < MAX) {
       html += `
-        <div onclick="mobSwitchSubTab('info'); mobCloseCVMenu && mobCloseCVMenu(); mobToggleCVMenu && mobToggleCVMenu();"
+        <div onclick="mobOpenCV(); mobSwitchSubTab('info');"
              style="background:none;border:1px dashed rgba(255,255,255,0.2);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;">
           <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;color:rgba(255,255,255,0.4);">+</div>
           <div style="font-size:13px;color:rgba(255,255,255,0.4);">Skapa ett nytt CV</div>
         </div>`;
+    }
+
+    // ── Matchade CV:n ──────────────────────────────────
+    if (mlist.length > 0) {
+      html += `
+        <div style="margin:20px 0 14px;display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(62,180,137,0.6);white-space:nowrap;">Matchade CV (${mlist.length})</div>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+        </div>`;
+
+      const msorted = [...mlist].sort((a,b) => b.savedAt - a.savedAt);
+      msorted.forEach(entry => {
+        const dateStr = _mobRelDate(new Date(entry.savedAt));
+        const company = entry.company ? ' · ' + entry.company : '';
+        html += `
+          <div style="background:rgba(62,180,137,0.05);border:1px solid rgba(62,180,137,0.18);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;position:relative;">
+            <div onclick="mobShowMatchedCVDetail('${entry.id}')" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:pointer;">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(62,180,137,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3eb489" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${entry.title}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${dateStr}${company}</div>
+              </div>
+            </div>
+            <button onclick="mobDeleteMatchedCV('${entry.id}')" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0;" title="Ta bort">✕</button>
+          </div>`;
+      });
     }
 
     container.innerHTML = html;
@@ -9525,15 +9573,42 @@ ${styleTexts}
 
   function matchaApplyText(text) {
     if (!text) return;
+
+    // Uppdatera aktivt CV med profiltext
     cvData.summary = text;
     const summaryEl = document.getElementById('summary');
     if (summaryEl) summaryEl.value = text;
-    const mobSummaryEl = document.getElementById('mobSummary');
+    const mobSummaryEl = document.getElementById('mob-summary');
     if (mobSummaryEl) mobSummaryEl.value = text;
     saveData();
     updatePreview();
-    showToast('Profiltext uppdaterad!', 'success');
+
+    // Spara en kopia som Matchat CV
+    const jobTitle = (matchaSelectedAdData && matchaSelectedAdData.headline)
+      || document.getElementById('matchaRole').value
+      || cvData.title
+      || 'Okänt yrke';
+    const matchTitle = 'Matchat CV – ' + jobTitle;
+    const snapshot = {
+      id: 'match_' + Date.now(),
+      title: matchTitle,
+      savedAt: Date.now(),
+      jobUrl: matchaSelectedAdData && (matchaSelectedAdData.webpage_url || ''),
+      company: matchaSelectedAdData && matchaSelectedAdData.employer && matchaSelectedAdData.employer.name || '',
+      data: JSON.parse(JSON.stringify(cvData))
+    };
+    const mlist = mobGetMatchedCVs();
+    // Ersätt ev. befintlig matchning med samma titel
+    const ei = mlist.findIndex(c => c.title === matchTitle);
+    if (ei >= 0) mlist[ei] = snapshot; else mlist.unshift(snapshot);
+    mobPutMatchedCVs(mlist);
+
+    showToast('✅ Profiltext sparad som "' + matchTitle + '"', 'success');
     document.getElementById('matchaResult').style.display = 'none';
+    // Uppdatera Sparat-fliken om den är öppen
+    if (document.getElementById('mobPanel-export').classList.contains('mob-panel--active')) {
+      mobRenderSavedCVs();
+    }
   }
   // ===== SLUT JOBBMATCHNING =====
   </script>
