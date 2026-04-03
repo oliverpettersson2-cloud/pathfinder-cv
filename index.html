@@ -9391,26 +9391,76 @@ ${styleTexts}
     matchaSearchTimer = setTimeout(matchaDoSearch, 380);
   }
 
+  // Beräkna matchpoäng mot aktivt CV (0–100)
+  function matchaCalcScore(hit) {
+    const haystack = ((hit.headline || '') + ' ' + ((hit.description && hit.description.text) || '').substring(0, 1500)).toLowerCase();
+    const words = [];
+    if (cvData.title) words.push(...cvData.title.toLowerCase().split(/[\s,]+/));
+    (cvData.jobs || []).forEach(j => { if (j.title) words.push(...j.title.toLowerCase().split(/[\s,]+/)); });
+    (cvData.skills || []).forEach(s => words.push(...s.toLowerCase().split(/[\s,]+/)));
+    (cvData.education || []).forEach(e => { if (e.degree) words.push(...e.degree.toLowerCase().split(/[\s,]+/)); });
+    const relevant = words.filter(w => w.length > 3);
+    if (!relevant.length) return null;
+    const hits = relevant.filter(w => haystack.includes(w));
+    return Math.min(Math.round((hits.length / relevant.length) * 100), 99);
+  }
+
+  // Kort sammanfattning ur annonstexten (max 110 tecken, hel mening)
+  function matchaSnippet(hit) {
+    const raw = (hit.description && hit.description.text) || '';
+    if (!raw) return '';
+    // Rensa HTML-taggar och extra whitespace
+    const clean = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    // Ta första meningarna upp till ~110 tecken
+    const sentences = clean.match(/[^.!?]+[.!?]+/g) || [];
+    let out = '';
+    for (const s of sentences) {
+      if ((out + s).length > 115) break;
+      out += s.trim() + ' ';
+    }
+    return out.trim() || clean.substring(0, 110) + '…';
+  }
+
   function matchaBuildCard(hit) {
     const title = hit.headline || '';
     const company = (hit.employer && hit.employer.name) || '';
     const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
     const initials = company.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
     const [bg, fg] = matchaAvatarColor(company || title);
+    const score = matchaCalcScore(hit);
+    const snippet = matchaSnippet(hit);
+
+    // Färg på match-badge
+    let scoreBg = 'rgba(255,255,255,0.08)';
+    let scoreColor = 'rgba(255,255,255,0.35)';
+    if (score !== null) {
+      if (score >= 60)      { scoreBg = 'rgba(62,180,137,0.18)'; scoreColor = '#3eb489'; }
+      else if (score >= 35) { scoreBg = 'rgba(240,192,64,0.15)'; scoreColor = '#f0c040'; }
+      else                  { scoreBg = 'rgba(255,255,255,0.06)'; scoreColor = 'rgba(255,255,255,0.35)'; }
+    }
+    const scoreBadge = score !== null
+      ? '<span style="flex-shrink:0;font-size:10px;font-weight:800;padding:3px 7px;border-radius:20px;background:' + scoreBg + ';color:' + scoreColor + ';">' + score + '% match</span>'
+      : '';
+
     const card = document.createElement('div');
-    card.style.cssText = 'display:flex;align-items:center;gap:11px;padding:11px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:background 0.15s,border-color 0.15s;';
+    card.style.cssText = 'padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:background 0.15s,border-color 0.15s;';
     card.onmouseover = () => { card.style.background = 'rgba(62,180,137,0.07)'; card.style.borderColor = 'rgba(62,180,137,0.2)'; };
     card.onmouseout  = () => { card.style.background = 'rgba(255,255,255,0.04)'; card.style.borderColor = 'rgba(255,255,255,0.07)'; };
     card.innerHTML =
-      '<div style="width:38px;height:38px;border-radius:10px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:' + fg + ';flex-shrink:0;">' + initials + '</div>' +
-      '<div style="flex:1;min-width:0;">' +
-        '<div style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + title + '</div>' +
-        '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;display:flex;gap:8px;">' +
-          '<span>' + company + '</span>' +
-          (muni ? '<span style="display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:#3eb489;display:inline-block;"></span>' + muni + '</span>' : '') +
+      '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<div style="width:40px;height:40px;border-radius:9px;background:' + (score !== null && score >= 60 ? 'rgba(62,180,137,0.2)' : score !== null && score >= 35 ? 'rgba(240,192,64,0.15)' : bg) + ';display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;color:' + (score !== null && score >= 60 ? '#3eb489' : score !== null && score >= 35 ? '#f0c040' : fg) + ';flex-shrink:0;border:1.5px solid ' + (score !== null && score >= 60 ? 'rgba(62,180,137,0.35)' : score !== null && score >= 35 ? 'rgba(240,192,64,0.3)' : 'transparent') + ';gap:1px;">' +
+          (score !== null ? '<span style="font-size:11px;line-height:1;">' + score + '%</span>' : '<span style="font-size:11px;">' + initials + '</span>') +
         '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + title + '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+            '<span>' + company + '</span>' +
+            (muni ? '<span style="display:flex;align-items:center;gap:3px;"><span style="width:4px;height:4px;border-radius:50%;background:#3eb489;display:inline-block;"></span>' + muni + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+
       '</div>' +
-      '<svg width="7" height="12" viewBox="0 0 7 12" fill="none" style="flex-shrink:0;opacity:0.25"><path d="M1 1l5 5-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>';
+      (snippet ? '<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;line-height:1.5;border-top:1px solid rgba(255,255,255,0.05);padding-top:7px;">' + snippet + '</div>' : '');
     card.onclick = () => matchaSelectAd(hit);
     return card;
   }
