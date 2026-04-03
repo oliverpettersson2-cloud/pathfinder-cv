@@ -1763,9 +1763,10 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 3px;
+        justify-content: center;
+        gap: 4px;
         cursor: pointer;
-        padding-bottom: 0;
+        padding: 5px 0 4px;
         position: relative;
       }
       .mob-cvstep__lbl {
@@ -1773,7 +1774,7 @@
         font-weight: 700;
         letter-spacing: 0.8px;
         text-transform: uppercase;
-        color: rgba(255,255,255,0.25);
+        color: rgba(255,255,255,0.55);
         transition: color 0.2s;
       }
       .mob-cvstep__dot {
@@ -2368,6 +2369,27 @@
         background: linear-gradient(to top, #1a1a2e 70%, transparent);
         margin: 0 -16px -32px;
       }
+      .mob-tillbaka-btn {
+        width: 100%;
+        padding: 13px;
+        border: 1.5px solid rgba(255,255,255,0.15);
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        background: rgba(255,255,255,0.05);
+        color: rgba(255,255,255,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.15s, background 0.15s;
+      }
+      .mob-tillbaka-btn:active { opacity: 0.8; background: rgba(255,255,255,0.1); }
+
       .mob-fortsatt-btn {
         width: 100%;
         padding: 18px;
@@ -7474,6 +7496,7 @@ ${styleTexts}
         <button class="mob-btn-primary mob-btn-outline" onclick="openEduModal()">+ Lägg till utbildning</button>
       </div>
       <div class="mob-fortsatt">
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab('jobb')">← Tillbaka till Jobb</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;utbildning&#39;,&#39;mer&#39;)">
           Fortsätt till Mer →
         </button>
@@ -7496,6 +7519,7 @@ ${styleTexts}
         </button>
       </div>
       <div class="mob-fortsatt">
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab('mer')">← Tillbaka till Mer</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;profil&#39;,&#39;forhandsgranska&#39;)">
           Se mitt CV →
         </button>
@@ -7512,6 +7536,7 @@ ${styleTexts}
         </button>
       </div>
       <div class="mob-fortsatt">
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab('info')">← Tillbaka till Profil</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;jobb&#39;,&#39;utbildning&#39;)">
           Fortsätt till Utbildning →
         </button>
@@ -7562,6 +7587,7 @@ ${styleTexts}
         <button class="mob-btn-primary mob-btn-outline" style="border-color:rgba(62,180,137,0.4);color:rgba(62,180,137,0.8);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
       </div>
       <div class="mob-fortsatt">
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab('utbildning')">← Tillbaka till Utbildning</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;mer&#39;,&#39;profil&#39;)">
           Fortsätt till Profil →
         </button>
