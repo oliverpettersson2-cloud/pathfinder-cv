@@ -7755,10 +7755,15 @@ ${styleTexts}
         <div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(62,180,137,0.7);margin-bottom:4px;">Vald annons</div>
         <div id="matchaSelectedTitle" style="font-size:14px;font-weight:600;color:#fff;"></div>
         <div id="matchaSelectedCompany" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;"></div>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <a id="matchaAdLink" href="#" target="_blank" rel="noopener" style="font-size:11px;color:#3eb489;text-decoration:none;font-weight:600;">↗ Öppna annons</a>
-          <span style="color:rgba(255,255,255,0.15);font-size:11px;">|</span>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+          <button onclick="matchaToggleAdText()" id="matchaReadAdBtn" style="background:rgba(62,180,137,0.15);border:1px solid rgba(62,180,137,0.3);color:#3eb489;font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:20px;font-family:inherit;">📄 Läs annons</button>
+          <a id="matchaAdLink" href="#" target="_blank" rel="noopener" style="font-size:11px;color:rgba(255,255,255,0.35);text-decoration:none;">↗ Extern länk</a>
+          <span style="flex:1;"></span>
           <button onclick="matchaClearAd()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;padding:0;">✕ Välj annan</button>
+        </div>
+        <!-- Expanderbar annonstext -->
+        <div id="matchaAdTextBox" style="display:none;margin-top:12px;max-height:280px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;">
+          <div id="matchaAdTextContent" style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.7);white-space:pre-wrap;"></div>
         </div>
       </div>
 
@@ -8510,18 +8515,29 @@ ${styleTexts}
       msorted.forEach(entry => {
         const dateStr = _mobRelDate(new Date(entry.savedAt));
         const company = entry.company ? ' · ' + entry.company : '';
+        const hasAdText = !!(entry.adText && entry.adText.length > 10);
+        const hasUrl = !!(entry.jobUrl);
         html += `
-          <div style="background:rgba(62,180,137,0.05);border:1px solid rgba(62,180,137,0.18);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;position:relative;">
-            <div onclick="mobShowMatchedCVDetail('${entry.id}')" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:pointer;">
-              <div style="width:36px;height:36px;border-radius:10px;background:rgba(62,180,137,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3eb489" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <div style="background:rgba(62,180,137,0.05);border:1px solid rgba(62,180,137,0.18);border-radius:14px;padding:14px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div onclick="mobShowMatchedCVDetail('${entry.id}')" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:pointer;">
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(62,180,137,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3eb489" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${entry.title}</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${dateStr}${company}</div>
+                </div>
               </div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${entry.title}</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${dateStr}${company}</div>
-              </div>
+              <button onclick="mobDeleteMatchedCV('${entry.id}')" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0;">✕</button>
             </div>
-            <button onclick="mobDeleteMatchedCV('${entry.id}')" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0;" title="Ta bort">✕</button>
+            ${hasAdText ? `<div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+              <button onclick="mobToggleMatchedAdText('${entry.id}')" id="matchedAdBtn_${entry.id}" style="background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);color:#3eb489;font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:20px;font-family:inherit;">📄 Läs annons</button>
+              ${hasUrl ? `<a href="${entry.jobUrl}" target="_blank" rel="noopener" style="font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;">↗ Extern länk</a>` : ''}
+            </div>
+            <div id="matchedAdBox_${entry.id}" style="display:none;margin-top:10px;max-height:240px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.7);white-space:pre-wrap;">${entry.adText.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            </div>` : (hasUrl ? `<div style="margin-top:8px;"><a href="${entry.jobUrl}" target="_blank" rel="noopener" style="font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;">↗ Öppna annons</a></div>` : '')}
           </div>`;
       });
     }
@@ -9421,16 +9437,37 @@ ${styleTexts}
     const company = (hit.employer && hit.employer.name) || '';
     const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
     const url = hit.webpage_url || (hit.application_details && hit.application_details.url) || '';
+    const adText = (hit.description && hit.description.text) || '';
+
     document.getElementById('matchaSelectedTitle').textContent = title;
     document.getElementById('matchaSelectedCompany').textContent = company + (muni ? ' · ' + muni : '');
+
     const linkEl = document.getElementById('matchaAdLink');
     if (linkEl) { linkEl.href = url || '#'; linkEl.style.display = url ? 'inline' : 'none'; }
+
+    // Fyll annonstexten
+    const adTextContent = document.getElementById('matchaAdTextContent');
+    if (adTextContent) adTextContent.textContent = adText || 'Ingen beskrivning tillgänglig.';
+    const adTextBox = document.getElementById('matchaAdTextBox');
+    if (adTextBox) adTextBox.style.display = 'none'; // collapsed som default
+    const readBtn = document.getElementById('matchaReadAdBtn');
+    if (readBtn) readBtn.textContent = '📄 Läs annons';
+
     document.getElementById('matchaSelectedAd').style.display = 'block';
     document.getElementById('matchaSearchResults').style.display = 'none';
     document.getElementById('matchaSkeleton').style.display = 'none';
     document.getElementById('matchaVisaFler').style.display = 'none';
     document.getElementById('matchaRole').value = title;
     document.getElementById('matchaCompany').value = company;
+  }
+
+  function matchaToggleAdText() {
+    const box = document.getElementById('matchaAdTextBox');
+    const btn = document.getElementById('matchaReadAdBtn');
+    if (!box) return;
+    const open = box.style.display !== 'none';
+    box.style.display = open ? 'none' : 'block';
+    if (btn) btn.textContent = open ? '📄 Läs annons' : '▲ Stäng annons';
   }
 
   function matchaClearAd() {
@@ -9597,6 +9634,7 @@ ${styleTexts}
       savedAt: Date.now(),
       jobUrl: matchaSelectedAdData && (matchaSelectedAdData.webpage_url || ''),
       company: matchaSelectedAdData && matchaSelectedAdData.employer && matchaSelectedAdData.employer.name || '',
+      adText: matchaSelectedAdData && matchaSelectedAdData.description && matchaSelectedAdData.description.text || '',
       data: JSON.parse(JSON.stringify(cvData))
     };
     const mlist = mobGetMatchedCVs();
@@ -9612,6 +9650,15 @@ ${styleTexts}
       mobRenderSavedCVs();
     }
   }
+  function mobToggleMatchedAdText(id) {
+    const box = document.getElementById('matchedAdBox_' + id);
+    const btn = document.getElementById('matchedAdBtn_' + id);
+    if (!box) return;
+    const open = box.style.display !== 'none';
+    box.style.display = open ? 'none' : 'block';
+    if (btn) btn.textContent = open ? '📄 Läs annons' : '▲ Stäng annons';
+  }
+
   // ===== SLUT JOBBMATCHNING =====
   </script>
 
