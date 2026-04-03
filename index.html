@@ -7717,17 +7717,17 @@ ${styleTexts}
             <circle cx="7" cy="7" r="4.5" stroke="white" stroke-width="1.5"></circle>
             <path d="M11 11L14 14" stroke="white" stroke-width="1.5" stroke-linecap="round"></path>
           </svg>
-          <input id="matchaSearch" type="text" class="mob-input" placeholder="Yrke eller nyckelord..." style="margin-bottom:0;padding-left:38px;" oninput="matchaSearchDebounce()">
+          <input id="matchaSearch" type="text" class="mob-input" placeholder="Yrke eller nyckelord..." style="margin-bottom:0;padding-left:38px;" oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search">
         </div>
 
-        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;">
-          <button id="matchaChipLocal" onclick="matchaSetFilter(true)" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(62,180,137,0.5);background:rgba(62,180,137,0.12);color:#3eb489;font-family:inherit;">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.8" r="2" stroke="#3eb489" stroke-width="1.2"></circle><path d="M5 8.5C5 8.5 1.8 6.2 1.8 3.8a3.2 3.2 0 016.4 0C8.2 6.2 5 8.5 5 8.5z" stroke="#3eb489" stroke-width="1.2" fill="none"></path></svg>
-            Familjen Helsingborg
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+          <button id="matchaChipHbg" onclick="matchaSetFilter('hbg')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Helsingborg</button>
+          <button id="matchaChipLocal" onclick="matchaSetFilter('fam')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(62,180,137,0.5);background:rgba(62,180,137,0.12);color:#3eb489;font-family:inherit;">
+            <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.8" r="2" stroke="#3eb489" stroke-width="1.2"></circle><path d="M5 8.5C5 8.5 1.8 6.2 1.8 3.8a3.2 3.2 0 016.4 0C8.2 6.2 5 8.5 5 8.5z" stroke="#3eb489" stroke-width="1.2" fill="none"></path></svg>
+            Familjen Hbg
           </button>
-          <button id="matchaChipAll" onclick="matchaSetFilter(false)" style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">
-            Hela Sverige
-          </button>
+          <button id="matchaChipSkane" onclick="matchaSetFilter('skane')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Skåne</button>
+          <button id="matchaChipAll" onclick="matchaSetFilter('all')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Hela Sverige</button>
         </div>
       </div>
 
@@ -7747,12 +7747,19 @@ ${styleTexts}
       </div>
 
       <div id="matchaSearchResults" style="display:none;margin-top:14px;"></div>
+      <div id="matchaVisaFler" style="display:none;margin-top:8px;">
+        <button onclick="matchaVisaFlerAnnonser()" style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Visa fler annonser</button>
+      </div>
 
       <div id="matchaSelectedAd" style="display:none;margin-top:14px;background:rgba(62,180,137,0.08);border:1.5px solid rgba(62,180,137,0.25);border-radius:12px;padding:12px 14px;">
         <div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(62,180,137,0.7);margin-bottom:4px;">Vald annons</div>
         <div id="matchaSelectedTitle" style="font-size:14px;font-weight:600;color:#fff;"></div>
         <div id="matchaSelectedCompany" style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;"></div>
-        <button onclick="matchaClearAd()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;margin-top:6px;padding:0;">✕ Välj annan</button>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <a id="matchaAdLink" href="#" target="_blank" rel="noopener" style="font-size:11px;color:#3eb489;text-decoration:none;font-weight:600;">↗ Öppna annons</a>
+          <span style="color:rgba(255,255,255,0.15);font-size:11px;">|</span>
+          <button onclick="matchaClearAd()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;padding:0;">✕ Välj annan</button>
+        </div>
       </div>
 
       <div id="matchaManualSection">
@@ -9219,10 +9226,17 @@ ${styleTexts}
 
   let matchaSearchTimer = null;
   let matchaSelectedAdData = null;
-  let matchaLocFilter = true; // true = Familjen Helsingborg, false = hela Sverige
+  let matchaLocFilter = 'fam'; // 'hbg'|'fam'|'skane'|'all'
+  let matchaCurrentOffset = 0;
+  let matchaCurrentQ = '';
 
-  // Familjen Helsingborg + kranskommuner (appendas till query)
-  const MATCHA_LOC_QUERY = 'Helsingborg Ängelholm Landskrona Höganäs Bjuv Åstorp Klippan Örkelljunga Perstorp Båstad';
+  const MATCHA_LOC = {
+    hbg:   'Helsingborg',
+    fam:   'Helsingborg Ängelholm Landskrona Höganäs Bjuv Åstorp Klippan Örkelljunga Perstorp Båstad',
+    skane: 'Skåne',
+    all:   ''
+  };
+  const MATCHA_LOC_LABEL = { hbg: 'Helsingborg', fam: 'Familjen Helsingborg', skane: 'Skåne', all: 'Hela Sverige' };
 
   const MATCHA_AVATAR_COLORS = [
     ['rgba(62,180,137,0.18)','#3eb489'],
@@ -9239,28 +9253,23 @@ ${styleTexts}
     return MATCHA_AVATAR_COLORS[Math.abs(h) % MATCHA_AVATAR_COLORS.length];
   }
 
-  function matchaSetFilter(local) {
-    matchaLocFilter = local;
-    const cl = document.getElementById('matchaChipLocal');
-    const ca = document.getElementById('matchaChipAll');
-    if (cl && ca) {
-      cl.style.cssText = cl.style.cssText.replace(/border:[^;]+;background:[^;]+;color:[^;]+/, '');
-      if (local) {
-        cl.style.border = '1.5px solid rgba(62,180,137,0.5)';
-        cl.style.background = 'rgba(62,180,137,0.12)';
-        cl.style.color = '#3eb489';
-        ca.style.border = '1.5px solid rgba(255,255,255,0.12)';
-        ca.style.background = 'rgba(255,255,255,0.04)';
-        ca.style.color = 'rgba(255,255,255,0.4)';
+  function matchaSetFilter(val) {
+    matchaLocFilter = val;
+    matchaCurrentOffset = 0;
+    ['hbg','fam','skane','all'].forEach(k => {
+      const idMap = { hbg:'matchaChipHbg', fam:'matchaChipLocal', skane:'matchaChipSkane', all:'matchaChipAll' };
+      const el = document.getElementById(idMap[k]);
+      if (!el) return;
+      if (k === val) {
+        el.style.border = '1.5px solid rgba(62,180,137,0.5)';
+        el.style.background = 'rgba(62,180,137,0.12)';
+        el.style.color = '#3eb489';
       } else {
-        ca.style.border = '1.5px solid rgba(62,180,137,0.5)';
-        ca.style.background = 'rgba(62,180,137,0.12)';
-        ca.style.color = '#3eb489';
-        cl.style.border = '1.5px solid rgba(255,255,255,0.12)';
-        cl.style.background = 'rgba(255,255,255,0.04)';
-        cl.style.color = 'rgba(255,255,255,0.4)';
+        el.style.border = '1.5px solid rgba(255,255,255,0.12)';
+        el.style.background = 'rgba(255,255,255,0.04)';
+        el.style.color = 'rgba(255,255,255,0.4)';
       }
-    }
+    });
     matchaDoSearch();
   }
 
@@ -9269,20 +9278,53 @@ ${styleTexts}
     matchaSearchTimer = setTimeout(matchaDoSearch, 380);
   }
 
+  function matchaBuildCard(hit) {
+    const title = hit.headline || '';
+    const company = (hit.employer && hit.employer.name) || '';
+    const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
+    const initials = company.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
+    const [bg, fg] = matchaAvatarColor(company || title);
+    const card = document.createElement('div');
+    card.style.cssText = 'display:flex;align-items:center;gap:11px;padding:11px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:background 0.15s,border-color 0.15s;';
+    card.onmouseover = () => { card.style.background = 'rgba(62,180,137,0.07)'; card.style.borderColor = 'rgba(62,180,137,0.2)'; };
+    card.onmouseout  = () => { card.style.background = 'rgba(255,255,255,0.04)'; card.style.borderColor = 'rgba(255,255,255,0.07)'; };
+    card.innerHTML =
+      '<div style="width:38px;height:38px;border-radius:10px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:' + fg + ';flex-shrink:0;">' + initials + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + title + '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;display:flex;gap:8px;">' +
+          '<span>' + company + '</span>' +
+          (muni ? '<span style="display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:#3eb489;display:inline-block;"></span>' + muni + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<svg width="7" height="12" viewBox="0 0 7 12" fill="none" style="flex-shrink:0;opacity:0.25"><path d="M1 1l5 5-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    card.onclick = () => matchaSelectAd(hit);
+    return card;
+  }
+
+  async function matchaFetch(q, offset) {
+    const resp = await fetch('https://jobsearch.api.jobtechdev.se/search?q=' + encodeURIComponent(q) + '&limit=20&offset=' + offset);
+    if (!resp.ok) throw new Error('API-fel');
+    return resp.json();
+  }
+
   async function matchaDoSearch() {
     const rawQ = (document.getElementById('matchaSearch').value || '').trim();
     const resultsEl = document.getElementById('matchaSearchResults');
     const skeleton = document.getElementById('matchaSkeleton');
-    if (rawQ.length < 2) { resultsEl.style.display = 'none'; skeleton.style.display = 'none'; return; }
+    const visaFlerEl = document.getElementById('matchaVisaFler');
+    if (rawQ.length < 2) { resultsEl.style.display = 'none'; skeleton.style.display = 'none'; if(visaFlerEl) visaFlerEl.style.display='none'; return; }
 
-    const q = matchaLocFilter ? rawQ + ' ' + MATCHA_LOC_QUERY : rawQ;
+    const locSuffix = MATCHA_LOC[matchaLocFilter] ? ' ' + MATCHA_LOC[matchaLocFilter] : '';
+    matchaCurrentQ = rawQ + locSuffix;
+    matchaCurrentOffset = 0;
+
     skeleton.style.display = 'block';
     resultsEl.style.display = 'none';
+    if(visaFlerEl) visaFlerEl.style.display = 'none';
 
     try {
-      const resp = await fetch('https://jobsearch.api.jobtechdev.se/search?q=' + encodeURIComponent(q) + '&limit=8');
-      if (!resp.ok) throw new Error('API-fel');
-      const data = await resp.json();
+      const data = await matchaFetch(matchaCurrentQ, 0);
       skeleton.style.display = 'none';
       const hits = data.hits || [];
       const total = (data.total && data.total.value) || 0;
@@ -9293,36 +9335,12 @@ ${styleTexts}
         return;
       }
 
-      // Rubrik
-      const locLabel = matchaLocFilter ? 'Familjen Helsingborg' : 'Hela Sverige';
+      const locLabel = MATCHA_LOC_LABEL[matchaLocFilter] || 'Hela Sverige';
       resultsEl.innerHTML = '<div style="font-size:11px;color:rgba(255,255,255,0.3);display:flex;justify-content:space-between;margin-bottom:8px;"><span>Visar ' + hits.length + ' av ' + total + '</span><span>' + locLabel + '</span></div>';
-
-      hits.forEach(hit => {
-        const title = hit.headline || '';
-        const company = (hit.employer && hit.employer.name) || '';
-        const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
-        const initials = company.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
-        const [bg, fg] = matchaAvatarColor(company || title);
-
-        const card = document.createElement('div');
-        card.style.cssText = 'display:flex;align-items:center;gap:11px;padding:11px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:background 0.15s,border-color 0.15s;';
-        card.onmouseover = () => { card.style.background = 'rgba(62,180,137,0.07)'; card.style.borderColor = 'rgba(62,180,137,0.2)'; };
-        card.onmouseout  = () => { card.style.background = 'rgba(255,255,255,0.04)'; card.style.borderColor = 'rgba(255,255,255,0.07)'; };
-        card.innerHTML =
-          '<div style="width:38px;height:38px;border-radius:10px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:' + fg + ';flex-shrink:0;">' + initials + '</div>' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div style="font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + title + '</div>' +
-            '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;display:flex;gap:8px;">' +
-              '<span>' + company + '</span>' +
-              (muni ? '<span style="display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:#3eb489;display:inline-block;"></span>' + muni + '</span>' : '') +
-            '</div>' +
-          '</div>' +
-          '<svg width="7" height="12" viewBox="0 0 7 12" fill="none" style="flex-shrink:0;opacity:0.25"><path d="M1 1l5 5-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>';
-        card.onclick = () => matchaSelectAd(hit);
-        resultsEl.appendChild(card);
-      });
-
+      hits.forEach(hit => resultsEl.appendChild(matchaBuildCard(hit)));
+      matchaCurrentOffset = hits.length;
       resultsEl.style.display = 'block';
+      if(visaFlerEl) visaFlerEl.style.display = matchaCurrentOffset < total ? 'block' : 'none';
     } catch(e) {
       skeleton.style.display = 'none';
       resultsEl.innerHTML = '<div style="padding:14px;font-size:13px;color:rgba(232,93,38,0.7);text-align:center;">Kunde inte hämta annonser just nu</div>';
@@ -9330,16 +9348,39 @@ ${styleTexts}
     }
   }
 
+  async function matchaVisaFlerAnnonser() {
+    const resultsEl = document.getElementById('matchaSearchResults');
+    const visaFlerEl = document.getElementById('matchaVisaFler');
+    const btn = visaFlerEl && visaFlerEl.querySelector('button');
+    if (btn) { btn.textContent = 'Hämtar...'; btn.disabled = true; }
+    try {
+      const data = await matchaFetch(matchaCurrentQ, matchaCurrentOffset);
+      const hits = data.hits || [];
+      const total = (data.total && data.total.value) || 0;
+      hits.forEach(hit => resultsEl.appendChild(matchaBuildCard(hit)));
+      matchaCurrentOffset += hits.length;
+      // Uppdatera räknaren
+      const label = resultsEl.querySelector('div');
+      if (label) label.querySelector('span').textContent = 'Visar ' + matchaCurrentOffset + ' av ' + total;
+      if(visaFlerEl) visaFlerEl.style.display = matchaCurrentOffset < total ? 'block' : 'none';
+    } catch(e) { /* tyst fel */ }
+    if (btn) { btn.textContent = 'Visa fler annonser'; btn.disabled = false; }
+  }
+
   function matchaSelectAd(hit) {
     matchaSelectedAdData = hit;
     const title = hit.headline || '';
     const company = (hit.employer && hit.employer.name) || '';
     const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
+    const url = hit.webpage_url || (hit.application_details && hit.application_details.url) || '';
     document.getElementById('matchaSelectedTitle').textContent = title;
     document.getElementById('matchaSelectedCompany').textContent = company + (muni ? ' · ' + muni : '');
+    const linkEl = document.getElementById('matchaAdLink');
+    if (linkEl) { linkEl.href = url || '#'; linkEl.style.display = url ? 'inline' : 'none'; }
     document.getElementById('matchaSelectedAd').style.display = 'block';
     document.getElementById('matchaSearchResults').style.display = 'none';
     document.getElementById('matchaSkeleton').style.display = 'none';
+    document.getElementById('matchaVisaFler').style.display = 'none';
     document.getElementById('matchaRole').value = title;
     document.getElementById('matchaCompany').value = company;
   }
@@ -9390,9 +9431,8 @@ ${styleTexts}
     const searchEl = document.getElementById('matchaSearch');
     if (!searchEl) return;
     searchEl.value = title;
-    // Rensa ev. tidigare vald annons
+    searchEl.blur(); // stäng tangentbordet
     matchaClearAd();
-    // Sök direkt
     matchaDoSearch();
   }
 
