@@ -7745,34 +7745,40 @@ ${styleTexts}
     </div>
 
     <!-- FLIK: Matcha arbete -->
-    <div class="mob-panel" id="mobPanel-matcha" style="padding:20px 16px;overflow-y:auto;">
+    <div class="mob-panel" id="mobPanel-matcha" style="padding:0;overflow-y:auto;">
 
-      <div class="mob-section">
-        <div class="mob-section-title">Välj CV att utgå från</div>
-        <select id="matchaCvSelect" class="mob-input" style="margin-bottom:0;"></select>
+      <!-- Header -->
+      <div style="padding:20px 16px 0;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:12px;">Välj CV att matcha mot</div>
+        <div id="matchaCvCards" style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px;"></div>
+        <input id="matchaCvSelect" type="hidden">
       </div>
 
-      <div class="mob-section" style="margin-top:14px;">
-        <div class="mob-section-title">Sök jobbannons</div>
+      <!-- Söksektionen — mörk tech-panel -->
+      <div style="background:rgba(10,14,30,0.6);border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);padding:16px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px;">Sök jobbannons</div>
         <div style="position:relative;">
-          <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none;" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <svg style="position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:0.5;pointer-events:none;" width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="7" cy="7" r="4.5" stroke="white" stroke-width="1.5"></circle>
             <path d="M11 11L14 14" stroke="white" stroke-width="1.5" stroke-linecap="round"></path>
           </svg>
-          <input id="matchaSearch" type="text" class="mob-input" placeholder="Yrke eller nyckelord..." style="margin-bottom:0;padding-left:38px;" oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search">
+          <input id="matchaSearch" type="text" placeholder="Yrke eller nyckelord..." oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search"
+            style="width:100%;box-sizing:border-box;padding:12px 14px 12px 40px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:#fff;font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;">
         </div>
-
         <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-          <button id="matchaChipHbg" onclick="matchaSetFilter('hbg')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Helsingborg</button>
-          <button id="matchaChipLocal" onclick="matchaSetFilter('fam')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(62,180,137,0.5);background:rgba(62,180,137,0.12);color:#3eb489;font-family:inherit;">
+          <button id="matchaChipHbg" onclick="matchaSetFilter('hbg')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Helsingborg</button>
+          <button id="matchaChipLocal" onclick="matchaSetFilter('fam')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(62,180,137,0.5);background:rgba(62,180,137,0.12);color:#3eb489;font-family:inherit;">
             <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.8" r="2" stroke="#3eb489" stroke-width="1.2"></circle><path d="M5 8.5C5 8.5 1.8 6.2 1.8 3.8a3.2 3.2 0 016.4 0C8.2 6.2 5 8.5 5 8.5z" stroke="#3eb489" stroke-width="1.2" fill="none"></path></svg>
             Familjen Hbg
           </button>
-          <button id="matchaChipSkane" onclick="matchaSetFilter('skane')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Skåne</button>
-          <button id="matchaChipAll" onclick="matchaSetFilter('all')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Hela Sverige</button>
+          <button id="matchaChipSkane" onclick="matchaSetFilter('skane')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Skåne</button>
+          <button id="matchaChipAll" onclick="matchaSetFilter('all')" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-family:inherit;">Hela Sverige</button>
         </div>
       </div>
 
+      <div style="padding:0 16px;">
+
+      </div>
       <div id="matchaSkeleton" style="display:none;margin-top:14px;">
         <div style="display:flex;gap:10px;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:7px;">
           <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.07);flex-shrink:0;animation:matchaShimmer 1.3s ease-in-out infinite;"></div>
@@ -9578,28 +9584,44 @@ ${styleTexts}
 
   // ===== JOBBMATCHNING =====
 
+  let _matchaSelectedCVId = '__active__';
+
   function matchaPopulateCvSelect() {
-    const sel = document.getElementById('matchaCvSelect');
-    if (!sel) return;
-    sel.innerHTML = '<option value="__active__">Aktiv (nuvarande)</option>';
+    const container = document.getElementById('matchaCvCards');
+    if (!container) return;
     const saved = typeof mobGetSavedCVs === 'function' ? mobGetSavedCVs() : [];
-    saved.forEach(cv => {
-      const opt = document.createElement('option');
-      opt.value = cv.id;
-      opt.textContent = cv.title || cv.id;
-      sel.appendChild(opt);
+    const allCVs = [{ id: '__active__', title: cvData.title || 'Aktivt CV', subtitle: cvData.name || '' }];
+    saved.forEach(cv => allCVs.push({ id: cv.id, title: cv.title || cv.id, subtitle: cv.data && cv.data.name || '' }));
+
+    container.innerHTML = '';
+    allCVs.forEach(cv => {
+      const isActive = cv.id === _matchaSelectedCVId;
+      const card = document.createElement('div');
+      card.style.cssText = 'display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;transition:all 0.15s;border:1.5px solid ' + (isActive ? '#3eb489' : 'rgba(255,255,255,0.08)') + ';background:' + (isActive ? 'rgba(62,180,137,0.1)' : 'rgba(255,255,255,0.04)') + ';';
+      card.innerHTML =
+        '<div style="width:32px;height:32px;border-radius:8px;background:' + (isActive ? 'rgba(62,180,137,0.2)' : 'rgba(255,255,255,0.07)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="' + (isActive ? '#3eb489' : 'rgba(255,255,255,0.4)') + '" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;font-weight:700;color:' + (isActive ? '#fff' : 'rgba(255,255,255,0.7)') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + cv.title + '</div>' +
+          (cv.subtitle ? '<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:1px;">' + cv.subtitle + '</div>' : '') +
+        '</div>' +
+        (isActive ? '<div style="width:8px;height:8px;border-radius:50%;background:#3eb489;flex-shrink:0;"></div>' : '');
+      card.onclick = () => {
+        _matchaSelectedCVId = cv.id;
+        matchaPopulateCvSelect(); // re-render
+        matchaPreFillFromCV();
+      };
+      container.appendChild(card);
     });
-    // Lyssna på CV-byte → uppdatera sökning
-    sel.onchange = () => matchaPreFillFromCV();
-    // Auto-fyll från aktivt CV
+
     matchaPreFillFromCV();
   }
 
   function matchaGetSelectedCVData() {
-    const sel = document.getElementById('matchaCvSelect');
-    if (!sel || sel.value === '__active__') return cvData;
+    if (_matchaSelectedCVId === '__active__') return cvData;
     const saved = typeof mobGetSavedCVs === 'function' ? mobGetSavedCVs() : [];
-    const found = saved.find(c => c.id === sel.value);
+    const found = saved.find(c => c.id === _matchaSelectedCVId);
     return found ? found.data : cvData;
   }
 
