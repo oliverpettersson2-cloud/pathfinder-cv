@@ -9598,33 +9598,14 @@ ${styleTexts}
     const summarizeBtn = document.createElement('button');
     summarizeBtn.textContent = '✨ Sammanfatta jobbannonsen';
     summarizeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:all 0.15s;';
-    summarizeBtn.onclick = async (e) => {
-      e.stopPropagation();
-      const adText = (hit.description && hit.description.text) || '';
-      if (!adText) { showToast('Ingen annonstext tillgänglig', 'error'); return; }
+    // Visa från cache om tillgänglig
+    if (window._matchaSummaryCache && window._matchaSummaryCache[hit.id]) {
+      summaryContainer.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + window._matchaSummaryCache[hit.id] + '</div>';
       summarizeBtn.style.display = 'none';
-      showAiLoader('Sammanfattar annonsen...', 'AI läser och extraherar nyckelinfo');
-      try {
-        const resp = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 600,
-            system: 'Du ar en jobbannons-sammanfattare. Svara pa svenska. Svara BARA med kompakt HTML utan inledning.',
-            messages: [{ role: 'user', content: 'Sammanfatta denna jobbannons pa svenska. Inkludera: Arbetsuppgifter, Krav, Profil, Startdatum, Hur du soker (e-post eller extern lank), Kontaktperson. HTML-format: <b>Rubrik:</b> kort text. Max 2 meningar/del. Hoppa over delar som saknas. Annons: ' + adText.substring(0, 3000) }]
-          })
-        });
-        hideAiLoader();
-        const data = await resp.json();
-        const text = data.content?.[0]?.text || '';
-        if (text) {
-          summaryContainer.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + text + '</div>';
-        }
-      } catch(e) {
-        hideAiLoader();
-        summarizeBtn.style.display = 'block';
-      }
+    }
+    summarizeBtn.onclick = (e) => {
+      e.stopPropagation();
+      matchaGetSummary(hit, summaryContainer, summarizeBtn);
     };
     expandBox.appendChild(summarizeBtn);
 
@@ -10109,6 +10090,45 @@ ${styleTexts}
   }
 
   // Rendera valda annonser i steg 3 med egna generera-knappar
+  // Global cache för AI-sammanfattningar (hit.id → HTML-text)
+  if (!window._matchaSummaryCache) window._matchaSummaryCache = {};
+
+  // Hjälpfunktion: hämta eller generera sammanfattning
+  async function matchaGetSummary(hit, targetEl, summarizeBtn) {
+    const cached = window._matchaSummaryCache[hit.id];
+    if (cached) {
+      targetEl.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + cached + '</div>';
+      if (summarizeBtn) summarizeBtn.style.display = 'none';
+      return;
+    }
+    const adText = (hit.description && hit.description.text) || '';
+    if (!adText) { showToast('Ingen annonstext tillgänglig', 'error'); return; }
+    if (summarizeBtn) summarizeBtn.style.display = 'none';
+    showAiLoader('Sammanfattar annonsen...', 'AI läser och extraherar nyckelinfo');
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 600,
+          system: 'Du ar en jobbannons-sammanfattare. Svara pa svenska. Svara BARA med kompakt HTML utan inledning.',
+          messages: [{ role: 'user', content: 'Sammanfatta denna jobbannons pa svenska. Inkludera: Arbetsuppgifter, Krav, Profil, Startdatum, Hur du soker (e-post eller extern lank), Kontaktperson. HTML-format: <b>Rubrik:</b> kort text. Max 2 meningar/del. Hoppa over delar som saknas. Annons: ' + adText.substring(0, 3000) }]
+        })
+      });
+      hideAiLoader();
+      const data = await resp.json();
+      const text = data.content?.[0]?.text || '';
+      if (text) {
+        window._matchaSummaryCache[hit.id] = text;
+        targetEl.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + text + '</div>';
+      }
+    } catch(e) {
+      hideAiLoader();
+      if (summarizeBtn) summarizeBtn.style.display = 'block';
+    }
+  }
+
   function matchaRenderStep3Ads() {
     const container = document.getElementById('matchaAdsContainer');
     if (!container) return;
@@ -10123,100 +10143,105 @@ ${styleTexts}
       const title   = hit.headline || '';
       const company = (hit.employer && hit.employer.name) || '';
       const muni    = (hit.workplace_address && hit.workplace_address.municipality) || '';
-      const url     = hit.webpage_url || '';
-      const adText  = (hit.description && hit.description.text) || '';
 
       const section = document.createElement('div');
-      section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;';
+      section.style.cssText = 'background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;cursor:pointer;transition:border-color 0.15s;';
 
-      // Header rad
+      // Label + Ta bort
       const hdr = document.createElement('div');
       hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;';
       const hdrLabel = document.createElement('div');
       hdrLabel.style.cssText = 'font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.6);';
       hdrLabel.textContent = 'Annons ' + (i+1) + ' av ' + _matchaSelectedAds.length;
-      hdr.appendChild(hdrLabel);
+      const rmBtn = document.createElement('button');
+      rmBtn.textContent = '🗑 Ta bort';
+      rmBtn.style.cssText = 'background:rgba(220,50,50,0.12);border:1.5px solid rgba(220,50,50,0.3);color:rgba(240,90,90,0.9);font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:8px;font-family:inherit;';
+      rmBtn.onclick = (e) => { e.stopPropagation(); matchaRemoveAd(hit.id); };
+      hdr.appendChild(hdrLabel); hdr.appendChild(rmBtn);
       section.appendChild(hdr);
 
-      // Titel + bolag
+      // Titel + meta (full titel, ingen truncation)
       const titleEl = document.createElement('div');
-      titleEl.style.cssText = 'font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;';
+      titleEl.style.cssText = 'font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;line-height:1.3;';
       titleEl.textContent = title;
       section.appendChild(titleEl);
       const metaEl = document.createElement('div');
-      metaEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.4);';
+      metaEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:0;';
       metaEl.textContent = company + (muni ? ' · ' + muni : '');
       section.appendChild(metaEl);
 
-      // Fakta-chips byggs men visas bara i modal
-      const factsEl = document.createElement('div');
-      factsEl.style.cssText = 'display:none;flex-wrap:wrap;gap:6px;margin-top:8px;';
+      // Expanderbar sektion
+      const expandBox = document.createElement('div');
+      expandBox.style.cssText = 'display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);';
 
-      // Hjälpfunktion för att skapa chip
-      function makeChip(label, val, color) {
-        const chip = document.createElement('div');
-        chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700;background:' + (color||'rgba(255,255,255,0.07)') + ';color:' + (color ? '#fff' : 'rgba(255,255,255,0.55)') + ';border:1px solid ' + (color ? color : 'rgba(255,255,255,0.1)') + ';';
-        chip.textContent = label + (val ? ': ' + val : '');
-        return chip;
+      // Chips
+      function mkChip(label) {
+        const c = document.createElement('span');
+        c.style.cssText = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.1);';
+        c.textContent = label; return c;
       }
-
-      // Heltid / Deltid
+      const chipsRow = document.createElement('div');
+      chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;';
       const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
-      if (hoursType) factsEl.appendChild(makeChip('⏱ ' + hoursType));
-
-      // Anställningsform
+      if (hoursType) chipsRow.appendChild(mkChip('⏱ ' + hoursType));
       const empType = (hit.employment_type && hit.employment_type.label) || '';
-      if (empType) factsEl.appendChild(makeChip('📋 ' + empType));
+      if (empType) chipsRow.appendChild(mkChip('📋 ' + empType));
+      if (hit.driving_license_required) chipsRow.appendChild(mkChip('🚗 Körkort krävs'));
+      else if (hit.driving_license_required === false) chipsRow.appendChild(mkChip('🚗 Körkort ej krav'));
+      const salDesc = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
+      if (salDesc) chipsRow.appendChild(mkChip('💰 ' + salDesc.substring(0,40)));
+      const dur = (hit.duration && hit.duration.label) || '';
+      if (dur && dur !== 'Tillsvidare') chipsRow.appendChild(mkChip('📅 ' + dur));
+      expandBox.appendChild(chipsRow);
 
-      // Körkort
-      const licRequired = hit.driving_license_required;
-      const licTypes = (hit.driving_license || []).map(l => l.label).filter(Boolean).join(', ');
-      if (licRequired) {
-        factsEl.appendChild(makeChip('🚗 Körkort krävs' + (licTypes ? ': ' + licTypes : ''), '', 'rgba(240,192,64,0.5)'));
-      } else if (licRequired === false) {
-        factsEl.appendChild(makeChip('🚗 Körkort ej krav'));
-      }
+      // AI-sammanfattning container
+      const summaryDiv = document.createElement('div');
+      summaryDiv.style.cssText = 'margin-bottom:12px;';
+      expandBox.appendChild(summaryDiv);
 
-      // Lön
-      const salDesc = hit.salary_description || '';
-      const salType = (hit.salary_type && hit.salary_type.label) || '';
-      if (salDesc) {
-        factsEl.appendChild(makeChip('💰 ' + salDesc.substring(0, 40)));
-      } else if (salType) {
-        factsEl.appendChild(makeChip('💰 ' + salType));
+      // Knapp: Sammanfatta
+      const summarizeBtn = document.createElement('button');
+      summarizeBtn.textContent = '✨ Sammanfatta jobbannonsen';
+      summarizeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;';
+      summarizeBtn.onclick = (e) => { e.stopPropagation(); matchaGetSummary(hit, summaryDiv, summarizeBtn); };
+
+      // Om redan cachad — visa direkt utan knapp
+      if (window._matchaSummaryCache[hit.id]) {
+        summaryDiv.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + window._matchaSummaryCache[hit.id] + '</div>';
       } else {
-        factsEl.appendChild(makeChip('💰 Lön ej uppgiven'));
+        expandBox.appendChild(summarizeBtn);
       }
 
-      // Varaktighet
-      const duration = (hit.duration && hit.duration.label) || '';
-      if (duration && duration !== 'Tillsvidare') factsEl.appendChild(makeChip('📅 ' + duration));
-
-      // Knappar: Visa info (modal) + Ta bort
+      // Knapp: Anpassa & generera
       const adIdx = i;
-      const btnRow = document.createElement('div');
-      btnRow.style.cssText = 'display:flex;gap:8px;margin-top:12px;align-items:center;';
+      const genBtn = document.createElement('button');
+      genBtn.textContent = '🎯 Anpassa & generera profiltext';
+      genBtn.style.cssText = 'width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;';
+      genBtn.onclick = (e) => { e.stopPropagation(); expanded = false; expandBox.style.display = 'none'; matchaCVForAd(adIdx); };
+      expandBox.appendChild(genBtn);
 
-      const infoBtn = document.createElement('button');
-      infoBtn.textContent = '📋 Visa info & länk';
-      infoBtn.style.cssText = 'flex:1;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.3);color:#3eb489;font-size:12px;font-weight:700;cursor:pointer;padding:9px 12px;border-radius:10px;font-family:inherit;';
-      infoBtn.onclick = () => matchaShowInfoModal(hit, factsEl, adIdx);
-      btnRow.appendChild(infoBtn);
+      // Knapp: Stäng
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Stäng';
+      closeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
+      closeBtn.onclick = (e) => { e.stopPropagation(); expanded = false; expandBox.style.display = 'none'; };
+      expandBox.appendChild(closeBtn);
 
-      const rmBtn = document.createElement('button');
-      rmBtn.textContent = '🗑 Ta bort';
-      rmBtn.style.cssText = 'background:rgba(220,50,50,0.12);border:1.5px solid rgba(220,50,50,0.3);color:rgba(240,90,90,0.9);font-size:12px;font-weight:700;cursor:pointer;padding:9px 12px;border-radius:10px;font-family:inherit;white-space:nowrap;';
-      rmBtn.onclick = () => matchaRemoveAd(hit.id);
-      btnRow.appendChild(rmBtn);
+      section.appendChild(expandBox);
 
-      section.appendChild(btnRow);
-
-      // Resultat-container
+      // Resultat-container (profiltext-output)
       const resultDiv = document.createElement('div');
       resultDiv.id = 'matchaResult_' + hit.id;
-      resultDiv.style.display = 'none';
-      resultDiv.style.marginTop = '12px';
+      resultDiv.style.cssText = 'display:none;margin-top:12px;';
       section.appendChild(resultDiv);
+
+      // Klick på kortet → toggle expand
+      let expanded = false;
+      section.onclick = (e) => {
+        if (e.target.closest('button')) return;
+        expanded = !expanded;
+        expandBox.style.display = expanded ? 'block' : 'none';
+      };
 
       container.appendChild(section);
     });
