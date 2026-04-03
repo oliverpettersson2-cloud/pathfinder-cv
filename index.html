@@ -1617,6 +1617,18 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes matchaShimmer { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
+    @keyframes matchaBannerPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(108,92,231,0.5); border-color: rgba(108,92,231,0.25); }
+      40%  { box-shadow: 0 0 0 8px rgba(108,92,231,0); border-color: rgba(162,155,254,0.8); }
+      100% { box-shadow: 0 0 0 0 rgba(108,92,231,0); border-color: rgba(108,92,231,0.25); }
+    }
+    @keyframes matchaRobotBounce {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      25%     { transform: translateY(-4px) rotate(-8deg); }
+      75%     { transform: translateY(-2px) rotate(8deg); }
+    }
+    .matcha-banner-pulse { animation: matchaBannerPulse 0.9s ease-out 3; }
+    .matcha-robot-bounce { animation: matchaRobotBounce 0.6s ease-in-out 3; }
 
     .auth-user-badge {
       display: flex;
@@ -7894,8 +7906,8 @@ ${styleTexts}
 
       <!-- CV-väljare i steg 3 -->
       <!-- AI info banner -->
-      <div style="display:flex;align-items:flex-start;gap:10px;background:rgba(108,92,231,0.1);border:1.5px solid rgba(108,92,231,0.25);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
-        <span style="font-size:20px;flex-shrink:0;">🤖</span>
+      <div id="matchaAiBanner" style="display:flex;align-items:flex-start;gap:10px;background:rgba(108,92,231,0.1);border:1.5px solid rgba(108,92,231,0.25);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+        <span id="matchaAiRobot" style="font-size:20px;flex-shrink:0;display:inline-block;">🤖</span>
         <div>
           <div style="font-size:12px;font-weight:800;color:rgba(162,155,254,0.9);margin-bottom:3px;">Så fungerar AI-matchningen</div>
           <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;">AI läser igenom jobbannonsen och jämför den med ditt CV — och skriver en skräddarsydd profiltext anpassad just för det jobbet.</div>
@@ -10072,6 +10084,21 @@ ${styleTexts}
     if (n === 3) {
       matchaRenderStep3Ads();
       matchaPopulateCvSelect();
+      // Animera AI-banner
+      setTimeout(() => {
+        const banner = document.getElementById('matchaAiBanner');
+        const robot = document.getElementById('matchaAiRobot');
+        if (banner) {
+          banner.classList.remove('matcha-banner-pulse');
+          void banner.offsetWidth; // force reflow
+          banner.classList.add('matcha-banner-pulse');
+        }
+        if (robot) {
+          robot.classList.remove('matcha-robot-bounce');
+          void robot.offsetWidth;
+          robot.classList.add('matcha-robot-bounce');
+        }
+      }, 200);
     }
   }
 
