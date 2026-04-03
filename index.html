@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_19.html -->
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_23.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,7 +8,7 @@
 
   <!-- PDF Generation Libraries -->
   <script src="file:///C:/Users/olive/Downloads/index_files/html2canvas.min.js.ladda%20ned"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
   
   
   <style>
@@ -2529,12 +2529,12 @@
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
     <div id="mobCVSteps">
-      <div class="mob-cvstep" id="mobCVStep-info"          onclick="mobSwitchSubTab('info')">          <span class="mob-cvstep__lbl">Profil</span><div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
-      <div class="mob-cvstep" id="mobCVStep-jobb"          onclick="mobSwitchSubTab('jobb')">          <span class="mob-cvstep__lbl">Jobb</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
-      <div class="mob-cvstep" id="mobCVStep-utbildning"    onclick="mobSwitchSubTab('utbildning')">    <span class="mob-cvstep__lbl">Utb.</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
-      <div class="mob-cvstep" id="mobCVStep-mer"           onclick="mobSwitchSubTab('mer')">           <span class="mob-cvstep__lbl">Mer</span>   <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
-      <div class="mob-cvstep" id="mobCVStep-profil"        onclick="mobSwitchSubTab('profil')">        <span class="mob-cvstep__lbl">Text</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
-      <div class="mob-cvstep" id="mobCVStep-forhandsgranska" onclick="mobSwitchSubTab('forhandsgranska')"><span class="mob-cvstep__lbl">Visa</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+      <div class="mob-cvstep" id="mobCVStep-info" onclick="mobSwitchSubTab(&#39;info&#39;)">          <span class="mob-cvstep__lbl">Profil</span><div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+      <div class="mob-cvstep" id="mobCVStep-jobb" onclick="mobSwitchSubTab(&#39;jobb&#39;)">          <span class="mob-cvstep__lbl">Jobb</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+      <div class="mob-cvstep" id="mobCVStep-utbildning" onclick="mobSwitchSubTab(&#39;utbildning&#39;)">    <span class="mob-cvstep__lbl">Utb.</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+      <div class="mob-cvstep" id="mobCVStep-mer" onclick="mobSwitchSubTab(&#39;mer&#39;)">           <span class="mob-cvstep__lbl">Mer</span>   <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+      <div class="mob-cvstep" id="mobCVStep-profil" onclick="mobSwitchSubTab(&#39;profil&#39;)">        <span class="mob-cvstep__lbl">Text</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+      <div class="mob-cvstep" id="mobCVStep-forhandsgranska" onclick="mobSwitchSubTab(&#39;forhandsgranska&#39;)"><span class="mob-cvstep__lbl">Visa</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
     </div>
     <!-- Desktop steg-indikator -->
     <div class="nav-steps" id="navSteps" role="navigation" aria-label="Steg i processen">
@@ -3332,11 +3332,11 @@
         <option value="Övrig utbildning">Övrig utbildning</option>
       </select>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-        <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Från år</label>
-          <select class="modal-input" id="eduStartYear">
-            <option value="">Välj år</option>
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <span style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600; min-width: 34px;">Från</span>
+          <select class="modal-input" id="eduStartYear" style="flex: 1; margin-bottom: 0;">
+            <option value="">År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3367,11 +3367,14 @@
             <option value="Före 2000">Före 2000</option>
           </select>
         </div>
-        <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Till år</label>
-          <select class="modal-input" id="eduEndYear">
-            <option value="">Välj år</option>
-            <option value="Pågående">Pågående</option>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600; min-width: 34px;">Till</span>
+          <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; font-size: 12px; color: rgba(255,255,255,0.65);">
+            <input type="checkbox" id="eduOngoing" onchange="toggleEduOngoing()" style="cursor: pointer; width: 14px; height: 14px;">
+            Pågående
+          </label>
+          <select class="modal-input" id="eduEndYear" style="flex: 1; margin-bottom: 0;">
+            <option value="">År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -4339,8 +4342,8 @@
         </div>
       </div>
       </div>
-      <div class="modal-buttons">
-        <button class="btn-save" onclick="closeModal(&#39;licensesModal&#39;)">Klar</button>
+      <div class="modal-buttons" style="position: sticky; bottom: 0; background: var(--bg-card, #1a1a2e); padding: 12px 0 4px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <button class="btn-save" onclick="closeModal(&#39;licensesModal&#39;)">✓ Klar</button>
       </div>
     </div>
   </div>
@@ -5300,6 +5303,9 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('jobStartYear').value = '';
       document.getElementById('jobEndMonth').value = '';
       document.getElementById('jobEndYear').value = '';
+      document.getElementById('jobOngoing').checked = false;
+      document.getElementById('jobEndMonth').style.display = '';
+      document.getElementById('jobEndYear').style.display = '';
       document.getElementById('jobDesc1').value = '';
       document.getElementById('jobDesc2').value = '';
       document.getElementById('jobDesc3').value = '';
@@ -5311,8 +5317,15 @@ Ge bara profiltexten, ingen förklaringtext.`;
         document.getElementById('jobLocation').value = job.location || '';
         document.getElementById('jobStartMonth').value = job.startMonth || '';
         document.getElementById('jobStartYear').value = job.startYear || '';
-        document.getElementById('jobEndMonth').value = job.endMonth || '';
-        document.getElementById('jobEndYear').value = job.endYear || '';
+        const isOngoing = job.endYear === 'Pågående' || job.ongoing === true;
+        document.getElementById('jobOngoing').checked = isOngoing;
+        if (isOngoing) {
+          document.getElementById('jobEndMonth').style.display = 'none';
+          document.getElementById('jobEndYear').style.display = 'none';
+        } else {
+          document.getElementById('jobEndMonth').value = job.endMonth || '';
+          document.getElementById('jobEndYear').value = job.endYear || '';
+        }
         document.getElementById('jobDesc1').value = job.desc1 || '';
         document.getElementById('jobDesc2').value = job.desc2 || '';
         document.getElementById('jobDesc3').value = job.desc3 || '';
@@ -5332,8 +5345,9 @@ Ge bara profiltexten, ingen förklaringtext.`;
         location: document.getElementById('jobLocation').value,
         startMonth: document.getElementById('jobStartMonth').value,
         startYear: document.getElementById('jobStartYear').value,
-        endMonth: document.getElementById('jobEndMonth').value,
-        endYear: document.getElementById('jobEndYear').value,
+        endMonth: document.getElementById('jobOngoing').checked ? '' : document.getElementById('jobEndMonth').value,
+        endYear: document.getElementById('jobOngoing').checked ? 'Pågående' : document.getElementById('jobEndYear').value,
+        ongoing: document.getElementById('jobOngoing').checked,
         desc1: document.getElementById('jobDesc1').value,
         desc2: document.getElementById('jobDesc2').value,
         desc3: document.getElementById('jobDesc3').value
@@ -5350,6 +5364,25 @@ Ge bara profiltexten, ingen förklaringtext.`;
       updatePreview();
       closeModal('jobModal');
       showToast('✅ Arbetslivserfarenhet sparad!', 'success');
+    }
+
+    function toggleJobOngoing() {
+      const ongoing = document.getElementById('jobOngoing').checked;
+      const monthSel = document.getElementById('jobEndMonth');
+      const yearSel = document.getElementById('jobEndYear');
+      if (ongoing) {
+        monthSel.style.display = 'none';
+        yearSel.style.display = 'none';
+      } else {
+        monthSel.style.display = '';
+        yearSel.style.display = '';
+      }
+    }
+
+    function toggleEduOngoing() {
+      const ongoing = document.getElementById('eduOngoing').checked;
+      const yearSel = document.getElementById('eduEndYear');
+      yearSel.style.display = ongoing ? 'none' : '';
     }
 
     function removeJob(idx) {
@@ -5406,6 +5439,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('eduSchool').value = '';
       document.getElementById('eduStartYear').value = '';
       document.getElementById('eduEndYear').value = '';
+      document.getElementById('eduOngoing').checked = false;
+      document.getElementById('eduEndYear').style.display = '';
       
       if (idx !== null && idx >= 0 && cvData.education[idx]) {
         const edu = cvData.education[idx];
@@ -5413,7 +5448,10 @@ Ge bara profiltexten, ingen förklaringtext.`;
         document.getElementById('eduSchoolName').value = edu.schoolName || '';
         document.getElementById('eduSchool').value = edu.school;
         document.getElementById('eduStartYear').value = edu.startYear || '';
-        document.getElementById('eduEndYear').value = edu.endYear || '';
+        const isOngoing = edu.endYear === 'Pågående' || edu.ongoing === true;
+        document.getElementById('eduOngoing').checked = isOngoing;
+        document.getElementById('eduEndYear').style.display = isOngoing ? 'none' : '';
+        if (!isOngoing) document.getElementById('eduEndYear').value = edu.endYear || '';
       }
       
       const modal = document.getElementById('eduModal');
@@ -5429,7 +5467,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
         schoolName: document.getElementById('eduSchoolName').value,
         school: document.getElementById('eduSchool').value,
         startYear: document.getElementById('eduStartYear').value,
-        endYear: document.getElementById('eduEndYear').value
+        endYear: document.getElementById('eduOngoing').checked ? 'Pågående' : document.getElementById('eduEndYear').value,
+        ongoing: document.getElementById('eduOngoing').checked
       };
 
       if (idx >= 0) {
@@ -7552,7 +7591,7 @@ ${styleTexts}
         <button class="mob-btn-primary mob-btn-outline" onclick="openEduModal()">+ Lägg till utbildning</button>
       </div>
       <div class="mob-fortsatt">
-        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab('jobb')">← Tillbaka till Jobb</button>
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;jobb&#39;)">← Tillbaka till Jobb</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;utbildning&#39;,&#39;mer&#39;)">
           Fortsätt till Mer →
         </button>
@@ -7575,7 +7614,7 @@ ${styleTexts}
         </button>
       </div>
       <div class="mob-fortsatt">
-        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab('mer')">← Tillbaka till Mer</button>
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;mer&#39;)">← Tillbaka till Mer</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;profil&#39;,&#39;forhandsgranska&#39;)">
           Se mitt CV →
         </button>
@@ -7592,7 +7631,7 @@ ${styleTexts}
         </button>
       </div>
       <div class="mob-fortsatt">
-        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab('info')">← Tillbaka till Profil</button>
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;info&#39;)">← Tillbaka till Profil</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;jobb&#39;,&#39;utbildning&#39;)">
           Fortsätt till Utbildning →
         </button>
@@ -7643,7 +7682,7 @@ ${styleTexts}
         <button class="mob-btn-primary mob-btn-outline" style="border-color:rgba(62,180,137,0.4);color:rgba(62,180,137,0.8);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
       </div>
       <div class="mob-fortsatt">
-        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab('utbildning')">← Tillbaka till Utbildning</button>
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;utbildning&#39;)">← Tillbaka till Utbildning</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;mer&#39;,&#39;profil&#39;)">
           Fortsätt till Profil →
         </button>
@@ -7783,21 +7822,20 @@ ${styleTexts}
           <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;">Sök på ett eller flera ord</div>
           <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">Skriv t.ex. lärare Helsingborg</div>
           <div style="display:flex;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.3);">
-            <input id="matchaSearch" type="text" placeholder="Yrke eller nyckelord..." oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search"
-              style="flex:1;padding:14px 16px;background:#fff;border:none;color:#1a1a2e;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;min-width:0;">
+            <input id="matchaSearch" type="text" placeholder="Yrke eller nyckelord..." oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search" style="flex:1;padding:14px 16px;background:#fff;border:none;color:#1a1a2e;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;min-width:0;">
             <button onclick="matchaDoSearch()" style="padding:14px 20px;background:#4caf50;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;font-family:inherit;">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="white" stroke-width="1.8"></circle><path d="M11 11L14 14" stroke="white" stroke-width="1.8" stroke-linecap="round"></path></svg>
               Sök
             </button>
           </div>
           <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
-            <button id="matchaChipHbg" onclick="matchaSetFilter('hbg')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Helsingborg</button>
-            <button id="matchaChipLocal" onclick="matchaSetFilter('fam')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #3eb489;background:rgba(62,180,137,0.15);color:#3eb489;font-family:inherit;">
+            <button id="matchaChipHbg" onclick="matchaSetFilter(&#39;hbg&#39;)" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Helsingborg</button>
+            <button id="matchaChipLocal" onclick="matchaSetFilter(&#39;fam&#39;)" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #3eb489;background:rgba(62,180,137,0.15);color:#3eb489;font-family:inherit;">
               <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.8" r="2" stroke="#3eb489" stroke-width="1.3"></circle><path d="M5 8.5C5 8.5 1.8 6.2 1.8 3.8a3.2 3.2 0 016.4 0C8.2 6.2 5 8.5 5 8.5z" stroke="#3eb489" stroke-width="1.3" fill="none"></path></svg>
               Familjen Hbg
             </button>
-            <button id="matchaChipSkane" onclick="matchaSetFilter('skane')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Skåne</button>
-            <button id="matchaChipAll" onclick="matchaSetFilter('all')" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Hela Sverige</button>
+            <button id="matchaChipSkane" onclick="matchaSetFilter(&#39;skane&#39;)" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Skåne</button>
+            <button id="matchaChipAll" onclick="matchaSetFilter(&#39;all&#39;)" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Hela Sverige</button>
           </div>
         </div>
         <div style="padding:0 16px;">
@@ -10290,7 +10328,7 @@ ${styleTexts}
       <button onclick="matchaGoToStep3()" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
         Matcha mot CV →
       </button>
-      <button onclick="document.getElementById('matchaMaxModal').style.display='none';" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
+      <button onclick="document.getElementById(&#39;matchaMaxModal&#39;).style.display=&#39;none&#39;;" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
         Stanna kvar och sök vidare
       </button>
     </div>
