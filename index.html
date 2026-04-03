@@ -1732,7 +1732,7 @@
         align-items: center;
         justify-content: space-between;
         height: 52px;
-        padding: 0 4px;
+        padding: 0;
         flex-shrink: 0;
       }
       .nav-logo {
@@ -7838,8 +7838,11 @@ ${styleTexts}
       <div id="matchaStep2" style="display:none;padding:0;">
         <!-- Söksektionen — Platsbanken-stil -->
         <div style="background:rgba(10,14,30,0.7);padding:18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);">
-          <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;">Sök på ett eller flera ord</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">Skriv t.ex. lärare Helsingborg</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+            <div style="font-size:12px;font-weight:800;color:#fff;">Sök på ett eller flera ord</div>
+            <button onclick="document.getElementById('matchaSearch').value='';document.getElementById('matchaSearch').focus();" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;cursor:pointer;padding:3px 10px;border-radius:6px;font-family:inherit;">✕ Rensa</button>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">Skriv valfritt yrke eller nyckelord</div>
           <div style="display:flex;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.3);">
             <input id="matchaSearch" type="text" placeholder="Yrke eller nyckelord..." oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search" style="flex:1;padding:14px 16px;background:#fff;border:none;color:#1a1a2e;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;min-width:0;">
             <button onclick="matchaDoSearch()" style="padding:14px 20px;background:#4caf50;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;font-family:inherit;">
@@ -9641,15 +9644,29 @@ ${styleTexts}
     if (chipsRow.children.length > 0) expandBox.appendChild(chipsRow);
     if (snippet || chipsRow.children.length > 0) card.appendChild(expandBox);
 
-    // Klick på kortet (ej välj-knapp) → toggle expand
-    let expanded = false;
+    // Klick på kortet (ej välj-knapp) → öppna info-modal (samma som steg 3)
     card.onclick = (e) => {
       if (e.target.closest('.matcha-valj-btn')) return;
-      expanded = !expanded;
-      expandBox.style.display = expanded ? 'block' : 'none';
-      card.style.background = expanded
-        ? (_matchaSelectedAds.find(a => a.id === hit.id) ? 'rgba(62,180,137,0.1)' : 'rgba(255,255,255,0.07)')
-        : (_matchaSelectedAds.find(a => a.id === hit.id) ? 'rgba(62,180,137,0.07)' : 'rgba(255,255,255,0.04)');
+      // Bygg ett factsEl från chips för modal
+      const modalFacts = document.createElement('div');
+      modalFacts.style.display = 'none';
+      function mchip(label, color) {
+        const c = document.createElement('div');
+        c.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700;background:' + (color||'rgba(255,255,255,0.07)') + ';color:' + (color ? '#fff' : 'rgba(255,255,255,0.55)') + ';border:1px solid ' + (color ? color : 'rgba(255,255,255,0.1)') + ';';
+        c.textContent = label;
+        return c;
+      }
+      const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
+      if (hoursType) modalFacts.appendChild(mchip('⏱ ' + hoursType));
+      const empType = (hit.employment_type && hit.employment_type.label) || '';
+      if (empType) modalFacts.appendChild(mchip('📋 ' + empType));
+      if (hit.driving_license_required) modalFacts.appendChild(mchip('🚗 Körkort krävs', 'rgba(240,192,64,0.5)'));
+      else if (hit.driving_license_required === false) modalFacts.appendChild(mchip('🚗 Körkort ej krav'));
+      const salDesc = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
+      modalFacts.appendChild(mchip('💰 ' + (salDesc || 'Lön ej uppgiven')));
+      const dur = (hit.duration && hit.duration.label) || '';
+      if (dur && dur !== 'Tillsvidare') modalFacts.appendChild(mchip('📅 ' + dur));
+      matchaShowInfoModal(hit, modalFacts, null);
     };
 
     updateCardState();
@@ -10223,8 +10240,14 @@ ${styleTexts}
     chipsContainer.innerHTML = '';
     Array.from(factsEl.children).forEach(chip => chipsContainer.appendChild(chip.cloneNode(true)));
 
-    // Buttons
-    document.getElementById('matchaInfoAdaptBtn').onclick = () => { matchaCloseInfoModal(); matchaCVForAd(adIdx); };
+    // Adapt button — visa bara om adIdx finns (steg 3), annars dölj
+    const adaptBtn = document.getElementById('matchaInfoAdaptBtn');
+    if (adIdx !== null && adIdx !== undefined) {
+      adaptBtn.style.display = 'block';
+      adaptBtn.onclick = () => { matchaCloseInfoModal(); matchaCVForAd(adIdx); };
+    } else {
+      adaptBtn.style.display = 'none';
+    }
 
     // Show modal immediately
     modal.style.display = 'flex';
@@ -10244,9 +10267,9 @@ ${styleTexts}
         body: JSON.stringify({
           messages: [{
             role: 'user',
-            content: 'Sammanfatta annonsen pa svenska. Visa: Arbetsuppgifter, Krav, Profil, Start, Kontakt (om det finns). HTML format med <b>rubrik:</b> + kort text. Max 3 meningar/del. Annons: ' + adText.substring(0, 3000)
+            content: 'Sammanfatta denna jobbannons pa svenska. Inkludera: Arbetsuppgifter, Krav, Profil, Startdatum, Hur du soker jobbet (via extern hemsida-lank ELLER e-post — ange adressen tydligt), Kontaktperson (namn + telefon/email). HTML-format: <b>Rubrik:</b> text. Max 2 meningar/del. Hoppa over delar som saknas. Annons: ' + adText.substring(0, 3000)
           }],
-          system: 'Du är en jobbannons-sammanfattare. Svara ALLTID på svenska. Svara BARA med HTML-formaterad sammanfattning, inga förklaringar.'
+          system: 'Du ar en jobbannons-sammanfattare. Svara pa svenska. Svara BARA med kompakt HTML utan inledning eller forklaringar.'
         })
       });
       const data = await resp.json();
