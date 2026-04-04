@@ -7871,6 +7871,13 @@ ${styleTexts}
             <button id="matchaChipSkane" onclick="matchaSetFilter(&#39;skane&#39;)" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Skåne</button>
             <button id="matchaChipAll" onclick="matchaSetFilter(&#39;all&#39;)" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Hela Sverige</button>
           </div>
+          <!-- Heltid/Deltid filter -->
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;padding-right:2px;">Tid:</span>
+            <button id="matchaChipExtAll" onclick="matchaSetExtent(&#39;all&#39;)" style="display:inline-flex;align-items:center;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #3eb489;background:rgba(62,180,137,0.15);color:#3eb489;font-family:inherit;">Alla</button>
+            <button id="matchaChipHeltid" onclick="matchaSetExtent(&#39;heltid&#39;)" style="display:inline-flex;align-items:center;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Heltid</button>
+            <button id="matchaChipDeltid" onclick="matchaSetExtent(&#39;deltid&#39;)" style="display:inline-flex;align-items:center;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Deltid</button>
+          </div>
         </div>
         <div style="padding:0 16px;">
       <div id="matchaSkeleton" style="display:none;margin-top:14px;">
@@ -9471,6 +9478,7 @@ ${styleTexts}
   let matchaSelectedAdData = null; // bakåtkompatibilitet
   let _matchaSelectedAds = []; // array med upp till 3 valda annonser
   let matchaLocFilter = 'fam'; // 'hbg'|'fam'|'skane'|'all'
+  let matchaExtentFilter = 'all'; // 'all'|'heltid'|'deltid'
   let matchaCurrentOffset = 0;
   let matchaCurrentQ = '';
 
@@ -9515,6 +9523,41 @@ ${styleTexts}
       }
     });
     matchaDoSearch();
+  }
+
+  function matchaSetExtent(val) {
+    matchaExtentFilter = val;
+    matchaCurrentOffset = 0;
+    ['all','heltid','deltid'].forEach(k => {
+      const idMap = { all:'matchaChipExtAll', heltid:'matchaChipHeltid', deltid:'matchaChipDeltid' };
+      const el = document.getElementById(idMap[k]);
+      if (!el) return;
+      if (k === val) {
+        el.style.border = '1.5px solid rgba(62,180,137,0.5)';
+        el.style.background = 'rgba(62,180,137,0.12)';
+        el.style.color = '#3eb489';
+      } else {
+        el.style.border = '1.5px solid rgba(255,255,255,0.12)';
+        el.style.background = 'rgba(255,255,255,0.04)';
+        el.style.color = 'rgba(255,255,255,0.4)';
+      }
+    });
+    // Filter already-fetched results client-side
+    matchaApplyExtentFilter();
+  }
+
+  function matchaApplyExtentFilter() {
+    const resultsEl = document.getElementById('matchaSearchResults');
+    if (!resultsEl || resultsEl.style.display === 'none') return;
+    const cards = resultsEl.querySelectorAll('[data-extent]');
+    cards.forEach(card => {
+      if (matchaExtentFilter === 'all') {
+        card.style.display = '';
+      } else {
+        const ext = card.dataset.extent || '';
+        card.style.display = ext.includes(matchaExtentFilter) ? '' : 'none';
+      }
+    });
   }
 
   function matchaSearchDebounce() {
@@ -9562,6 +9605,8 @@ ${styleTexts}
 
     const card = document.createElement('div');
     card.style.cssText = 'padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:background 0.15s,border-color 0.15s;';
+    const extLabel = ((hit.working_hours_type && hit.working_hours_type.label) || '').toLowerCase();
+    card.dataset.extent = extLabel.includes('heltid') ? 'heltid' : extLabel.includes('deltid') ? 'deltid' : 'all';
 
     // Header — titel + bolag + ort
     const header = document.createElement('div');
@@ -10089,16 +10134,16 @@ ${styleTexts}
         const banner = document.getElementById('matchaAiBanner');
         const robot = document.getElementById('matchaAiRobot');
         if (banner) {
-          banner.classList.remove('matcha-banner-pulse');
-          void banner.offsetWidth; // force reflow
-          banner.classList.add('matcha-banner-pulse');
+          banner.style.animation = 'none';
+          void banner.offsetWidth;
+          banner.style.animation = 'matchaBannerPulse 0.9s ease-out 3';
         }
         if (robot) {
-          robot.classList.remove('matcha-robot-bounce');
+          robot.style.animation = 'none';
           void robot.offsetWidth;
-          robot.classList.add('matcha-robot-bounce');
+          robot.style.animation = 'matchaRobotBounce 0.6s ease-in-out 3';
         }
-      }, 200);
+      }, 300);
     }
   }
 
@@ -10443,6 +10488,15 @@ ${styleTexts}
       });
       resultEl.style.display = 'block';
       hideAiLoader();
+
+      // Stäng expand-rutan — scrolla ner till resultat
+      const section = resultEl.parentElement;
+      if (section) {
+        const expandBox = section.querySelector('div[style*="border-top:1px solid"]');
+        if (expandBox) expandBox.style.display = 'none';
+      }
+      setTimeout(() => resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+
     } catch(err) {
       hideAiLoader();
       showAiError('Försök igen om en stund');
