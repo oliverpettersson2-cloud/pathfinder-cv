@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_23.html -->
+
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Pathfinder — AI-CV-Builder</title>
-  <link rel="icon" type="image/svg+xml" href="file:///C:/Users/olive/Downloads/pathfinder-favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="/pathfinder-favicon.svg">
 
   <!-- PDF Generation Libraries -->
-  <script src="file:///C:/Users/olive/Downloads/index_files/html2canvas.min.js.ladda%20ned"></script>
-  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   
   <style>
@@ -1617,18 +1617,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes matchaShimmer { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
-    @keyframes matchaBannerPulse {
-      0%   { box-shadow: 0 0 0 0 rgba(108,92,231,0.5); border-color: rgba(108,92,231,0.25); }
-      40%  { box-shadow: 0 0 0 8px rgba(108,92,231,0); border-color: rgba(162,155,254,0.8); }
-      100% { box-shadow: 0 0 0 0 rgba(108,92,231,0); border-color: rgba(108,92,231,0.25); }
-    }
-    @keyframes matchaRobotBounce {
-      0%,100% { transform: translateY(0) rotate(0deg); }
-      25%     { transform: translateY(-4px) rotate(-8deg); }
-      75%     { transform: translateY(-2px) rotate(8deg); }
-    }
-    .matcha-banner-pulse { animation: matchaBannerPulse 0.9s ease-out 3; }
-    .matcha-robot-bounce { animation: matchaRobotBounce 0.6s ease-in-out 3; }
 
     .auth-user-badge {
       display: flex;
@@ -1744,7 +1732,7 @@
         align-items: center;
         justify-content: space-between;
         height: 52px;
-        padding: 0;
+        padding: 0 14px;
         flex-shrink: 0;
       }
       .nav-logo {
@@ -2524,20 +2512,20 @@
   <nav id="mainNav">
     <!-- Rad 1: Profil-badge | Logga | Logga ut -->
     <div class="mob-nav-row1">
-      <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;margin-left:0;padding-left:4px;" aria-label="Inloggad anvandare">
+      <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;" aria-label="Inloggad anvandare">
         <svg class="mob-hide" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">oliver.pettersson2@gmail.com</span>
         <span class="mob-profil" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#3eb489;">
           <span style="width:8px;height:8px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>Profil
         </span>
       </div>
-      <div class="nav-logo" style="display:flex;align-items:center;flex:1;justify-content:center;">
-        <div style="text-align:center;">
+      <div class="nav-logo" style="display:flex;align-items:center;">
+        <div>
           <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;line-height:1.1;">Path<span style="color:#f0c040;">finder</span></div>
           <div class="mob-hide" style="font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.4);font-family:-apple-system,sans-serif;">Din väg mot arbete &amp; studier</div>
         </div>
       </div>
-      <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:rgba(220,60,60,0.12);border:1.5px solid rgba(220,60,60,0.35);color:rgba(255,100,100,0.9);font-size:11px;font-weight:700;cursor:pointer;padding:5px 11px;border-radius:8px;white-space:nowrap;transition:all 0.2s;letter-spacing:0.2px;" onmouseover="this.style.background='rgba(220,60,60,0.22)';this.style.borderColor='rgba(220,60,60,0.6)';this.style.color='#ff8080'" onmouseout="this.style.background='rgba(220,60,60,0.12)';this.style.borderColor='rgba(220,60,60,0.35)';this.style.color='rgba(255,100,100,0.9)'" aria-label="Logga ut">Logga ut</button>
+      <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color=&#39;rgba(255,255,255,0.7)&#39;" onmouseout="this.style.color=&#39;rgba(255,255,255,0.35)&#39;" aria-label="Logga ut">Logga ut</button>
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
     <div id="mobCVSteps">
@@ -3195,11 +3183,11 @@
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
       
-      <div style="margin-bottom: 10px;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-          <span style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600; min-width: 34px;">Från</span>
-          <select class="modal-input" id="jobStartMonth" style="flex: 1; margin-bottom: 0;">
-            <option value="">Månad</option>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Från månad</label>
+          <select class="modal-input" id="jobStartMonth">
+            <option value="">Välj månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3213,8 +3201,11 @@
             <option value="November">November</option>
             <option value="December">December</option>
           </select>
-          <select class="modal-input" id="jobStartYear" style="width: 96px; margin-bottom: 0;">
-            <option value="">År</option>
+        </div>
+        <div>
+          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">År</label>
+          <select class="modal-input" id="jobStartYear">
+            <option value="">Välj år</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3245,14 +3236,13 @@
             <option value="Före 2000">Före 2000</option>
           </select>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600; min-width: 34px;">Till</span>
-          <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; font-size: 12px; color: rgba(255,255,255,0.65);">
-            <input type="checkbox" id="jobOngoing" onchange="toggleJobOngoing()" style="cursor: pointer; width: 14px; height: 14px;">
-            Pågående
-          </label>
-          <select class="modal-input" id="jobEndMonth" style="flex: 1; margin-bottom: 0;">
-            <option value="">Månad</option>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Till månad</label>
+          <select class="modal-input" id="jobEndMonth">
+            <option value="">Välj månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3266,8 +3256,12 @@
             <option value="November">November</option>
             <option value="December">December</option>
           </select>
-          <select class="modal-input" id="jobEndYear" style="width: 96px; margin-bottom: 0;">
-            <option value="">År</option>
+        </div>
+        <div>
+          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">År</label>
+          <select class="modal-input" id="jobEndYear">
+            <option value="">Välj år</option>
+            <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3338,11 +3332,11 @@
         <option value="Övrig utbildning">Övrig utbildning</option>
       </select>
       
-      <div style="margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-          <span style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600; min-width: 34px;">Från</span>
-          <select class="modal-input" id="eduStartYear" style="flex: 1; margin-bottom: 0;">
-            <option value="">År</option>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Från år</label>
+          <select class="modal-input" id="eduStartYear">
+            <option value="">Välj år</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3373,14 +3367,11 @@
             <option value="Före 2000">Före 2000</option>
           </select>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600; min-width: 34px;">Till</span>
-          <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; font-size: 12px; color: rgba(255,255,255,0.65);">
-            <input type="checkbox" id="eduOngoing" onchange="toggleEduOngoing()" style="cursor: pointer; width: 14px; height: 14px;">
-            Pågående
-          </label>
-          <select class="modal-input" id="eduEndYear" style="flex: 1; margin-bottom: 0;">
-            <option value="">År</option>
+        <div>
+          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Till år</label>
+          <select class="modal-input" id="eduEndYear">
+            <option value="">Välj år</option>
+            <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -4348,8 +4339,8 @@
         </div>
       </div>
       </div>
-      <div class="modal-buttons" style="position: sticky; bottom: 0; background: var(--bg-card, #1a1a2e); padding: 12px 0 4px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.08);">
-        <button class="btn-save" onclick="closeModal(&#39;licensesModal&#39;)">✓ Klar</button>
+      <div class="modal-buttons">
+        <button class="btn-save" onclick="closeModal(&#39;licensesModal&#39;)">Klar</button>
       </div>
     </div>
   </div>
@@ -4763,14 +4754,14 @@
       showToast('🗑️ Profilbild borttagen', 'success');
     }
 
-    function setShowPhoto(show, silent) {
+    function setShowPhoto(show) {
       cvData.showPhoto = show;
       document.getElementById('photoYesBtn').classList.toggle('active', show);
       document.getElementById('photoNoBtn').classList.toggle('active', !show);
       document.getElementById('photoUploadSection').style.display = show ? 'block' : 'none';
       saveData();
       updatePreview();
-      if (!silent) showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
+      showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
     }
 
     // Spara/Ladda data
@@ -5269,7 +5260,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         removeBtn.removeAttribute('aria-disabled');
       }
       
-      setShowPhoto(cvData.showPhoto === true, true);
+      setShowPhoto(cvData.showPhoto === true);
       renderJobs();
       renderEducation();
       renderLanguages();
@@ -5309,9 +5300,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('jobStartYear').value = '';
       document.getElementById('jobEndMonth').value = '';
       document.getElementById('jobEndYear').value = '';
-      document.getElementById('jobOngoing').checked = false;
-      document.getElementById('jobEndMonth').style.display = '';
-      document.getElementById('jobEndYear').style.display = '';
       document.getElementById('jobDesc1').value = '';
       document.getElementById('jobDesc2').value = '';
       document.getElementById('jobDesc3').value = '';
@@ -5323,15 +5311,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
         document.getElementById('jobLocation').value = job.location || '';
         document.getElementById('jobStartMonth').value = job.startMonth || '';
         document.getElementById('jobStartYear').value = job.startYear || '';
-        const isOngoing = job.endYear === 'Pågående' || job.ongoing === true;
-        document.getElementById('jobOngoing').checked = isOngoing;
-        if (isOngoing) {
-          document.getElementById('jobEndMonth').style.display = 'none';
-          document.getElementById('jobEndYear').style.display = 'none';
-        } else {
-          document.getElementById('jobEndMonth').value = job.endMonth || '';
-          document.getElementById('jobEndYear').value = job.endYear || '';
-        }
+        document.getElementById('jobEndMonth').value = job.endMonth || '';
+        document.getElementById('jobEndYear').value = job.endYear || '';
         document.getElementById('jobDesc1').value = job.desc1 || '';
         document.getElementById('jobDesc2').value = job.desc2 || '';
         document.getElementById('jobDesc3').value = job.desc3 || '';
@@ -5351,9 +5332,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
         location: document.getElementById('jobLocation').value,
         startMonth: document.getElementById('jobStartMonth').value,
         startYear: document.getElementById('jobStartYear').value,
-        endMonth: document.getElementById('jobOngoing').checked ? '' : document.getElementById('jobEndMonth').value,
-        endYear: document.getElementById('jobOngoing').checked ? 'Pågående' : document.getElementById('jobEndYear').value,
-        ongoing: document.getElementById('jobOngoing').checked,
+        endMonth: document.getElementById('jobEndMonth').value,
+        endYear: document.getElementById('jobEndYear').value,
         desc1: document.getElementById('jobDesc1').value,
         desc2: document.getElementById('jobDesc2').value,
         desc3: document.getElementById('jobDesc3').value
@@ -5370,16 +5350,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
       updatePreview();
       closeModal('jobModal');
       showToast('✅ Arbetslivserfarenhet sparad!', 'success');
-    }
-
-    function toggleJobOngoing() {
-      const ongoing = document.getElementById('jobOngoing').checked;
-      document.getElementById('jobEndMonth').style.display = ongoing ? 'none' : '';
-      document.getElementById('jobEndYear').style.display = ongoing ? 'none' : '';
-    }
-
-    function toggleEduOngoing() {
-      document.getElementById('eduEndYear').style.display = document.getElementById('eduOngoing').checked ? 'none' : '';
     }
 
     function removeJob(idx) {
@@ -5436,8 +5406,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('eduSchool').value = '';
       document.getElementById('eduStartYear').value = '';
       document.getElementById('eduEndYear').value = '';
-      document.getElementById('eduOngoing').checked = false;
-      document.getElementById('eduEndYear').style.display = '';
       
       if (idx !== null && idx >= 0 && cvData.education[idx]) {
         const edu = cvData.education[idx];
@@ -5445,10 +5413,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         document.getElementById('eduSchoolName').value = edu.schoolName || '';
         document.getElementById('eduSchool').value = edu.school;
         document.getElementById('eduStartYear').value = edu.startYear || '';
-        const isOngoing = edu.endYear === 'Pågående' || edu.ongoing === true;
-        document.getElementById('eduOngoing').checked = isOngoing;
-        document.getElementById('eduEndYear').style.display = isOngoing ? 'none' : '';
-        if (!isOngoing) document.getElementById('eduEndYear').value = edu.endYear || '';
+        document.getElementById('eduEndYear').value = edu.endYear || '';
       }
       
       const modal = document.getElementById('eduModal');
@@ -5464,8 +5429,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         schoolName: document.getElementById('eduSchoolName').value,
         school: document.getElementById('eduSchool').value,
         startYear: document.getElementById('eduStartYear').value,
-        endYear: document.getElementById('eduOngoing').checked ? 'Pågående' : document.getElementById('eduEndYear').value,
-        ongoing: document.getElementById('eduOngoing').checked
+        endYear: document.getElementById('eduEndYear').value
       };
 
       if (idx >= 0) {
@@ -7809,40 +7773,6 @@ ${styleTexts}
         <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:12px;">Välj CV att matcha mot</div>
         <div id="matchaCvCards" style="margin-bottom:20px;"></div>
         <input id="matchaCvSelect" type="hidden">
-
-        <!-- Hur Matcha fungerar -->
-        <div style="margin-top:24px;margin-bottom:20px;">
-          <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:14px;">Hur det fungerar</div>
-
-          <div style="display:flex;flex-direction:column;gap:12px;">
-
-            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
-              <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
-              <div>
-                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Välj ditt CV ovan</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;">Välj vilket av dina sparade CV du vill matcha mot jobbet — det är grunden AI utgår från.</div>
-              </div>
-            </div>
-
-            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
-              <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
-              <div>
-                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Sök & välj annonser</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;">Sökningen är förinställd på yrket i ditt CV — men du kan söka fritt på vilket yrke eller nyckelord du vill. Välj en eller flera annonser.</div>
-              </div>
-            </div>
-
-            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;">
-              <div style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:13px;font-weight:800;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
-              <div>
-                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">AI anpassar ditt CV</div>
-                <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;">AI läser annonsen och skriver en skräddarsydd profiltext som matchar just det jobbet.</div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
         <button onclick="matchaSwitchTab(2)" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Välj CV &amp; Sök jobb →</button>
       </div>
 
@@ -7850,11 +7780,8 @@ ${styleTexts}
       <div id="matchaStep2" style="display:none;padding:0;">
         <!-- Söksektionen — Platsbanken-stil -->
         <div style="background:rgba(10,14,30,0.7);padding:18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-            <div style="font-size:12px;font-weight:800;color:#fff;">Sök på ett eller flera ord</div>
-            <button onclick="document.getElementById('matchaSearch').value='';document.getElementById('matchaSearch').focus();" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;cursor:pointer;padding:3px 10px;border-radius:6px;font-family:inherit;">✕ Rensa</button>
-          </div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">Skriv valfritt yrke eller nyckelord</div>
+          <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;">Sök på ett eller flera ord</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">Skriv t.ex. lärare Helsingborg</div>
           <div style="display:flex;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.3);">
             <input id="matchaSearch" type="text" placeholder="Yrke eller nyckelord..." oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search" style="flex:1;padding:14px 16px;background:#fff;border:none;color:#1a1a2e;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;min-width:0;">
             <button onclick="matchaDoSearch()" style="padding:14px 20px;background:#4caf50;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;font-family:inherit;">
@@ -7870,13 +7797,6 @@ ${styleTexts}
             </button>
             <button id="matchaChipSkane" onclick="matchaSetFilter(&#39;skane&#39;)" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Skåne</button>
             <button id="matchaChipAll" onclick="matchaSetFilter(&#39;all&#39;)" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Hela Sverige</button>
-          </div>
-          <!-- Heltid/Deltid filter -->
-          <div style="display:flex;gap:6px;margin-top:8px;">
-            <span style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center;padding-right:2px;">Tid:</span>
-            <button id="matchaChipExtAll" onclick="matchaSetExtent(&#39;all&#39;)" style="display:inline-flex;align-items:center;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #3eb489;background:rgba(62,180,137,0.15);color:#3eb489;font-family:inherit;">Alla</button>
-            <button id="matchaChipHeltid" onclick="matchaSetExtent(&#39;heltid&#39;)" style="display:inline-flex;align-items:center;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Heltid</button>
-            <button id="matchaChipDeltid" onclick="matchaSetExtent(&#39;deltid&#39;)" style="display:inline-flex;align-items:center;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;">Deltid</button>
           </div>
         </div>
         <div style="padding:0 16px;">
@@ -7912,15 +7832,6 @@ ${styleTexts}
       <div id="matchaStep3" style="display:none;padding:16px;">
 
       <!-- CV-väljare i steg 3 -->
-      <!-- AI info banner -->
-      <div id="matchaAiBanner" style="display:flex;align-items:flex-start;gap:10px;background:rgba(108,92,231,0.1);border:1.5px solid rgba(108,92,231,0.25);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
-        <span id="matchaAiRobot" style="font-size:20px;flex-shrink:0;display:inline-block;">🤖</span>
-        <div>
-          <div style="font-size:12px;font-weight:800;color:rgba(162,155,254,0.9);margin-bottom:3px;">Så fungerar AI-matchningen</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.6;">AI läser igenom jobbannonsen och jämför den med ditt CV — och skriver en skräddarsydd profiltext anpassad just för det jobbet.</div>
-        </div>
-      </div>
-
       <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:10px;">Välj CV att matcha mot</div>
       <div id="matchaCvCards3" style="margin-bottom:16px;"></div>
 
@@ -7938,38 +7849,6 @@ ${styleTexts}
       </div>
 
       </div><!-- /matchaStep3 -->
-
-  <!-- Matcha Info Modal -->
-  <div id="matchaInfoModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-start;justify-content:center;touch-action:none;" onclick="if(event.target===this)matchaCloseInfoModal()">
-    <div style="background:#1a1a2e;border-radius:0 0 20px 20px;width:100%;max-width:520px;max-height:82vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 24px;border-bottom:2px solid rgba(62,180,137,0.3);margin-top:52px;" onclick="event.stopPropagation()">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
-        <div style="flex:1;">
-          <div id="matchaInfoTitle" style="font-size:16px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:3px;"></div>
-          <div id="matchaInfoMeta" style="font-size:11px;color:rgba(255,255,255,0.5);"></div>
-        </div>
-        <button onclick="matchaCloseInfoModal()" style="background:rgba(220,50,50,0.12);border:1.5px solid rgba(220,50,50,0.3);color:rgba(255,80,80,0.9);font-size:11px;font-weight:800;cursor:pointer;padding:5px 10px;border-radius:8px;margin-left:10px;white-space:nowrap;letter-spacing:0.3px;">Ta bort</button>
-      </div>
-
-      <!-- Chips -->
-      <div id="matchaInfoChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;"></div>
-
-      <!-- AI-sammanfattning -->
-      <div id="matchaInfoSummary" style="margin-bottom:10px;"></div>
-
-      <!-- Länk till annons -->
-      <a id="matchaInfoLink" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);border-radius:10px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:12px;box-sizing:border-box;">
-        🔗 Öppna för att läsa hela jobbannonsen
-      </a>
-
-      <!-- CTA — en knapp -->
-      <button id="matchaInfoAdaptBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:8px;">
-        🎯 Anpassa &amp; generera profiltext
-      </button>
-      <button onclick="matchaCloseInfoModal();matchaSwitchTab(2);" style="width:100%;padding:11px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">
-        🔍 Leta fler annonser
-      </button>
-    </div>
-  </div>
     </div><!-- /mobPanel-matcha -->
 
     <!-- FLIK: AI-SYV -->
@@ -9478,7 +9357,6 @@ ${styleTexts}
   let matchaSelectedAdData = null; // bakåtkompatibilitet
   let _matchaSelectedAds = []; // array med upp till 3 valda annonser
   let matchaLocFilter = 'fam'; // 'hbg'|'fam'|'skane'|'all'
-  let matchaExtentFilter = 'all'; // 'all'|'heltid'|'deltid'
   let matchaCurrentOffset = 0;
   let matchaCurrentQ = '';
 
@@ -9525,41 +9403,6 @@ ${styleTexts}
     matchaDoSearch();
   }
 
-  function matchaSetExtent(val) {
-    matchaExtentFilter = val;
-    matchaCurrentOffset = 0;
-    ['all','heltid','deltid'].forEach(k => {
-      const idMap = { all:'matchaChipExtAll', heltid:'matchaChipHeltid', deltid:'matchaChipDeltid' };
-      const el = document.getElementById(idMap[k]);
-      if (!el) return;
-      if (k === val) {
-        el.style.border = '1.5px solid rgba(62,180,137,0.5)';
-        el.style.background = 'rgba(62,180,137,0.12)';
-        el.style.color = '#3eb489';
-      } else {
-        el.style.border = '1.5px solid rgba(255,255,255,0.12)';
-        el.style.background = 'rgba(255,255,255,0.04)';
-        el.style.color = 'rgba(255,255,255,0.4)';
-      }
-    });
-    // Filter already-fetched results client-side
-    matchaApplyExtentFilter();
-  }
-
-  function matchaApplyExtentFilter() {
-    const resultsEl = document.getElementById('matchaSearchResults');
-    if (!resultsEl || resultsEl.style.display === 'none') return;
-    const cards = resultsEl.querySelectorAll('[data-extent]');
-    cards.forEach(card => {
-      if (matchaExtentFilter === 'all') {
-        card.style.display = '';
-      } else {
-        const ext = card.dataset.extent || '';
-        card.style.display = ext.includes(matchaExtentFilter) ? '' : 'none';
-      }
-    });
-  }
-
   function matchaSearchDebounce() {
     clearTimeout(matchaSearchTimer);
     matchaSearchTimer = setTimeout(matchaDoSearch, 380);
@@ -9602,96 +9445,63 @@ ${styleTexts}
     const initials = company.split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase() || '?';
     const [bg, fg] = matchaAvatarColor(company || title);
     const score = matchaCalcScore(hit);
+    const snippet = matchaSnippet(hit);
+
+    // Färg på match-badge
+    let scoreBg = 'rgba(255,255,255,0.08)';
+    let scoreColor = 'rgba(255,255,255,0.35)';
+    if (score !== null) {
+      if (score >= 60)      { scoreBg = 'rgba(62,180,137,0.18)'; scoreColor = '#3eb489'; }
+      else if (score >= 35) { scoreBg = 'rgba(240,192,64,0.15)'; scoreColor = '#f0c040'; }
+      else                  { scoreBg = 'rgba(255,255,255,0.06)'; scoreColor = 'rgba(255,255,255,0.35)'; }
+    }
+    const scoreBadge = score !== null
+      ? '<span style="flex-shrink:0;font-size:10px;font-weight:800;padding:3px 7px;border-radius:20px;background:' + scoreBg + ';color:' + scoreColor + ';">' + score + '% match</span>'
+      : '';
 
     const card = document.createElement('div');
     card.style.cssText = 'padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:background 0.15s,border-color 0.15s;';
-    const extLabel = ((hit.working_hours_type && hit.working_hours_type.label) || '').toLowerCase();
-    card.dataset.extent = extLabel.includes('heltid') ? 'heltid' : extLabel.includes('deltid') ? 'deltid' : 'all';
-
-    // Header — titel + bolag + ort
-    const header = document.createElement('div');
-    header.style.cssText = 'display:flex;align-items:center;gap:10px;';
-    header.innerHTML =
-      '<div style="width:36px;height:36px;border-radius:9px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:' + fg + ';flex-shrink:0;">' + initials + '</div>' +
-      '<div style="flex:1;min-width:0;">' +
-        '<div style="font-size:13px;font-weight:700;color:#fff;line-height:1.3;">' + title + '</div>' +
-        '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;">' +
-          company + (muni ? ' · ' + muni : '') +
+    card.onmouseover = () => { card.style.background = 'rgba(62,180,137,0.07)'; card.style.borderColor = 'rgba(62,180,137,0.2)'; };
+    card.onmouseout  = () => { card.style.background = 'rgba(255,255,255,0.04)'; card.style.borderColor = 'rgba(255,255,255,0.07)'; };
+    card.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<div style="width:36px;height:36px;border-radius:9px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:' + fg + ';flex-shrink:0;">' + initials + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + title + '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+            '<span>' + company + '</span>' +
+            (muni ? '<span style="display:flex;align-items:center;gap:3px;"><span style="width:4px;height:4px;border-radius:50%;background:#3eb489;display:inline-block;"></span>' + muni + '</span>' : '') +
+            (hit.webpage_url ? '<a href="' + hit.webpage_url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#3eb489;font-weight:700;text-decoration:none;font-size:10px;margin-left:auto;padding:2px 7px;border:1px solid rgba(62,180,137,0.4);border-radius:6px;background:rgba(62,180,137,0.08);">Annons ↗</a>' : '') +
+          '</div>' +
         '</div>' +
-      '</div>';
-    card.appendChild(header);
 
-    // Expanderbar sektion — dold vid start
-    const expandBox = document.createElement('div');
-    expandBox.style.cssText = 'display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);';
-
-    // Chips
-    function chip(label) {
-      const c = document.createElement('span');
-      c.style.cssText = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.1);';
-      c.textContent = label;
-      return c;
-    }
-    const chipsRow = document.createElement('div');
-    chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;';
-    const hours = (hit.working_hours_type && hit.working_hours_type.label) || '';
-    if (hours) chipsRow.appendChild(chip('⏱ ' + hours));
-    const emp = (hit.employment_type && hit.employment_type.label) || '';
-    if (emp) chipsRow.appendChild(chip('📋 ' + emp));
-    if (hit.driving_license_required) chipsRow.appendChild(chip('🚗 Körkort krävs'));
-    else if (hit.driving_license_required === false) chipsRow.appendChild(chip('🚗 Körkort ej krav'));
-    const sal = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
-    if (sal) chipsRow.appendChild(chip('💰 ' + sal));
-    const dur = (hit.duration && hit.duration.label) || '';
-    if (dur && dur !== 'Tillsvidare') chipsRow.appendChild(chip('📅 ' + dur));
-    expandBox.appendChild(chipsRow);
-
-    // AI-sammanfattning container
-    const summaryContainer = document.createElement('div');
-    summaryContainer.style.cssText = 'margin-bottom:12px;';
-    expandBox.appendChild(summaryContainer);
-
-    // Knapp: Sammanfatta
-    const summarizeBtn = document.createElement('button');
-    summarizeBtn.textContent = '✨ Sammanfatta jobbannonsen';
-    summarizeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:all 0.15s;';
-    // Visa från cache om tillgänglig
-    if (window._matchaSummaryCache && window._matchaSummaryCache[hit.id]) {
-      summaryContainer.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + window._matchaSummaryCache[hit.id] + '</div>';
-      summarizeBtn.style.display = 'none';
-    }
-    summarizeBtn.onclick = (e) => {
-      e.stopPropagation();
-      matchaGetSummary(hit, summaryContainer, summarizeBtn);
-    };
-    expandBox.appendChild(summarizeBtn);
-
-    // Knapp: Matcha CV
-    const matchaBtn = document.createElement('button');
-    matchaBtn.className = 'matcha-valj-btn';
-    matchaBtn.style.cssText = 'width:100%;padding:11px;background:#3eb489;border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;transition:all 0.15s;';
-
+      '</div>' +
+      '';
+    // Uppdatera kort-utseende baserat på om annonsen är vald
     function updateCardState() {
       const idx = _matchaSelectedAds.findIndex(a => a.id === hit.id);
       const isSelected = idx >= 0;
-      card.style.borderColor = isSelected ? '#3eb489' : (expanded ? 'rgba(62,180,137,0.2)' : 'rgba(255,255,255,0.07)');
-      card.style.background  = isSelected ? 'rgba(62,180,137,0.1)' : (expanded ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.04)');
-      matchaBtn.innerHTML = isSelected ? '✓ Sparad (' + (idx+1) + '/3) — klicka för att ta bort' : '💾 Spara för att matcha mot CV';
-      matchaBtn.style.background = isSelected ? 'rgba(62,180,137,0.2)' : '#3eb489';
-      matchaBtn.style.border = isSelected ? '1.5px solid #3eb489' : 'none';
-      matchaBtn.style.color = isSelected ? '#3eb489' : '#fff';
+      card.style.borderColor = isSelected ? '#3eb489' : 'rgba(255,255,255,0.07)';
+      card.style.background  = isSelected ? 'rgba(62,180,137,0.07)' : 'rgba(255,255,255,0.04)';
+      btn.textContent = isSelected ? '✓ Vald (' + (idx+1) + '/3)' : '+ Välj';
+      btn.style.background = isSelected ? 'rgba(62,180,137,0.2)' : '#3eb489';
+      btn.style.border = isSelected ? '1.5px solid #3eb489' : 'none';
+      btn.style.color = isSelected ? '#3eb489' : '#fff';
     }
 
-    matchaBtn.onclick = (e) => {
+    const btn = document.createElement('button');
+    btn.className = 'matcha-valj-btn';
+    btn.style.cssText = 'margin-top:10px;width:100%;padding:9px;background:#3eb489;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:9px;cursor:pointer;font-family:inherit;transition:all 0.15s;';
+
+    btn.onclick = (e) => {
       e.stopPropagation();
       const idx = _matchaSelectedAds.findIndex(a => a.id === hit.id);
       if (idx >= 0) {
+        // Avmarkera
         _matchaSelectedAds.splice(idx, 1);
       } else if (_matchaSelectedAds.length < 3) {
+        // Lägg till
         _matchaSelectedAds.push(hit);
-        // Stäng kortet efter val
-        expanded = false;
-        expandBox.style.display = 'none';
       } else {
         showToast('Max 3 annonser valda', 'error'); return;
       }
@@ -9699,19 +9509,52 @@ ${styleTexts}
       matchaUpdateStep2Bar();
       matchaRenderStep3Ads();
     };
-    expandBox.appendChild(matchaBtn);
-    card.appendChild(expandBox);
 
-    // Klick på kortet → toggle expand
+    // Expanderbar sammanfattning — dold tills man klickar på kortet
+    const expandBox = document.createElement('div');
+    expandBox.style.cssText = 'display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);';
+
+    // Snippet
+    if (snippet) {
+      const snipEl = document.createElement('div');
+      snipEl.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:8px;';
+      snipEl.textContent = snippet;
+      expandBox.appendChild(snipEl);
+    }
+
+    // Fakta-chips
+    function chip(label, color) {
+      const c = document.createElement('span');
+      c.style.cssText = 'display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;margin:2px;background:' + (color||'rgba(255,255,255,0.07)') + ';color:rgba(255,255,255,0.6);';
+      c.textContent = label;
+      return c;
+    }
+    const chipsRow = document.createElement('div');
+    chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;';
+    const hours = (hit.working_hours_type && hit.working_hours_type.label) || '';
+    if (hours) chipsRow.appendChild(chip('⏱ ' + hours));
+    const emp = (hit.employment_type && hit.employment_type.label) || '';
+    if (emp) chipsRow.appendChild(chip('📋 ' + emp));
+    if (hit.driving_license_required) chipsRow.appendChild(chip('🚗 Körkort krävs'));
+    else if (hit.driving_license_required === false) chipsRow.appendChild(chip('🚗 Inget körkort'));
+    const sal = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
+    chipsRow.appendChild(chip('💰 ' + (sal || 'Lön ej uppgiven')));
+    if (chipsRow.children.length > 0) expandBox.appendChild(chipsRow);
+    if (snippet || chipsRow.children.length > 0) card.appendChild(expandBox);
+
+    // Klick på kortet (ej välj-knapp) → toggle expand
     let expanded = false;
     card.onclick = (e) => {
-      if (e.target.closest('.matcha-valj-btn') || e.target.closest('button')) return;
+      if (e.target.closest('.matcha-valj-btn')) return;
       expanded = !expanded;
       expandBox.style.display = expanded ? 'block' : 'none';
-      updateCardState();
+      card.style.background = expanded
+        ? (_matchaSelectedAds.find(a => a.id === hit.id) ? 'rgba(62,180,137,0.1)' : 'rgba(255,255,255,0.07)')
+        : (_matchaSelectedAds.find(a => a.id === hit.id) ? 'rgba(62,180,137,0.07)' : 'rgba(255,255,255,0.04)');
     };
 
     updateCardState();
+    card.appendChild(btn);
     return card;
   }
 
@@ -10129,21 +9972,6 @@ ${styleTexts}
     if (n === 3) {
       matchaRenderStep3Ads();
       matchaPopulateCvSelect();
-      // Animera AI-banner
-      setTimeout(() => {
-        const banner = document.getElementById('matchaAiBanner');
-        const robot = document.getElementById('matchaAiRobot');
-        if (banner) {
-          banner.style.animation = 'none';
-          void banner.offsetWidth;
-          banner.style.animation = 'matchaBannerPulse 0.9s ease-out 3';
-        }
-        if (robot) {
-          robot.style.animation = 'none';
-          void robot.offsetWidth;
-          robot.style.animation = 'matchaRobotBounce 0.6s ease-in-out 3';
-        }
-      }, 300);
     }
   }
 
@@ -10162,45 +9990,6 @@ ${styleTexts}
   }
 
   // Rendera valda annonser i steg 3 med egna generera-knappar
-  // Global cache för AI-sammanfattningar (hit.id → HTML-text)
-  if (!window._matchaSummaryCache) window._matchaSummaryCache = {};
-
-  // Hjälpfunktion: hämta eller generera sammanfattning
-  async function matchaGetSummary(hit, targetEl, summarizeBtn) {
-    const cached = window._matchaSummaryCache[hit.id];
-    if (cached) {
-      targetEl.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + cached + '</div>';
-      if (summarizeBtn) summarizeBtn.style.display = 'none';
-      return;
-    }
-    const adText = (hit.description && hit.description.text) || '';
-    if (!adText) { showToast('Ingen annonstext tillgänglig', 'error'); return; }
-    if (summarizeBtn) summarizeBtn.style.display = 'none';
-    showAiLoader('Sammanfattar annonsen...', 'AI läser och extraherar nyckelinfo');
-    try {
-      const resp = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 600,
-          system: 'Du ar en jobbannons-sammanfattare. Svara pa svenska. Svara BARA med kompakt HTML utan inledning.',
-          messages: [{ role: 'user', content: 'Sammanfatta denna jobbannons pa svenska. Inkludera: Arbetsuppgifter, Krav, Profil, Startdatum, Hur du soker (e-post eller extern lank), Kontaktperson. HTML-format: <b>Rubrik:</b> kort text. Max 2 meningar/del. Hoppa over delar som saknas. Annons: ' + adText.substring(0, 3000) }]
-        })
-      });
-      hideAiLoader();
-      const data = await resp.json();
-      const text = data.content?.[0]?.text || '';
-      if (text) {
-        window._matchaSummaryCache[hit.id] = text;
-        targetEl.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + text + '</div>';
-      }
-    } catch(e) {
-      hideAiLoader();
-      if (summarizeBtn) summarizeBtn.style.display = 'block';
-    }
-  }
-
   function matchaRenderStep3Ads() {
     const container = document.getElementById('matchaAdsContainer');
     if (!container) return;
@@ -10215,184 +10004,140 @@ ${styleTexts}
       const title   = hit.headline || '';
       const company = (hit.employer && hit.employer.name) || '';
       const muni    = (hit.workplace_address && hit.workplace_address.municipality) || '';
+      const url     = hit.webpage_url || '';
+      const adText  = (hit.description && hit.description.text) || '';
 
       const section = document.createElement('div');
-      section.style.cssText = 'background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;cursor:pointer;transition:border-color 0.15s;';
+      section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;';
 
-      // Label + Ta bort
+      // Header rad
       const hdr = document.createElement('div');
       hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;';
       const hdrLabel = document.createElement('div');
       hdrLabel.style.cssText = 'font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.6);';
       hdrLabel.textContent = 'Annons ' + (i+1) + ' av ' + _matchaSelectedAds.length;
       const rmBtn = document.createElement('button');
-      rmBtn.textContent = '🗑 Ta bort';
-      rmBtn.style.cssText = 'background:rgba(220,50,50,0.12);border:1.5px solid rgba(220,50,50,0.3);color:rgba(240,90,90,0.9);font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:8px;font-family:inherit;';
-      rmBtn.onclick = (e) => { e.stopPropagation(); matchaRemoveAd(hit.id); };
+      rmBtn.textContent = '✕';
+      rmBtn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(220,50,50,0.15);border:1px solid rgba(220,50,50,0.35);color:rgba(220,80,80,0.8);font-size:13px;font-weight:700;cursor:pointer;padding:3px 8px;border-radius:6px;line-height:1;';
+      rmBtn.onclick = () => matchaRemoveAd(hit.id);
       hdr.appendChild(hdrLabel); hdr.appendChild(rmBtn);
       section.appendChild(hdr);
 
-      // Titel + meta (full titel, ingen truncation)
+      // Titel + bolag
       const titleEl = document.createElement('div');
-      titleEl.style.cssText = 'font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;line-height:1.3;';
+      titleEl.style.cssText = 'font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;';
       titleEl.textContent = title;
       section.appendChild(titleEl);
       const metaEl = document.createElement('div');
-      metaEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:0;';
+      metaEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.4);';
       metaEl.textContent = company + (muni ? ' · ' + muni : '');
       section.appendChild(metaEl);
 
-      // Expanderbar sektion
-      const expandBox = document.createElement('div');
-      expandBox.style.cssText = 'display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);';
+      // Fakta-chips (dolda, toggle via knapp)
+      const factsToggleBtn = document.createElement('button');
+      factsToggleBtn.style.cssText = 'margin-top:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;';
+      factsToggleBtn.textContent = '📋 Visa info';
+      section.appendChild(factsToggleBtn);
 
-      // Chips
-      function mkChip(label) {
-        const c = document.createElement('span');
-        c.style.cssText = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.1);';
-        c.textContent = label; return c;
+      const factsEl = document.createElement('div');
+      factsEl.style.cssText = 'display:none;flex-wrap:wrap;gap:6px;margin-top:8px;';
+      factsToggleBtn.onclick = () => {
+        const open = factsEl.style.display !== 'none';
+        factsEl.style.display = open ? 'none' : 'flex';
+        factsToggleBtn.textContent = open ? '📋 Visa info' : '▲ Stäng info';
+      };
+
+      // Hjälpfunktion för att skapa chip
+      function makeChip(label, val, color) {
+        const chip = document.createElement('div');
+        chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700;background:' + (color||'rgba(255,255,255,0.07)') + ';color:' + (color ? '#fff' : 'rgba(255,255,255,0.55)') + ';border:1px solid ' + (color ? color : 'rgba(255,255,255,0.1)') + ';';
+        chip.textContent = label + (val ? ': ' + val : '');
+        return chip;
       }
-      const chipsRow = document.createElement('div');
-      chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;';
+
+      // Heltid / Deltid
       const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
-      if (hoursType) chipsRow.appendChild(mkChip('⏱ ' + hoursType));
+      if (hoursType) factsEl.appendChild(makeChip('⏱ ' + hoursType));
+
+      // Anställningsform
       const empType = (hit.employment_type && hit.employment_type.label) || '';
-      if (empType) chipsRow.appendChild(mkChip('📋 ' + empType));
-      if (hit.driving_license_required) chipsRow.appendChild(mkChip('🚗 Körkort krävs'));
-      else if (hit.driving_license_required === false) chipsRow.appendChild(mkChip('🚗 Körkort ej krav'));
-      const salDesc = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
-      if (salDesc) chipsRow.appendChild(mkChip('💰 ' + salDesc.substring(0,40)));
-      const dur = (hit.duration && hit.duration.label) || '';
-      if (dur && dur !== 'Tillsvidare') chipsRow.appendChild(mkChip('📅 ' + dur));
-      expandBox.appendChild(chipsRow);
+      if (empType) factsEl.appendChild(makeChip('📋 ' + empType));
 
-      // AI-sammanfattning container
-      const summaryDiv = document.createElement('div');
-      summaryDiv.style.cssText = 'margin-bottom:12px;';
-      expandBox.appendChild(summaryDiv);
-
-      // Knapp: Sammanfatta
-      const summarizeBtn = document.createElement('button');
-      summarizeBtn.textContent = '✨ Sammanfatta jobbannonsen';
-      summarizeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;';
-      summarizeBtn.onclick = (e) => { e.stopPropagation(); matchaGetSummary(hit, summaryDiv, summarizeBtn); };
-
-      // Om redan cachad — visa direkt utan knapp
-      if (window._matchaSummaryCache[hit.id]) {
-        summaryDiv.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;font-size:12px;line-height:1.8;color:#fff;">' + window._matchaSummaryCache[hit.id] + '</div>';
-      } else {
-        expandBox.appendChild(summarizeBtn);
+      // Körkort
+      const licRequired = hit.driving_license_required;
+      const licTypes = (hit.driving_license || []).map(l => l.label).filter(Boolean).join(', ');
+      if (licRequired) {
+        factsEl.appendChild(makeChip('🚗 Körkort krävs' + (licTypes ? ': ' + licTypes : ''), '', 'rgba(240,192,64,0.5)'));
+      } else if (licRequired === false) {
+        factsEl.appendChild(makeChip('🚗 Körkort ej krav'));
       }
 
-      // Knapp: Anpassa & generera
-      const adIdx = i;
+      // Lön
+      const salDesc = hit.salary_description || '';
+      const salType = (hit.salary_type && hit.salary_type.label) || '';
+      if (salDesc) {
+        factsEl.appendChild(makeChip('💰 ' + salDesc.substring(0, 40)));
+      } else if (salType) {
+        factsEl.appendChild(makeChip('💰 ' + salType));
+      } else {
+        factsEl.appendChild(makeChip('💰 Lön ej uppgiven'));
+      }
+
+      // Varaktighet
+      const duration = (hit.duration && hit.duration.label) || '';
+      if (duration && duration !== 'Tillsvidare') factsEl.appendChild(makeChip('📅 ' + duration));
+
+      if (factsEl.children.length > 0) { section.appendChild(factsEl); } else { factsToggleBtn.style.display = 'none'; }
+
+      // Knappar
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;';
+      if (adText) {
+        const readBtn = document.createElement('button');
+        readBtn.textContent = '📄 Läs annons';
+        readBtn.style.cssText = 'background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);color:#3eb489;font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:20px;font-family:inherit;';
+        const adId = hit.id;
+        readBtn.onclick = () => matchaToggleAdSection(adId);
+        btnRow.appendChild(readBtn);
+      }
+      if (url) {
+        const linkEl = document.createElement('a');
+        linkEl.href = url; linkEl.target = '_blank'; linkEl.rel = 'noopener';
+        linkEl.textContent = '↗ Extern länk';
+        linkEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;';
+        btnRow.appendChild(linkEl);
+      }
+      section.appendChild(btnRow);
+
+      // Expanderbar annonstext
+      if (adText) {
+        const adBox = document.createElement('div');
+        adBox.id = 'matchaAdSection_' + hit.id;
+        adBox.style.cssText = 'display:none;margin-top:10px;max-height:220px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;';
+        const adContent = document.createElement('div');
+        adContent.style.cssText = 'font-size:11px;line-height:1.7;color:rgba(255,255,255,0.65);white-space:pre-wrap;';
+        adContent.textContent = adText.substring(0, 2000);
+        adBox.appendChild(adContent);
+        section.appendChild(adBox);
+      }
+
+      // Generera-knapp
       const genBtn = document.createElement('button');
-      genBtn.textContent = '🎯 Anpassa & generera profiltext';
-      genBtn.style.cssText = 'width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;';
-      genBtn.onclick = (e) => { e.stopPropagation(); expanded = false; expandBox.style.display = 'none'; matchaCVForAd(adIdx); };
-      expandBox.appendChild(genBtn);
+      genBtn.textContent = '🎯 Generera profiltext';
+      genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
+      const adIdx = i;
+      genBtn.onclick = () => matchaCVForAd(adIdx);
+      section.appendChild(genBtn);
 
-      // Knapp: Stäng
-      const closeBtn = document.createElement('button');
-      closeBtn.textContent = 'Stäng';
-      closeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
-      closeBtn.onclick = (e) => { e.stopPropagation(); expanded = false; expandBox.style.display = 'none'; };
-      expandBox.appendChild(closeBtn);
-
-      section.appendChild(expandBox);
-
-      // Resultat-container (profiltext-output)
+      // Resultat-container
       const resultDiv = document.createElement('div');
       resultDiv.id = 'matchaResult_' + hit.id;
-      resultDiv.style.cssText = 'display:none;margin-top:12px;';
+      resultDiv.style.display = 'none';
+      resultDiv.style.marginTop = '12px';
       section.appendChild(resultDiv);
-
-      // Klick på kortet → toggle expand
-      let expanded = false;
-      section.onclick = (e) => {
-        if (e.target.closest('button')) return;
-        expanded = !expanded;
-        expandBox.style.display = expanded ? 'block' : 'none';
-      };
 
       container.appendChild(section);
     });
-  }
-
-  async function matchaShowInfoModal(hit, factsEl, adIdx) {
-    const modal = document.getElementById('matchaInfoModal');
-    if (!modal) return;
-
-    // Title + meta
-    document.getElementById('matchaInfoTitle').textContent = hit.headline || '';
-    const company = (hit.employer && hit.employer.name) || '';
-    const muni = (hit.workplace_address && hit.workplace_address.municipality) || '';
-    document.getElementById('matchaInfoMeta').textContent = [company, muni].filter(Boolean).join(' · ');
-
-    // Link
-    const linkEl = document.getElementById('matchaInfoLink');
-    const url = hit.webpage_url || '';
-    linkEl.href = url || '#';
-    linkEl.style.display = url ? 'flex' : 'none';
-
-    // Chips
-    const chipsContainer = document.getElementById('matchaInfoChips');
-    chipsContainer.innerHTML = '';
-    Array.from(factsEl.children).forEach(chip => chipsContainer.appendChild(chip.cloneNode(true)));
-
-    // Adapt button — visa bara om adIdx finns (steg 3), annars dölj
-    const adaptBtn = document.getElementById('matchaInfoAdaptBtn');
-    if (adIdx !== null && adIdx !== undefined) {
-      adaptBtn.style.display = 'block';
-      adaptBtn.onclick = () => { matchaCloseInfoModal(); matchaCVForAd(adIdx); };
-    } else {
-      adaptBtn.style.display = 'none';
-    }
-
-    // Show modal immediately
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-
-    // AI summary of ad text
-    const summaryEl = document.getElementById('matchaInfoSummary');
-    const adText = (hit.description && hit.description.text) || '';
-    if (!adText) { summaryEl.innerHTML = ''; return; }
-
-    summaryEl.innerHTML = '';
-    showAiLoader('Sammanfattar annonsen...', 'AI läser igenom och extraherar nyckelinfo');
-
-    try {
-      const resp = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 600,
-          system: 'Du ar en jobbannons-sammanfattare. Svara pa svenska. Svara BARA med kompakt HTML utan inledning eller forklaringar.',
-          messages: [{
-            role: 'user',
-            content: 'Sammanfatta denna jobbannons pa svenska. Inkludera: Arbetsuppgifter, Krav, Profil, Startdatum, Hur du soker jobbet (via extern hemsida-lank ELLER e-post — ange adressen tydligt), Kontaktperson (namn + telefon/email). HTML-format: <b>Rubrik:</b> text. Max 2 meningar/del. Hoppa over delar som saknas. Annons: ' + adText.substring(0, 3000)
-          }]
-        })
-      });
-      const data = await resp.json();
-      const text = data.content?.[0]?.text || '';
-      hideAiLoader();
-      if (text) {
-        summaryEl.innerHTML = '<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.8;color:#fff;">' + text + '</div>';
-      } else {
-        summaryEl.innerHTML = '';
-      }
-    } catch(e) {
-      hideAiLoader();
-      summaryEl.innerHTML = '';
-    }
-  }
-
-  function matchaCloseInfoModal() {
-    const modal = document.getElementById('matchaInfoModal');
-    if (modal) modal.style.display = 'none';
-    document.body.style.overflow = '';
   }
 
   function matchaToggleAdSection(id) {
@@ -10488,15 +10233,6 @@ ${styleTexts}
       });
       resultEl.style.display = 'block';
       hideAiLoader();
-
-      // Stäng expand-rutan — scrolla ner till resultat
-      const section = resultEl.parentElement;
-      if (section) {
-        const expandBox = section.querySelector('div[style*="border-top:1px solid"]');
-        if (expandBox) expandBox.style.display = 'none';
-      }
-      setTimeout(() => resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
-
     } catch(err) {
       hideAiLoader();
       showAiError('Försök igen om en stund');
