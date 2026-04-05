@@ -3309,6 +3309,17 @@
         </div>
       </div>
 
+      <div style="margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600;">Dina arbetsuppgifter (3 punkter)</label>
+          <button onclick="aiAutofillJobDesc()" id="jobAutofillBtn" style="background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #f0c040; display: flex; align-items: center; gap: 4px;">✨ AI Autofyll</button>
+        </div>
+        <input type="text" class="modal-input" id="jobDesc1" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
+        <input type="text" class="modal-input" id="jobDesc2" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
+        <input type="text" class="modal-input" id="jobDesc3" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)">
+        <button onclick="clearJobDesc()" style="background: none; border: none; cursor: pointer; font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; display: flex; align-items: center; gap: 4px; padding: 0;">🗑 Rensa Arbetsuppgifter</button>
+      </div>
+
       <div class="modal-buttons">
         <button class="btn-save" onclick="saveJob()">Spara</button>
         <button class="btn-cancel" onclick="closeModal('jobModal')">Avbryt</button>
