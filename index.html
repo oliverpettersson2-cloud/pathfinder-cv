@@ -8566,11 +8566,10 @@ ${styleTexts}
     const sorted = [...list].sort((a,b) => b.savedAt - a.savedAt);
     sorted.forEach(entry => {
       const dateStr = _mobRelDate(new Date(entry.savedAt));
-      const cvEmoji = matchaCvEmoji ? matchaCvEmoji(entry.title) : '📄';
       html += `
         <div onclick="mobShowSavedCVDetail('${entry.id}')"
              style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px;border-radius:14px;cursor:pointer;text-align:center;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);position:relative;">
-          <div style="font-size:30px;line-height:1;">${cvEmoji}</div>
+          <div style="font-size:18px;font-weight:900;font-family:Georgia,serif;line-height:1;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">m</span></div>
           <div style="font-size:11px;font-weight:700;color:#fff;line-height:1.3;word-break:break-word;">${entry.title}</div>
           <div style="font-size:10px;color:rgba(255,255,255,0.3);">${dateStr}</div>
         </div>`;
@@ -8608,7 +8607,7 @@ ${styleTexts}
             <div style="display:flex;align-items:center;gap:12px;">
               <div onclick="mobShowMatchedCVDetail('${entry.id}')" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:pointer;">
                 <div style="width:36px;height:36px;border-radius:10px;background:rgba(62,180,137,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3eb489" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  <span style="font-size:13px;font-weight:900;font-family:Georgia,serif;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">m</span></span>
                 </div>
                 <div style="flex:1;min-width:0;">
                   <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${entry.title}</div>
