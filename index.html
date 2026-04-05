@@ -3190,11 +3190,11 @@
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 2fr 1fr; gap: 6px; margin-bottom: 12px; align-items: end;">
         <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Från månad</label>
-          <select class="modal-input" id="jobStartMonth">
-            <option value="">Välj månad</option>
+          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">Från</label>
+          <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;">
+            <option value="">Månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3207,12 +3207,13 @@
             <option value="Oktober">Oktober</option>
             <option value="November">November</option>
             <option value="December">December</option>
+
           </select>
         </div>
         <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">År</label>
-          <select class="modal-input" id="jobStartYear">
-            <option value="">Välj år</option>
+          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">År</label>
+          <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;">
+            <option value="">År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3241,15 +3242,13 @@
             <option value="2001">2001</option>
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
+
           </select>
         </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
         <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Till månad</label>
-          <select class="modal-input" id="jobEndMonth">
-            <option value="">Välj månad</option>
+          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">Till</label>
+          <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;">
+            <option value="">Månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3262,12 +3261,13 @@
             <option value="Oktober">Oktober</option>
             <option value="November">November</option>
             <option value="December">December</option>
+
           </select>
         </div>
         <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">År</label>
-          <select class="modal-input" id="jobEndYear">
-            <option value="">Välj år</option>
+          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">År</label>
+          <select class="modal-input" id="jobEndYear" style="padding: 8px 4px; font-size: 13px;">
+            <option value="">År</option>
             <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -3297,10 +3297,10 @@
             <option value="2001">2001</option>
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
+
           </select>
         </div>
       </div>
-
       <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px; gap: 8px;">
         <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600;">Dina arbetsuppgifter (3 punkter)</label>
         <button style="background: none; border: none; color: var(--accent3); font-size: 12px; cursor: pointer; padding: 4px 8px; font-weight: 700; border-radius: 4px; transition: 0.2s;" onmouseover="this.style.background=&#39;rgba(124,58,237,0.1)&#39;" onmouseout="this.style.background=&#39;none&#39;" onclick="aiAutofillJobDesc()">✨ AI Autofyll</button>
@@ -3339,11 +3339,11 @@
         <option value="Övrig utbildning">Övrig utbildning</option>
       </select>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; align-items: end;">
         <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Från år</label>
-          <select class="modal-input" id="eduStartYear">
-            <option value="">Välj år</option>
+          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">Från år</label>
+          <select class="modal-input" id="eduStartYear" style="padding: 8px 4px; font-size: 13px;">
+            <option value="">År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3372,12 +3372,13 @@
             <option value="2001">2001</option>
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
+
           </select>
         </div>
         <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Till år</label>
-          <select class="modal-input" id="eduEndYear">
-            <option value="">Välj år</option>
+          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">Till år</label>
+          <select class="modal-input" id="eduEndYear" style="padding: 8px 4px; font-size: 13px;">
+            <option value="">År</option>
             <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -3407,6 +3408,7 @@
             <option value="2001">2001</option>
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
+
           </select>
         </div>
       </div>
