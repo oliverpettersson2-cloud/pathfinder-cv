@@ -8,14 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f1120;
-      --deep: #1a1a2e;
-      --card: #1e2240;
-      --accent: #e85d26;
-      --accent2: #3eb489;
-      --accent3: #f0c040;
-      --muted: rgba(255,255,255,0.45);
-      --text: rgba(255,255,255,0.88);
+      --bg: #0f1120; --deep: #1a1a2e; --card: #1e2240;
+      --accent: #e85d26; --accent2: #3eb489; --accent3: #f0c040;
+      --muted: rgba(255,255,255,0.45); --text: rgba(255,255,255,0.88);
       --border: rgba(255,255,255,0.07);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,8 +20,8 @@
     .nav-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 900; color: #fff; text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
     .nav-logo span { color: var(--accent2); }
     .nav-logo em { font-style: normal; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 400; color: rgba(255,255,255,0.3); }
-    .nav-cta { background: linear-gradient(135deg, var(--accent2), #2d9a72); color: #fff; padding: 10px 22px; border-radius: 100px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 16px rgba(62,180,137,0.3); }
-    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(62,180,137,0.4); }
+    .nav-cta { background: linear-gradient(135deg, var(--accent2), #2d9a72); color: #fff; padding: 10px 22px; border-radius: 100px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 16px rgba(62,180,137,0.3); cursor: pointer; border: none; }
+    .nav-cta:hover { transform: translateY(-1px); }
     .hero { min-height: 100vh; display: flex; align-items: center; padding: 100px 48px 80px; position: relative; overflow: hidden; }
     .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 60% at 70% 40%, rgba(62,180,137,0.08) 0%, transparent 70%), radial-gradient(ellipse 50% 50% at 20% 70%, rgba(232,93,38,0.06) 0%, transparent 70%); pointer-events: none; }
     .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1200px; margin: 0 auto; width: 100%; align-items: center; }
@@ -37,8 +32,8 @@
     h1 em { font-style: italic; color: var(--accent2); }
     .hero-sub { font-size: 17px; line-height: 1.7; color: var(--muted); max-width: 460px; margin-bottom: 40px; }
     .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-    .btn-primary { background: linear-gradient(135deg, var(--accent2), #2d9a72); color: #fff; padding: 16px 32px; border-radius: 100px; font-size: 16px; font-weight: 700; text-decoration: none; transition: all 0.2s; box-shadow: 0 8px 24px rgba(62,180,137,0.3); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(62,180,137,0.45); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent2), #2d9a72); color: #fff; padding: 16px 32px; border-radius: 100px; font-size: 16px; font-weight: 700; text-decoration: none; transition: all 0.2s; box-shadow: 0 8px 24px rgba(62,180,137,0.3); cursor: pointer; border: none; display: inline-block; }
+    .btn-primary:hover { transform: translateY(-2px); }
     .btn-secondary { color: rgba(255,255,255,0.5); font-size: 15px; font-weight: 500; text-decoration: none; transition: color 0.2s; }
     .btn-secondary:hover { color: #fff; }
     .hero-visual { display: flex; justify-content: center; }
@@ -81,7 +76,7 @@
     .kommuner-desc { font-size: 16px; line-height: 1.7; color: var(--muted); margin-bottom: 36px; }
     .kommuner-points { list-style: none; margin-bottom: 40px; }
     .kommuner-points li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.5; }
-    .kommuner-points li::before { content: '✓'; width: 22px; height: 22px; min-width: 22px; border-radius: 50%; background: rgba(62,180,137,0.12); border: 1px solid rgba(62,180,137,0.25); color: var(--accent2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+    .kommuner-points li::before { content: 'v'; width: 22px; height: 22px; min-width: 22px; border-radius: 50%; background: rgba(62,180,137,0.12); border: 1px solid rgba(62,180,137,0.25); color: var(--accent2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
     .btn-demo { display: inline-flex; align-items: center; gap: 10px; background: var(--accent3); color: var(--deep); padding: 14px 28px; border-radius: 100px; font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
     .btn-demo:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(240,192,64,0.3); }
     .kommun-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 36px; }
@@ -91,7 +86,6 @@
     .km-label { font-size: 13px; color: var(--muted); }
     .km-value { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: var(--accent3); }
     .cta { padding: 100px 48px; text-align: center; background: var(--deep); border-top: 1px solid var(--border); position: relative; overflow: hidden; }
-    .cta::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; border-radius: 50%; background: radial-gradient(ellipse, rgba(62,180,137,0.07) 0%, transparent 70%); pointer-events: none; }
     .cta-title { font-family: 'Fraunces', serif; font-size: clamp(34px, 5vw, 56px); font-weight: 900; color: #fff; letter-spacing: -2px; line-height: 1.05; margin-bottom: 16px; }
     .cta-title em { color: var(--accent2); font-style: italic; }
     .cta-sub { font-size: 17px; color: var(--muted); margin-bottom: 44px; }
@@ -106,29 +100,33 @@
     .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
     .fade-up.visible { opacity: 1; transform: translateY(0); }
     @media (max-width: 900px) {
-      nav { padding: 0 20px; }
-      .hero { padding: 90px 20px 60px; }
-      .hero-grid { grid-template-columns: 1fr; }
-      .hero-visual { display: none; }
-      .stats { padding: 48px 20px; }
-      .stats-inner { gap: 20px; }
-      .stat-num { font-size: 36px; }
-      .features { padding: 60px 20px; }
-      .features-grid { grid-template-columns: 1fr; }
-      .how { padding: 60px 20px; }
-      .steps { grid-template-columns: 1fr; }
-      .kommuner { padding: 60px 20px; }
-      .kommuner-inner { grid-template-columns: 1fr; }
-      .cta { padding: 60px 20px; }
-      footer { padding: 28px 20px; flex-direction: column; }
+      nav { padding: 0 20px; } .hero { padding: 90px 20px 60px; }
+      .hero-grid { grid-template-columns: 1fr; } .hero-visual { display: none; }
+      .stats { padding: 48px 20px; } .stats-inner { gap: 20px; } .stat-num { font-size: 36px; }
+      .features { padding: 60px 20px; } .features-grid { grid-template-columns: 1fr; }
+      .how { padding: 60px 20px; } .steps { grid-template-columns: 1fr; }
+      .kommuner { padding: 60px 20px; } .kommuner-inner { grid-template-columns: 1fr; }
+      .cta { padding: 60px 20px; } footer { padding: 28px 20px; flex-direction: column; }
     }
   </style>
 </head>
 <body>
 
+<!-- MOBIL-SPÄRR OVERLAY -->
+<div id="mobileOnlyOverlay" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(15,17,32,0.97); flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px;">
+  <div style="font-size:56px; margin-bottom:20px;">📱</div>
+  <div style="font-family:'Fraunces',Georgia,serif; font-size:28px; font-weight:700; color:#fff; margin-bottom:14px; letter-spacing:-1px;">Öppna i mobilen</div>
+  <div style="font-size:15px; color:rgba(255,255,255,0.5); max-width:380px; line-height:1.65; margin-bottom:32px;">CVmatchen är just nu optimerad för mobil. Öppna länken på din telefon.</div>
+  <div style="background:#1e2240; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:20px; margin-bottom:28px;">
+    <div style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Öppna på telefonen</div>
+    <div style="font-size:17px; font-weight:600; color:#3eb489;">cvmatchen.com/app</div>
+  </div>
+  <button onclick="document.getElementById('mobileOnlyOverlay').style.display='none'" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.4); padding:10px 24px; border-radius:100px; font-size:13px; cursor:pointer;">Stäng</button>
+</div>
+
 <nav>
   <a href="#" class="nav-logo">CV<span>matchen</span> <em>av PathfinderAI</em></a>
-  <a href="#" onclick="showMobileOnly(); return false;" class="nav-cta">Kom igång gratis</a>
+  <button onclick="showMobileOnly()" class="nav-cta">Kom igång gratis</button>
 </nav>
 
 <section class="hero">
@@ -139,7 +137,7 @@
       <h1>Ditt CV.<br><em>Din match.</em><br>Ditt jobb.</h1>
       <p class="hero-sub">CVmatchen hjälper dig skapa ett professionellt CV på 15 minuter — och matchar det mot riktiga jobbannonser med AI.</p>
       <div class="hero-actions">
-        <a href="#" onclick="showMobileOnly(); return false;" class="btn-primary">Skapa ditt CV nu</a>
+        <button onclick="showMobileOnly()" class="btn-primary">Skapa ditt CV nu</button>
         <a href="#hur-det-fungerar" class="btn-secondary">Hur fungerar det? →</a>
       </div>
     </div>
@@ -175,18 +173,9 @@
 
 <section class="stats">
   <div class="stats-inner">
-    <div class="fade-up">
-      <div class="stat-num">15 min</div>
-      <div class="stat-label">Från noll till färdigt CV</div>
-    </div>
-    <div class="fade-up" style="transition-delay:.1s">
-      <div class="stat-num">AI</div>
-      <div class="stat-label">Genererar profiltext anpassad till varje jobb</div>
-    </div>
-    <div class="fade-up" style="transition-delay:.2s">
-      <div class="stat-num">100%</div>
-      <div class="stat-label">Svenska jobbannonser från Arbetsförmedlingen</div>
-    </div>
+    <div class="fade-up"><div class="stat-num">15 min</div><div class="stat-label">Från noll till färdigt CV</div></div>
+    <div class="fade-up" style="transition-delay:.1s"><div class="stat-num">AI</div><div class="stat-label">Genererar profiltext anpassad till varje jobb</div></div>
+    <div class="fade-up" style="transition-delay:.2s"><div class="stat-num">100%</div><div class="stat-label">Svenska jobbannonser från Arbetsförmedlingen</div></div>
   </div>
 </section>
 
@@ -194,26 +183,10 @@
   <div class="section-label">Funktioner</div>
   <h2 class="section-title">Allt du behöver för att hitta rätt jobb</h2>
   <div class="features-grid">
-    <div class="feature-card fade-up">
-      <div class="feature-icon">✍️</div>
-      <div class="feature-title">AI-genererad profiltext</div>
-      <p class="feature-desc">Berätta om dig själv en gång — AI skriver en unik profiltext anpassad till varje jobbannons du söker.</p>
-    </div>
-    <div class="feature-card fade-up" style="transition-delay:.1s">
-      <div class="feature-icon">🎯</div>
-      <div class="feature-title">Jobbmatchning i realtid</div>
-      <p class="feature-desc">Vi matchar ditt CV mot tusentals jobbannonser från Arbetsförmedlingen och visar dina bästa möjligheter.</p>
-    </div>
-    <div class="feature-card fade-up" style="transition-delay:.2s">
-      <div class="feature-icon">📄</div>
-      <div class="feature-title">Ladda ner som PDF</div>
-      <p class="feature-desc">Exportera ditt CV som en snygg PDF direkt i appen — redo att skickas till arbetsgivare.</p>
-    </div>
-    <div class="feature-card fade-up" style="transition-delay:.3s">
-      <div class="feature-icon">🔒</div>
-      <div class="feature-title">Spara och återanvänd</div>
-      <p class="feature-desc">Ditt CV sparas säkert i molnet. Uppdatera när som helst och generera nya profiltextar utan extra kostnad.</p>
-    </div>
+    <div class="feature-card fade-up"><div class="feature-icon">✍️</div><div class="feature-title">AI-genererad profiltext</div><p class="feature-desc">Berätta om dig själv en gång — AI skriver en unik profiltext anpassad till varje jobbannons du söker.</p></div>
+    <div class="feature-card fade-up" style="transition-delay:.1s"><div class="feature-icon">🎯</div><div class="feature-title">Jobbmatchning i realtid</div><p class="feature-desc">Vi matchar ditt CV mot tusentals jobbannonser från Arbetsförmedlingen och visar dina bästa möjligheter.</p></div>
+    <div class="feature-card fade-up" style="transition-delay:.2s"><div class="feature-icon">📄</div><div class="feature-title">Ladda ner som PDF</div><p class="feature-desc">Exportera ditt CV som en snygg PDF direkt i appen — redo att skickas till arbetsgivare.</p></div>
+    <div class="feature-card fade-up" style="transition-delay:.3s"><div class="feature-icon">🔒</div><div class="feature-title">Spara och återanvänd</div><p class="feature-desc">Ditt CV sparas säkert i molnet. Uppdatera när som helst och generera nya profiltextar utan extra kostnad.</p></div>
   </div>
 </section>
 
@@ -222,21 +195,9 @@
     <div class="section-label">Så funkar det</div>
     <h2 class="section-title">Tre steg till ditt perfekta CV</h2>
     <div class="steps">
-      <div class="step fade-up">
-        <div class="step-num">01</div>
-        <div class="step-title">Fyll i din bakgrund</div>
-        <p class="step-desc">Lägg in din erfarenhet, utbildning och kompetenser i formuläret. Tar ungefär 10 minuter.</p>
-      </div>
-      <div class="step fade-up" style="transition-delay:.15s">
-        <div class="step-num">02</div>
-        <div class="step-title">AI skapar din profil</div>
-        <p class="step-desc">Vår AI analyserar din bakgrund och skriver en profiltext som lyfter fram dina styrkor mot jobbet du söker.</p>
-      </div>
-      <div class="step fade-up" style="transition-delay:.3s">
-        <div class="step-num">03</div>
-        <div class="step-title">Matcha och ansök</div>
-        <p class="step-desc">Se vilka jobb som passar dig bäst och ladda ner ditt CV anpassat för varje tjänst.</p>
-      </div>
+      <div class="step fade-up"><div class="step-num">01</div><div class="step-title">Fyll i din bakgrund</div><p class="step-desc">Lägg in din erfarenhet, utbildning och kompetenser i formuläret. Tar ungefär 10 minuter.</p></div>
+      <div class="step fade-up" style="transition-delay:.15s"><div class="step-num">02</div><div class="step-title">AI skapar din profil</div><p class="step-desc">Vår AI analyserar din bakgrund och skriver en profiltext som lyfter fram dina styrkor mot jobbet du söker.</p></div>
+      <div class="step fade-up" style="transition-delay:.3s"><div class="step-num">03</div><div class="step-title">Matcha och ansök</div><p class="step-desc">Se vilka jobb som passar dig bäst och ladda ner ditt CV anpassat för varje tjänst.</p></div>
     </div>
   </div>
 </section>
@@ -254,7 +215,7 @@
         <li>Matchning mot verkliga jobbannonser i kommunens region</li>
         <li>GDPR-säkert och hostat i Sverige</li>
       </ul>
-      <a href="/cdn-cgi/l/email-protection#730312071b151a1d171601121a41464133141e121a1f5d101c1e4c000611191610074e3a1d0701160000160112175312055330251e1207101b161d5315b0c5015305b0d60153181c1e1e061d" class="btn-demo">Boka en demo →</a>
+      <a href="mailto:pathfinderai252@gmail.com?subject=Intresserad av CVmatchen" class="btn-demo">Boka en demo →</a>
     </div>
     <div class="fade-up">
       <div class="kommun-card">
@@ -272,33 +233,19 @@
 <section class="cta">
   <h2 class="cta-title">Redo att hitta<br><em>ditt nästa jobb?</em></h2>
   <p class="cta-sub">Kom igång gratis på under 15 minuter.</p>
-  <a href="#" onclick="showMobileOnly(); return false;" class="btn-primary" style="font-size:17px;padding:18px 38px;">Skapa ditt CV nu</a>
+  <button onclick="showMobileOnly()" class="btn-primary" style="font-size:17px;padding:18px 38px;">Skapa ditt CV nu</button>
 </section>
 
 <footer>
   <a href="#" class="footer-logo">CV<span>matchen</span> <em>av PathfinderAI</em></a>
   <div class="footer-links">
-    <a href="#" onclick="showMobileOnly(); return false;">Appen</a>
+    <a href="#" onclick="showMobileOnly()">Appen</a>
     <a href="#kommuner">För kommuner</a>
-    <a href="/cdn-cgi/l/email-protection#0878697c606e61666c6d7a69613a3d3a486f65696164266b6765">Kontakt</a>
+    <a href="mailto:pathfinderai252@gmail.com">Kontakt</a>
     <a href="#">Integritetspolicy</a>
   </div>
   <div class="footer-copy">© 2025 PathfinderAI. Alla rättigheter förbehållna.</div>
 </footer>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  const observer = new IntersectionObserver((entries) =>
-<!-- MOBIL-SPÄRR OVERLAY -->
-<div id="mobileOnlyOverlay" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(15,17,32,0.97); flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <div style="font-size:56px; margin-bottom:20px;">📱</div>
-  <div style="font-family:'Fraunces',Georgia,serif; font-size:28px; font-weight:700; color:#fff; margin-bottom:14px; letter-spacing:-1px;">Öppna i mobilen</div>
-  <div style="font-size:15px; color:rgba(255,255,255,0.5); max-width:380px; line-height:1.65; margin-bottom:32px;">CVmatchen är just nu optimerad för mobil. Öppna länken på din telefon.</div>
-  <div style="background:#1e2240; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:20px; margin-bottom:28px;">
-    <div style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:8px;">Öppna på telefonen</div>
-    <div style="font-size:17px; font-weight:600; color:#3eb489;">cvmatchen.com/app</div>
-  </div>
-  <button onclick="document.getElementById('mobileOnlyOverlay').style.display='none'" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.4); padding:10px 24px; border-radius:100px; font-size:13px; cursor:pointer;">Stäng</button>
-</div>
 
 <script>
   function showMobileOnly() {
@@ -308,4 +255,13 @@
       document.getElementById('mobileOnlyOverlay').style.display = 'flex';
     }
   }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 </script>
+</body>
+</html>
