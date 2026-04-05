@@ -9,7 +9,35 @@
   <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
 
   <!-- PDF Generation Libraries -->
-  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
+  <script src="./index_files/html2canvas.min.js.ladda ned">
+    let _descEditorTarget = null;
+
+    function openDescEditor(idx) {
+      _descEditorTarget = idx;
+      const field = document.getElementById('jobDesc' + idx);
+      const label = document.getElementById('descEditorLabel');
+      const textarea = document.getElementById('descEditorText');
+      label.textContent = 'Arbetsuppgift ' + idx;
+      textarea.value = field.value;
+      const overlay = document.getElementById('descEditorOverlay');
+      overlay.style.display = 'flex';
+      setTimeout(() => textarea.focus(), 50);
+    }
+
+    function saveDescEditor() {
+      if (_descEditorTarget) {
+        const textarea = document.getElementById('descEditorText');
+        document.getElementById('jobDesc' + _descEditorTarget).value = textarea.value;
+      }
+      closeDescEditor();
+    }
+
+    function closeDescEditor() {
+      document.getElementById('descEditorOverlay').style.display = 'none';
+      _descEditorTarget = null;
+    }
+
+    </script>
   <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
   
   
@@ -3195,7 +3223,7 @@
           <div style="flex: 1;">
             <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
-              <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;">
+              <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobStartYear').focus();">
                 <option value="">Månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
@@ -3211,7 +3239,7 @@
             <option value="December">December</option>
 
               </select>
-              <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;">
+              <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndMonth').focus();">
                 <option value="">År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -3255,7 +3283,7 @@
               </label>
             </div>
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
-              <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;">
+              <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndYear').focus();">
                 <option value="">Månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
@@ -3314,9 +3342,9 @@
           <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600;">Dina arbetsuppgifter (3 punkter)</label>
           <button onclick="aiAutofillJobDesc()" id="jobAutofillBtn" style="background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #f0c040; display: flex; align-items: center; gap: 4px;">✨ AI Autofyll</button>
         </div>
-        <input type="text" class="modal-input" id="jobDesc1" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
-        <input type="text" class="modal-input" id="jobDesc2" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
-        <input type="text" class="modal-input" id="jobDesc3" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)">
+        <input type="text" class="modal-input" id="jobDesc1" onclick="openDescEditor(1)" readonly style="cursor:pointer;" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
+        <input type="text" class="modal-input" id="jobDesc2" onclick="openDescEditor(2)" readonly style="cursor:pointer;" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
+        <input type="text" class="modal-input" id="jobDesc3" onclick="openDescEditor(3)" readonly style="cursor:pointer;" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)">
         <button onclick="clearJobDesc()" style="background: none; border: none; cursor: pointer; font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; display: flex; align-items: center; gap: 4px; padding: 0;">🗑 Rensa Arbetsuppgifter</button>
       </div>
 
@@ -6346,7 +6374,19 @@ Ge bara profiltexten, ingen förklaringtext.`;
 body { margin: 0; padding: 0; background: white; }
 ${styleTexts}
 </style>
-</head><body>${cvEl.outerHTML}</body></html>`;
+</head><body>${cvEl.outerHTML}
+  <!-- DESC EDITOR POPUP -->
+  <div id="descEditorOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#1e2235;border-radius:16px;padding:20px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;" id="descEditorLabel">Arbetsuppgift</div>
+      <textarea id="descEditorText" style="width:100%;min-height:120px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:12px;color:#fff;font-size:15px;line-height:1.5;resize:vertical;font-family:inherit;box-sizing:border-box;" placeholder="Beskriv arbetsuppgiften..."></textarea>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button onclick="saveDescEditor()" style="flex:1;padding:12px;background:#3eb489;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Spara</button>
+        <button onclick="closeDescEditor()" style="flex:1;padding:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Avbryt</button>
+      </div>
+    </div>
+  </div>
+</body></html>`;
 
       const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_' + new Date().getFullYear() + '.pdf';
 
