@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)file:///C:/Users/olive/Downloads/landing_1.html -->
+<html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVmatchen — Skapa ett CV som matchar jobbet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link href="./landing_files/css2" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1120;
+      --deep: #1a1a2e;
+      --card: #1e2240;
+      --accent: #e85d26;
+      --accent2: #3eb489;
+      --accent3: #f0c040;
+      --muted: rgba(255,255,255,0.45);
+      --text: rgba(255,255,255,0.88);
+      --border: rgba(255,255,255,0.07);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; height: 68px; background: rgba(15,17,32,0.9); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 900; color: #fff; text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+    .nav-logo span { color: var(--accent2); }
+    .nav-logo em { font-style: normal; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 400; color: rgba(255,255,255,0.3); }
+    .nav-cta { background: linear-gradient(135deg, var(--accent2), #2d9a72); color: #fff; padding: 10px 22px; border-radius: 100px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 16px rgba(62,180,137,0.3); }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(62,180,137,0.4); }
+    .hero { min-height: 100vh; display: flex; align-items: center; padding: 100px 48px 80px; position: relative; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 60% at 70% 40%, rgba(62,180,137,0.08) 0%, transparent 70%), radial-gradient(ellipse 50% 50% at 20% 70%, rgba(232,93,38,0.06) 0%, transparent 70%); pointer-events: none; }
+    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1200px; margin: 0 auto; width: 100%; align-items: center; }
+    .hero-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(62,180,137,0.1); color: var(--accent2); border: 1px solid rgba(62,180,137,0.2); padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 600; margin-bottom: 28px; }
+    .hero-tag::before { content: ''; width: 7px; height: 7px; background: var(--accent2); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+    h1 { font-family: 'Fraunces', serif; font-size: clamp(40px, 5vw, 64px); font-weight: 900; line-height: 1.05; letter-spacing: -2px; margin-bottom: 24px; color: #fff; }
+    h1 em { font-style: italic; color: var(--accent2); }
+    .hero-sub { font-size: 17px; line-height: 1.7; color: var(--muted); max-width: 460px; margin-bottom: 40px; }
+    .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent2), #2d9a72); color: #fff; padding: 16px 32px; border-radius: 100px; font-size: 16px; font-weight: 700; text-decoration: none; transition: all 0.2s; box-shadow: 0 8px 24px rgba(62,180,137,0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(62,180,137,0.45); }
+    .btn-secondary { color: rgba(255,255,255,0.5); font-size: 15px; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+    .btn-secondary:hover { color: #fff; }
+    .hero-visual { display: flex; justify-content: center; }
+    .cv-mockup { background: var(--card); border-radius: 24px; padding: 32px; box-shadow: 0 40px 80px rgba(0,0,0,0.4), 0 0 0 1px var(--border); width: 100%; max-width: 360px; transform: rotate(2deg); transition: transform 0.4s ease; }
+    .cv-mockup:hover { transform: rotate(0deg) scale(1.02); }
+    .mockup-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .mockup-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), #2d9a72); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 20px; color: #fff; font-weight: 900; }
+    .mockup-name { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; color: #fff; }
+    .mockup-title { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .mockup-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; }
+    .mockup-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06); margin-bottom: 6px; overflow: hidden; }
+    .mockup-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent2), #7fdbbc); animation: fillBar 1.5s ease-out forwards; }
+    @keyframes fillBar { from { width: 0; } }
+    .mockup-section { margin-bottom: 18px; }
+    .mockup-match { background: rgba(62,180,137,0.08); border: 1px solid rgba(62,180,137,0.18); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .match-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .match-sub { font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 2px; }
+    .match-score { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 900; color: var(--accent2); }
+    .stats { padding: 60px 48px; background: var(--deep); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .stats-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; text-align: center; }
+    .stat-num { font-family: 'Fraunces', serif; font-size: 52px; font-weight: 900; color: var(--accent3); line-height: 1; margin-bottom: 8px; }
+    .stat-label { font-size: 14px; color: var(--muted); }
+    .features { padding: 100px 48px; max-width: 1200px; margin: 0 auto; }
+    .section-label { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 16px; }
+    .section-title { font-family: 'Fraunces', serif; font-size: clamp(30px, 4vw, 48px); font-weight: 900; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 56px; color: #fff; max-width: 560px; }
+    .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .feature-card { background: var(--card); border-radius: 20px; padding: 32px; border: 1px solid var(--border); transition: transform 0.2s, border-color 0.2s; }
+    .feature-card:hover { transform: translateY(-4px); border-color: rgba(62,180,137,0.25); }
+    .feature-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(62,180,137,0.1); border: 1px solid rgba(62,180,137,0.15); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 18px; }
+    .feature-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; color: #fff; }
+    .feature-desc { font-size: 14px; line-height: 1.65; color: var(--muted); }
+    .how { padding: 100px 48px; background: var(--deep); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .how-inner { max-width: 1200px; margin: 0 auto; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 56px; }
+    .step-num { font-family: 'Fraunces', serif; font-size: 64px; font-weight: 900; color: rgba(255,255,255,0.04); line-height: 1; margin-bottom: -16px; }
+    .step-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; color: #fff; }
+    .step-desc { font-size: 14px; line-height: 1.65; color: var(--muted); }
+    .kommuner { padding: 100px 48px; max-width: 1200px; margin: 0 auto; }
+    .kommuner-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .kommuner-desc { font-size: 16px; line-height: 1.7; color: var(--muted); margin-bottom: 36px; }
+    .kommuner-points { list-style: none; margin-bottom: 40px; }
+    .kommuner-points li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.5; }
+    .kommuner-points li::before { content: '✓'; width: 22px; height: 22px; min-width: 22px; border-radius: 50%; background: rgba(62,180,137,0.12); border: 1px solid rgba(62,180,137,0.25); color: var(--accent2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+    .btn-demo { display: inline-flex; align-items: center; gap: 10px; background: var(--accent3); color: var(--deep); padding: 14px 28px; border-radius: 100px; font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s; }
+    .btn-demo:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(240,192,64,0.3); }
+    .kommun-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 36px; }
+    .kommun-card-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .kommun-metric { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .kommun-metric:last-child { border-bottom: none; }
+    .km-label { font-size: 13px; color: var(--muted); }
+    .km-value { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: var(--accent3); }
+    .cta { padding: 100px 48px; text-align: center; background: var(--deep); border-top: 1px solid var(--border); position: relative; overflow: hidden; }
+    .cta::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; border-radius: 50%; background: radial-gradient(ellipse, rgba(62,180,137,0.07) 0%, transparent 70%); pointer-events: none; }
+    .cta-title { font-family: 'Fraunces', serif; font-size: clamp(34px, 5vw, 56px); font-weight: 900; color: #fff; letter-spacing: -2px; line-height: 1.05; margin-bottom: 16px; }
+    .cta-title em { color: var(--accent2); font-style: italic; }
+    .cta-sub { font-size: 17px; color: var(--muted); margin-bottom: 44px; }
+    footer { background: #080910; padding: 36px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; border-top: 1px solid var(--border); }
+    .footer-logo { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 900; color: rgba(255,255,255,0.4); text-decoration: none; display: flex; align-items: baseline; gap: 8px; }
+    .footer-logo span { color: var(--accent2); }
+    .footer-logo em { font-style: normal; font-size: 11px; font-family: 'DM Sans', sans-serif; font-weight: 400; color: rgba(255,255,255,0.2); }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { font-size: 13px; color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: rgba(255,255,255,0.7); }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.15); }
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 900px) {
+      nav { padding: 0 20px; }
+      .hero { padding: 90px 20px 60px; }
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .stats { padding: 48px 20px; }
+      .stats-inner { gap: 20px; }
+      .stat-num { font-size: 36px; }
+      .features { padding: 60px 20px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .how { padding: 60px 20px; }
+      .steps { grid-template-columns: 1fr; }
+      .kommuner { padding: 60px 20px; }
+      .kommuner-inner { grid-template-columns: 1fr; }
+      .cta { padding: 60px 20px; }
+      footer { padding: 28px 20px; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="file:///C:/Users/olive/Downloads/landing_1.html#" class="nav-logo">CV<span>matchen</span> <em>av PathfinderAI</em></a>
+  <a href="file:///C:/app" class="nav-cta">Kom igång gratis</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-tag">AI-driven jobbmatchning</div>
+      <h1>Ditt CV.<br><em>Din match.</em><br>Ditt jobb.</h1>
+      <p class="hero-sub">CVmatchen hjälper dig skapa ett professionellt CV på 15 minuter — och matchar det mot riktiga jobbannonser med AI.</p>
+      <div class="hero-actions">
+        <a href="file:///C:/app" class="btn-primary">Skapa ditt CV nu</a>
+        <a href="file:///C:/Users/olive/Downloads/landing_1.html#hur-det-fungerar" class="btn-secondary">Hur fungerar det? →</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="cv-mockup">
+        <div class="mockup-header">
+          <div class="mockup-avatar">A</div>
+          <div>
+            <div class="mockup-name">Anna Lindqvist</div>
+            <div class="mockup-title">Projektledare · Stockholm</div>
+          </div>
+        </div>
+        <div class="mockup-section">
+          <div class="mockup-label">Kompetenser</div>
+          <div class="mockup-bar"><div class="mockup-bar-fill" style="width:88%"></div></div>
+          <div class="mockup-bar"><div class="mockup-bar-fill" style="width:74%;animation-delay:.2s"></div></div>
+          <div class="mockup-bar"><div class="mockup-bar-fill" style="width:60%;animation-delay:.4s"></div></div>
+        </div>
+        <div class="mockup-section">
+          <div class="mockup-label">Jobbmatchning</div>
+          <div class="mockup-match">
+            <div>
+              <div class="match-label">Projektledare, Scania</div>
+              <div class="match-sub">Södertälje · Heltid</div>
+            </div>
+            <div class="match-score">94%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stats-inner">
+    <div class="fade-up visible">
+      <div class="stat-num">15 min</div>
+      <div class="stat-label">Från noll till färdigt CV</div>
+    </div>
+    <div class="fade-up visible" style="transition-delay:.1s">
+      <div class="stat-num">AI</div>
+      <div class="stat-label">Genererar profiltext anpassad till varje jobb</div>
+    </div>
+    <div class="fade-up visible" style="transition-delay:.2s">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">Svenska jobbannonser från Arbetsförmedlingen</div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="section-label">Funktioner</div>
+  <h2 class="section-title">Allt du behöver för att hitta rätt jobb</h2>
+  <div class="features-grid">
+    <div class="feature-card fade-up visible">
+      <div class="feature-icon">✍️</div>
+      <div class="feature-title">AI-genererad profiltext</div>
+      <p class="feature-desc">Berätta om dig själv en gång — AI skriver en unik profiltext anpassad till varje jobbannons du söker.</p>
+    </div>
+    <div class="feature-card fade-up visible" style="transition-delay:.1s">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">Jobbmatchning i realtid</div>
+      <p class="feature-desc">Vi matchar ditt CV mot tusentals jobbannonser från Arbetsförmedlingen och visar dina bästa möjligheter.</p>
+    </div>
+    <div class="feature-card fade-up visible" style="transition-delay:.2s">
+      <div class="feature-icon">📄</div>
+      <div class="feature-title">Ladda ner som PDF</div>
+      <p class="feature-desc">Exportera ditt CV som en snygg PDF direkt i appen — redo att skickas till arbetsgivare.</p>
+    </div>
+    <div class="feature-card fade-up visible" style="transition-delay:.3s">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-title">Spara och återanvänd</div>
+      <p class="feature-desc">Ditt CV sparas säkert i molnet. Uppdatera när som helst och generera nya profiltextar utan extra kostnad.</p>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="hur-det-fungerar">
+  <div class="how-inner">
+    <div class="section-label">Så funkar det</div>
+    <h2 class="section-title">Tre steg till ditt perfekta CV</h2>
+    <div class="steps">
+      <div class="step fade-up visible">
+        <div class="step-num">01</div>
+        <div class="step-title">Fyll i din bakgrund</div>
+        <p class="step-desc">Lägg in din erfarenhet, utbildning och kompetenser i formuläret. Tar ungefär 10 minuter.</p>
+      </div>
+      <div class="step fade-up visible" style="transition-delay:.15s">
+        <div class="step-num">02</div>
+        <div class="step-title">AI skapar din profil</div>
+        <p class="step-desc">Vår AI analyserar din bakgrund och skriver en profiltext som lyfter fram dina styrkor mot jobbet du söker.</p>
+      </div>
+      <div class="step fade-up visible" style="transition-delay:.3s">
+        <div class="step-num">03</div>
+        <div class="step-title">Matcha och ansök</div>
+        <p class="step-desc">Se vilka jobb som passar dig bäst och ladda ner ditt CV anpassat för varje tjänst.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="kommuner" id="kommuner">
+  <div class="kommuner-inner">
+    <div>
+      <div class="section-label">För kommuner</div>
+      <h2 class="section-title">Stöd till arbetsmarknadsenheten</h2>
+      <p class="kommuner-desc">CVmatchen är byggt för att hjälpa handläggare och deltagare i arbetsmarknadsinsatser att snabbt skapa professionella CV:n och hitta relevanta jobb.</p>
+      <ul class="kommuner-points">
+        <li>Sparar tid för handläggare — deltagare arbetar självständigt</li>
+        <li>AI-stöd anpassat för jobbsökande i alla åldrar och bakgrunder</li>
+        <li>Fungerar utan teknisk vana — enkelt och intuitivt gränssnitt</li>
+        <li>Matchning mot verkliga jobbannonser i kommunens region</li>
+        <li>GDPR-säkert och hostat i Sverige</li>
+      </ul>
+      <a href="mailto:pathfinderai252@gmail.com?subject=Intresserad%20av%20CVmatchen%20f%C3%B6r%20v%C3%A5r%20kommun" class="btn-demo">Boka en demo →</a>
+    </div>
+    <div class="fade-up visible">
+      <div class="kommun-card">
+        <div class="kommun-card-title">Vad kommunen får</div>
+        <div class="kommun-metric"><span class="km-label">Licenser per avtal</span><span class="km-value">1 000</span></div>
+        <div class="kommun-metric"><span class="km-label">Onboarding</span><span class="km-value">Ingår</span></div>
+        <div class="kommun-metric"><span class="km-label">Support</span><span class="km-value">Dedikerad</span></div>
+        <div class="kommun-metric"><span class="km-label">Upphandlingsform</span><span class="km-value">Direktavtal</span></div>
+        <div class="kommun-metric"><span class="km-label">Driftsättning</span><span class="km-value">&lt; 1 vecka</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2 class="cta-title">Redo att hitta<br><em>ditt nästa jobb?</em></h2>
+  <p class="cta-sub">Kom igång gratis på under 15 minuter.</p>
+  <a href="file:///C:/app" class="btn-primary" style="font-size:17px;padding:18px 38px;">Skapa ditt CV nu</a>
+</section>
+
+<footer>
+  <a href="file:///C:/Users/olive/Downloads/landing_1.html#" class="footer-logo">CV<span>matchen</span> <em>av PathfinderAI</em></a>
+  <div class="footer-links">
+    <a href="file:///C:/app">Appen</a>
+    <a href="file:///C:/Users/olive/Downloads/landing_1.html#kommuner">För kommuner</a>
+    <a href="mailto:pathfinderai252@gmail.com">Kontakt</a>
+    <a href="file:///C:/Users/olive/Downloads/landing_1.html#">Integritetspolicy</a>
+  </div>
+  <div class="footer-copy">© 2025 PathfinderAI. Alla rättigheter förbehållna.</div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+
+
+</body></html>
