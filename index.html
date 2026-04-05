@@ -3224,7 +3224,7 @@
             <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
               <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobStartYear').focus();">
-                <option value="">Månad</option>
+                <option value="" disabled selected>Från — månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3240,7 +3240,7 @@
 
               </select>
               <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndMonth').focus();">
-                <option value="">År</option>
+                <option value="" disabled selected>Från — år</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3284,7 +3284,7 @@
             </div>
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
               <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndYear').focus();">
-                <option value="">Månad</option>
+                <option value="" disabled selected>Till — månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3300,7 +3300,7 @@
 
               </select>
               <select class="modal-input" id="jobEndYear" style="padding: 8px 4px; font-size: 13px;">
-                <option value="">År</option>
+                <option value="" disabled selected>Till — år</option>
             <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -3342,9 +3342,9 @@
           <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600;">Dina arbetsuppgifter (3 punkter)</label>
           <button onclick="aiAutofillJobDesc()" id="jobAutofillBtn" style="background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #f0c040; display: flex; align-items: center; gap: 4px;">✨ AI Autofyll</button>
         </div>
-        <input type="text" class="modal-input" id="jobDesc1" onclick="openDescEditor(1)" readonly style="cursor:pointer;" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
-        <input type="text" class="modal-input" id="jobDesc2" onclick="openDescEditor(2)" readonly style="cursor:pointer;" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
-        <input type="text" class="modal-input" id="jobDesc3" onclick="openDescEditor(3)" readonly style="cursor:pointer;" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)">
+        <input type="text" class="modal-input" id="jobDesc1" style="cursor:pointer;" onfocus="openDescEditor(1); this.blur();" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
+        <input type="text" class="modal-input" id="jobDesc2" style="cursor:pointer;" onfocus="openDescEditor(2); this.blur();" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
+        <input type="text" class="modal-input" id="jobDesc3" style="cursor:pointer;" onfocus="openDescEditor(3); this.blur();" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)">
         <button onclick="clearJobDesc()" style="background: none; border: none; cursor: pointer; font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; display: flex; align-items: center; gap: 4px; padding: 0;">🗑 Rensa Arbetsuppgifter</button>
       </div>
 
