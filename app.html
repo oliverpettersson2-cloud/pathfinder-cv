@@ -1463,6 +1463,7 @@
       letter-spacing: -0.5px;
     }
     .auth-logo span { color: #f0c040; }
+    .auth-logo { color: #fff; }
 
     .auth-tagline {
       font-size: 13px;
@@ -1731,14 +1732,15 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 52px;
-        padding: 0 14px;
+        height: 58px;
+        padding: 0 16px;
         flex-shrink: 0;
+        gap: 8px;
       }
       .nav-logo {
         position: static;
         transform: none;
-        text-align: center;
+        text-align: left;
         pointer-events: none;
       }
       /* På mobil: dölj email-texten och ikonen, visa bara "Profil"-badge */
@@ -2443,7 +2445,7 @@
   <!-- ===== AUTENTISERINGSOVERLAY ===== -->
   <div id="authOverlay" class="hidden">
     <div class="auth-card">
-      <div class="auth-logo">Path<span>finder</span> <span style="font-weight:400; font-style:italic; font-size:0.75em;">AI</span></div>
+      <div class="auth-logo"><span style="color:#f0c040;">CV</span>matchen</div>
       <div class="auth-tagline">Gör ett CV med AI på 15 minuter, en kvart.</div>
       <div class="auth-tagline">Vi matchar ditt CV mot utbildning &amp; jobbannonser.</div>
 
