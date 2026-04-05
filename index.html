@@ -17,11 +17,12 @@
       const field = document.getElementById('jobDesc' + idx);
       const label = document.getElementById('descEditorLabel');
       const textarea = document.getElementById('descEditorText');
-      label.textContent = 'Arbetsuppgift ' + idx;
+      const labels = ['', 'Arbetsuppgift 1 av 3', 'Arbetsuppgift 2 av 3', 'Arbetsuppgift 3 av 3'];
+      label.textContent = labels[idx] || ('Arbetsuppgift ' + idx);
       textarea.value = field.value;
       const overlay = document.getElementById('descEditorOverlay');
       overlay.style.display = 'flex';
-      setTimeout(() => textarea.focus(), 50);
+      setTimeout(() => { textarea.focus(); textarea.setSelectionRange(textarea.value.length, textarea.value.length); }, 100);
     }
 
     function saveDescEditor() {
@@ -3224,7 +3225,7 @@
             <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
               <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobStartYear').focus();">
-                <option value="" disabled selected>Från — månad</option>
+                <option value="" disabled selected>Månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3240,7 +3241,7 @@
 
               </select>
               <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndMonth').focus();">
-                <option value="" disabled selected>Från — år</option>
+                <option value="" disabled selected>År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3284,7 +3285,7 @@
             </div>
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
               <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndYear').focus();">
-                <option value="" disabled selected>Till — månad</option>
+                <option value="" disabled selected>Månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3300,7 +3301,7 @@
 
               </select>
               <select class="modal-input" id="jobEndYear" style="padding: 8px 4px; font-size: 13px;">
-                <option value="" disabled selected>Till — år</option>
+                <option value="" disabled selected>År</option>
             <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -3342,9 +3343,9 @@
           <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600;">Dina arbetsuppgifter (3 punkter)</label>
           <button onclick="aiAutofillJobDesc()" id="jobAutofillBtn" style="background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #f0c040; display: flex; align-items: center; gap: 4px;">✨ AI Autofyll</button>
         </div>
-        <input type="text" class="modal-input" id="jobDesc1" style="cursor:pointer;" onfocus="openDescEditor(1); this.blur();" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
-        <input type="text" class="modal-input" id="jobDesc2" style="cursor:pointer;" onfocus="openDescEditor(2); this.blur();" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
-        <input type="text" class="modal-input" id="jobDesc3" style="cursor:pointer;" onfocus="openDescEditor(3); this.blur();" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)">
+        <input type="text" class="modal-input" id="jobDesc1" style="cursor:pointer; position:relative;" readonly onclick="openDescEditor(1)" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
+        <input type="text" class="modal-input" id="jobDesc2" style="cursor:pointer; position:relative;" readonly onclick="openDescEditor(2)" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
+        <input type="text" class="modal-input" id="jobDesc3" style="cursor:pointer; position:relative;" readonly onclick="openDescEditor(3)" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)">
         <button onclick="clearJobDesc()" style="background: none; border: none; cursor: pointer; font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; display: flex; align-items: center; gap: 4px; padding: 0;">🗑 Rensa Arbetsuppgifter</button>
       </div>
 
