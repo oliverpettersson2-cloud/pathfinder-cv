@@ -1,7 +1,7 @@
 {
-  "name": "Pathfinder — AI-CV-Builder",
-  "short_name": "Pathfinder",
-  "description": "CV & Matchning med hjälp av AI",
+  "name": "CVmatchen — AI-driven jobbmatchning",
+  "short_name": "CVmatchen",
+  "description": "Skapa CV och matcha mot jobb med hjälp av AI",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
