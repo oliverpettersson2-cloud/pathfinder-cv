@@ -3,7 +3,7 @@
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Pathfinder — AI-CV-Builder</title>
+  <title>CVmatchen — AI-driven jobbmatchning</title>
   <link rel="icon" type="image/svg+xml" href="file:///C:/pathfinder-favicon.svg">
 
   <!-- PDF Generation Libraries -->
@@ -2440,19 +2440,6 @@
 </head>
 <body>
 
-<!-- DESKTOP-SPÄRR -->
-<div id="desktopBlock" style="display:none; position:fixed; inset:0; z-index:99999; background:#1a1a2e; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <div style="font-size:64px; margin-bottom:24px;">📱</div>
-  <div style="font-family:Georgia,serif; font-size:32px; font-weight:700; color:#fff; margin-bottom:16px; letter-spacing:-1px;">CVmatchen fungerar bäst i mobilen</div>
-  <div style="font-size:16px; color:rgba(255,255,255,0.5); max-width:400px; line-height:1.6; margin-bottom:36px;">Appen är optimerad för mobil. Öppna cvmatchen.com på din telefon för bästa upplevelsen.</div>
-  <a href="/" style="display:inline-block; background:linear-gradient(135deg,#3eb489,#2d9a72); color:#fff; padding:14px 28px; border-radius:100px; font-size:15px; font-weight:600; text-decoration:none;">Gå till startsidan</a>
-</div>
-<script>
-  if (window.innerWidth > 768) {
-    document.getElementById('desktopBlock').style.display = 'flex';
-  }
-</script>
-
   <!-- ===== AUTENTISERINGSOVERLAY ===== -->
   <div id="authOverlay" class="hidden">
     <div class="auth-card">
@@ -2500,7 +2487,7 @@
         <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
         <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som oliver.pettersson2@gmail.com</div>
-        <button class="auth-btn" onclick="authEnterApp()">Fortsatt till Pathfinder</button>
+        <button class="auth-btn" onclick="authEnterApp()">Fortsätt till CVmatchen</button>
       </div>
     </div>
   </div>
@@ -2523,22 +2510,25 @@
   </div>
 
   <nav id="mainNav">
-    <!-- Rad 1: Profil-badge | Logga | Logga ut -->
+    <!-- Rad 1: Logo vänster | Profil + Logga ut höger -->
     <div class="mob-nav-row1">
-      <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;" aria-label="Inloggad anvandare">
-        <svg class="mob-hide" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">oliver.pettersson2@gmail.com</span>
-        <span class="mob-profil" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#3eb489;">
-          <span style="width:8px;height:8px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>Profil
-        </span>
-      </div>
+      <!-- LOGO VÄNSTER -->
       <div class="nav-logo" style="display:flex;align-items:center;">
         <div>
-          <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;line-height:1.1;">Path<span style="color:#f0c040;">finder</span></div>
-          <div class="mob-hide" style="font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.4);font-family:-apple-system,sans-serif;">Din väg mot arbete &amp; studier</div>
+          <div style="font-family:Georgia,serif;font-size:19px;font-weight:800;color:#f0c040;line-height:1.1;letter-spacing:-0.5px;">CV<span style="color:#fff;">matchen</span></div>
+          <div style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.25);font-family:-apple-system,sans-serif;text-transform:uppercase;">av PathfinderAI</div>
         </div>
       </div>
-      <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color=&#39;rgba(255,255,255,0.7)&#39;" onmouseout="this.style.color=&#39;rgba(255,255,255,0.35)&#39;" aria-label="Logga ut">Logga ut</button>
+      <!-- HÖGER: Profil + Logga ut -->
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;" aria-label="Inloggad anvandare">
+          <span class="mob-profil" style="display:none;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#3eb489;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);padding:5px 12px;border-radius:20px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>Profil
+          </span>
+          <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:rgba(255,255,255,0.4);"></span>
+        </div>
+        <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;padding:5px 12px;border-radius:20px;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Logga ut">Logga ut</button>
+      </div>
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
     <div id="mobCVSteps">
@@ -4767,14 +4757,16 @@
       showToast('🗑️ Profilbild borttagen', 'success');
     }
 
-    function setShowPhoto(show) {
+    function setShowPhoto(show, showNotification = true) {
       cvData.showPhoto = show;
       document.getElementById('photoYesBtn').classList.toggle('active', show);
       document.getElementById('photoNoBtn').classList.toggle('active', !show);
       document.getElementById('photoUploadSection').style.display = show ? 'block' : 'none';
       saveData();
       updatePreview();
-      showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
+      if (showNotification) {
+        showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
+      }
     }
 
     // Spara/Ladda data
@@ -5273,7 +5265,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         removeBtn.removeAttribute('aria-disabled');
       }
       
-      setShowPhoto(cvData.showPhoto === true);
+      setShowPhoto(cvData.showPhoto === true, false);
       renderJobs();
       renderEducation();
       renderLanguages();
@@ -7041,7 +7033,8 @@ ${styleTexts}
           if (user && user.email && user.loggedIn) {
             window.authUserId = user.userId || null;
             window.authAccessToken = user.accessToken || null;
-            authSetLoggedIn(user.email, false, user.userId, user.accessToken);
+            // Redan inloggad - hoppa direkt till appen utan att visa overlay
+            authSetLoggedInSilent(user.email, user.userId, user.accessToken);
             return;
           }
         } catch(e) {}
@@ -7258,6 +7251,20 @@ ${styleTexts}
     function authEnterApp() {
       document.getElementById('authOverlay').classList.add('hidden');
       setNavStep(2);
+    }
+
+    function authSetLoggedInSilent(email, userId, accessToken) {
+      // Direkt till appen utan overlay/bekräftelseskärm
+      window.authUserId = userId || null;
+      window.authAccessToken = accessToken || null;
+      setNavStep(2);
+      const emailEl = document.getElementById('authUserEmail');
+      if (emailEl) emailEl.textContent = email;
+      document.getElementById('authUserBadge').style.display = 'flex';
+      setShowPhoto(cvData.showPhoto === true, false);
+      if (userId && accessToken) {
+        loadCVFromSupabase(userId, accessToken);
+      }
     }
 
     function authGoBack() {
@@ -7708,8 +7715,8 @@ ${styleTexts}
 
         <!-- Hero -->
         <div style="text-align:center; padding: 28px 0 20px;">
-          <div style="font-size: 52px; margin-bottom: 10px; filter: drop-shadow(0 4px 12px rgba(62,180,137,0.4));">🧭</div>
-          <div style="font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px;">Path<span style="color: #f0c040;">finder</span> AI</div>
+          <div style="font-size: 48px; margin-bottom: 10px; filter: drop-shadow(0 4px 12px rgba(240,192,64,0.4));">🎯</div>
+          <div style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px;"><span style="color: #f0c040;">CV</span><span style="color: #fff;">matchen</span></div>
           <div style="font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.6;">Gör ett CV med AI på 15 minuter, en kvart.<br>Vi matchar ditt CV mot utbildning &amp; jobbannonser.</div>
         </div>
 
