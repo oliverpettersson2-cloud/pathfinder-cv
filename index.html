@@ -3190,11 +3190,13 @@
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
       
-      <div style="display: grid; grid-template-columns: 2fr 1fr 2fr 1fr; gap: 6px; margin-bottom: 12px; align-items: end;">
-        <div>
-          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">Från</label>
-          <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;">
-            <option value="">Månad</option>
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; align-items: flex-end; gap: 6px;">
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
+            <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
+              <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;">
+                <option value="">Månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3208,12 +3210,9 @@
             <option value="November">November</option>
             <option value="December">December</option>
 
-          </select>
-        </div>
-        <div>
-          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">År</label>
-          <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;">
-            <option value="">År</option>
+              </select>
+              <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;">
+                <option value="">År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3243,12 +3242,21 @@
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
 
-          </select>
-        </div>
-        <div>
-          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">Till</label>
-          <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;">
-            <option value="">Månad</option>
+              </select>
+            </div>
+          </div>
+          <div style="color: rgba(255,255,255,0.3); font-size: 18px; padding-bottom: 10px; flex-shrink: 0;">→</div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px;">Till</label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; color: #3eb489; font-weight: 600;">
+                <input type="checkbox" id="jobOngoing" onchange="toggleJobOngoing(this)" style="accent-color: #3eb489; width: 14px; height: 14px; cursor: pointer;">
+                Pågående
+              </label>
+            </div>
+            <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
+              <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;">
+                <option value="">Månad</option>
             <option value="Januari">Januari</option>
             <option value="Februari">Februari</option>
             <option value="Mars">Mars</option>
@@ -3262,12 +3270,9 @@
             <option value="November">November</option>
             <option value="December">December</option>
 
-          </select>
-        </div>
-        <div>
-          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">År</label>
-          <select class="modal-input" id="jobEndYear" style="padding: 8px 4px; font-size: 13px;">
-            <option value="">År</option>
+              </select>
+              <select class="modal-input" id="jobEndYear" style="padding: 8px 4px; font-size: 13px;">
+                <option value="">År</option>
             <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -3298,22 +3303,15 @@
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
 
-          </select>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px; gap: 8px;">
-        <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600;">Dina arbetsuppgifter (3 punkter)</label>
-        <button style="background: none; border: none; color: var(--accent3); font-size: 12px; cursor: pointer; padding: 4px 8px; font-weight: 700; border-radius: 4px; transition: 0.2s;" onmouseover="this.style.background=&#39;rgba(124,58,237,0.1)&#39;" onmouseout="this.style.background=&#39;none&#39;" onclick="aiAutofillJobDesc()">✨ AI Autofyll</button>
-      </div>
-      <input type="text" class="modal-input" id="jobDesc1" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
-      <input type="text" class="modal-input" id="jobDesc2" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
-      <input type="text" class="modal-input" id="jobDesc3" placeholder="• Tredje arbetsuppgift (t.ex. Kassaköp och säkerhetskontroller)">
-      
-      <button class="btn-secondary" style="width: 100%; margin-bottom: 12px;" onclick="clearJobDesc()">🗑️ Rensa Arbetsuppgifter</button>
-      
+
       <div class="modal-buttons">
         <button class="btn-save" onclick="saveJob()">Spara</button>
-        <button class="btn-cancel" onclick="closeModal(&#39;jobModal&#39;)">Avbryt</button>
+        <button class="btn-cancel" onclick="closeModal('jobModal')">Avbryt</button>
       </div>
     </div>
   </div>
@@ -3321,11 +3319,10 @@
   <div class="modal" id="eduModal" data-edit-idx="-1">
     <div class="modal-content">
       <div class="modal-title">Lägg till utbildning</div>
-      <input type="text" class="modal-input" id="eduDegree" placeholder="Examen/Utbildning">
-      <input type="text" class="modal-input" id="eduSchoolName" placeholder="Namn på skola/Universitet">
-      <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Skolform</label>
+      <input type="text" class="modal-input" id="eduDegree" placeholder="Examen / Utbildningsnamn">
+      <input type="text" class="modal-input" id="eduSchoolName" placeholder="Skola / Lärosäte">
       <select class="modal-input" id="eduSchool">
-        <option value="">Välj skolform</option>
+        <option value="">Välj utbildningstyp</option>
         <option value="Grundskola">Grundskola</option>
         <option value="Gymnasium">Gymnasium</option>
         <option value="Folkhögskola">Folkhögskola</option>
@@ -3338,12 +3335,12 @@
         <option value="Arbetsmarknadsutbildning">Arbetsmarknadsutbildning</option>
         <option value="Övrig utbildning">Övrig utbildning</option>
       </select>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; align-items: end;">
-        <div>
-          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">Från år</label>
-          <select class="modal-input" id="eduStartYear" style="padding: 8px 4px; font-size: 13px;">
-            <option value="">År</option>
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; align-items: flex-end; gap: 6px;">
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
+            <select class="modal-input" id="eduStartYear" style="padding: 8px 4px; font-size: 13px; width: 100%;">
+              <option value="">År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3373,12 +3370,13 @@
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
 
-          </select>
-        </div>
-        <div>
-          <label style="font-size: 10px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px; text-transform: uppercase; font-weight: 600;">Till år</label>
-          <select class="modal-input" id="eduEndYear" style="padding: 8px 4px; font-size: 13px;">
-            <option value="">År</option>
+            </select>
+          </div>
+          <div style="color: rgba(255,255,255,0.3); font-size: 18px; padding-bottom: 10px; flex-shrink: 0;">→</div>
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Till</label>
+            <select class="modal-input" id="eduEndYear" style="padding: 8px 4px; font-size: 13px; width: 100%;">
+              <option value="">År</option>
             <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -3409,13 +3407,13 @@
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
 
-          </select>
+            </select>
+          </div>
         </div>
       </div>
-
       <div class="modal-buttons">
         <button class="btn-save" onclick="saveEdu()">Spara</button>
-        <button class="btn-cancel" onclick="closeModal(&#39;eduModal&#39;)">Avbryt</button>
+        <button class="btn-cancel" onclick="closeModal('eduModal')">Avbryt</button>
       </div>
     </div>
   </div>
@@ -5308,6 +5306,14 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('jobCompany').value = '';
       document.getElementById('jobLocation').value = '';
       document.getElementById('jobStartMonth').value = '';
+      const ongoing = document.getElementById('jobOngoing');
+      if (ongoing) {
+        ongoing.checked = false;
+        document.getElementById('jobEndMonth').disabled = false;
+        document.getElementById('jobEndYear').disabled = false;
+        document.getElementById('jobEndMonth').style.opacity = '';
+        document.getElementById('jobEndYear').style.opacity = '';
+      }
       document.getElementById('jobStartYear').value = '';
       document.getElementById('jobEndMonth').value = '';
       document.getElementById('jobEndYear').value = '';
@@ -5323,6 +5329,13 @@ Ge bara profiltexten, ingen förklaringtext.`;
         document.getElementById('jobStartMonth').value = job.startMonth || '';
         document.getElementById('jobStartYear').value = job.startYear || '';
         document.getElementById('jobEndMonth').value = job.endMonth || '';
+        if (job.endYear === 'Pågående') {
+          document.getElementById('jobOngoing').checked = true;
+          document.getElementById('jobEndMonth').disabled = true;
+          document.getElementById('jobEndYear').disabled = true;
+          document.getElementById('jobEndMonth').style.opacity = '0.3';
+          document.getElementById('jobEndYear').style.opacity = '0.3';
+        }
         document.getElementById('jobEndYear').value = job.endYear || '';
         document.getElementById('jobDesc1').value = job.desc1 || '';
         document.getElementById('jobDesc2').value = job.desc2 || '';
@@ -5332,6 +5345,25 @@ Ge bara profiltexten, ingen förklaringtext.`;
       const modal = document.getElementById('jobModal');
       modal.dataset.editIdx = idx ?? -1;
       modal.classList.add('active');
+    }
+
+    function toggleJobOngoing(cb) {
+      const month = document.getElementById('jobEndMonth');
+      const year = document.getElementById('jobEndYear');
+      if (cb.checked) {
+        month.value = '';
+        year.value = 'Pågående';
+        month.disabled = true;
+        year.disabled = true;
+        month.style.opacity = '0.3';
+        year.style.opacity = '0.3';
+      } else {
+        month.disabled = false;
+        year.disabled = false;
+        month.style.opacity = '';
+        year.style.opacity = '';
+        year.value = '';
+      }
     }
 
     function saveJob() {
