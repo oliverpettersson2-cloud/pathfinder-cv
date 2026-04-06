@@ -10377,22 +10377,23 @@ ${styleTexts}
       window._matchaAlts = window._matchaAlts || {};
       window._matchaAlts[hit.id] = alts;
 
-      // Bygg tydlig result-box med header som visar vilken annons det gäller
+      // Bygg tydlig result-box
       let html = '';
 
-      // Header: "Profiltexter för [Jobbtitel] hos [Företag]"
-      html += '<div style="margin-top:16px;border-top:2px solid rgba(124,58,237,0.4);padding-top:14px;">';
-      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
-      html += '<div style="width:3px;height:28px;background:linear-gradient(to bottom,#6c5ce7,#a29bfe);border-radius:2px;flex-shrink:0;"></div>';
-      html += '<div>';
-      html += '<div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(124,58,237,0.8);margin-bottom:1px;">AI-genererade profiltexter</div>';
-      html += '<div style="font-size:13px;font-weight:700;color:#fff;">' + role + '</div>';
-      html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);">hos ' + company + '</div>';
+      // Stor tydlig intro-banner
+      html += '<div style="margin-top:16px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(124,58,237,0.05));border:2px solid rgba(124,58,237,0.5);border-radius:16px;padding:16px;margin-bottom:16px;text-align:center;">';
+      html += '<div style="font-size:22px;margin-bottom:6px;">✨</div>';
+      html += '<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">AI har skrivit 3 profiltexter åt dig!</div>';
+      html += '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">Anpassade för <strong style="color:#a78bfa;">' + role + '</strong> hos <strong style="color:#a78bfa;">' + company + '</strong></div>';
+      html += '<div style="margin-top:10px;display:inline-block;background:rgba(62,180,137,0.15);border:1px solid rgba(62,180,137,0.4);border-radius:20px;padding:5px 14px;">';
+      html += '<span style="font-size:11px;font-weight:700;color:#3eb489;">👇 Välj en — den läggs direkt in i ditt CV</span>';
       html += '</div></div>';
 
       // Nyckelord-matchning
       if (parsed.keywords && parsed.keywords.length > 0) {
-        html += '<div style="display:flex;flex-wrap:wrap;gap:5px;margin:12px 0 14px;">';
+        html += '<div style="margin-bottom:14px;">';
+        html += '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:6px;">Nyckelord från annonsen</div>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:5px;">';
         parsed.keywords.forEach(k => {
           const colors = { match: '#3eb489', partial: '#f0c040', missing: '#e85d26' };
           const labels = { match: '✓', partial: '~', missing: '✗' };
@@ -10400,33 +10401,38 @@ ${styleTexts}
           const l = labels[k.status] || '';
           html += '<span style="font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid ' + c + ';color:' + c + ';background:' + c + '18;font-weight:600;">' + l + ' ' + k.word + '</span>';
         });
-        html += '</div>';
+        html += '</div></div>';
       }
 
       // Alternativ
       const altLabels = ['Erfarenhetsfokus','Motivationsfokus','Kompetens & resultat'];
-      const altColors = ['rgba(62,180,137,0.12)','rgba(240,192,64,0.1)','rgba(124,58,237,0.12)'];
+      const altColors = ['rgba(62,180,137,0.08)','rgba(240,192,64,0.08)','rgba(124,58,237,0.08)'];
       const altBorders = ['rgba(62,180,137,0.3)','rgba(240,192,64,0.25)','rgba(124,58,237,0.3)'];
       const altAccents = ['#3eb489','#f0c040','#a78bfa'];
 
       alts.forEach((alt, ai) => {
         html +=
-          '<div style="background:' + altColors[ai] + ';border:1.5px solid ' + altBorders[ai] + ';border-radius:12px;padding:14px;margin-bottom:10px;">' +
-          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">' +
-          '<div style="width:6px;height:6px;border-radius:50%;background:' + altAccents[ai] + ';flex-shrink:0;"></div>' +
-          '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + altAccents[ai] + ';">' + (altLabels[ai] || 'Alt ' + (ai+1)) + '</div>' +
+          '<div style="background:' + altColors[ai] + ';border:2px solid ' + altBorders[ai] + ';border-radius:14px;padding:16px;margin-bottom:12px;">' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">' +
+          '<div style="width:8px;height:8px;border-radius:50%;background:' + altAccents[ai] + ';flex-shrink:0;"></div>' +
+          '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + altAccents[ai] + ';">Text ' + (ai+1) + ' — ' + (altLabels[ai] || '') + '</div>' +
           '</div>' +
-          '<div style="font-size:13px;line-height:1.7;color:rgba(255,255,255,0.88);margin-bottom:12px;">' + alt + '</div>' +
-          '<button id="matchaUseBtn_' + hit.id + '_' + ai + '" style="width:100%;padding:10px;background:' + altAccents[ai] + ';border:none;color:' + (ai===1?'#1a1a2e':'#fff') + ';font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">✓ Använd denna text</button>' +
+          '<div style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.9);margin-bottom:14px;">' + alt + '</div>' +
+          '<button id="matchaUseBtn_' + hit.id + '_' + ai + '" style="width:100%;padding:13px;background:' + altAccents[ai] + ';border:none;color:' + (ai===1?'#1a1a2e':'#fff') + ';font-size:14px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;letter-spacing:0.3px;">✅ Välj denna text — lägg in i mitt CV</button>' +
           '</div>';
       });
-
-      html += '</div>'; // end result box
 
       resultEl.innerHTML = html;
       alts.forEach((alt, ai) => {
         const useBtn = document.getElementById('matchaUseBtn_' + hit.id + '_' + ai);
-        if (useBtn) useBtn.onclick = () => matchaApplyTextForAd(hit.id, ai);
+        if (useBtn) useBtn.onclick = () => {
+          matchaApplyTextForAd(hit.id, ai);
+          // Visuell bekräftelse — markera vald
+          resultEl.querySelectorAll('button[id^="matchaUseBtn_"]').forEach(b => {
+            b.textContent = b.id === useBtn.id ? '✅ Vald! Texten är nu i ditt CV' : '✓ Välj denna text — lägg in i mitt CV';
+            b.style.opacity = b.id === useBtn.id ? '1' : '0.4';
+          });
+        };
       });
       resultEl.style.display = 'block';
       hideAiLoader();
