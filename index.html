@@ -9887,7 +9887,7 @@ ${styleTexts}
     btnRow.appendChild(btn);
     btnRow.appendChild(aiBtn);
 
-    // --- Expanderbar info-box ---
+    // --- Expanderbar info-box (chips + knappar gömda tills klick) ---
     const expandBox = document.createElement('div');
     expandBox.style.cssText = 'display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);';
 
@@ -9932,16 +9932,30 @@ ${styleTexts}
 
     card.appendChild(expandBox);
 
+    // Flytta btnRow in i expandBox (knappar syns bara när kortet expanderas)
+    expandBox.appendChild(btnRow);
+
+    // Liten "tryck-hint" på kortet (collapsed-läge)
+    const tapHint = document.createElement('div');
+    tapHint.style.cssText = 'margin-top:8px;font-size:11px;color:rgba(255,255,255,0.25);display:flex;align-items:center;gap:4px;';
+    tapHint.innerHTML = '<span>👆</span><span>Tryck för att välja och AI-sammanfatta</span>';
+    card.appendChild(tapHint);
+
     // Klick på kortet → toggle expand
     let expanded = false;
     card.onclick = (e) => {
-      if (e.target.closest('.matcha-valj-btn') || e.target.closest('button') || e.target.closest('a')) return;
+      if (e.target.closest('button') || e.target.closest('a')) return;
       expanded = !expanded;
       expandBox.style.display = expanded ? 'block' : 'none';
+      tapHint.style.display = expanded ? 'none' : 'flex';
+      if (alreadyMatched) {
+        card.style.background = expanded ? 'rgba(240,192,64,0.18)' : 'rgba(240,192,64,0.15)';
+      } else {
+        card.style.background = expanded ? 'rgba(62,180,137,0.07)' : (isSelected => isSelected ? 'rgba(62,180,137,0.07)' : 'rgba(255,255,255,0.04)')(_matchaSelectedAds.findIndex(a => a.id === hit.id) >= 0);
+      }
     };
 
     updateCardState();
-    card.appendChild(btnRow);
     return card;
   }
 
@@ -9979,7 +9993,9 @@ ${styleTexts}
       }
 
       const locLabel = MATCHA_LOC_LABEL[matchaLocFilter] || 'Hela Sverige';
-      resultsEl.innerHTML = '<div style="font-size:11px;color:rgba(255,255,255,0.3);display:flex;justify-content:space-between;margin-bottom:8px;"><span>Visar ' + hits.length + ' av ' + total + '</span><span>' + locLabel + '</span></div>';
+      resultsEl.innerHTML =
+        '<div style="font-size:11px;color:rgba(255,255,255,0.3);display:flex;justify-content:space-between;margin-bottom:6px;"><span>Visar ' + hits.length + ' av ' + total + '</span><span>' + locLabel + '</span></div>' +
+        '<div style="font-size:12px;color:#fff;margin-bottom:12px;opacity:0.75;">👆 Tryck på en annons för att läsa mer, välja och AI-sammanfatta</div>';
       hits.forEach(hit => resultsEl.appendChild(matchaBuildCard(hit)));
       matchaCurrentOffset = hits.length;
       resultsEl.style.display = 'block';
