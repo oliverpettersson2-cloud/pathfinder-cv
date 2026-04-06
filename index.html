@@ -9554,7 +9554,7 @@ ${styleTexts}
 
     const btn = document.createElement('button');
     btn.className = 'matcha-valj-btn';
-    btn.style.cssText = 'flex:1;padding:9px;background:#3eb489;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:9px;cursor:pointer;font-family:inherit;transition:all 0.15s;';
+    btn.style.cssText = 'flex:1;padding:8px 10px;background:#3eb489;border:none;color:#fff;font-size:11px;font-weight:700;border-radius:9px;cursor:pointer;font-family:inherit;transition:all 0.15s;';
     btn.onclick = (e) => {
       e.stopPropagation();
       const idx = _matchaSelectedAds.findIndex(a => a.id === hit.id);
@@ -9572,7 +9572,7 @@ ${styleTexts}
 
     const aiBtn = document.createElement('button');
     aiBtn.title = 'AI-sammanfattning';
-    aiBtn.style.cssText = 'padding:9px 13px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;font-size:14px;border-radius:9px;cursor:pointer;font-family:inherit;transition:all 0.15s;flex-shrink:0;';
+    aiBtn.style.cssText = 'padding:9px 18px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;font-size:16px;border-radius:9px;cursor:pointer;font-family:inherit;transition:all 0.15s;flex-shrink:0;';
     aiBtn.textContent = '✨';
     let aiDone = false;
     aiBtn.onclick = async (e) => {
@@ -9594,6 +9594,7 @@ ${styleTexts}
         const data = await resp.json();
         const txt = data.content && data.content[0] && data.content[0].text;
         aiSumEl.textContent = txt || 'Kunde inte generera sammanfattning.';
+        if (txt) hit._aiSummary = txt; // Spara för steg 3
         aiDone = true;
         aiBtn.textContent = '✨';
         aiBtn.style.background = 'rgba(124,58,237,0.25)';
@@ -10229,9 +10230,18 @@ ${styleTexts}
         section.appendChild(adBox);
       }
 
-      // Generera-knapp
+      // AI-sammanfattning från steg 2 (om redan genererad)
+      const existingAiSum = _matchaSelectedAds[i] && _matchaSelectedAds[i]._aiSummary;
+      if (existingAiSum) {
+        const aiSumBox = document.createElement('div');
+        aiSumBox.style.cssText = 'margin-top:10px;font-size:12px;color:#a78bfa;line-height:1.7;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.4);';
+        aiSumBox.textContent = existingAiSum;
+        section.appendChild(aiSumBox);
+      }
+
+      // Matcha CV-knapp (lila)
       const genBtn = document.createElement('button');
-      genBtn.textContent = '🎯 Generera profiltext';
+      genBtn.textContent = '✨ Matcha CV mot annons';
       genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
       const adIdx = i;
       genBtn.onclick = () => matchaCVForAd(adIdx);
