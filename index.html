@@ -10537,15 +10537,18 @@ ${styleTexts}
       const section = document.createElement('div');
       section.dataset.adId = hit.id;
       section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;transition:all 0.2s;cursor:pointer;';
-      section.onclick = () => {
-        const gBtn = document.getElementById('matchaGenBtn_' + hit.id);
-        const infoBox = document.getElementById('matchaInfoBox_' + hit.id);
-        if (gBtn && gBtn.style.display === 'none') {
-          if (infoBox) infoBox.style.display = 'block';
-          gBtn.style.display = 'block';
+      const expandWrapper = document.createElement('div');
+      expandWrapper.id = 'matchaExpand_' + hit.id;
+      expandWrapper.style.display = 'none';
+      section.onclick = (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        const ew = document.getElementById('matchaExpand_' + hit.id);
+        const th = document.getElementById('matchaTapHint_' + hit.id);
+        if (ew && ew.style.display === 'none') {
+          ew.style.display = 'block';
+          if (th) th.style.display = 'none';
           section.style.borderColor = 'rgba(108,92,231,0.5)';
           section.style.background = 'rgba(62,180,137,0.09)';
-          tapHint.style.display = 'none';
         }
       };
 
@@ -10687,7 +10690,7 @@ ${styleTexts}
       infoBox.style.cssText = 'display:none;margin-top:12px;padding:12px;background:rgba(62,180,137,0.06);border:1px solid rgba(62,180,137,0.2);border-radius:10px;';
       infoBox.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:8px;">\uD83D\uDCC4 L\u00e4s annonsen s\u00e5 vet du exakt vilket jobb det handlar om \u2014 och kan avg\u00f6ra om du verkligen vill s\u00f6ka det.</div>' +
         (url ? '<a href="' + url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-block;font-size:12px;font-weight:700;color:#3eb489;text-decoration:none;padding:5px 12px;border:1px solid rgba(62,180,137,0.4);border-radius:8px;background:rgba(62,180,137,0.08);">\u2197 \u00d6ppna annons</a>' : '');
-      extrasDiv.appendChild(infoBox);
+      expandWrapper.appendChild(infoBox);
 
       if (!alreadyMatchedS3) genBtn.onclick = (e) => {
         e.stopPropagation();
@@ -10711,7 +10714,8 @@ ${styleTexts}
           }
         });
       }; // end genBtn.onclick
-      extrasDiv.appendChild(genBtn);
+      expandWrapper.appendChild(genBtn);
+      extrasDiv.appendChild(expandWrapper);
       section.appendChild(extrasDiv);
 
       // Resultat-container
@@ -10722,6 +10726,7 @@ ${styleTexts}
       section.appendChild(resultDiv);
 
       const tapHint = document.createElement('div');
+      tapHint.id = 'matchaTapHint_' + hit.id;
       tapHint.style.cssText = 'margin-top:12px;text-align:center;font-size:12px;font-weight:700;color:#f0c040;letter-spacing:0.3px;';
       tapHint.textContent = '👆 Tryck för mer info';
       section.appendChild(tapHint);
