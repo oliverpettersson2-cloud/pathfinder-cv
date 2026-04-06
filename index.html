@@ -9562,6 +9562,19 @@ ${styleTexts}
         _matchaSelectedAds.splice(idx, 1);
       } else if (_matchaSelectedAds.length < 3) {
         _matchaSelectedAds.push(hit);
+        // Auto-generera AI-sammanfattning i bakgrunden om ej gjort
+        if (!hit._aiSummary && !hit._aiPending) {
+          hit._aiPending = true;
+          const desc = hit.description && hit.description.text ? hit.description.text.substring(0, 2000) : '';
+          fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+            model:'claude-sonnet-4-20250514', max_tokens:300,
+            messages:[{ role:'user', content:'Sammanfatta detta jobb på 2-3 meningar på svenska. Vad söker de? Vad är viktigt för sökanden att veta? Jobbtitel: ' + hit.headline + '. Annonstext: ' + desc }]
+          })}).then(r => r.json()).then(data => {
+            const txt = data.content && data.content[0] && data.content[0].text;
+            if (txt) { hit._aiSummary = txt; matchaRenderStep3Ads(); }
+            hit._aiPending = false;
+          }).catch(() => { hit._aiPending = false; });
+        }
       } else {
         showToast('Max 3 annonser valda', 'error'); return;
       }
@@ -10142,18 +10155,19 @@ ${styleTexts}
       metaEl.textContent = company + (muni ? ' · ' + muni : '');
       section.appendChild(metaEl);
 
-      // Fakta-chips (dolda, toggle via knapp)
-      const factsToggleBtn = document.createElement('button');
-      factsToggleBtn.style.cssText = 'margin-top:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;';
-      factsToggleBtn.textContent = '📋 Visa info';
-      section.appendChild(factsToggleBtn);
-
+      // Fakta-chips (dolda, toggle via klick på kortet)
       const factsEl = document.createElement('div');
-      factsEl.style.cssText = 'display:none;flex-wrap:wrap;gap:6px;margin-top:8px;';
-      factsToggleBtn.onclick = () => {
-        const open = factsEl.style.display !== 'none';
-        factsEl.style.display = open ? 'none' : 'flex';
-        factsToggleBtn.textContent = open ? '📋 Visa info' : '▲ Stäng info';
+      factsEl.style.cssText = 'display:none;flex-wrap:wrap;gap:6px;margin-top:10px;';
+
+      // Klick på kortet (ej knappar/länkar) → toggle expand
+      let s3Expanded = false;
+      section.style.cursor = 'pointer';
+      section.onclick = (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        s3Expanded = !s3Expanded;
+        factsEl.style.display = s3Expanded ? 'flex' : 'none';
+        const adBox = section.querySelector('[id^="matchaAdSection_"]');
+        section.style.background = s3Expanded ? 'rgba(62,180,137,0.1)' : 'rgba(62,180,137,0.06)';
       };
 
       // Hjälpfunktion för att skapa chip
@@ -10196,7 +10210,7 @@ ${styleTexts}
       const duration = (hit.duration && hit.duration.label) || '';
       if (duration && duration !== 'Tillsvidare') factsEl.appendChild(makeChip('📅 ' + duration));
 
-      if (factsEl.children.length > 0) { section.appendChild(factsEl); } else { factsToggleBtn.style.display = 'none'; }
+      if (factsEl.children.length > 0) { section.appendChild(factsEl); }
 
       // Knappar
       const btnRow = document.createElement('div');
