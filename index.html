@@ -2545,8 +2545,7 @@
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
     <div id="mobCVSteps">
       <div class="mob-cvstep" id="mobCVStep-info" onclick="mobSwitchSubTab(&#39;info&#39;)">          <span class="mob-cvstep__lbl">Profil</span><div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
-      <div class="mob-cvstep" id="mobCVStep-jobb" onclick="mobSwitchSubTab(&#39;jobb&#39;)">          <span class="mob-cvstep__lbl">Jobb</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
-      <div class="mob-cvstep" id="mobCVStep-utbildning" onclick="mobSwitchSubTab(&#39;utbildning&#39;)">    <span class="mob-cvstep__lbl">Utb.</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
+      <div class="mob-cvstep" id="mobCVStep-jobb" onclick="mobSwitchSubTab(&#39;jobb&#39;)">          <span class="mob-cvstep__lbl">Jobb & Utb</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
       <div class="mob-cvstep" id="mobCVStep-mer" onclick="mobSwitchSubTab(&#39;mer&#39;)">           <span class="mob-cvstep__lbl">Mer</span>   <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
       <div class="mob-cvstep" id="mobCVStep-profil" onclick="mobSwitchSubTab(&#39;profil&#39;)">        <span class="mob-cvstep__lbl">Text</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
       <div class="mob-cvstep" id="mobCVStep-forhandsgranska" onclick="mobSwitchSubTab(&#39;forhandsgranska&#39;)"><span class="mob-cvstep__lbl">Visa</span>  <div class="mob-cvstep__dot"></div><div class="mob-cvstep__bar"></div></div>
@@ -7598,20 +7597,7 @@ ${styleTexts}
 
     </div>
 
-    <!-- FLIK 3: Utbildning -->
-    <div class="mob-panel" id="mobPanel-utbildning">
-      <div class="mob-section">
-        <div class="mob-section-title">Utbildning</div>
-        <div id="mobEduList"></div>
-        <button class="mob-btn-primary mob-btn-outline" onclick="openEduModal()">+ Lägg till utbildning</button>
-      </div>
-      <div class="mob-fortsatt">
-        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;jobb&#39;)">← Tillbaka till Jobb</button>
-        <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;utbildning&#39;,&#39;mer&#39;)">
-          Fortsätt till Mer →
-        </button>
-      </div>
-    </div>
+
 
     <!-- FLIK 5: Profil / Presentation -->
     <div class="mob-panel" id="mobPanel-profil">
@@ -7636,7 +7622,7 @@ ${styleTexts}
       </div>
     </div>
 
-    <!-- FLIK 2: Jobb -->
+    <!-- FLIK 2: Jobb & Utbildning -->
     <div class="mob-panel" id="mobPanel-jobb">
       <div class="mob-section">
         <div class="mob-section-title">Arbetslivserfarenhet</div>
@@ -7645,10 +7631,15 @@ ${styleTexts}
           + Lägg till jobb
         </button>
       </div>
+      <div class="mob-section" style="margin-top:8px;">
+        <div class="mob-section-title">Utbildning</div>
+        <div id="mobEduList"></div>
+        <button class="mob-btn-primary mob-btn-outline" onclick="openEduModal()">+ Lägg till utbildning</button>
+      </div>
       <div class="mob-fortsatt">
         <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;info&#39;)">← Tillbaka till Profil</button>
-        <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;jobb&#39;,&#39;utbildning&#39;)">
-          Fortsätt till Utbildning →
+        <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;jobb&#39;,&#39;mer&#39;)">
+          Fortsätt till Mer →
         </button>
       </div>
     </div>
@@ -7697,7 +7688,7 @@ ${styleTexts}
         <button class="mob-btn-primary mob-btn-outline" style="border-color:rgba(62,180,137,0.4);color:rgba(62,180,137,0.8);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
       </div>
       <div class="mob-fortsatt">
-        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;utbildning&#39;)">← Tillbaka till Utbildning</button>
+        <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;jobb&#39;)">← Tillbaka till Jobb & Utbildning</button>
         <button class="mob-fortsatt-btn" onclick="mobFortsatt(&#39;mer&#39;,&#39;profil&#39;)">
           Fortsätt till Profil →
         </button>
@@ -8001,7 +7992,7 @@ ${styleTexts}
   }
 
   // Uppdatera steg-indikatorn
-  const MOB_CV_STEPS = ['info','jobb','utbildning','mer','profil','forhandsgranska'];
+  const MOB_CV_STEPS = ['info','jobb','mer','profil','forhandsgranska'];
   function mobUpdateCVSteps(activeTab) {
     const activeIdx = MOB_CV_STEPS.indexOf(activeTab);
     MOB_CV_STEPS.forEach((tab, i) => {
@@ -8045,7 +8036,7 @@ ${styleTexts}
 
     if (tab === 'forhandsgranska') mobRefreshPreview();
     if (tab === 'aisyv') { syvFetchUtbildningar(); syvUpdateSavedBtn(); }
-    if (tab === 'utbildning') mobRenderEdu();
+    if (tab === 'jobb') { mobRenderEdu(); } // Utbildning är nu sammanslaget med Jobb
     if (tab === 'profil') {
       const el = document.getElementById('mob-summary');
       if (el) el.value = cvData.summary || '';
@@ -8738,7 +8729,7 @@ ${styleTexts}
   // PROGRESSIV UPPLÅSNING — sparas i localStorage
   // =====================================================
 
-  const MOB_TAB_ORDER = ['info','jobb','utbildning','mer','profil','forhandsgranska','export'];
+  const MOB_TAB_ORDER = ['info','jobb','mer','profil','forhandsgranska','export'];
   const MOB_ALWAYS_OPEN = new Set(['info','export']);
   const MOB_UNLOCK_KEY = 'pathfinder_mob_unlocked';
 
@@ -8762,7 +8753,7 @@ ${styleTexts}
   }
 
   // Vilka flikar är upplåsta
-  const mobUnlocked = new Set(['info','jobb','utbildning','mer','profil','forhandsgranska','export']);
+  const mobUnlocked = new Set(['info','jobb','mer','profil','forhandsgranska','export']);
 
   // Lås upp nästa flik efter att användaren aktivt gör något
   function mobUnlockNext(fromTab) {
@@ -8821,7 +8812,7 @@ ${styleTexts}
   function mobFortsatt(fromTab, toTab) {
     mobMarkVisited(fromTab);
     // CV-sub-tabs navigeras via steg-indikatorn i nav
-    const cvSubTabs = ['info','jobb','utbildning','mer','profil','forhandsgranska'];
+    const cvSubTabs = ['info','jobb','mer','profil','forhandsgranska'];
     if (cvSubTabs.includes(toTab)) {
       mobSwitchSubTab(toTab);
     } else {
