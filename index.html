@@ -10539,8 +10539,8 @@ ${styleTexts}
       hdrLabel.style.cssText = 'font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.6);';
       hdrLabel.textContent = 'Annons ' + (i+1) + ' av ' + _matchaSelectedAds.length;
       const rmBtn = document.createElement('button');
-      rmBtn.textContent = '✕';
-      rmBtn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(220,50,50,0.15);border:1px solid rgba(220,50,50,0.35);color:rgba(220,80,80,0.8);font-size:13px;font-weight:700;cursor:pointer;padding:3px 8px;border-radius:6px;line-height:1;';
+      rmBtn.innerHTML = '✕ Ta bort';
+      rmBtn.style.cssText = 'position:absolute;top:10px;right:10px;background:rgba(220,50,50,0.25);border:1.5px solid rgba(220,50,50,0.6);color:#ff6b6b;font-size:11px;font-weight:800;cursor:pointer;padding:4px 10px;border-radius:8px;line-height:1;letter-spacing:0.3px;';
       rmBtn.onclick = () => matchaRemoveAd(hit.id);
       hdr.appendChild(hdrLabel); hdr.appendChild(rmBtn);
       section.appendChild(hdr);
@@ -10676,15 +10676,16 @@ ${styleTexts}
           overlay.innerHTML = `<div style="background:#1e2540;border:1px solid rgba(255,255,255,0.12);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;box-shadow:0 -8px 40px rgba(0,0,0,0.5);">
             <div style="text-align:center;margin-bottom:16px;">
               <div style="font-size:28px;margin-bottom:8px;">📋</div>
-              <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:6px;">Bättre träffsäkerhet?</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Har du läst hela annonsen kan AI:n matcha ditt CV mycket bättre — den förstår exakt vad arbetsgivaren söker.</div>
+              <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:6px;">Läs annonsen innan du matchar</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Läs igenom jobbannonsen så vet du exakt vad tjänsten innebär — och kan bedöma om du verkligen vill söka den. AI:n matchar sedan ditt CV mot det specifika jobbet.</div>
             </div>
-            <a href="${adUrl}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:13px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.4);border-radius:12px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;">Gå till annonsen ↗</a>
-            <button class="modal-matcha-btn" style="width:100%;padding:13px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Matcha mot CV ändå</button>
+            <button class="modal-open-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:13px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.4);border-radius:12px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;cursor:pointer;font-family:inherit;box-sizing:border-box;">Gå till annonsen ↗</button>
+            <button class="modal-matcha-btn" style="width:100%;padding:13px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Matcha mot CV</button>
             <button class="modal-cancel-btn" style="display:block;width:100%;margin-top:8px;padding:10px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:12px;cursor:pointer;font-family:inherit;">Avbryt</button>
           </div>`;
           document.body.appendChild(overlay);
           overlay.querySelector('.modal-cancel-btn').onclick = () => overlay.remove();
+          overlay.querySelector('.modal-open-btn').onclick = () => { window.open(adUrl, '_blank', 'noopener,noreferrer'); };
           overlay.querySelector('.modal-matcha-btn').onclick = () => { overlay.remove(); _doMatchaGenerate(); };
           overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
         } else {
@@ -10807,6 +10808,8 @@ ${styleTexts}
 
     resultEl.innerHTML = html;
     resultEl.style.display = 'block';
+    // Scrolla dit profiltexterna visas
+    setTimeout(() => { resultEl.scrollIntoView({behavior:'smooth', block:'start'}); }, 80);
 
     // Dölj allt "extra" (annonsknapp, text, AI-sum, matchaknapp) när profiltexter visas
     const section = resultEl.closest('[data-ad-id]');
