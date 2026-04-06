@@ -10536,7 +10536,16 @@ ${styleTexts}
 
       const section = document.createElement('div');
       section.dataset.adId = hit.id;
-      section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;transition:opacity 0.3s;';
+      section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;transition:all 0.2s;cursor:pointer;';
+      section.onclick = () => {
+        const gBtn = document.getElementById('matchaGenBtn_' + hit.id);
+        if (gBtn && gBtn.style.display === 'none') {
+          gBtn.style.display = 'block';
+          section.style.borderColor = 'rgba(108,92,231,0.5)';
+          section.style.background = 'rgba(62,180,137,0.09)';
+          tapHint.style.display = 'none';
+        }
+      };
 
       // Header rad
       const hdr = document.createElement('div');
@@ -10644,68 +10653,18 @@ ${styleTexts}
       const extrasDiv = document.createElement('div');
       extrasDiv.id = 'matchaExtras_' + hit.id;
 
-      // Knappar
-      const btnRow = document.createElement('div');
-      btnRow.style.cssText = 'display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;';
-      if (adText) {
-        const readBtn = document.createElement('button');
-        readBtn.textContent = '📄 Läs annons';
-        readBtn.style.cssText = 'background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);color:#3eb489;font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:20px;font-family:inherit;';
-        const adId = hit.id;
-        readBtn.onclick = () => {
-          const adBoxEl = document.getElementById('matchaAdSection_' + adId);
-          if (!adBoxEl) return;
-          const opening = adBoxEl.style.display === 'none';
-          adBoxEl.style.display = opening ? 'block' : 'none';
-          readBtn.textContent = opening ? '▲ Stäng annons' : '📄 Läs annons';
-          // Lås upp matchaknappen första gången annonsen öppnas
-          if (opening) {
-            const gBtn = document.getElementById('matchaGenBtn_' + adId);
-            if (gBtn && gBtn.dataset.locked) {
-              gBtn.disabled = false;
-              gBtn.dataset.locked = '';
-              gBtn.style.opacity = '1';
-              gBtn.style.cursor = 'pointer';
-              gBtn.style.background = 'linear-gradient(135deg,#6c5ce7,#a29bfe)';
-            }
-          }
-        };
-        btnRow.appendChild(readBtn);
-      }
+      // Extern länk (enda knappen kvar — Läs annons borttagen)
       if (url) {
+        const btnRow = document.createElement('div');
+        btnRow.style.cssText = 'margin-top:8px;';
         const linkEl = document.createElement('a');
         linkEl.href = url; linkEl.target = '_blank'; linkEl.rel = 'noopener';
-        linkEl.textContent = '↗ Extern länk';
-        linkEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;';
+        linkEl.textContent = '↗ Öppna annons';
+        linkEl.onclick = e => e.stopPropagation();
+        linkEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.35);text-decoration:none;';
         btnRow.appendChild(linkEl);
+        extrasDiv.appendChild(btnRow);
       }
-      extrasDiv.appendChild(btnRow);
-
-      // Expanderbar annonstext + AI-sammanfattning (båda dolda tills "Läs annons" klickas)
-      const adBox = document.createElement('div');
-      adBox.id = 'matchaAdSection_' + hit.id;
-      adBox.style.cssText = 'display:none;margin-top:10px;border-radius:10px;overflow:hidden;';
-      if (adText) {
-        const adContent = document.createElement('div');
-        adContent.style.cssText = 'font-size:11px;line-height:1.7;color:rgba(255,255,255,0.65);white-space:pre-wrap;max-height:220px;overflow-y:auto;background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;margin-bottom:8px;';
-        adContent.textContent = adText.substring(0, 2000);
-        adBox.appendChild(adContent);
-      }
-      // AI-sammanfattning inuti adBox (visas vid "Läs annons")
-      const existingAiSum = _matchaSelectedAds[i] && _matchaSelectedAds[i]._aiSummary;
-      const aiIsPending   = _matchaSelectedAds[i] && _matchaSelectedAds[i]._aiPending;
-      if (existingAiSum) {
-        const aiSumBox = document.createElement('div');
-        aiSumBox.style.cssText = 'font-size:12px;color:#a78bfa;line-height:1.7;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.4);';
-        aiSumBox.textContent = existingAiSum;
-        adBox.appendChild(aiSumBox);
-      } else if (aiIsPending) {
-        const pendingBox = document.createElement('div');
-        pendingBox.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.3);';
-        pendingBox.innerHTML = '<span style="font-size:18px;animation:hourglassSpin 2s ease-in-out infinite;display:inline-block;">⏳</span><span style="font-size:12px;color:rgba(164,139,250,0.7);">AI analyserar annonsen…</span>';
-        adBox.appendChild(pendingBox);
-      }
-      extrasDiv.appendChild(adBox);
 
       // Matcha CV-knapp (lila) — eller "redan matchad"-badge
       const genBtn = document.createElement('button');
@@ -10716,14 +10675,7 @@ ${styleTexts}
       } else {
         genBtn.id = 'matchaGenBtn_' + hit.id;
         genBtn.textContent = '\u2728 Matcha CV mot annons';
-        genBtn.dataset.locked = 'yes';
-        genBtn.disabled = true;
-        genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:rgba(108,92,231,0.3);border:1.5px dashed rgba(108,92,231,0.4);color:rgba(255,255,255,0.35);font-size:13px;font-weight:700;border-radius:10px;cursor:default;font-family:inherit;opacity:0.6;';
-        // Hint-text under knappen
-        const hintEl = document.createElement('div');
-        hintEl.style.cssText = 'text-align:center;margin-top:6px;font-size:11px;color:rgba(255,255,255,0.3);';
-        hintEl.textContent = '\u261d Tryck p\u00e5 "L\u00e4s annons" f\u00f6rst';
-        extrasDiv.appendChild(hintEl);
+        genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;display:none;';
       }
       const adIdx = i;
       if (!alreadyMatchedS3) genBtn.onclick = () => {
@@ -10782,6 +10734,11 @@ ${styleTexts}
       resultDiv.style.display = 'none';
       resultDiv.style.marginTop = '12px';
       section.appendChild(resultDiv);
+
+      const tapHint = document.createElement('div');
+      tapHint.style.cssText = 'margin-top:12px;text-align:center;font-size:12px;font-weight:700;color:#f0c040;letter-spacing:0.3px;';
+      tapHint.textContent = '👆 Tryck för mer info';
+      section.appendChild(tapHint);
 
       container.appendChild(section);
     });
