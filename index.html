@@ -7844,6 +7844,16 @@ ${styleTexts}
 
       <!-- STEG 1: Välj CV -->
       <div id="matchaStep1" style="padding:20px 16px;">
+
+        <!-- Info-ruta: vad är Matcha? -->
+        <div style="background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.25);border-radius:14px;padding:14px 16px;margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:6px;">🎯 Vad gör Matcha?</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7;">
+            AI läser din CV och en jobannons — och skriver en personlig profiltext som passar just det jobbet.<br><br>
+            <span style="color:rgba(255,255,255,0.4);">💡 Tips: Du kan alltid gå in i <strong style="color:#a78bfa;">Profil-fliken</strong> och ändra din matchade profiltext efteråt.</span>
+          </div>
+        </div>
+
         <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:12px;">Välj CV att matcha mot</div>
         <div id="matchaCvCards" style="margin-bottom:20px;"></div>
         <input id="matchaCvSelect" type="hidden">
@@ -10716,9 +10726,16 @@ ${styleTexts}
             if (section && !section.querySelector('.profil-banner')) {
               const banner = document.createElement('div');
               banner.className = 'profil-banner';
-              banner.style.cssText = 'margin-top:10px;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;';
-              banner.innerHTML = '<div><div style="font-size:13px;font-weight:700;color:#3eb489;">✅ Profiltext sparad!</div><div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">Hittar du ditt CV under Profil-fliken</div></div><div style="font-size:20px;">👤→</div>';
-              banner.onclick = () => { if (typeof mobSwitchTab === 'function') mobSwitchTab('export'); };
+              banner.style.cssText = 'margin-top:12px;background:rgba(30,36,70,0.95);border:2px solid rgba(62,180,137,0.4);border-radius:16px;padding:16px;';
+              banner.innerHTML =
+                '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:4px;">\u2705 Profiltext sparad!</div>' +
+                '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:14px;">Ditt matchade CV finns nu under Profil. Vad vill du g\u00f6ra h\u00e4rn\u00e4st?</div>' +
+                '<div style="display:flex;gap:8px;">' +
+                '<button class="profil-go-btn" style="flex:1;padding:12px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83d\udc64 G\u00e5 till Profil</button>' +
+                '<button class="profil-continue-btn" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83c\udfaf Forts\u00e4tt matcha</button>' +
+                '</div>';
+              banner.querySelector('.profil-go-btn').onclick = () => { if (typeof mobSwitchTab === 'function') mobSwitchTab('export'); };
+              banner.querySelector('.profil-continue-btn').onclick = () => { banner.remove(); };
               section.appendChild(banner);
             }
           }, 500);
