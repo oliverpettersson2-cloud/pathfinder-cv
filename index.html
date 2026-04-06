@@ -10399,10 +10399,52 @@ ${styleTexts}
       const useBtn = document.getElementById('matchaUseBtn_' + hit.id + '_' + ai);
       if (useBtn) useBtn.onclick = () => {
         matchaApplyTextForAd(hit.id, ai);
+
+        // Markera vald knapp
         resultEl.querySelectorAll('button[id^="matchaUseBtn_"]').forEach(b => {
           b.textContent = b.id === useBtn.id ? '✅ Vald! Texten är nu i ditt CV' : '✓ Välj denna text';
           b.style.opacity = b.id === useBtn.id ? '1' : '0.4';
         });
+
+        // Stäng resultat-rutan automatiskt efter 2 sek + visa Profil-banner
+        setTimeout(() => {
+          resultEl.style.transition = 'opacity 0.5s';
+          resultEl.style.opacity = '0';
+          setTimeout(() => {
+            resultEl.style.display = 'none';
+            resultEl.style.opacity = '';
+            // Visa "Gå till Profil"-banner under annons-kortet
+            const section = resultEl.closest('[data-ad-id]');
+            if (section && !section.querySelector('.profil-banner')) {
+              const banner = document.createElement('div');
+              banner.className = 'profil-banner';
+              banner.style.cssText = 'margin-top:10px;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;';
+              banner.innerHTML = '<div><div style="font-size:13px;font-weight:700;color:#3eb489;">✅ Profiltext sparad!</div><div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">Hittar du ditt CV under Profil-fliken</div></div><div style="font-size:20px;">👤→</div>';
+              banner.onclick = () => { if (typeof mobSwitchTab === 'function') mobSwitchTab('export'); };
+              section.appendChild(banner);
+            }
+          }, 500);
+        }, 2000);
+
+        // Lås genBtn — ersätt med Klar-badge
+        const genBtn = resultEl.closest('[data-ad-id]') &&
+          resultEl.closest('[data-ad-id]').querySelector('button[style*="6c5ce7"]');
+        if (genBtn) {
+          genBtn.textContent = '✅ Profiltext vald';
+          genBtn.style.background = 'rgba(62,180,137,0.15)';
+          genBtn.style.border = '1.5px solid rgba(62,180,137,0.4)';
+          genBtn.style.color = '#3eb489';
+          genBtn.style.cursor = 'default';
+          genBtn.onclick = null;
+        }
+
+        // Återställ övriga annonser till fullt synliga
+        document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]').forEach(s => {
+          s.style.opacity = '';
+          s.style.pointerEvents = '';
+        });
+        const resetBtn = document.getElementById('matchaResetFocus');
+        if (resetBtn) resetBtn.remove();
       };
     });
   }
@@ -10524,7 +10566,7 @@ ${styleTexts}
     const ei = mlist.findIndex(c => c.title === matchTitle);
     if (ei >= 0) mlist[ei] = snapshot; else mlist.unshift(snapshot);
     mobPutMatchedCVs(mlist);
-    showToast('✅ Sparat som "' + matchTitle + '" — finns nu under Profil', 'success');
+    showToast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil', 'success');
     if (typeof mobRenderSavedCVs === 'function') mobRenderSavedCVs();
   }
 
