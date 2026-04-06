@@ -10487,7 +10487,13 @@ ${styleTexts}
     // Byt till steg 2 → starta sökning om inte gjort
     if (n === 2) {
       const s = document.getElementById('matchaSearch');
-      if (s && s.value.length > 1) matchaDoSearch();
+      if (s && s.value.length > 1) {
+        matchaDoSearch();
+      } else if (s && s.value.length === 0) {
+        // Tom sökruta → defaultsökning
+        s.value = 'jobb utan krav på utbildning';
+        matchaDoSearch();
+      }
     }
     // Byt till steg 3 → rendera valda annonser + CV-grid
     if (n === 3) {
@@ -10646,7 +10652,24 @@ ${styleTexts}
         readBtn.textContent = '📄 Läs annons';
         readBtn.style.cssText = 'background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);color:#3eb489;font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:20px;font-family:inherit;';
         const adId = hit.id;
-        readBtn.onclick = () => matchaToggleAdSection(adId);
+        readBtn.onclick = () => {
+          const adBoxEl = document.getElementById('matchaAdSection_' + adId);
+          if (!adBoxEl) return;
+          const opening = adBoxEl.style.display === 'none';
+          adBoxEl.style.display = opening ? 'block' : 'none';
+          readBtn.textContent = opening ? '▲ Stäng annons' : '📄 Läs annons';
+          // Lås upp matchaknappen första gången annonsen öppnas
+          if (opening) {
+            const gBtn = document.getElementById('matchaGenBtn_' + adId);
+            if (gBtn && gBtn.dataset.locked) {
+              gBtn.disabled = false;
+              gBtn.dataset.locked = '';
+              gBtn.style.opacity = '1';
+              gBtn.style.cursor = 'pointer';
+              gBtn.style.background = 'linear-gradient(135deg,#6c5ce7,#a29bfe)';
+            }
+          }
+        };
         btnRow.appendChild(readBtn);
       }
       if (url) {
@@ -10691,8 +10714,16 @@ ${styleTexts}
         genBtn.disabled = true;
         genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);color:#3eb489;font-size:13px;font-weight:700;border-radius:10px;cursor:default;font-family:inherit;opacity:0.8;';
       } else {
+        genBtn.id = 'matchaGenBtn_' + hit.id;
         genBtn.textContent = '\u2728 Matcha CV mot annons';
-        genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
+        genBtn.dataset.locked = 'yes';
+        genBtn.disabled = true;
+        genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:rgba(108,92,231,0.3);border:1.5px dashed rgba(108,92,231,0.4);color:rgba(255,255,255,0.35);font-size:13px;font-weight:700;border-radius:10px;cursor:default;font-family:inherit;opacity:0.6;';
+        // Hint-text under knappen
+        const hintEl = document.createElement('div');
+        hintEl.style.cssText = 'text-align:center;margin-top:6px;font-size:11px;color:rgba(255,255,255,0.3);';
+        hintEl.textContent = '\u261d Tryck p\u00e5 "L\u00e4s annons" f\u00f6rst';
+        extrasDiv.appendChild(hintEl);
       }
       const adIdx = i;
       if (!alreadyMatchedS3) genBtn.onclick = () => {
