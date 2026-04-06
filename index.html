@@ -10612,6 +10612,10 @@ ${styleTexts}
 
       if (factsEl.children.length > 0) { section.appendChild(factsEl); }
 
+      // Wrapper för allt "extra" som döljs när profiltexter visas
+      const extrasDiv = document.createElement('div');
+      extrasDiv.id = 'matchaExtras_' + hit.id;
+
       // Knappar
       const btnRow = document.createElement('div');
       btnRow.style.cssText = 'display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;';
@@ -10630,7 +10634,7 @@ ${styleTexts}
         linkEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;';
         btnRow.appendChild(linkEl);
       }
-      section.appendChild(btnRow);
+      extrasDiv.appendChild(btnRow);
 
       // Expanderbar annonstext
       if (adText) {
@@ -10641,7 +10645,7 @@ ${styleTexts}
         adContent.style.cssText = 'font-size:11px;line-height:1.7;color:rgba(255,255,255,0.65);white-space:pre-wrap;';
         adContent.textContent = adText.substring(0, 2000);
         adBox.appendChild(adContent);
-        section.appendChild(adBox);
+        extrasDiv.appendChild(adBox);
       }
 
       // AI-sammanfattning från steg 2 (om redan genererad)
@@ -10651,12 +10655,12 @@ ${styleTexts}
         const aiSumBox = document.createElement('div');
         aiSumBox.style.cssText = 'margin-top:10px;font-size:12px;color:#a78bfa;line-height:1.7;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.4);';
         aiSumBox.textContent = existingAiSum;
-        section.appendChild(aiSumBox);
+        extrasDiv.appendChild(aiSumBox);
       } else if (aiIsPending) {
         const pendingBox = document.createElement('div');
         pendingBox.style.cssText = 'margin-top:10px;display:flex;align-items:center;gap:8px;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.3);';
         pendingBox.innerHTML = '<span style="font-size:18px;animation:hourglassSpin 2s ease-in-out infinite;display:inline-block;">⏳</span><span style="font-size:12px;color:rgba(164,139,250,0.7);">AI analyserar annonsen…</span>';
-        section.appendChild(pendingBox);
+        extrasDiv.appendChild(pendingBox);
       }
 
       // Matcha CV-knapp (lila)
@@ -10710,7 +10714,8 @@ ${styleTexts}
           });
         }
       };
-      section.appendChild(genBtn);
+      extrasDiv.appendChild(genBtn);
+      section.appendChild(extrasDiv);
 
       // Resultat-container
       const resultDiv = document.createElement('div');
@@ -10803,13 +10808,12 @@ ${styleTexts}
     resultEl.innerHTML = html;
     resultEl.style.display = 'block';
 
-    // Stäng annonsen ovan när profiltexter visas
+    // Dölj allt "extra" (annonsknapp, text, AI-sum, matchaknapp) när profiltexter visas
     const section = resultEl.closest('[data-ad-id]');
     if (section) {
-      const adBox = section.querySelector('[id^="matchaAdSection_"]') || section.querySelector('[style*="display:block"]');
-      // Stäng expandBox i step 3-sektionen
-      const expandBoxes = section.querySelectorAll('div[style*="border-top"]');
-      expandBoxes.forEach(b => { if (b !== resultEl) b.style.display = 'none'; });
+      const adId = section.dataset.adId;
+      const extrasEl = document.getElementById('matchaExtras_' + adId);
+      if (extrasEl) extrasEl.style.display = 'none';
     }
 
     const closeBtn = document.getElementById(closeId);
