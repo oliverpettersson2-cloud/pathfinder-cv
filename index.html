@@ -10727,19 +10727,16 @@ ${styleTexts}
 
     let html = '';
 
-    // Stäng-knapp
-    const closeId = 'matchaClose_' + hit.id;
-    html += '<button id="' + closeId + '" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:13px;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:inherit;">✕ Stäng förslag</button>';
-    html += '</div>';
-
-    // Banner
+    // ── Banner ÖVERST ──
     html += '<div style="background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(124,58,237,0.05));border:2px solid rgba(124,58,237,0.5);border-radius:16px;padding:16px;margin-bottom:16px;text-align:center;">';
     html += '<div style="font-size:22px;margin-bottom:6px;">✨</div>';
     html += '<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">AI har skrivit 3 profiltexter åt dig!</div>';
-    html += '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">Anpassade för <strong style="color:#a78bfa;">' + role + '</strong> hos <strong style="color:#a78bfa;">' + company + '</strong></div>';
+    html += '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6;">Anpassade för <strong style="color:#a78bfa;">' + role + '</strong> hos <strong style="color:#a78bfa;">' + company + '</strong></div>';
     html += '<div style="margin-top:10px;display:inline-block;background:rgba(62,180,137,0.15);border:1px solid rgba(62,180,137,0.4);border-radius:20px;padding:5px 14px;">';
     html += '<span style="font-size:11px;font-weight:700;color:#3eb489;">👇 Välj en — den läggs direkt in i ditt CV</span>';
-    html += '</div></div>';
+    html += '</div>';
+    html += '<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.4);line-height:1.6;">✏️ Texterna är en bra start — lägg till din personliga touch genom att redigera i <strong style="color:#f0c040;">👤 Profil</strong> efteråt.</div>';
+    html += '</div>';
 
     // Nyckelord
     if (parsed.keywords && parsed.keywords.length > 0) {
@@ -10774,10 +10771,23 @@ ${styleTexts}
         '</div>';
     });
 
+    // Röd stäng-knapp längst ned
+    const closeId = 'matchaClose_' + hit.id;
+    html += '<button id="' + closeId + '" style="width:100%;padding:13px;background:rgba(220,50,50,0.15);border:2px solid rgba(220,50,50,0.4);color:#ff6b6b;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-top:4px;">✕ Ingen av dessa — stäng förslag</button>';
+
     resultEl.innerHTML = html;
     resultEl.style.display = 'block';
 
-    const closeBtn = document.getElementById('matchaClose_' + hit.id);
+    // Stäng annonsen ovan när profiltexter visas
+    const section = resultEl.closest('[data-ad-id]');
+    if (section) {
+      const adBox = section.querySelector('[id^="matchaAdSection_"]') || section.querySelector('[style*="display:block"]');
+      // Stäng expandBox i step 3-sektionen
+      const expandBoxes = section.querySelectorAll('div[style*="border-top"]');
+      expandBoxes.forEach(b => { if (b !== resultEl) b.style.display = 'none'; });
+    }
+
+    const closeBtn = document.getElementById(closeId);
     if (closeBtn) closeBtn.onclick = () => { resultEl.style.display = 'none'; };
 
     alts.forEach((alt, ai) => {
