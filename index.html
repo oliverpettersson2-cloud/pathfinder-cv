@@ -3223,9 +3223,13 @@
         <div style="display: flex; align-items: flex-end; gap: 6px;">
           <div style="flex: 1;">
             <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+              <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:2px;">MÅNAD</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:2px;">ÅR</div>
+            </div>
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
               <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobStartYear').focus();">
-                <option value="" disabled selected>— Välj från-månad —</option>
+                <option value="">Mån</option>
                 <option value="Januari">Januari</option>
                 <option value="Februari">Februari</option>
                 <option value="Mars">Mars</option>
@@ -3240,7 +3244,7 @@
                 <option value="December">December</option>
               </select>
               <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndMonth').focus();">
-                <option value="" disabled selected>— Välj från-år —</option>
+                <option value="">År</option>
                 <option value="2026">2026</option>
                 <option value="2025">2025</option>
                 <option value="2024">2024</option>
@@ -3281,9 +3285,13 @@
                 Pågående
               </label>
             </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+              <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:2px;">MÅNAD</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:2px;">ÅR</div>
+            </div>
             <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
               <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndYear').focus();">
-                <option value="" disabled selected>— Välj till-månad —</option>
+                <option value="">Mån</option>
                 <option value="Januari">Januari</option>
                 <option value="Februari">Februari</option>
                 <option value="Mars">Mars</option>
@@ -3298,7 +3306,7 @@
                 <option value="December">December</option>
               </select>
               <select class="modal-input" id="jobEndYear" style="padding: 8px 4px; font-size: 13px;">
-                <option value="" disabled selected>— Välj till-år —</option>
+                <option value="">År</option>
                 <option value="Pågående">Pågående</option>
                 <option value="2026">2026</option>
                 <option value="2025">2025</option>
@@ -3342,7 +3350,7 @@
         <textarea class="modal-input" id="jobDesc1" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)" rows="2" style="resize:none;line-height:1.5;padding:10px 12px;font-family:inherit;font-size:14px;"></textarea>
         <textarea class="modal-input" id="jobDesc2" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)" rows="2" style="resize:none;line-height:1.5;padding:10px 12px;font-family:inherit;font-size:14px;"></textarea>
         <textarea class="modal-input" id="jobDesc3" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)" rows="2" style="resize:none;line-height:1.5;padding:10px 12px;font-family:inherit;font-size:14px;"></textarea>
-        <button onclick="clearJobDesc()" style="background: none; border: none; cursor: pointer; font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; display: flex; align-items: center; gap: 4px; padding: 0;">🗑 Rensa Arbetsuppgifter</button>
+        <button onclick="clearJobDesc()" style="width:100%;margin-top:6px;padding:8px;background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.2);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,100,100,0.7);text-align:center;">🗑 Rensa arbetsuppgifter</button>
       </div>
 
       <div class="modal-buttons">
