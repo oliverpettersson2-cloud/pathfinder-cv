@@ -38,6 +38,68 @@
       _descEditorTarget = null;
     }
 
+    
+    let _cpickerField = null;
+    const _cpickerData = {
+      jobStartMonth: ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'],
+      jobStartYear: ['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', '2014', '2013', '2012', '2011', '2010', '2009', '2008', '2007', '2006', '2005', '2004', '2003', '2002', '2001', '2000', 'Före 2000'],
+      jobEndMonth: ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December'],
+      jobEndYear: ['Pågående'] + ['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015', '2014', '2013', '2012', '2011', '2010', '2009', '2008', '2007', '2006', '2005', '2004', '2003', '2002', '2001', '2000', 'Före 2000']
+    };
+
+    function cpickerOpen(field, title, color) {
+      _cpickerField = field;
+      const overlay = document.getElementById('cpickerOverlay');
+      const titleEl = document.getElementById('cpickerTitle');
+      const list = document.getElementById('cpickerList');
+      titleEl.textContent = title;
+      titleEl.style.color = color;
+      const current = document.getElementById(field).value;
+      const items = field === 'jobEndYear'
+        ? ['Pågående', ...Array.from({length:27},(_,i)=>(2026-i).toString()), 'Före 2000']
+        : field === 'jobStartYear'
+        ? [...Array.from({length:27},(_,i)=>(2026-i).toString()), 'Före 2000']
+        : ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
+      list.innerHTML = items.map(v =>
+        `<div class="cpicker-item${v===current?' selected':''}" onclick="cpickerPick('${v}')">${v}</div>`
+      ).join('');
+      overlay.style.display = 'block';
+      // Scrolla till vald
+      setTimeout(() => {
+        const sel = list.querySelector('.selected');
+        if (sel) sel.scrollIntoView({block:'center'});
+      }, 50);
+    }
+
+    function cpickerPick(val) {
+      if (!_cpickerField) return;
+      document.getElementById(_cpickerField).value = val;
+      // Uppdatera knapp-text
+      const btn = document.getElementById(_cpickerField + 'Btn');
+      if (btn) {
+        btn.textContent = val;
+        btn.style.color = '#3eb489';
+        btn.style.borderColor = 'rgba(62,180,137,0.5)';
+      }
+      cpickerClose();
+      // Auto-advance
+      const next = {
+        jobStartMonth: 'jobStartYear',
+        jobStartYear: 'jobEndMonth',
+        jobEndMonth: 'jobEndYear'
+      }[_cpickerField];
+      if (next && next !== 'jobEndYear') {
+        const label = next === 'jobStartYear' ? 'FRÅN — År' : next === 'jobEndMonth' ? 'TILL — Månad' : 'TILL — År';
+        const color = next.startsWith('jobStart') ? '#3eb489' : 'rgba(255,255,255,0.5)';
+        setTimeout(() => cpickerOpen(next, label, color), 200);
+      }
+    }
+
+    function cpickerClose() {
+      document.getElementById('cpickerOverlay').style.display = 'none';
+      _cpickerField = null;
+    }
+
     </script>
   <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
   
@@ -2470,6 +2532,20 @@
       #mobileContent { display: none !important; }
     }
 </style>
+
+  <style>
+    .cpicker-item {
+      padding: 14px 20px;
+      font-size: 16px;
+      color: #fff;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.15s;
+    }
+    .cpicker-item:active { background: rgba(255,255,255,0.1); }
+    .cpicker-item.selected { color: #3eb489; font-weight: 700; }
+  </style>
+
 </head>
 <body>
 
@@ -3219,124 +3295,37 @@
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
       
+      <!-- Dolda hidden inputs för datum -->
+      <input type="hidden" id="jobStartMonth">
+      <input type="hidden" id="jobStartYear">
+      <input type="hidden" id="jobEndMonth">
+      <input type="hidden" id="jobEndYear">
+
       <div style="margin-bottom: 12px;">
-        <div style="display: flex; align-items: flex-end; gap: 6px;">
-          <div style="flex: 1;">
-            <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-              <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:2px;">MÅNAD</div>
-              <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:2px;">ÅR</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
-              <select class="modal-input" id="jobStartMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobStartYear').focus();">
-                <option value="">Mån</option>
-                <option value="Januari">Januari</option>
-                <option value="Februari">Februari</option>
-                <option value="Mars">Mars</option>
-                <option value="April">April</option>
-                <option value="Maj">Maj</option>
-                <option value="Juni">Juni</option>
-                <option value="Juli">Juli</option>
-                <option value="Augusti">Augusti</option>
-                <option value="September">September</option>
-                <option value="Oktober">Oktober</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-              </select>
-              <select class="modal-input" id="jobStartYear" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndMonth').focus();">
-                <option value="">År</option>
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-                <option value="2021">2021</option>
-                <option value="2020">2020</option>
-                <option value="2019">2019</option>
-                <option value="2018">2018</option>
-                <option value="2017">2017</option>
-                <option value="2016">2016</option>
-                <option value="2015">2015</option>
-                <option value="2014">2014</option>
-                <option value="2013">2013</option>
-                <option value="2012">2012</option>
-                <option value="2011">2011</option>
-                <option value="2010">2010</option>
-                <option value="2009">2009</option>
-                <option value="2008">2008</option>
-                <option value="2007">2007</option>
-                <option value="2006">2006</option>
-                <option value="2005">2005</option>
-                <option value="2004">2004</option>
-                <option value="2003">2003</option>
-                <option value="2002">2002</option>
-                <option value="2001">2001</option>
-                <option value="2000">2000</option>
-                <option value="Före 2000">Före 2000</option>
-              </select>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+
+          <!-- FRÅN -->
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:700;color:#3eb489;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Från</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button type="button" id="jobStartMonthBtn" onclick="cpickerOpen('jobStartMonth','FRÅN — Månad','#3eb489')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
+              <button type="button" id="jobStartYearBtn" onclick="cpickerOpen('jobStartYear','FRÅN — År','#3eb489')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
             </div>
           </div>
-          <div style="color: rgba(255,255,255,0.3); font-size: 18px; padding-bottom: 10px; flex-shrink: 0;">→</div>
-          <div style="flex: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <label style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px;">Till</label>
-              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; color: #3eb489; font-weight: 600;">
-                <input type="checkbox" id="jobOngoing" onchange="toggleJobOngoing(this)" style="accent-color: #3eb489; width: 14px; height: 14px; cursor: pointer;">
-                Pågående
+
+          <div style="color:rgba(255,255,255,0.25);font-size:20px;padding-top:28px;flex-shrink:0;">→</div>
+
+          <!-- TILL -->
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.5px;">Till</span>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:#3eb489;font-weight:600;">
+                <input type="checkbox" id="jobOngoing" onchange="toggleJobOngoing(this)" style="accent-color:#3eb489;width:14px;height:14px;"> Pågående
               </label>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-              <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:2px;">MÅNAD</div>
-              <div style="font-size:9px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:2px;">ÅR</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 4px;">
-              <select class="modal-input" id="jobEndMonth" style="padding: 8px 4px; font-size: 13px;" onchange="if(this.value) document.getElementById('jobEndYear').focus();">
-                <option value="">Mån</option>
-                <option value="Januari">Januari</option>
-                <option value="Februari">Februari</option>
-                <option value="Mars">Mars</option>
-                <option value="April">April</option>
-                <option value="Maj">Maj</option>
-                <option value="Juni">Juni</option>
-                <option value="Juli">Juli</option>
-                <option value="Augusti">Augusti</option>
-                <option value="September">September</option>
-                <option value="Oktober">Oktober</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-              </select>
-              <select class="modal-input" id="jobEndYear" style="padding: 8px 4px; font-size: 13px;">
-                <option value="">År</option>
-                <option value="Pågående">Pågående</option>
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-                <option value="2021">2021</option>
-                <option value="2020">2020</option>
-                <option value="2019">2019</option>
-                <option value="2018">2018</option>
-                <option value="2017">2017</option>
-                <option value="2016">2016</option>
-                <option value="2015">2015</option>
-                <option value="2014">2014</option>
-                <option value="2013">2013</option>
-                <option value="2012">2012</option>
-                <option value="2011">2011</option>
-                <option value="2010">2010</option>
-                <option value="2009">2009</option>
-                <option value="2008">2008</option>
-                <option value="2007">2007</option>
-                <option value="2006">2006</option>
-                <option value="2005">2005</option>
-                <option value="2004">2004</option>
-                <option value="2003">2003</option>
-                <option value="2002">2002</option>
-                <option value="2001">2001</option>
-                <option value="2000">2000</option>
-                <option value="Före 2000">Före 2000</option>
-              </select>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button type="button" id="jobEndMonthBtn" onclick="cpickerOpen('jobEndMonth','TILL — Månad','rgba(255,255,255,0.5)')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
+              <button type="button" id="jobEndYearBtn" onclick="cpickerOpen('jobEndYear','TILL — År','rgba(255,255,255,0.5)')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
             </div>
           </div>
         </div>
@@ -5351,13 +5340,19 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('jobLocation').value = '';
       document.getElementById('jobStartMonth').value = '';
       const ongoing = document.getElementById('jobOngoing');
-      if (ongoing) {
-        ongoing.checked = false;
-        document.getElementById('jobEndMonth').disabled = false;
-        document.getElementById('jobEndYear').disabled = false;
-        document.getElementById('jobEndMonth').style.opacity = '';
-        document.getElementById('jobEndYear').style.opacity = '';
-      }
+      if (ongoing) ongoing.checked = false;
+      ['jobStartMonth','jobStartYear','jobEndMonth','jobEndYear'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+        const btn = document.getElementById(id+'Btn');
+        if (btn) {
+          btn.textContent = id.includes('Month') ? 'Månad' : 'År';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.style.opacity = '';
+          btn.style.pointerEvents = '';
+        }
+      });
       document.getElementById('jobStartYear').value = '';
       document.getElementById('jobEndMonth').value = '';
       document.getElementById('jobEndYear').value = '';
@@ -5370,17 +5365,20 @@ Ge bara profiltexten, ingen förklaringtext.`;
         document.getElementById('jobTitle').value = job.title;
         document.getElementById('jobCompany').value = job.company;
         document.getElementById('jobLocation').value = job.location || '';
-        document.getElementById('jobStartMonth').value = job.startMonth || '';
-        document.getElementById('jobStartYear').value = job.startYear || '';
-        document.getElementById('jobEndMonth').value = job.endMonth || '';
+        const fields = {
+          jobStartMonth: job.startMonth, jobStartYear: job.startYear,
+          jobEndMonth: job.endMonth, jobEndYear: job.endYear
+        };
+        Object.entries(fields).forEach(([id, val]) => {
+          if (!val) return;
+          document.getElementById(id).value = val;
+          const btn = document.getElementById(id+'Btn');
+          if (btn) { btn.textContent = val; btn.style.color = '#3eb489'; btn.style.borderColor = 'rgba(62,180,137,0.5)'; }
+        });
         if (job.endYear === 'Pågående') {
           document.getElementById('jobOngoing').checked = true;
-          document.getElementById('jobEndMonth').disabled = true;
-          document.getElementById('jobEndYear').disabled = true;
-          document.getElementById('jobEndMonth').style.opacity = '0.3';
-          document.getElementById('jobEndYear').style.opacity = '0.3';
+          toggleJobOngoing(document.getElementById('jobOngoing'));
         }
-        document.getElementById('jobEndYear').value = job.endYear || '';
         document.getElementById('jobDesc1').value = job.desc1 || '';
         document.getElementById('jobDesc2').value = job.desc2 || '';
         document.getElementById('jobDesc3').value = job.desc3 || '';
@@ -5392,21 +5390,18 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     function toggleJobOngoing(cb) {
-      const month = document.getElementById('jobEndMonth');
-      const year = document.getElementById('jobEndYear');
+      const monthBtn = document.getElementById('jobEndMonthBtn');
+      const yearBtn = document.getElementById('jobEndYearBtn');
       if (cb.checked) {
-        month.value = '';
-        year.value = 'Pågående';
-        month.disabled = true;
-        year.disabled = true;
-        month.style.opacity = '0.3';
-        year.style.opacity = '0.3';
+        document.getElementById('jobEndMonth').value = '';
+        document.getElementById('jobEndYear').value = 'Pågående';
+        if (monthBtn) { monthBtn.style.opacity='0.3'; monthBtn.style.pointerEvents='none'; }
+        if (yearBtn) { yearBtn.textContent='Pågående'; yearBtn.style.color='#3eb489'; yearBtn.style.pointerEvents='none'; }
       } else {
-        month.disabled = false;
-        year.disabled = false;
-        month.style.opacity = '';
-        year.style.opacity = '';
-        year.value = '';
+        document.getElementById('jobEndMonth').value = '';
+        document.getElementById('jobEndYear').value = '';
+        if (monthBtn) { monthBtn.style.opacity=''; monthBtn.style.pointerEvents=''; monthBtn.textContent='Månad'; monthBtn.style.color=''; }
+        if (yearBtn) { yearBtn.style.opacity=''; yearBtn.style.pointerEvents=''; yearBtn.textContent='År'; yearBtn.style.color=''; }
       }
     }
 
@@ -6391,6 +6386,18 @@ ${styleTexts}
       </div>
     </div>
   </div>
+
+  <!-- CUSTOM DATE PICKER -->
+  <div id="cpickerOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);" onclick="cpickerClose()">
+    <div id="cpickerSheet" onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:#1e2235;border-radius:20px 20px 0 0;padding:0 0 40px 0;max-height:70vh;display:flex;flex-direction:column;">
+      <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+        <div id="cpickerTitle" style="font-size:15px;font-weight:800;letter-spacing:0.5px;"></div>
+        <button onclick="cpickerClose()" style="background:rgba(255,255,255,0.1);border:none;border-radius:20px;padding:6px 14px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Stäng</button>
+      </div>
+      <div id="cpickerList" style="overflow-y:auto;flex:1;padding:8px 0;"></div>
+    </div>
+  </div>
+
 </body></html>`;
 
       const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_' + new Date().getFullYear() + '.pdf';
