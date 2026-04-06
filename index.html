@@ -10332,33 +10332,57 @@ ${styleTexts}
       const raw = data.content && data.content[0] && data.content[0].text || '{}';
       const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
 
-      // Nyckelord
-      let kwHtml = '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">';
-      (parsed.keywords || []).forEach(k => {
-        const colors = { match: '#3eb489', partial: '#f0c040', missing: '#e85d26' };
-        const c = colors[k.status] || '#888';
-        kwHtml += '<span style="font-size:11px;padding:3px 8px;border-radius:20px;border:1px solid ' + c + ';color:' + c + ';background:' + c + '22;">' + k.word + '</span>';
-      });
-      kwHtml += '</div>';
-
-      // Alternativ
       const alts = parsed.alternatives || [];
       window._matchaAlts = window._matchaAlts || {};
       window._matchaAlts[hit.id] = alts;
 
-      const labels = ['Erfarenhetsfokus','Motivationsfokus','Kompetens & resultat'];
-      let altHtml = '';
+      // Bygg tydlig result-box med header som visar vilken annons det gäller
+      let html = '';
+
+      // Header: "Profiltexter för [Jobbtitel] hos [Företag]"
+      html += '<div style="margin-top:16px;border-top:2px solid rgba(124,58,237,0.4);padding-top:14px;">';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
+      html += '<div style="width:3px;height:28px;background:linear-gradient(to bottom,#6c5ce7,#a29bfe);border-radius:2px;flex-shrink:0;"></div>';
+      html += '<div>';
+      html += '<div style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(124,58,237,0.8);margin-bottom:1px;">AI-genererade profiltexter</div>';
+      html += '<div style="font-size:13px;font-weight:700;color:#fff;">' + role + '</div>';
+      html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);">hos ' + company + '</div>';
+      html += '</div></div>';
+
+      // Nyckelord-matchning
+      if (parsed.keywords && parsed.keywords.length > 0) {
+        html += '<div style="display:flex;flex-wrap:wrap;gap:5px;margin:12px 0 14px;">';
+        parsed.keywords.forEach(k => {
+          const colors = { match: '#3eb489', partial: '#f0c040', missing: '#e85d26' };
+          const labels = { match: '✓', partial: '~', missing: '✗' };
+          const c = colors[k.status] || '#888';
+          const l = labels[k.status] || '';
+          html += '<span style="font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid ' + c + ';color:' + c + ';background:' + c + '18;font-weight:600;">' + l + ' ' + k.word + '</span>';
+        });
+        html += '</div>';
+      }
+
+      // Alternativ
+      const altLabels = ['Erfarenhetsfokus','Motivationsfokus','Kompetens & resultat'];
+      const altColors = ['rgba(62,180,137,0.12)','rgba(240,192,64,0.1)','rgba(124,58,237,0.12)'];
+      const altBorders = ['rgba(62,180,137,0.3)','rgba(240,192,64,0.25)','rgba(124,58,237,0.3)'];
+      const altAccents = ['#3eb489','#f0c040','#a78bfa'];
+
       alts.forEach((alt, ai) => {
-        altHtml +=
-          '<div style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;margin-bottom:10px;">' +
-          '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:6px;">' + (labels[ai] || 'Alt ' + (ai+1)) + '</div>' +
-          '<div style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin-bottom:10px;">' + alt + '</div>' +
-          '<button id="matchaUseBtn_' + hit.id + '_' + ai + '" style="width:100%;padding:9px;background:#3eb489;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Använd detta alternativ</button>' +
+        html +=
+          '<div style="background:' + altColors[ai] + ';border:1.5px solid ' + altBorders[ai] + ';border-radius:12px;padding:14px;margin-bottom:10px;">' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">' +
+          '<div style="width:6px;height:6px;border-radius:50%;background:' + altAccents[ai] + ';flex-shrink:0;"></div>' +
+          '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + altAccents[ai] + ';">' + (altLabels[ai] || 'Alt ' + (ai+1)) + '</div>' +
+          '</div>' +
+          '<div style="font-size:13px;line-height:1.7;color:rgba(255,255,255,0.88);margin-bottom:12px;">' + alt + '</div>' +
+          '<button id="matchaUseBtn_' + hit.id + '_' + ai + '" style="width:100%;padding:10px;background:' + altAccents[ai] + ';border:none;color:' + (ai===1?'#1a1a2e':'#fff') + ';font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">✓ Använd denna text</button>' +
           '</div>';
       });
 
-      resultEl.innerHTML = kwHtml + altHtml;
-      // Koppla klick-handlers
+      html += '</div>'; // end result box
+
+      resultEl.innerHTML = html;
       alts.forEach((alt, ai) => {
         const useBtn = document.getElementById('matchaUseBtn_' + hit.id + '_' + ai);
         if (useBtn) useBtn.onclick = () => matchaApplyTextForAd(hit.id, ai);
