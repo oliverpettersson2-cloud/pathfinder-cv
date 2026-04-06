@@ -4721,7 +4721,9 @@
         eduEndMonth:   'eduEndYear'
       };
       const next = nextMap[prevField];
-      const skipLast = prevField && prevField.startsWith('edu') ? 'eduEndYear' : 'jobEndYear';
+      // Hoppa inte till jobEndYear automatiskt (brukar vara Pågående eller väljs manuellt)
+      // Men för utbildning: vi auto-advancear hela vägen inkl. eduEndYear
+      const skipLast = prevField && prevField.startsWith('job') ? 'jobEndYear' : null;
       if (next && next !== skipLast) {
         const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
         const label = labelMap[next] || 'TILL - Ar';
