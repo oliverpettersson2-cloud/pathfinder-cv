@@ -7887,11 +7887,10 @@ ${styleTexts}
 
         <!-- Tips-ruta -->
         <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-bottom:20px;">
-          <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;">💡 Bra att veta</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7;">
-            <span style="color:rgba(255,255,255,0.75);">• Det matchade CV:t sparas automatiskt under <strong style="color:#f0c040;">👤 Profil</strong> — du kan redigera profiltexten där när som helst.</span><br>
-            <span style="color:rgba(255,255,255,0.75);">• Varje jobbannons du sökt sparas i din <strong style="color:#f0c040;">jobbdagbok</strong> i 45 dagar — smidigt vid aktivitetsrapportering.</span><br>
-            <span style="color:rgba(255,255,255,0.75);">• Samma annons mot liknande CV-bakgrund? AI:n minns och svarar direkt utan extra kostnad.</span>
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#fff;margin-bottom:8px;">💡 Bra att veta</div>
+          <div style="font-size:12px;line-height:1.8;">
+            <span style="color:#fff;">• Det matchade CV:t sparas automatiskt under <strong style="color:#f0c040;">👤 Profil</strong> — du kan redigera profiltexten där när som helst.</span><br>
+            <span style="color:#fff;">• Varje jobbannons du sökt sparas i din <strong style="color:#f0c040;">jobbdagbok</strong> i 45 dagar — smidigt vid aktivitetsrapportering.</span>
           </div>
         </div>
 
@@ -7907,10 +7906,10 @@ ${styleTexts}
         <div style="background:rgba(10,14,30,0.7);padding:18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);">
           <!-- Rad: Tillbaka + Matcha CV -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <button onclick="matchaSwitchTab(1)" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">
+            <button onclick="matchaSwitchTab(1)" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);color:#fff;font-size:13px;font-weight:700;cursor:pointer;padding:7px 14px;border-radius:20px;font-family:inherit;">
               ← Tillbaka
             </button>
-            <button onclick="matchaSwitchTab(3)" style="display:flex;align-items:center;gap:6px;background:rgba(124,58,237,0.15);border:1.5px solid rgba(124,58,237,0.4);color:#a78bfa;font-size:12px;font-weight:700;cursor:pointer;padding:7px 14px;border-radius:20px;font-family:inherit;">
+            <button onclick="matchaSwitchTab(3)" style="display:flex;align-items:center;gap:6px;background:rgba(62,180,137,0.2);border:1.5px solid rgba(62,180,137,0.5);color:#3eb489;font-size:12px;font-weight:700;cursor:pointer;padding:7px 14px;border-radius:20px;font-family:inherit;">
               Matcha CV →
             </button>
           </div>
@@ -9852,6 +9851,7 @@ ${styleTexts}
       if (aiDone) return;
       aiBtn.textContent = '⏳';
       aiBtn.disabled = true;
+      showAiLoader('Analyserar annonsen...', 'AI läser och sammanfattar jobbet');
       const aiSumEl = document.createElement('div');
       aiSumEl.style.cssText = 'font-size:12px;color:#a78bfa;line-height:1.7;margin-bottom:8px;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.4);';
       aiSumEl.textContent = 'Analyserar annonsen...';
@@ -9874,6 +9874,7 @@ ${styleTexts}
         aiSumEl.textContent = 'Fel vid AI-anrop.';
         aiBtn.textContent = '✨';
       }
+      hideAiLoader();
       aiBtn.disabled = false;
     };
 
