@@ -9430,7 +9430,17 @@ ${styleTexts}
 
   let matchaSearchTimer = null;
   let matchaSelectedAdData = null; // bakåtkompatibilitet
-  let _matchaSelectedAds = []; // array med upp till 3 valda annonser
+  // Ladda valda annonser från localStorage om de finns
+  let _matchaSelectedAds = (() => {
+    try {
+      const raw = localStorage.getItem('pathfinder_selected_ads');
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  })();
+
+  function _saveSelectedAds() {
+    try { localStorage.setItem('pathfinder_selected_ads', JSON.stringify(_matchaSelectedAds)); } catch(e) {}
+  } // array med upp till 3 valda annonser
   let matchaLocFilter = 'fam'; // 'hbg'|'fam'|'skane'|'all'
   let matchaCurrentOffset = 0;
   let matchaCurrentQ = '';
@@ -9555,8 +9565,8 @@ ${styleTexts}
     if (alreadyMatched) {
       card.style.background   = 'rgba(240,192,64,0.06)';
       card.style.borderColor  = 'rgba(240,192,64,0.3)';
-      card.onmouseover = () => { card.style.background = 'rgba(240,192,64,0.1)'; card.style.borderColor = 'rgba(240,192,64,0.5)'; };
-      card.onmouseout  = () => { card.style.background = 'rgba(240,192,64,0.06)'; card.style.borderColor = 'rgba(240,192,64,0.3)'; };
+      card.onmouseover = () => { card.style.background = 'rgba(240,192,64,0.22)'; card.style.borderColor = 'rgba(240,192,64,0.8)'; };
+      card.onmouseout  = () => { card.style.background = 'rgba(240,192,64,0.15)'; card.style.borderColor = 'rgba(240,192,64,0.6)'; };
     }
 
     card.innerHTML =
@@ -9580,8 +9590,8 @@ ${styleTexts}
         card.style.borderColor = '#3eb489';
         card.style.background  = 'rgba(62,180,137,0.07)';
       } else if (alreadyMatched) {
-        card.style.borderColor = 'rgba(240,192,64,0.35)';
-        card.style.background  = 'rgba(240,192,64,0.07)';
+        card.style.borderColor = 'rgba(240,192,64,0.6)';
+        card.style.background  = 'rgba(240,192,64,0.15)';
       } else {
         card.style.borderColor = 'rgba(255,255,255,0.07)';
         card.style.background  = 'rgba(255,255,255,0.04)';
@@ -9604,8 +9614,10 @@ ${styleTexts}
       const idx = _matchaSelectedAds.findIndex(a => a.id === hit.id);
       if (idx >= 0) {
         _matchaSelectedAds.splice(idx, 1);
+        _saveSelectedAds();
       } else if (_matchaSelectedAds.length < 3) {
         _matchaSelectedAds.push(hit);
+        _saveSelectedAds();
         // Auto-generera AI-sammanfattning i bakgrunden om ej gjort
         if (!hit._aiSummary && !hit._aiPending) {
           hit._aiPending = true;
@@ -10469,6 +10481,7 @@ ${styleTexts}
   function matchaRemoveAdByEl(el) { matchaRemoveAd(el.dataset.adid); }
   function matchaRemoveAd(id) {
     _matchaSelectedAds = _matchaSelectedAds.filter(a => a.id !== id);
+    _saveSelectedAds();
     matchaUpdateStep2Bar();
     matchaRenderStep3Ads();
     // Uppdatera kort i steg 2 (rebuild)
