@@ -2439,13 +2439,26 @@
       #mobileContent { display: none !important; }
     }
 </style>
+  <style>
+    .cpicker-item {
+      padding: 14px 20px;
+      font-size: 16px;
+      color: #fff;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.15s;
+    }
+    .cpicker-item:active { background: rgba(255,255,255,0.1); }
+    .cpicker-item.selected { color: #3eb489; font-weight: 700; }
+  </style>
+
 </head>
 <body>
 
   <!-- ===== AUTENTISERINGSOVERLAY ===== -->
   <div id="authOverlay" class="hidden">
     <div class="auth-card">
-      <div class="auth-logo">Path<span>finder</span> <span style="font-weight:400; font-style:italic; font-size:0.75em;">AI</span></div>
+      <div class="auth-logo"><span style="color:#f0c040;">CV</span>matchen</div>
       <div class="auth-tagline">Gör ett CV med AI på 15 minuter, en kvart.</div>
       <div class="auth-tagline">Vi matchar ditt CV mot utbildning &amp; jobbannonser.</div>
 
@@ -2488,7 +2501,7 @@
       <div id="authStep3" class="auth-step active">
         <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
-        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som oliver.pettersson2@gmail.com</div>
+        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1b7477726d7e69356b7e6f6f7e6968687475295b7c767a727735787476">[email&#160;protected]</a></div>
         <button class="auth-btn" onclick="authEnterApp()">Fortsätt till CVmatchen</button>
       </div>
     </div>
@@ -2516,18 +2529,18 @@
     <div class="mob-nav-row1">
       <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;" aria-label="Inloggad anvandare">
         <svg class="mob-hide" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">oliver.pettersson2@gmail.com</span>
-        <span class="mob-profil" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#3eb489;">
-          <span style="width:8px;height:8px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>Profil
-        </span>
+        <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7e111217081b0c500e1b0a0a1b0c0d0d11104c3e19131f1712501d1113">[email&#160;protected]</a></span>
+        <span class="mob-profil" style="display:none;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#3eb489;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);padding:5px 12px;border-radius:20px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>Profil
+          </span>
       </div>
       <div class="nav-logo" style="display:flex;align-items:center;">
         <div>
-          <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;line-height:1.1;">Path<span style="color:#f0c040;">finder</span></div>
-          <div class="mob-hide" style="font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.4);font-family:-apple-system,sans-serif;">Din väg mot arbete &amp; studier</div>
+          <div style="font-family:Georgia,serif;font-size:19px;font-weight:800;color:#f0c040;line-height:1.1;letter-spacing:-0.5px;">CV<span style="color:#fff;">matchen</span></div>
+          <div style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.25);font-family:-apple-system,sans-serif;text-transform:uppercase;">av PathfinderAI</div>
         </div>
       </div>
-      <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;padding:4px 6px;border-radius:6px;white-space:nowrap;transition:color 0.2s;" onmouseover="this.style.color=&#39;rgba(255,255,255,0.7)&#39;" onmouseout="this.style.color=&#39;rgba(255,255,255,0.35)&#39;" aria-label="Logga ut">Logga ut</button>
+      <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:none;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;padding:5px 12px;border-radius:20px;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.4)'" aria-label="Logga ut">Logga ut</button>
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
     <div id="mobCVSteps">
@@ -2900,7 +2913,7 @@
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
             <div class="cv-title" id="previewTitle">Studie &amp; Yrkesvägledare</div>
-            <div class="cv-contact" id="previewContact">oliver.pettersson2@gmail.com · 0766071757</div>
+            <div class="cv-contact" id="previewContact"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1e717277687b6c306e7b6a6a7b6c6d6d71702c5e79737f7772307d7173">[email&#160;protected]</a> · 0766071757</div>
           </div>
         </div>
         <div class="cv-body">
@@ -3185,114 +3198,39 @@
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-        <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Från månad</label>
-          <select class="modal-input" id="jobStartMonth">
-            <option value="">Välj månad</option>
-            <option value="Januari">Januari</option>
-            <option value="Februari">Februari</option>
-            <option value="Mars">Mars</option>
-            <option value="April">April</option>
-            <option value="Maj">Maj</option>
-            <option value="Juni">Juni</option>
-            <option value="Juli">Juli</option>
-            <option value="Augusti">Augusti</option>
-            <option value="September">September</option>
-            <option value="Oktober">Oktober</option>
-            <option value="November">November</option>
-            <option value="December">December</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">År</label>
-          <select class="modal-input" id="jobStartYear">
-            <option value="">Välj år</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
-            <option value="2020">2020</option>
-            <option value="2019">2019</option>
-            <option value="2018">2018</option>
-            <option value="2017">2017</option>
-            <option value="2016">2016</option>
-            <option value="2015">2015</option>
-            <option value="2014">2014</option>
-            <option value="2013">2013</option>
-            <option value="2012">2012</option>
-            <option value="2011">2011</option>
-            <option value="2010">2010</option>
-            <option value="2009">2009</option>
-            <option value="2008">2008</option>
-            <option value="2007">2007</option>
-            <option value="2006">2006</option>
-            <option value="2005">2005</option>
-            <option value="2004">2004</option>
-            <option value="2003">2003</option>
-            <option value="2002">2002</option>
-            <option value="2001">2001</option>
-            <option value="2000">2000</option>
-            <option value="Före 2000">Före 2000</option>
-          </select>
-        </div>
-      </div>
+      <!-- Dolda hidden inputs för datum -->
+      <input type="hidden" id="jobStartMonth">
+      <input type="hidden" id="jobStartYear">
+      <input type="hidden" id="jobEndMonth">
+      <input type="hidden" id="jobEndYear">
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-        <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Till månad</label>
-          <select class="modal-input" id="jobEndMonth">
-            <option value="">Välj månad</option>
-            <option value="Januari">Januari</option>
-            <option value="Februari">Februari</option>
-            <option value="Mars">Mars</option>
-            <option value="April">April</option>
-            <option value="Maj">Maj</option>
-            <option value="Juni">Juni</option>
-            <option value="Juli">Juli</option>
-            <option value="Augusti">Augusti</option>
-            <option value="September">September</option>
-            <option value="Oktober">Oktober</option>
-            <option value="November">November</option>
-            <option value="December">December</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">År</label>
-          <select class="modal-input" id="jobEndYear">
-            <option value="">Välj år</option>
-            <option value="Pågående">Pågående</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
-            <option value="2020">2020</option>
-            <option value="2019">2019</option>
-            <option value="2018">2018</option>
-            <option value="2017">2017</option>
-            <option value="2016">2016</option>
-            <option value="2015">2015</option>
-            <option value="2014">2014</option>
-            <option value="2013">2013</option>
-            <option value="2012">2012</option>
-            <option value="2011">2011</option>
-            <option value="2010">2010</option>
-            <option value="2009">2009</option>
-            <option value="2008">2008</option>
-            <option value="2007">2007</option>
-            <option value="2006">2006</option>
-            <option value="2005">2005</option>
-            <option value="2004">2004</option>
-            <option value="2003">2003</option>
-            <option value="2002">2002</option>
-            <option value="2001">2001</option>
-            <option value="2000">2000</option>
-            <option value="Före 2000">Före 2000</option>
-          </select>
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+
+          <!-- FRÅN -->
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:700;color:#3eb489;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Från</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button type="button" id="jobStartMonthBtn" onclick="cpickerOpen('jobStartMonth','FRÅN — Månad','#3eb489')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
+              <button type="button" id="jobStartYearBtn" onclick="cpickerOpen('jobStartYear','FRÅN — År','#3eb489')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
+            </div>
+          </div>
+
+          <div style="color:rgba(255,255,255,0.25);font-size:20px;padding-top:28px;flex-shrink:0;">→</div>
+
+          <!-- TILL -->
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.5px;">Till</span>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:#3eb489;font-weight:600;">
+                <input type="checkbox" id="jobOngoing" onchange="toggleJobOngoing(this)" style="accent-color:#3eb489;width:14px;height:14px;"> Pågående
+              </label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button type="button" id="jobEndMonthBtn" onclick="cpickerOpen('jobEndMonth','TILL — Månad','rgba(255,255,255,0.5)')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
+              <button type="button" id="jobEndYearBtn" onclick="cpickerOpen('jobEndYear','TILL — År','rgba(255,255,255,0.5)')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3300,11 +3238,11 @@
         <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600;">Dina arbetsuppgifter (3 punkter)</label>
         <button style="background: none; border: none; color: var(--accent3); font-size: 12px; cursor: pointer; padding: 4px 8px; font-weight: 700; border-radius: 4px; transition: 0.2s;" onmouseover="this.style.background=&#39;rgba(124,58,237,0.1)&#39;" onmouseout="this.style.background=&#39;none&#39;" onclick="aiAutofillJobDesc()">✨ AI Autofyll</button>
       </div>
-      <input type="text" class="modal-input" id="jobDesc1" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)">
-      <input type="text" class="modal-input" id="jobDesc2" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)">
-      <input type="text" class="modal-input" id="jobDesc3" placeholder="• Tredje arbetsuppgift (t.ex. Kassaköp och säkerhetskontroller)">
+      <textarea class="modal-input" id="jobDesc1" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)" rows="2" style="resize:none;line-height:1.5;padding:10px 12px;font-family:inherit;font-size:14px;"></textarea>
+      <textarea class="modal-input" id="jobDesc2" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)" rows="2" style="resize:none;line-height:1.5;padding:10px 12px;font-family:inherit;font-size:14px;"></textarea>
+      <textarea class="modal-input" id="jobDesc3" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)" rows="2" style="resize:none;line-height:1.5;padding:10px 12px;font-family:inherit;font-size:14px;"></textarea>
       
-      <button class="btn-secondary" style="width: 100%; margin-bottom: 12px;" onclick="clearJobDesc()">🗑️ Rensa Arbetsuppgifter</button>
+      <button onclick="clearJobDesc()" style="width:100%;margin-top:6px;padding:8px;background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.2);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,100,100,0.7);text-align:center;">🗑 Rensa arbetsuppgifter</button>
       
       <div class="modal-buttons">
         <button class="btn-save" onclick="saveJob()">Spara</button>
@@ -3334,11 +3272,12 @@
         <option value="Övrig utbildning">Övrig utbildning</option>
       </select>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-        <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Från år</label>
-          <select class="modal-input" id="eduStartYear">
-            <option value="">Välj år</option>
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; align-items: flex-end; gap: 6px;">
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
+            <select class="modal-input" id="eduStartYear" style="padding: 8px 4px; font-size: 13px; width: 100%;">
+              <option value="">År</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
@@ -3367,12 +3306,14 @@
             <option value="2001">2001</option>
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size: 11px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Till år</label>
-          <select class="modal-input" id="eduEndYear">
-            <option value="">Välj år</option>
+
+            </select>
+          </div>
+          <div style="color: rgba(255,255,255,0.3); font-size: 18px; padding-bottom: 10px; flex-shrink: 0;">→</div>
+          <div style="flex: 1;">
+            <label style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Till</label>
+            <select class="modal-input" id="eduEndYear" style="padding: 8px 4px; font-size: 13px; width: 100%;">
+              <option value="">År</option>
             <option value="Pågående">Pågående</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
@@ -3402,7 +3343,9 @@
             <option value="2001">2001</option>
             <option value="2000">2000</option>
             <option value="Före 2000">Före 2000</option>
-          </select>
+
+            </select>
+          </div>
         </div>
       </div>
 
@@ -4347,7 +4290,7 @@
     </div>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -4766,7 +4709,79 @@
       showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
     }
 
-    // Spara/Ladda data
+    // ===== CUSTOM DATE PICKER =====
+    let _cpickerField = null;
+
+    function cpickerOpen(field, title, color) {
+      _cpickerField = field;
+      const overlay = document.getElementById('cpickerOverlay');
+      const titleEl = document.getElementById('cpickerTitle');
+      const list = document.getElementById('cpickerList');
+      titleEl.textContent = title;
+      titleEl.style.color = color;
+      const current = document.getElementById(field).value;
+      const items = field === 'jobEndYear'
+        ? ['Pågående', ...Array.from({length:27},(_,i)=>(2026-i).toString()), 'Före 2000']
+        : field === 'jobStartYear'
+        ? [...Array.from({length:27},(_,i)=>(2026-i).toString()), 'Före 2000']
+        : ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
+      list.innerHTML = items.map(v =>
+        `<div class="cpicker-item${v===current?' selected':''}" onclick="cpickerPick('${v}')">${v}</div>`
+      ).join('');
+      overlay.style.display = 'block';
+      setTimeout(() => {
+        const sel = list.querySelector('.selected');
+        if (sel) sel.scrollIntoView({block:'center'});
+      }, 50);
+    }
+
+    function cpickerPick(val) {
+      if (!_cpickerField) return;
+      document.getElementById(_cpickerField).value = val;
+      const btn = document.getElementById(_cpickerField + 'Btn');
+      if (btn) {
+        btn.textContent = val;
+        btn.style.color = '#3eb489';
+        btn.style.borderColor = 'rgba(62,180,137,0.5)';
+      }
+      const prevField = _cpickerField;
+      cpickerClose();
+      // Auto-advance
+      const next = {
+        jobStartMonth: 'jobStartYear',
+        jobStartYear: 'jobEndMonth',
+        jobEndMonth: 'jobEndYear'
+      }[prevField];
+      if (next && next !== 'jobEndYear') {
+        const label = next === 'jobStartYear' ? 'FRAN - Ar' : next === 'jobEndMonth' ? 'TILL - Manad' : 'TILL - Ar';
+        const color = next.startsWith('jobStart') ? '#3eb489' : 'rgba(255,255,255,0.5)';
+        setTimeout(() => cpickerOpen(next, label, color), 200);
+      }
+    }
+
+    function cpickerClose() {
+      document.getElementById('cpickerOverlay').style.display = 'none';
+      _cpickerField = null;
+    }
+
+    function toggleJobOngoing(cb) {
+      const monthBtn = document.getElementById('jobEndMonthBtn');
+      const yearBtn = document.getElementById('jobEndYearBtn');
+      if (cb.checked) {
+        document.getElementById('jobEndMonth').value = '';
+        document.getElementById('jobEndYear').value = 'Pågående';
+        if (monthBtn) { monthBtn.style.opacity='0.3'; monthBtn.style.pointerEvents='none'; }
+        if (yearBtn) { yearBtn.textContent='Pågående'; yearBtn.style.color='#3eb489'; yearBtn.style.pointerEvents='none'; }
+      } else {
+        document.getElementById('jobEndMonth').value = '';
+        document.getElementById('jobEndYear').value = '';
+        if (monthBtn) { monthBtn.style.opacity=''; monthBtn.style.pointerEvents=''; monthBtn.textContent='Månad'; monthBtn.style.color=''; }
+        if (yearBtn) { yearBtn.style.opacity=''; yearBtn.style.pointerEvents=''; yearBtn.textContent='År'; yearBtn.style.color=''; }
+      }
+    }
+    // ===== SLUT CUSTOM DATE PICKER =====
+
+        // Spara/Ladda data
     let _saveDebounce = null;
     function saveData() {
       cvData.name = document.getElementById('name').value;
@@ -5298,10 +5313,21 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('jobTitle').value = '';
       document.getElementById('jobCompany').value = '';
       document.getElementById('jobLocation').value = '';
-      document.getElementById('jobStartMonth').value = '';
-      document.getElementById('jobStartYear').value = '';
-      document.getElementById('jobEndMonth').value = '';
-      document.getElementById('jobEndYear').value = '';
+      // Reset cpicker hidden inputs and button labels
+      ['jobStartMonth','jobStartYear','jobEndMonth','jobEndYear'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+        const btn = document.getElementById(id+'Btn');
+        if (btn) {
+          btn.textContent = id.includes('Month') ? 'Månad' : 'År';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.style.opacity = '';
+          btn.style.pointerEvents = '';
+        }
+      });
+      const ongoing = document.getElementById('jobOngoing');
+      if (ongoing) ongoing.checked = false;
       document.getElementById('jobDesc1').value = '';
       document.getElementById('jobDesc2').value = '';
       document.getElementById('jobDesc3').value = '';
@@ -5311,10 +5337,20 @@ Ge bara profiltexten, ingen förklaringtext.`;
         document.getElementById('jobTitle').value = job.title;
         document.getElementById('jobCompany').value = job.company;
         document.getElementById('jobLocation').value = job.location || '';
-        document.getElementById('jobStartMonth').value = job.startMonth || '';
-        document.getElementById('jobStartYear').value = job.startYear || '';
-        document.getElementById('jobEndMonth').value = job.endMonth || '';
-        document.getElementById('jobEndYear').value = job.endYear || '';
+        const fields = {
+          jobStartMonth: job.startMonth, jobStartYear: job.startYear,
+          jobEndMonth: job.endMonth, jobEndYear: job.endYear
+        };
+        Object.entries(fields).forEach(([id, val]) => {
+          if (!val) return;
+          document.getElementById(id).value = val;
+          const btn = document.getElementById(id+'Btn');
+          if (btn) { btn.textContent = val; btn.style.color = '#3eb489'; btn.style.borderColor = 'rgba(62,180,137,0.5)'; }
+        });
+        if (job.endYear === 'Pågående') {
+          document.getElementById('jobOngoing').checked = true;
+          toggleJobOngoing(document.getElementById('jobOngoing'));
+        }
         document.getElementById('jobDesc1').value = job.desc1 || '';
         document.getElementById('jobDesc2').value = job.desc2 || '';
         document.getElementById('jobDesc3').value = job.desc3 || '';
@@ -7030,7 +7066,8 @@ ${styleTexts}
           if (user && user.email && user.loggedIn) {
             window.authUserId = user.userId || null;
             window.authAccessToken = user.accessToken || null;
-            authSetLoggedIn(user.email, false, user.userId, user.accessToken);
+            // Redan inloggad — hoppa direkt till appen utan mellanskärm
+            authSetLoggedInSilent(user.email, user.userId, user.accessToken);
             return;
           }
         } catch(e) {}
@@ -7194,7 +7231,7 @@ ${styleTexts}
       document.getElementById('authUserBadge').style.display = 'flex';
 
       const welcomeText = isNew
-        ? 'Välkommen till Pathfinder, ' + email + '!'
+        ? 'Välkommen till CVmatchen, ' + email + '!'
         : 'Du är inloggad som ' + email;
       document.getElementById('authWelcomeText').textContent = welcomeText;
 
@@ -7247,6 +7284,21 @@ ${styleTexts}
     function authEnterApp() {
       document.getElementById('authOverlay').classList.add('hidden');
       setNavStep(2);
+    }
+
+
+    function authSetLoggedInSilent(email, userId, accessToken) {
+      // Direkt till appen utan overlay/bekräftelseskärm
+      window.authUserId = userId || null;
+      window.authAccessToken = accessToken || null;
+      setNavStep(2);
+      const emailEl = document.getElementById('authUserEmail');
+      if (emailEl) emailEl.textContent = email;
+      document.getElementById('authUserBadge').style.display = 'flex';
+      setShowPhoto(cvData.showPhoto === true, false);
+      if (userId && accessToken) {
+        loadCVFromSupabase(userId, accessToken);
+      }
     }
 
     function authGoBack() {
@@ -8344,7 +8396,7 @@ ${styleTexts}
         if (iosWindow) { try { iosWindow.close(); } catch(e) {} }
         await navigator.share({
           title: 'Mitt CV — ' + (cvData.name || ''),
-          text: 'Här är mitt CV skapat med Pathfinder.',
+          text: 'Här är mitt CV skapat med CVmatchen.',
           files: [file]
         });
         showToast('✅ Delat!', 'success');
@@ -8550,7 +8602,7 @@ ${styleTexts}
       html += `
         <div onclick="mobShowSavedCVDetail('${entry.id}')"
              style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px;border-radius:14px;cursor:pointer;text-align:center;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);position:relative;">
-          <div style="font-size:30px;line-height:1;">${cvEmoji}</div>
+          <div style="font-size:18px;font-weight:900;font-family:Georgia,serif;line-height:1;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">m</span></div>
           <div style="font-size:11px;font-weight:700;color:#fff;line-height:1.3;word-break:break-word;">${entry.title}</div>
           <div style="font-size:10px;color:rgba(255,255,255,0.3);">${dateStr}</div>
         </div>`;
@@ -9741,7 +9793,7 @@ ${styleTexts}
       card.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 8px;border-radius:12px;cursor:pointer;transition:all 0.15s;text-align:center;border:1.5px solid ' + (isActive ? '#3eb489' : 'rgba(255,255,255,0.08)') + ';background:' + (isActive ? 'rgba(62,180,137,0.12)' : 'rgba(255,255,255,0.04)') + ';position:relative;';
       card.innerHTML =
         (isActive ? '<div style="position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#3eb489;"></div>' : '') +
-        '<div style="font-size:28px;line-height:1;">' + emoji + '</div>' +
+        '<div style="font-size:13px;font-weight:900;font-family:Georgia,serif;line-height:1;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">m</span></div>' +
         '<div style="font-size:11px;font-weight:700;color:' + (isActive ? '#fff' : 'rgba(255,255,255,0.5)') + ';line-height:1.3;word-break:break-word;">' + cv.title + '</div>';
       card.onclick = () => { _matchaSelectedCVId = cv.id; matchaPopulateCvSelect(); matchaPreFillFromCV(); };
       container.appendChild(card);
@@ -9759,7 +9811,7 @@ ${styleTexts}
         c3.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 8px;border-radius:12px;cursor:pointer;transition:all 0.15s;text-align:center;border:1.5px solid ' + (isActive ? '#3eb489' : 'rgba(255,255,255,0.08)') + ';background:' + (isActive ? 'rgba(62,180,137,0.12)' : 'rgba(255,255,255,0.04)') + ';position:relative;';
         c3.innerHTML =
           (isActive ? '<div style="position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#3eb489;"></div>' : '') +
-          '<div style="font-size:28px;line-height:1;">' + emoji + '</div>' +
+          '<div style="font-size:13px;font-weight:900;font-family:Georgia,serif;line-height:1;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">m</span></div>' +
           '<div style="font-size:11px;font-weight:700;color:' + (isActive ? '#fff' : 'rgba(255,255,255,0.5)') + ';line-height:1.3;word-break:break-word;">' + cv.title + '</div>';
         c3.onclick = () => { _matchaSelectedCVId = cv.id; matchaPopulateCvSelect(); };
         container3.appendChild(c3);
@@ -10282,6 +10334,19 @@ ${styleTexts}
   // ===== SLUT JOBBMATCHNING =====
   </script>
 
+  <!-- CUSTOM DATE PICKER OVERLAY -->
+  <div id="cpickerOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);" onclick="cpickerClose()">
+    <div id="cpickerSheet" onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:#1e2235;border-radius:20px 20px 0 0;padding:0 0 40px 0;max-height:70vh;display:flex;flex-direction:column;">
+      <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+        <div id="cpickerTitle" style="font-size:15px;font-weight:800;letter-spacing:0.5px;"></div>
+        <button onclick="cpickerClose()" style="background:rgba(255,255,255,0.1);border:none;border-radius:20px;padding:6px 14px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Stäng</button>
+      </div>
+      <div id="cpickerList" style="overflow-y:auto;flex:1;padding:8px 0;"></div>
+    </div>
+  </div>
+
+
+
   <!-- Max 3 annonser modal -->
   <div id="matchaMaxModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);padding:20px;">
     <div style="background:#1e2440;border-radius:20px;padding:28px 24px;max-width:340px;width:100%;border:1px solid rgba(255,255,255,0.12);box-shadow:0 20px 60px rgba(0,0,0,0.5);">
@@ -10297,4 +10362,11 @@ ${styleTexts}
     </div>
   </div>
 
-</body></html>
+
+  <!-- CUSTOM DATE PICKER OVERLAY -->
+  <div id="cpickerOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);" onclick="cpickerClose()">
+    <div id="cpickerSheet" onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:#1e2235;border-radius:20px 20px 0 0;padding:0 0 40px 0;max-height:70vh;display:flex;flex-direction:column;">
+      <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:fl
+
+</body>
+</html>
