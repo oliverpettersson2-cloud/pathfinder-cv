@@ -10539,7 +10539,9 @@ ${styleTexts}
       section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;transition:all 0.2s;cursor:pointer;';
       section.onclick = () => {
         const gBtn = document.getElementById('matchaGenBtn_' + hit.id);
+        const infoBox = document.getElementById('matchaInfoBox_' + hit.id);
         if (gBtn && gBtn.style.display === 'none') {
+          if (infoBox) infoBox.style.display = 'block';
           gBtn.style.display = 'block';
           section.style.borderColor = 'rgba(108,92,231,0.5)';
           section.style.background = 'rgba(62,180,137,0.09)';
@@ -10678,52 +10680,36 @@ ${styleTexts}
         genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;display:none;';
       }
       const adIdx = i;
-      if (!alreadyMatchedS3) genBtn.onclick = () => {
-        const adUrl = hit.webpage_url || '';
-        if (adUrl) {
-          const overlay = document.createElement('div');
-          overlay.style.cssText = 'position:fixed;inset:0;z-index:99990;background:rgba(10,12,28,0.85);display:flex;align-items:flex-end;justify-content:center;';
-          overlay.innerHTML = `<div style="background:#1e2540;border:1px solid rgba(255,255,255,0.12);border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;box-shadow:0 -8px 40px rgba(0,0,0,0.5);">
-            <div style="text-align:center;margin-bottom:16px;">
-              <div style="font-size:28px;margin-bottom:8px;">📋</div>
-              <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:6px;">Läs annonsen innan du matchar</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Läs igenom jobbannonsen så vet du exakt vad tjänsten innebär — och kan bedöma om du verkligen vill söka den. AI:n matchar sedan ditt CV mot det specifika jobbet.</div>
-            </div>
-            <button class="modal-open-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:13px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.4);border-radius:12px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;cursor:pointer;font-family:inherit;box-sizing:border-box;">Gå till annonsen ↗</button>
-            <button class="modal-matcha-btn" style="width:100%;padding:13px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Matcha mot CV</button>
-            <button class="modal-cancel-btn" style="display:block;width:100%;margin-top:8px;padding:10px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:12px;cursor:pointer;font-family:inherit;">Avbryt</button>
-          </div>`;
-          document.body.appendChild(overlay);
-          overlay.querySelector('.modal-cancel-btn').onclick = () => overlay.remove();
-          overlay.querySelector('.modal-open-btn').onclick = () => { window.open(adUrl, '_blank', 'noopener,noreferrer'); };
-          overlay.querySelector('.modal-matcha-btn').onclick = () => { overlay.remove(); _doMatchaGenerate(); };
-          overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-        } else {
-          _doMatchaGenerate();
-        }
-        function _doMatchaGenerate() {
-          const adBoxEl = document.getElementById('matchaAdSection_' + hit.id);
-          if (adBoxEl) adBoxEl.style.display = 'none';
-          const allSections = document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]');
-          allSections.forEach(s => {
-            if (s.dataset.adId !== hit.id) {
-              s.style.opacity = '0.15';
-              s.style.pointerEvents = 'none';
-            }
-          });
-          matchaCVForAd(adIdx).finally(() => {
-            const existingReset = document.getElementById('matchaResetFocus');
-            if (!existingReset) {
-              const resetBtn = document.createElement('button');
-              resetBtn.id = 'matchaResetFocus';
-              resetBtn.textContent = '\u2190 Visa alla annonser';
-              resetBtn.style.cssText = 'display:block;margin:0 auto 16px;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;';
-              resetBtn.onclick = () => { allSections.forEach(s => { s.style.opacity = ''; s.style.pointerEvents = ''; }); resetBtn.remove(); };
-              const container = document.getElementById('matchaAdsContainer');
-              if (container) container.parentNode.insertBefore(resetBtn, container);
-            }
-          });
-        }
+
+      // Info-ruta (dold tills kortet trycks) — visas ovanför matchaknappen
+      const infoBox = document.createElement('div');
+      infoBox.id = 'matchaInfoBox_' + hit.id;
+      infoBox.style.cssText = 'display:none;margin-top:12px;padding:12px;background:rgba(62,180,137,0.06);border:1px solid rgba(62,180,137,0.2);border-radius:10px;';
+      infoBox.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:8px;">\uD83D\uDCC4 L\u00e4s annonsen s\u00e5 vet du exakt vilket jobb det handlar om \u2014 och kan avg\u00f6ra om du verkligen vill s\u00f6ka det.</div>' +
+        (url ? '<a href="' + url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-block;font-size:12px;font-weight:700;color:#3eb489;text-decoration:none;padding:5px 12px;border:1px solid rgba(62,180,137,0.4);border-radius:8px;background:rgba(62,180,137,0.08);">\u2197 \u00d6ppna annons</a>' : '');
+      extrasDiv.appendChild(infoBox);
+
+      if (!alreadyMatchedS3) genBtn.onclick = (e) => {
+        e.stopPropagation();
+        const allSections = document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]');
+        allSections.forEach(s => {
+          if (s.dataset.adId !== hit.id) {
+            s.style.opacity = '0.15';
+            s.style.pointerEvents = 'none';
+          }
+        });
+        matchaCVForAd(adIdx).finally(() => {
+          const existingReset = document.getElementById('matchaResetFocus');
+          if (!existingReset) {
+            const resetBtn = document.createElement('button');
+            resetBtn.id = 'matchaResetFocus';
+            resetBtn.textContent = '\u2190 Visa alla annonser';
+            resetBtn.style.cssText = 'display:block;margin:0 auto 16px;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;';
+            resetBtn.onclick = () => { allSections.forEach(s => { s.style.opacity = ''; s.style.pointerEvents = ''; }); resetBtn.remove(); };
+            const container = document.getElementById('matchaAdsContainer');
+            if (container) container.parentNode.insertBefore(resetBtn, container);
+          }
+        });
       }; // end genBtn.onclick
       extrasDiv.appendChild(genBtn);
       section.appendChild(extrasDiv);
