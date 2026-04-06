@@ -3271,80 +3271,40 @@
         <option value="Övrig utbildning">Övrig utbildning</option>
       </select>
       
+      <!-- Dolda hidden inputs för utbildning datum -->
+      <input type="hidden" id="eduStartMonth">
+      <input type="hidden" id="eduStartYear">
+      <input type="hidden" id="eduEndMonth">
+      <input type="hidden" id="eduEndYear">
+
       <div style="margin-bottom: 12px;">
-        <div style="display: flex; align-items: flex-end; gap: 6px;">
-          <div style="flex: 1;">
-            <label style="font-size: 11px; font-weight: 700; color: #3eb489; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Från</label>
-            <select class="modal-input" id="eduStartYear" style="padding: 8px 4px; font-size: 13px; width: 100%;">
-              <option value="">År</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
-            <option value="2020">2020</option>
-            <option value="2019">2019</option>
-            <option value="2018">2018</option>
-            <option value="2017">2017</option>
-            <option value="2016">2016</option>
-            <option value="2015">2015</option>
-            <option value="2014">2014</option>
-            <option value="2013">2013</option>
-            <option value="2012">2012</option>
-            <option value="2011">2011</option>
-            <option value="2010">2010</option>
-            <option value="2009">2009</option>
-            <option value="2008">2008</option>
-            <option value="2007">2007</option>
-            <option value="2006">2006</option>
-            <option value="2005">2005</option>
-            <option value="2004">2004</option>
-            <option value="2003">2003</option>
-            <option value="2002">2002</option>
-            <option value="2001">2001</option>
-            <option value="2000">2000</option>
-            <option value="Före 2000">Före 2000</option>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
 
-            </select>
+          <!-- FRÅN -->
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:700;color:#3eb489;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Från</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button type="button" id="eduStartMonthBtn" onclick="cpickerOpen('eduStartMonth','FRAN - Manad','#3eb489')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
+              <button type="button" id="eduStartYearBtn" onclick="cpickerOpen('eduStartYear','FRAN - Ar','#3eb489')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
+            </div>
           </div>
-          <div style="color: rgba(255,255,255,0.3); font-size: 18px; padding-bottom: 10px; flex-shrink: 0;">→</div>
-          <div style="flex: 1;">
-            <label style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Till</label>
-            <select class="modal-input" id="eduEndYear" style="padding: 8px 4px; font-size: 13px; width: 100%;">
-              <option value="">År</option>
-            <option value="Pågående">Pågående</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
-            <option value="2020">2020</option>
-            <option value="2019">2019</option>
-            <option value="2018">2018</option>
-            <option value="2017">2017</option>
-            <option value="2016">2016</option>
-            <option value="2015">2015</option>
-            <option value="2014">2014</option>
-            <option value="2013">2013</option>
-            <option value="2012">2012</option>
-            <option value="2011">2011</option>
-            <option value="2010">2010</option>
-            <option value="2009">2009</option>
-            <option value="2008">2008</option>
-            <option value="2007">2007</option>
-            <option value="2006">2006</option>
-            <option value="2005">2005</option>
-            <option value="2004">2004</option>
-            <option value="2003">2003</option>
-            <option value="2002">2002</option>
-            <option value="2001">2001</option>
-            <option value="2000">2000</option>
-            <option value="Före 2000">Före 2000</option>
 
-            </select>
+          <div style="color:rgba(255,255,255,0.25);font-size:20px;padding-top:28px;flex-shrink:0;">→</div>
+
+          <!-- TILL -->
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.5px;">Till</span>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:#3eb489;font-weight:600;">
+                <input type="checkbox" id="eduOngoing" onchange="toggleEduOngoing(this)" style="accent-color:#3eb489;width:14px;height:14px;"> Pågående
+              </label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button type="button" id="eduEndMonthBtn" onclick="cpickerOpen('eduEndMonth','TILL - Manad','rgba(255,255,255,0.5)')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
+              <button type="button" id="eduEndYearBtn" onclick="cpickerOpen('eduEndYear','TILL - Ar','rgba(255,255,255,0.5)')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -4746,14 +4706,20 @@
       const prevField = _cpickerField;
       cpickerClose();
       // Auto-advance
-      const next = {
+      const nextMap = {
         jobStartMonth: 'jobStartYear',
-        jobStartYear: 'jobEndMonth',
-        jobEndMonth: 'jobEndYear'
-      }[prevField];
-      if (next && next !== 'jobEndYear') {
-        const label = next === 'jobStartYear' ? 'FRAN - Ar' : next === 'jobEndMonth' ? 'TILL - Manad' : 'TILL - Ar';
-        const color = next.startsWith('jobStart') ? '#3eb489' : 'rgba(255,255,255,0.5)';
+        jobStartYear:  'jobEndMonth',
+        jobEndMonth:   'jobEndYear',
+        eduStartMonth: 'eduStartYear',
+        eduStartYear:  'eduEndMonth',
+        eduEndMonth:   'eduEndYear'
+      };
+      const next = nextMap[prevField];
+      const skipLast = prevField && prevField.startsWith('edu') ? 'eduEndYear' : 'jobEndYear';
+      if (next && next !== skipLast) {
+        const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
+        const label = labelMap[next] || 'TILL - Ar';
+        const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
         setTimeout(() => cpickerOpen(next, label, color), 200);
       }
     }
@@ -4776,6 +4742,22 @@
         document.getElementById('jobEndYear').value = '';
         if (monthBtn) { monthBtn.style.opacity=''; monthBtn.style.pointerEvents=''; monthBtn.textContent='Månad'; monthBtn.style.color=''; }
         if (yearBtn) { yearBtn.style.opacity=''; yearBtn.style.pointerEvents=''; yearBtn.textContent='År'; yearBtn.style.color=''; }
+      }
+    }
+
+    function toggleEduOngoing(cb) {
+      const monthBtn = document.getElementById('eduEndMonthBtn');
+      const yearBtn = document.getElementById('eduEndYearBtn');
+      if (cb.checked) {
+        document.getElementById('eduEndMonth').value = '';
+        document.getElementById('eduEndYear').value = 'Pågående';
+        if (monthBtn) { monthBtn.style.opacity='0.3'; monthBtn.style.pointerEvents='none'; }
+        if (yearBtn) { yearBtn.textContent='Pågående'; yearBtn.style.color='#3eb489'; yearBtn.style.pointerEvents='none'; }
+      } else {
+        document.getElementById('eduEndMonth').value = '';
+        document.getElementById('eduEndYear').value = '';
+        if (monthBtn) { monthBtn.style.opacity=''; monthBtn.style.pointerEvents=''; monthBtn.textContent='Manad'; monthBtn.style.color=''; }
+        if (yearBtn) { yearBtn.style.opacity=''; yearBtn.style.pointerEvents=''; yearBtn.textContent='Ar'; yearBtn.style.color=''; }
       }
     }
     // ===== SLUT CUSTOM DATE PICKER =====
@@ -5441,16 +5423,38 @@ Ge bara profiltexten, ingen förklaringtext.`;
       document.getElementById('eduDegree').value = '';
       document.getElementById('eduSchoolName').value = '';
       document.getElementById('eduSchool').value = '';
-      document.getElementById('eduStartYear').value = '';
-      document.getElementById('eduEndYear').value = '';
+      // Reset cpicker edu buttons
+      ['eduStartMonth','eduStartYear','eduEndMonth','eduEndYear'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+        const btn = document.getElementById(id+'Btn');
+        if (btn) {
+          btn.textContent = id.includes('Month') ? 'Manad' : 'Ar';
+          btn.style.color=''; btn.style.borderColor=''; btn.style.opacity=''; btn.style.pointerEvents='';
+        }
+      });
+      const eduOng = document.getElementById('eduOngoing');
+      if (eduOng) eduOng.checked = false;
       
       if (idx !== null && idx >= 0 && cvData.education[idx]) {
         const edu = cvData.education[idx];
         document.getElementById('eduDegree').value = edu.degree;
         document.getElementById('eduSchoolName').value = edu.schoolName || '';
         document.getElementById('eduSchool').value = edu.school;
-        document.getElementById('eduStartYear').value = edu.startYear || '';
-        document.getElementById('eduEndYear').value = edu.endYear || '';
+        const eduFields = {
+          eduStartMonth: edu.startMonth, eduStartYear: edu.startYear,
+          eduEndMonth: edu.endMonth, eduEndYear: edu.endYear
+        };
+        Object.entries(eduFields).forEach(([id, val]) => {
+          if (!val) return;
+          document.getElementById(id).value = val;
+          const btn = document.getElementById(id+'Btn');
+          if (btn) { btn.textContent=val; btn.style.color='#3eb489'; btn.style.borderColor='rgba(62,180,137,0.5)'; }
+        });
+        if (edu.endYear === 'Pågående') {
+          const oc = document.getElementById('eduOngoing');
+          if (oc) { oc.checked=true; toggleEduOngoing(oc); }
+        }
       }
       
       const modal = document.getElementById('eduModal');
@@ -5465,7 +5469,9 @@ Ge bara profiltexten, ingen förklaringtext.`;
         degree: document.getElementById('eduDegree').value,
         schoolName: document.getElementById('eduSchoolName').value,
         school: document.getElementById('eduSchool').value,
+        startMonth: document.getElementById('eduStartMonth').value,
         startYear: document.getElementById('eduStartYear').value,
+        endMonth: document.getElementById('eduEndMonth').value,
         endYear: document.getElementById('eduEndYear').value
       };
 
@@ -7591,7 +7597,7 @@ ${styleTexts}
 
       <div class="mob-fortsatt">
         <button class="mob-fortsatt-btn mob-fortsatt-btn--disabled" id="mobFortsattInfo" onclick="mobFortsatt(&#39;info&#39;,&#39;jobb&#39;)">
-          Fortsätt till Jobb →
+          Fortsätt till Jobb & Utbildning →
         </button>
       </div>
 
