@@ -2526,16 +2526,16 @@
 
   <nav id="mainNav">
     <!-- Rad 1: Profil-badge | Logga | Logga ut -->
-    <div class="mob-nav-row1">
-      <!-- Logo: vänster -->
-      <div class="nav-logo" style="display:flex;align-items:center;">
+    <div class="mob-nav-row1" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 4px 0 0;">
+      <!-- Logo: långt till vänster -->
+      <div class="nav-logo" style="display:flex;align-items:center;flex-shrink:0;">
         <div>
           <div style="font-family:Georgia,serif;font-size:19px;font-weight:800;color:#f0c040;line-height:1.1;letter-spacing:-0.5px;">CV<span style="color:#fff;">matchen</span></div>
           <div style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.25);font-family:-apple-system,sans-serif;text-transform:uppercase;">av PathfinderAI</div>
         </div>
       </div>
-      <!-- Höger: Profil-badge + Logga ut -->
-      <div style="display:flex;align-items:center;gap:8px;">
+      <!-- Höger: Profil-badge + Logga ut — tryckt mot kanten -->
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
         <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;" aria-label="Inloggad anvandare">
           <svg class="mob-hide" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
@@ -7845,12 +7845,53 @@ ${styleTexts}
       <!-- STEG 1: Välj CV -->
       <div id="matchaStep1" style="padding:20px 16px;">
 
-        <!-- Info-ruta: vad är Matcha? -->
-        <div style="background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.25);border-radius:14px;padding:14px 16px;margin-bottom:20px;">
-          <div style="font-size:13px;font-weight:800;color:#a78bfa;margin-bottom:6px;">🎯 Vad gör Matcha?</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7;">
-            AI läser din CV och en jobannons — och skriver en personlig profiltext som passar just det jobbet.<br><br>
-            <span style="color:rgba(255,255,255,0.4);">💡 Tips: Du kan alltid gå in i <strong style="color:#a78bfa;">Profil-fliken</strong> och ändra din matchade profiltext efteråt.</span>
+        <!-- Hero -->
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:36px;margin-bottom:8px;">🎯</div>
+          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;">Matcha ditt CV mot jobb</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">AI skriver en personlig profiltext åt dig — anpassad till varje jobb du söker.</div>
+        </div>
+
+        <!-- Hur det fungerar — 3 steg -->
+        <div style="margin-bottom:24px;">
+          <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;">Så här fungerar det</div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(62,180,137,0.07);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:12px 14px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:#3eb489;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0;">1</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">Välj ditt CV</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Välj vilket av dina sparade CV som ska matchas. Har du inget sparat ännu? Bygg ett under <strong style="color:#3eb489;">CV-fliken</strong> först.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(240,192,64,0.07);border:1px solid rgba(240,192,64,0.2);border-radius:12px;padding:12px 14px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:#f0c040;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#1a1a2e;flex-shrink:0;">2</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">Sök och välj jobbannonser</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Sök bland riktiga annonser från <strong style="color:#f0c040;">Platsbanken</strong>. Välj upp till 3 jobb du är intresserad av — AI hämtar annonsens innehåll automatiskt.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:12px 14px;">
+              <div style="width:28px;height:28px;border-radius:50%;background:#a78bfa;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0;">3</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">AI skriver din profiltext</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Du får 3 olika profiltexter att välja bland — <strong style="color:#a78bfa;">Erfarenhetsfokus</strong>, <strong style="color:#a78bfa;">Motivationsfokus</strong> och <strong style="color:#a78bfa;">Kompetens &amp; resultat</strong>. Välj en så läggs den direkt in i ditt CV.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Tips-ruta -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;">💡 Bra att veta</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7;">
+            • Det matchade CV:t sparas automatiskt under <strong style="color:rgba(255,255,255,0.7);">👤 Profil</strong> — du kan redigera profiltexten där när som helst.<br>
+            • Varje jobbannons du sökt sparas i din <strong style="color:rgba(255,255,255,0.7);">jobbdagbok</strong> i 45 dagar — smidigt vid aktivitetsrapportering.<br>
+            • Samma annons mot liknande CV-bakgrund? AI:n minns och svarar direkt utan extra kostnad.
           </div>
         </div>
 
@@ -7864,7 +7905,20 @@ ${styleTexts}
       <div id="matchaStep2" style="display:none;padding:0;">
         <!-- Söksektionen — Platsbanken-stil -->
         <div style="background:rgba(10,14,30,0.7);padding:18px 16px;border-bottom:1px solid rgba(255,255,255,0.07);">
-          <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;">Sök på ett eller flera ord</div>
+          <!-- Rad: Tillbaka + Matcha CV -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <button onclick="matchaSwitchTab(1)" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">
+              ← Tillbaka
+            </button>
+            <button onclick="matchaSwitchTab(3)" style="display:flex;align-items:center;gap:6px;background:rgba(124,58,237,0.15);border:1.5px solid rgba(124,58,237,0.4);color:#a78bfa;font-size:12px;font-weight:700;cursor:pointer;padding:7px 14px;border-radius:20px;font-family:inherit;">
+              Matcha CV →
+            </button>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+            <div style="font-size:12px;font-weight:800;color:#fff;">Sök på ett eller flera ord</div>
+            <button onclick="document.getElementById('matchaSearch').value=''; const r=document.getElementById('matchaAdsContainer'); if(r) r.innerHTML=''; const s=document.getElementById('matchaResultStats'); if(s) s.style.display='none';" style="background:rgba(220,50,50,0.15);border:1.5px solid rgba(220,50,50,0.5);color:#ff6b6b;font-size:11px;font-weight:800;cursor:pointer;padding:5px 12px;border-radius:20px;font-family:inherit;">🗑 Rensa</button>
+          </div>
           <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">Skriv t.ex. lärare Helsingborg</div>
           <div style="display:flex;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.3);">
             <input id="matchaSearch" type="text" placeholder="Yrke eller nyckelord..." oninput="matchaSearchDebounce()" autocomplete="off" enterkeyhint="search" style="flex:1;padding:14px 16px;background:#fff;border:none;color:#1a1a2e;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;min-width:0;">
