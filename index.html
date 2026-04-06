@@ -9809,7 +9809,7 @@ ${styleTexts}
 
     const btn = document.createElement('button');
     btn.className = 'matcha-valj-btn';
-    btn.style.cssText = 'flex:1;padding:8px 10px;background:#3eb489;border:none;color:#fff;font-size:11px;font-weight:700;border-radius:9px;cursor:pointer;font-family:inherit;transition:all 0.15s;';
+    btn.style.cssText = 'flex:1;padding:12px 10px;background:#3eb489;border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;transition:all 0.15s;';
     btn.onclick = (e) => {
       e.stopPropagation();
       const idx = _matchaSelectedAds.findIndex(a => a.id === hit.id);
@@ -9832,6 +9832,12 @@ ${styleTexts}
             hit._aiPending = false;
           }).catch(() => { hit._aiPending = false; });
         }
+        // Visa modal efter tillägg
+        updateCardState();
+        matchaUpdateStep2Bar();
+        matchaRenderStep3Ads();
+        matchaShowAddedModal(_matchaSelectedAds.length);
+        return;
       } else {
         showToast('Max 3 annonser valda', 'error'); return;
       }
@@ -9842,14 +9848,14 @@ ${styleTexts}
 
     const aiBtn = document.createElement('button');
     aiBtn.title = 'AI-sammanfattning';
-    aiBtn.style.cssText = 'padding:9px 18px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;font-size:16px;border-radius:9px;cursor:pointer;font-family:inherit;transition:all 0.15s;flex-shrink:0;';
-    aiBtn.textContent = '✨';
+    aiBtn.style.cssText = 'padding:12px 14px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;font-size:12px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;transition:all 0.15s;flex-shrink:0;white-space:nowrap;';
+    aiBtn.textContent = '✨ AI-sammanfatta';
     let aiDone = false;
     aiBtn.onclick = async (e) => {
       e.stopPropagation();
       if (!expanded) { expanded = true; expandBox.style.display = 'block'; }
       if (aiDone) return;
-      aiBtn.textContent = '⏳';
+      aiBtn.textContent = '⏳ Analyserar...';
       aiBtn.disabled = true;
       showAiLoader('Analyserar annonsen...', 'AI läser och sammanfattar jobbet');
       const aiSumEl = document.createElement('div');
@@ -9867,12 +9873,12 @@ ${styleTexts}
         aiSumEl.textContent = txt || 'Kunde inte generera sammanfattning.';
         if (txt) hit._aiSummary = txt; // Spara för steg 3
         aiDone = true;
-        aiBtn.textContent = '✨';
+        aiBtn.textContent = '✨ Klar';
         aiBtn.style.background = 'rgba(124,58,237,0.25)';
         aiBtn.style.borderColor = 'rgba(124,58,237,0.6)';
       } catch(err) {
         aiSumEl.textContent = 'Fel vid AI-anrop.';
-        aiBtn.textContent = '✨';
+        aiBtn.textContent = '✨ AI-sammanfatta';
       }
       hideAiLoader();
       aiBtn.disabled = false;
@@ -10953,9 +10959,33 @@ ${styleTexts}
     if (typeof mobRenderSavedCVs === 'function') mobRenderSavedCVs();
   }
 
+  function matchaShowAddedModal(count) {
+    const modal = document.getElementById('matchaAddedModal');
+    const emoji = document.getElementById('matchaAddedEmoji');
+    const title = document.getElementById('matchaAddedTitle');
+    const body  = document.getElementById('matchaAddedBody');
+    if (!modal) return;
+    if (count === 1) {
+      emoji.textContent = '✅';
+      title.textContent = '1 av 3 jobb tillagt!';
+      body.textContent  = 'Bra start! Vill du matcha ditt CV mot detta jobb nu, eller fortsätta söka och lägga till fler?';
+    } else if (count === 2) {
+      emoji.textContent = '✅✅';
+      title.textContent = '2 av 3 jobb tillagda!';
+      body.textContent  = 'Du kan lägga till ett till eller matcha redan nu. Vad vill du göra?';
+    } else {
+      emoji.textContent = '🎯';
+      title.textContent = '3 av 3 — fullt!';
+      body.textContent  = 'Du har valt maximalt antal annonser. Dags att matcha ditt CV mot dessa jobb!';
+    }
+    modal.style.display = 'flex';
+  }
+
   function matchaGoToStep3() {
     const modal = document.getElementById('matchaMaxModal');
     if (modal) modal.style.display = 'none';
+    const modal2 = document.getElementById('matchaAddedModal');
+    if (modal2) modal2.style.display = 'none';
     setTimeout(() => matchaSwitchTab(3), 50);
   }
 
@@ -10975,20 +11005,23 @@ ${styleTexts}
 
 
 
-  <!-- Max 3 annonser modal -->
-  <div id="matchaMaxModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);padding:20px;">
+  <!-- Annons-tillagd modal (1/3, 2/3, 3/3) -->
+  <div id="matchaAddedModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);padding:20px;" onclick="if(event.target===this)this.style.display='none'">
     <div style="background:#1e2440;border-radius:20px;padding:28px 24px;max-width:340px;width:100%;border:1px solid rgba(255,255,255,0.12);box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-      <div style="font-size:28px;text-align:center;margin-bottom:14px;">🎯</div>
-      <div style="font-size:16px;font-weight:800;color:#fff;text-align:center;margin-bottom:10px;">3 annonser valda!</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.55);text-align:center;line-height:1.6;margin-bottom:24px;">Du har valt det maximala antalet annonser. Vill du matcha dessa mot ditt CV, eller fortsätta söka efter fler jobb?</div>
-      <button onclick="matchaGoToStep3()" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
-        Matcha mot CV →
+      <div id="matchaAddedEmoji" style="font-size:28px;text-align:center;margin-bottom:14px;">✅</div>
+      <div id="matchaAddedTitle" style="font-size:17px;font-weight:800;color:#fff;text-align:center;margin-bottom:8px;"></div>
+      <div id="matchaAddedBody" style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.6;margin-bottom:24px;"></div>
+      <button onclick="matchaGoToStep3(); document.getElementById('matchaAddedModal').style.display='none';" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+        Matcha mot CV nu →
       </button>
-      <button onclick="document.getElementById(&#39;matchaMaxModal&#39;).style.display=&#39;none&#39;;" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
-        Stanna kvar och sök vidare
+      <button onclick="document.getElementById('matchaAddedModal').style.display='none';" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
+        Fortsätt söka jobb
       </button>
     </div>
   </div>
+
+  <!-- Max 3 annonser modal (legacy, används ej längre) -->
+  <div id="matchaMaxModal" style="display:none;"></div>
 
 
   <!-- CUSTOM DATE PICKER OVERLAY -->
