@@ -7579,10 +7579,10 @@ ${styleTexts}
       <span class="mob-tab__icon">🤖</span>
       <span>AI-SYV</span>
     </button>
-    <!-- 5. Sparat -->
+    <!-- 5. Profil -->
     <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
-      <span class="mob-tab__icon">💾</span>
-      <span>Sparat</span>
+      <span class="mob-tab__icon">👤</span>
+      <span>Profil</span>
     </button>
   </div>
 
@@ -7754,12 +7754,13 @@ ${styleTexts}
 
     <!-- FLIK 5: Sparade CV -->
     <div class="mob-panel" id="mobPanel-export" style="padding-bottom:100px; padding-top:16px;">
-
+      <div style="padding:0 4px 16px;">
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Mina CV:n</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);">Sparade från CV-byggaren och matchade mot annonser</div>
+      </div>
       <div style="padding: 0 4px;">
         <div id="mobSavedCVsList"></div>
       </div>
-
-
     </div>
 
     <!-- FLIK: Hej -->
@@ -7815,15 +7816,15 @@ ${styleTexts}
             </div>
           </div>
 
-          <!-- Sparat-kortet -->
+          <!-- Profil-kortet -->
           <div onclick="mobSwitchTab(&#39;export&#39;)" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
-            <div style="font-size: 24px; flex-shrink: 0;">💾</div>
+            <div style="font-size: 24px; flex-shrink: 0;">👤</div>
             <div style="flex: 1;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <div style="font-size: 13px; font-weight: 700; color: #fff;">Sparat</div>
+                <div style="font-size: 13px; font-weight: 700; color: #fff;">Profil</div>
                 <span style="font-size: 14px; color: rgba(255,255,255,0.3);">›</span>
               </div>
-              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4;">Dina sparade CV:n — öppna, redigera eller dela när som helst.</div>
+              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4;">Dina sparade CV:n och matchade CV:n — öppna, redigera eller dela.</div>
             </div>
           </div>
 
@@ -10471,7 +10472,8 @@ ${styleTexts}
     const ei = mlist.findIndex(c => c.title === matchTitle);
     if (ei >= 0) mlist[ei] = snapshot; else mlist.unshift(snapshot);
     mobPutMatchedCVs(mlist);
-    showToast('✅ Sparat som "' + matchTitle + '"', 'success');
+    showToast('✅ Sparat som "' + matchTitle + '" — finns nu under Profil', 'success');
+    if (typeof mobRenderSavedCVs === 'function') mobRenderSavedCVs();
   }
 
   function matchaGoToStep3() {
