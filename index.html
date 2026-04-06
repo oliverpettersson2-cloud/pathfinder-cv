@@ -8455,6 +8455,38 @@ ${styleTexts}
   function mobGetMatchedCVs() {
     try { const r = localStorage.getItem(MATCHED_CVS_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; }
   }
+
+  // ── Jobbdagbok — 40 dagars TTL, max 50 poster ──
+  const JOB_DIARY_KEY = 'pathfinder_job_diary';
+  const JOB_DIARY_TTL = 40 * 24 * 3600 * 1000;
+
+  function diaryGet() {
+    try {
+      const raw = localStorage.getItem(JOB_DIARY_KEY);
+      if (!raw) return [];
+      const now = Date.now();
+      // Rensa utgångna poster (>40 dagar)
+      const all = JSON.parse(raw).filter(e => now - e.savedAt < JOB_DIARY_TTL);
+      return all;
+    } catch(e) { return []; }
+  }
+
+  function diaryAdd(entry) {
+    try {
+      let list = diaryGet();
+      // Undvik dubbletter samma dag (samma titel+företag)
+      const today = new Date().toDateString();
+      const exists = list.some(e =>
+        new Date(e.savedAt).toDateString() === today &&
+        e.jobTitle === entry.jobTitle &&
+        e.company === entry.company
+      );
+      if (exists) return;
+      list.unshift(entry);
+      if (list.length > 50) list = list.slice(0, 50);
+      localStorage.setItem(JOB_DIARY_KEY, JSON.stringify(list));
+    } catch(e) {}
+  }
   function mobPutMatchedCVs(list) {
     try { localStorage.setItem(MATCHED_CVS_KEY, JSON.stringify(list)); } catch(e) {}
   }
@@ -8682,7 +8714,90 @@ ${styleTexts}
       });
     }
 
+    // ── Jobbdagbok / Sökta jobb ──
+    const diary = diaryGet();
+    if (diary.length > 0) {
+      html += `
+        <div style="margin:24px 0 14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div>
+              <div style="font-size:16px;font-weight:800;color:#fff;">📋 Sökta jobb</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px;">Sparas i 40 dagar — hjälper vid aktivitetsrapportering</div>
+            </div>
+            <button onclick="diaryExport()" style="padding:7px 14px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);color:#3eb489;font-size:11px;font-weight:700;border-radius:20px;cursor:pointer;font-family:inherit;">📄 Exportera</button>
+          </div>`;
+
+      // Gruppera per vecka
+      const weeks = {};
+      diary.forEach(e => {
+        const d = new Date(e.savedAt);
+        const mon = new Date(d); mon.setDate(d.getDate() - d.getDay() + 1);
+        const wk = 'Vecka ' + mon.toLocaleDateString('sv-SE', {day:'numeric', month:'short'});
+        if (!weeks[wk]) weeks[wk] = [];
+        weeks[wk].push(e);
+      });
+
+      Object.entries(weeks).forEach(([week, entries]) => {
+        html += `<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:10px 0 6px;">${week}</div>`;
+        entries.forEach(e => {
+          const dStr = new Date(e.savedAt).toLocaleDateString('sv-SE', {day:'numeric', month:'short'});
+          html += `
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;margin-bottom:6px;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.jobTitle}</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:1px;">${dStr}${e.company ? ' · ' + e.company : ''}</div>
+              </div>
+              ${e.jobUrl ? `<a href="${e.jobUrl}" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;padding:4px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">↗</a>` : ''}
+            </div>`;
+        });
+      });
+
+      html += '</div>';
+    }
+
     container.innerHTML = html;
+  }
+
+  function diaryExport() {
+    const diary = diaryGet();
+    if (!diary.length) { showToast('Inga sökta jobb ännu', 'info'); return; }
+
+    // Generera text för aktivitetsrapport
+    const weeks = {};
+    diary.forEach(e => {
+      const d = new Date(e.savedAt);
+      const mon = new Date(d); mon.setDate(d.getDate() - d.getDay() + 1);
+      const wk = 'Vecka ' + mon.toLocaleDateString('sv-SE', {day:'numeric', month:'short'});
+      if (!weeks[wk]) weeks[wk] = [];
+      weeks[wk].push(e);
+    });
+
+    let text = 'JOBBSÖKNING — AKTIVITETSRAPPORT\n';
+    text += '='.repeat(35) + '\n\n';
+    Object.entries(weeks).forEach(([week, entries]) => {
+      text += week + '\n';
+      entries.forEach(e => {
+        const dStr = new Date(e.savedAt).toLocaleDateString('sv-SE', {day:'numeric', month:'long'});
+        text += '  • ' + e.jobTitle + (e.company ? ' hos ' + e.company : '') + ' (' + dStr + ')\n';
+        if (e.jobUrl) text += '    ' + e.jobUrl + '\n';
+      });
+      text += '\n';
+    });
+    text += 'Skapad med CVmatchen av PathfinderAI';
+
+    // Försök dela/kopiera
+    if (navigator.share) {
+      const blob = new Blob([text], {type:'text/plain'});
+      const file = new File([blob], 'aktivitetsrapport.txt', {type:'text/plain'});
+      navigator.share({files:[file], title:'Jobbsökning aktivitetsrapport'}).catch(() => {
+        navigator.clipboard && navigator.clipboard.writeText(text).then(() => showToast('✅ Kopierat!', 'success'));
+      });
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => showToast('✅ Kopierat till urklipp!', 'success'));
+    } else {
+      // Fallback — visa i prompt
+      prompt('Kopiera texten nedan:', text);
+    }
   }
 
   function _mobRelDate(d) {
@@ -9430,17 +9545,14 @@ ${styleTexts}
 
   let matchaSearchTimer = null;
   let matchaSelectedAdData = null; // bakåtkompatibilitet
-  // Ladda valda annonser från localStorage om de finns
-  let _matchaSelectedAds = (() => {
-    try {
-      const raw = localStorage.getItem('pathfinder_selected_ads');
-      return raw ? JSON.parse(raw) : [];
-    } catch(e) { return []; }
-  })();
+  // Steg 3 är sessionsbaserat — rensas vid ny session
+  let _matchaSelectedAds = [];
 
   function _saveSelectedAds() {
     try { localStorage.setItem('pathfinder_selected_ads', JSON.stringify(_matchaSelectedAds)); } catch(e) {}
-  } // array med upp till 3 valda annonser
+  }
+
+ // array med upp till 3 valda annonser
   let matchaLocFilter = 'fam'; // 'hbg'|'fam'|'skane'|'all'
   let matchaCurrentOffset = 0;
   let matchaCurrentQ = '';
@@ -10721,12 +10833,23 @@ ${styleTexts}
       company: hit && hit.employer && hit.employer.name || '',
       adText: hit && hit.description && hit.description.text || '',
       _aiSummary: (hit && hit._aiSummary) || '',
+      _hit: hit ? JSON.parse(JSON.stringify(hit)) : null,
       data: JSON.parse(JSON.stringify(cvData))
     };
     const mlist = mobGetMatchedCVs();
     const ei = mlist.findIndex(c => c.title === matchTitle);
     if (ei >= 0) mlist[ei] = snapshot; else mlist.unshift(snapshot);
     mobPutMatchedCVs(mlist);
+
+    // Lägg till i jobbdagboken
+    diaryAdd({
+      savedAt: Date.now(),
+      jobTitle: (hit && hit.headline) || cvData.title || 'Okänt yrke',
+      company: (hit && hit.employer && hit.employer.name) || '',
+      jobUrl: (hit && hit.webpage_url) || '',
+      matchedCVId: snapshot.id
+    });
+
     showToast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil', 'success');
     if (typeof mobRenderSavedCVs === 'function') mobRenderSavedCVs();
   }
