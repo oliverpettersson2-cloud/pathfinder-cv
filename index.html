@@ -10612,6 +10612,28 @@ ${styleTexts}
 
       if (factsEl.children.length > 0) { section.appendChild(factsEl); }
 
+      // Kolla om redan matchat
+      const alreadyMatchedS3 = (typeof mobGetMatchedCVs === 'function')
+        ? mobGetMatchedCVs().some(m => {
+            const mTitle = (m.title || '').replace('Matchat CV – ', '').replace('Matchat CV – ', '').toLowerCase().trim();
+            const mComp  = (m.company || '').toLowerCase().trim();
+            return mTitle === title.toLowerCase().trim() && (!mComp || !company || mComp === company.toLowerCase().trim());
+          })
+        : false;
+
+      // Starta AI-sammanfattning i bakgrunden om ej gjort (säkerhetsnät)
+      if (!hit._aiSummary && !hit._aiPending && adText) {
+        hit._aiPending = true;
+        fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+          model:'claude-sonnet-4-20250514', max_tokens:300,
+          messages:[{ role:'user', content:'Sammanfatta detta jobb på 2-3 meningar på svenska. Vad söker de? Vad är viktigt för sökanden att veta? Jobbtitel: ' + title + '. Annonstext: ' + adText.substring(0, 2000) }]
+        })}).then(r => r.json()).then(data => {
+          const txt = data.content && data.content[0] && data.content[0].text;
+          if (txt) { hit._aiSummary = txt; matchaRenderStep3Ads(); }
+          hit._aiPending = false;
+        }).catch(() => { hit._aiPending = false; });
+      }
+
       // Wrapper för allt "extra" som döljs när profiltexter visas
       const extrasDiv = document.createElement('div');
       extrasDiv.id = 'matchaExtras_' + hit.id;
@@ -10636,39 +10658,44 @@ ${styleTexts}
       }
       extrasDiv.appendChild(btnRow);
 
-      // Expanderbar annonstext
+      // Expanderbar annonstext + AI-sammanfattning (båda dolda tills "Läs annons" klickas)
+      const adBox = document.createElement('div');
+      adBox.id = 'matchaAdSection_' + hit.id;
+      adBox.style.cssText = 'display:none;margin-top:10px;border-radius:10px;overflow:hidden;';
       if (adText) {
-        const adBox = document.createElement('div');
-        adBox.id = 'matchaAdSection_' + hit.id;
-        adBox.style.cssText = 'display:none;margin-top:10px;max-height:220px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;';
         const adContent = document.createElement('div');
-        adContent.style.cssText = 'font-size:11px;line-height:1.7;color:rgba(255,255,255,0.65);white-space:pre-wrap;';
+        adContent.style.cssText = 'font-size:11px;line-height:1.7;color:rgba(255,255,255,0.65);white-space:pre-wrap;max-height:220px;overflow-y:auto;background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;margin-bottom:8px;';
         adContent.textContent = adText.substring(0, 2000);
         adBox.appendChild(adContent);
-        extrasDiv.appendChild(adBox);
       }
-
-      // AI-sammanfattning från steg 2 (om redan genererad)
+      // AI-sammanfattning inuti adBox (visas vid "Läs annons")
       const existingAiSum = _matchaSelectedAds[i] && _matchaSelectedAds[i]._aiSummary;
       const aiIsPending   = _matchaSelectedAds[i] && _matchaSelectedAds[i]._aiPending;
       if (existingAiSum) {
         const aiSumBox = document.createElement('div');
-        aiSumBox.style.cssText = 'margin-top:10px;font-size:12px;color:#a78bfa;line-height:1.7;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.4);';
+        aiSumBox.style.cssText = 'font-size:12px;color:#a78bfa;line-height:1.7;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.4);';
         aiSumBox.textContent = existingAiSum;
-        extrasDiv.appendChild(aiSumBox);
+        adBox.appendChild(aiSumBox);
       } else if (aiIsPending) {
         const pendingBox = document.createElement('div');
-        pendingBox.style.cssText = 'margin-top:10px;display:flex;align-items:center;gap:8px;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.3);';
+        pendingBox.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.3);';
         pendingBox.innerHTML = '<span style="font-size:18px;animation:hourglassSpin 2s ease-in-out infinite;display:inline-block;">⏳</span><span style="font-size:12px;color:rgba(164,139,250,0.7);">AI analyserar annonsen…</span>';
-        extrasDiv.appendChild(pendingBox);
+        adBox.appendChild(pendingBox);
       }
+      extrasDiv.appendChild(adBox);
 
-      // Matcha CV-knapp (lila)
+      // Matcha CV-knapp (lila) — eller "redan matchad"-badge
       const genBtn = document.createElement('button');
-      genBtn.textContent = '✨ Matcha CV mot annons';
-      genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
+      if (alreadyMatchedS3) {
+        genBtn.textContent = '\u2705 CV redan matchat mot detta jobb';
+        genBtn.disabled = true;
+        genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);color:#3eb489;font-size:13px;font-weight:700;border-radius:10px;cursor:default;font-family:inherit;opacity:0.8;';
+      } else {
+        genBtn.textContent = '\u2728 Matcha CV mot annons';
+        genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
+      }
       const adIdx = i;
-      genBtn.onclick = () => {
+      if (!alreadyMatchedS3) genBtn.onclick = () => {
         const adUrl = hit.webpage_url || '';
         if (adUrl) {
           const overlay = document.createElement('div');
@@ -10714,7 +10741,7 @@ ${styleTexts}
             }
           });
         }
-      };
+      }; // end genBtn.onclick
       extrasDiv.appendChild(genBtn);
       section.appendChild(extrasDiv);
 
