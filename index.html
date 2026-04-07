@@ -9819,19 +9819,6 @@ ${styleTexts}
       } else if (_matchaSelectedAds.length < 3) {
         _matchaSelectedAds.push(hit);
         _saveSelectedAds();
-        // Auto-generera AI-sammanfattning i bakgrunden om ej gjort
-        if (!hit._aiSummary && !hit._aiPending) {
-          hit._aiPending = true;
-          const desc = hit.description && hit.description.text ? hit.description.text.substring(0, 2000) : '';
-          fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
-            model:'claude-sonnet-4-20250514', max_tokens:300,
-            messages:[{ role:'user', content:'Sammanfatta detta jobb på 2-3 meningar på svenska. Vad söker de? Vad är viktigt för sökanden att veta? Jobbtitel: ' + hit.headline + '. Annonstext: ' + desc }]
-          })}).then(r => r.json()).then(data => {
-            const txt = data.content && data.content[0] && data.content[0].text;
-            if (txt) { hit._aiSummary = txt; matchaRenderStep3Ads(); }
-            hit._aiPending = false;
-          }).catch(() => { hit._aiPending = false; });
-        }
         // Visa modal efter tillägg
         updateCardState();
         matchaUpdateStep2Bar();
@@ -9846,46 +9833,6 @@ ${styleTexts}
       matchaRenderStep3Ads();
     };
 
-    const aiBtn = document.createElement('button');
-    aiBtn.title = 'AI-sammanfattning';
-    aiBtn.style.cssText = 'padding:12px 14px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;font-size:12px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;transition:all 0.15s;flex-shrink:0;white-space:nowrap;';
-    aiBtn.textContent = '✨ AI-sammanfatta';
-    let aiDone = false;
-    aiBtn.onclick = async (e) => {
-      e.stopPropagation();
-      if (!expanded) { expanded = true; expandBox.style.display = 'block'; }
-      if (aiDone) return;
-      aiBtn.textContent = '⏳ Analyserar...';
-      aiBtn.disabled = true;
-      showAiLoader('Analyserar annonsen...', 'AI läser och sammanfattar jobbet');
-      const aiSumEl = document.createElement('div');
-      aiSumEl.style.cssText = 'font-size:12px;color:#a78bfa;line-height:1.7;margin-bottom:8px;padding:10px;background:rgba(124,58,237,0.07);border-radius:8px;border-left:2px solid rgba(124,58,237,0.4);';
-      aiSumEl.textContent = 'Analyserar annonsen...';
-      expandBox.insertBefore(aiSumEl, expandBox.firstChild);
-      try {
-        const desc = hit.description && hit.description.text ? hit.description.text.substring(0, 2000) : snippet || '';
-        const resp = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
-          model:'claude-sonnet-4-20250514', max_tokens:300,
-          messages:[{ role:'user', content:'Sammanfatta detta jobb på 2-3 meningar på svenska. Vad söker de? Vad är viktigt för sökanden att veta? Jobbtitel: ' + hit.headline + '. Annonstext: ' + desc }]
-        })});
-        const data = await resp.json();
-        const txt = data.content && data.content[0] && data.content[0].text;
-        aiSumEl.textContent = txt || 'Kunde inte generera sammanfattning.';
-        if (txt) hit._aiSummary = txt; // Spara för steg 3
-        aiDone = true;
-        aiBtn.textContent = '✨ Klar';
-        aiBtn.style.background = 'rgba(124,58,237,0.25)';
-        aiBtn.style.borderColor = 'rgba(124,58,237,0.6)';
-      } catch(err) {
-        aiSumEl.textContent = 'Fel vid AI-anrop.';
-        aiBtn.textContent = '✨ AI-sammanfatta';
-      }
-      hideAiLoader();
-      aiBtn.disabled = false;
-    };
-
-    btnRow.appendChild(btn);
-    btnRow.appendChild(aiBtn);
 
     // --- Expanderbar info-box (chips + knappar gömda tills klick) ---
     const expandBox = document.createElement('div');
@@ -9938,7 +9885,7 @@ ${styleTexts}
     // Liten "tryck-hint" på kortet (collapsed-läge)
     const tapHint = document.createElement('div');
     tapHint.style.cssText = 'margin-top:8px;font-size:11px;color:rgba(255,255,255,0.25);display:flex;align-items:center;gap:4px;';
-    tapHint.innerHTML = '<span>👆</span><span>Tryck för att välja och AI-sammanfatta</span>';
+    tapHint.innerHTML = '<span>👆</span><span>Tryck för att välja</span>';
     card.appendChild(tapHint);
 
     // Klick på kortet → toggle expand
@@ -9995,7 +9942,7 @@ ${styleTexts}
       const locLabel = MATCHA_LOC_LABEL[matchaLocFilter] || 'Hela Sverige';
       resultsEl.innerHTML =
         '<div style="font-size:11px;color:rgba(255,255,255,0.3);display:flex;justify-content:space-between;margin-bottom:6px;"><span>Visar ' + hits.length + ' av ' + total + '</span><span>' + locLabel + '</span></div>' +
-        '<div style="font-size:12px;color:#fff;margin-bottom:12px;opacity:0.75;">👆 Tryck på en annons för att läsa mer, välja och AI-sammanfatta</div>';
+        '<div style="font-size:12px;color:#fff;margin-bottom:12px;opacity:0.75;">👆 Tryck på en annons för att läsa mer och välja</div>';
       hits.forEach(hit => resultsEl.appendChild(matchaBuildCard(hit)));
       matchaCurrentOffset = hits.length;
       resultsEl.style.display = 'block';
@@ -10381,8 +10328,6 @@ ${styleTexts}
       pdf.line(margin, y, pageW - margin, y);
       y += 8;
 
-      // ── AI-sammanfattning (om finns) ──
-      const aiSum = entry._aiSummary || '';
       if (aiSum) {
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(11);
@@ -10640,19 +10585,6 @@ ${styleTexts}
             return mTitle === title.toLowerCase().trim() && (!mComp || !company || mComp === company.toLowerCase().trim());
           })
         : false;
-
-      // Starta AI-sammanfattning i bakgrunden om ej gjort (säkerhetsnät)
-      if (!hit._aiSummary && !hit._aiPending && adText) {
-        hit._aiPending = true;
-        fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
-          model:'claude-sonnet-4-20250514', max_tokens:300,
-          messages:[{ role:'user', content:'Sammanfatta detta jobb på 2-3 meningar på svenska. Vad söker de? Vad är viktigt för sökanden att veta? Jobbtitel: ' + title + '. Annonstext: ' + adText.substring(0, 2000) }]
-        })}).then(r => r.json()).then(data => {
-          const txt = data.content && data.content[0] && data.content[0].text;
-          if (txt) { hit._aiSummary = txt; matchaRenderStep3Ads(); }
-          hit._aiPending = false;
-        }).catch(() => { hit._aiPending = false; });
-      }
 
       // Wrapper för allt "extra" som döljs när profiltexter visas
       const extrasDiv = document.createElement('div');
@@ -11000,7 +10932,7 @@ ${styleTexts}
       jobUrl: hit && (hit.webpage_url || ''),
       company: hit && hit.employer && hit.employer.name || '',
       adText: hit && hit.description && hit.description.text || '',
-      _aiSummary: (hit && hit._aiSummary) || '',
+
       _hit: hit ? JSON.parse(JSON.stringify(hit)) : null,
       data: JSON.parse(JSON.stringify(cvData))
     };
