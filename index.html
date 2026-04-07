@@ -10926,8 +10926,8 @@ ${styleTexts}
   function matchaShowAddedModal(count) {
     if (count === 3) {
       // Auto-redirect vid 3/3 — ingen fråga
-      showToast('Du har valt max antal jobb 3/3 — omdirigerar till Matcha CV ✨', 'success');
-      setTimeout(() => matchaSwitchTab(3), 3000);
+      showAiLoader('Du har valt max antal jobb 3/3', 'Omdirigerar till Matcha CV…');
+      setTimeout(() => { hideAiLoader(); matchaSwitchTab(3); }, 3000);
       return;
     }
     const modal = document.getElementById('matchaAddedModal');
