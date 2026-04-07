@@ -422,10 +422,53 @@ window.addEventListener('load', function () {
           'Sök bland riktiga annonser från <strong style="color:#f0c040;">Platsbanken</strong>. ' +
           'Tryck på en annons för att öppna den och läsa mer — tryck sedan ' +
           '<strong style="color:#f0c040;">+ Välj</strong> för att lägga till den. ' +
-          'Du kan välja upp till 3 annonser. ' +
-          'I steg 3 matchar AI ditt CV mot varje annons och skriver din profiltext — ' +
-          '<strong style="color:#a78bfa;">du väljer vilken text som passar bäst.</strong>';
+          'Du väljer upp till 3 annonser och går sedan vidare till steg 3. ' +
+          'Där matchar AI ditt CV mot varje jobb och skriver en personlig profiltext. ' +
+          '<strong style="color:#a78bfa;">Du väljer vilken text som passar bäst.</strong><br><br>' +
+          '<span style="color:rgba(232,93,38,0.8);">⏰ Max 3 CV-matcher per dag — nya matcher öppnar vid midnatt.</span>';
       }
     });
   }, 300);
+});
+
+
+// ── Byt "Matcha mot CV"-knappen i steg 2-korten ──
+window.addEventListener('load', function () {
+  const resultsEl = document.getElementById('matchaSearchResults');
+
+
+// ── "Lägg till annons & gå till steg 3" ──────────
+window.addEventListener('load', function () {
+  const resultsEl = document.getElementById('matchaSearchResults');
+  if (!resultsEl) return;
+
+  function fixMatchaBtns() {
+    resultsEl.querySelectorAll('button').forEach(function (btn) {
+      if (btn.textContent.trim() === '✨ Matcha mot CV' && !btn.dataset.patched) {
+        btn.dataset.patched = '1';
+        btn.textContent = '➕ Lägg till annons & gå till steg 3';
+        btn.style.background = 'linear-gradient(135deg,#3eb489,#10b981)';
+        btn.style.border = 'none';
+        btn.style.color = '#fff';
+        btn.style.fontWeight = '800';
+
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+
+        newBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          // Trigga inbyggda + Välj-knappen
+          const section = newBtn.closest('[data-ad-id]');
+          const valjBtn = section && section.querySelector('.matcha-valj-btn');
+          if (valjBtn) valjBtn.click();
+          // Gå till steg 3
+          setTimeout(function () {
+            if (typeof matchaSwitchTab === 'function') matchaSwitchTab(3);
+          }, 150);
+        });
+      }
+    });
+  }
+
+  new MutationObserver(fixMatchaBtns).observe(resultsEl, { childList: true, subtree: true });
 });
