@@ -248,7 +248,7 @@
       return savedCVs.sort((a,b) => b.savedAt - a.savedAt).map(function (cv) {
         return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">' +
           '<div style="flex-shrink:0;width:40px;height:40px;border-radius:10px;background:rgba(62,180,137,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;font-family:Georgia,serif;">' +
-            '<span style="color:#f0c040;">CV</span><span style="color:#fff;">m</span></div>' +
+            '<span style="color:#f0c040;">CV</span><span style="color:#fff;">match</span></div>' +
           '<div style="flex:1;min-width:0;">' +
             '<div style="font-size:13px;font-weight:700;color:#fff;">' + cv.title + '</div>' +
             '<div style="font-size:11px;color:rgba(255,255,255,0.35);">' + relDate(cv.savedAt) + '</div>' +
