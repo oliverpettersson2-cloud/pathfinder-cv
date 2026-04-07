@@ -9877,14 +9877,18 @@ ${styleTexts}
       expandBox.appendChild(readBtn);
     }
 
-    // Matcha-knapp direkt i expandBox
+    card.appendChild(expandBox);
+
+    // Flytta btnRow in i expandBox (knappar syns bara när kortet expanderas)
+    expandBox.appendChild(btnRow);
+
+    // Spara & matcha-knapp — längst ner, precis som steg 3
     if (!alreadyMatched) {
       const matchaBtn = document.createElement('button');
-      matchaBtn.textContent = '✨ Matcha mot CV';
+      matchaBtn.textContent = '\u2728 Matcha mot CV';
       matchaBtn.style.cssText = 'margin-top:10px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
       matchaBtn.onclick = (e) => {
         e.stopPropagation();
-        // Lägg till om ej redan vald
         if (!_matchaSelectedAds.find(a => a.id === hit.id)) {
           if (_matchaSelectedAds.length >= 3) { showToast('Max 3 annonser valda', 'error'); return; }
           _matchaSelectedAds.push(hit);
@@ -9894,11 +9898,6 @@ ${styleTexts}
       };
       expandBox.appendChild(matchaBtn);
     }
-
-    card.appendChild(expandBox);
-
-    // Flytta btnRow in i expandBox (knappar syns bara när kortet expanderas)
-    expandBox.appendChild(btnRow);
 
     // Liten "tryck-hint" på kortet (collapsed-läge)
     const tapHint = document.createElement('div');
@@ -10499,22 +10498,7 @@ ${styleTexts}
 
       const section = document.createElement('div');
       section.dataset.adId = hit.id;
-      section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;transition:all 0.2s;cursor:pointer;';
-      const expandWrapper = document.createElement('div');
-      expandWrapper.id = 'matchaExpand_' + hit.id;
-      expandWrapper.style.display = 'none';
-      section.onclick = (e) => {
-        if (e.target.closest('button') || e.target.closest('a')) return;
-        const ew = document.getElementById('matchaExpand_' + hit.id);
-        const th = document.getElementById('matchaTapHint_' + hit.id);
-        if (ew && ew.style.display === 'none') {
-          ew.style.display = 'block';
-          if (th) th.style.display = 'none';
-          section.style.borderColor = 'rgba(108,92,231,0.5)';
-          section.style.background = 'rgba(62,180,137,0.09)';
-        }
-      };
-
+      section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:16px;transition:all 0.2s;';
       // Header rad
       const hdr = document.createElement('div');
       hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;';
@@ -10538,67 +10522,53 @@ ${styleTexts}
       metaEl.textContent = company + (muni ? ' · ' + muni : '');
       section.appendChild(metaEl);
 
-      // Fakta-chips (dolda, toggle via klick på kortet)
-      const factsEl = document.createElement('div');
-      factsEl.style.cssText = 'display:none;flex-wrap:wrap;gap:6px;margin-top:10px;';
-
-      // Klick på kortet (ej knappar/länkar) → toggle expand
-      let s3Expanded = false;
-      section.style.cursor = 'pointer';
-      section.onclick = (e) => {
-        if (e.target.closest('button') || e.target.closest('a')) return;
-        s3Expanded = !s3Expanded;
-        factsEl.style.display = s3Expanded ? 'flex' : 'none';
-        const adBox = section.querySelector('[id^="matchaAdSection_"]');
-        section.style.background = s3Expanded ? 'rgba(62,180,137,0.1)' : 'rgba(62,180,137,0.06)';
-      };
-
-      // Hjälpfunktion för att skapa chip
-      function makeChip(label, val, color) {
-        const chip = document.createElement('div');
-        chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700;background:' + (color||'rgba(255,255,255,0.07)') + ';color:' + (color ? '#fff' : 'rgba(255,255,255,0.55)') + ';border:1px solid ' + (color ? color : 'rgba(255,255,255,0.1)') + ';';
-        chip.textContent = label + (val ? ': ' + val : '');
-        return chip;
+      // ── Chips (alltid synliga, identiska med steg 2) ──
+      function makeChip(label, color) {
+        const c = document.createElement('span');
+        c.style.cssText = 'display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;margin:2px;background:' + (color||'rgba(255,255,255,0.07)') + ';color:rgba(255,255,255,0.6);';
+        c.textContent = label; return c;
       }
-
-      // Heltid / Deltid
+      const chipsRow3 = document.createElement('div');
+      chipsRow3.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;';
       const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
-      if (hoursType) factsEl.appendChild(makeChip('⏱ ' + hoursType));
-
-      // Anställningsform
+      if (hoursType) chipsRow3.appendChild(makeChip('⏱ ' + hoursType));
       const empType = (hit.employment_type && hit.employment_type.label) || '';
-      if (empType) factsEl.appendChild(makeChip('📋 ' + empType));
-
-      // Körkort
+      if (empType) chipsRow3.appendChild(makeChip('📋 ' + empType));
       const licRequired = hit.driving_license_required;
       const licTypes = (hit.driving_license || []).map(l => l.label).filter(Boolean).join(', ');
-      if (licRequired) {
-        factsEl.appendChild(makeChip('🚗 Körkort krävs' + (licTypes ? ': ' + licTypes : ''), '', 'rgba(240,192,64,0.5)'));
-      } else if (licRequired === false) {
-        factsEl.appendChild(makeChip('🚗 Körkort ej krav'));
-      }
-
-      // Lön
+      if (licRequired) chipsRow3.appendChild(makeChip('🚗 Körkort krävs' + (licTypes ? ': ' + licTypes : ''), 'rgba(240,192,64,0.25)'));
+      else if (licRequired === false) chipsRow3.appendChild(makeChip('🚗 Inget körkort'));
       const salDesc = hit.salary_description || '';
       const salType = (hit.salary_type && hit.salary_type.label) || '';
-      if (salDesc) {
-        factsEl.appendChild(makeChip('💰 ' + salDesc.substring(0, 40)));
-      } else if (salType) {
-        factsEl.appendChild(makeChip('💰 ' + salType));
-      } else {
-        factsEl.appendChild(makeChip('💰 Lön ej uppgiven'));
+      chipsRow3.appendChild(makeChip('💰 ' + (salDesc.substring(0,40) || salType || 'Lön ej uppgiven')));
+      const duration = (hit.duration && hit.duration.label) || '';
+      if (duration && duration !== 'Tillsvidare') chipsRow3.appendChild(makeChip('📅 ' + duration));
+      if (chipsRow3.children.length) section.appendChild(chipsRow3);
+
+      // Snippet
+      const rawDesc = (hit.description && hit.description.text) || '';
+      const adSnippet = rawDesc.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0, 120);
+      if (adSnippet) {
+        const snipEl = document.createElement('div');
+        snipEl.style.cssText = 'margin-top:8px;font-size:12px;color:rgba(255,255,255,0.45);line-height:1.6;';
+        snipEl.textContent = adSnippet + (rawDesc.length > 120 ? '…' : '');
+        section.appendChild(snipEl);
       }
 
-      // Varaktighet
-      const duration = (hit.duration && hit.duration.label) || '';
-      if (duration && duration !== 'Tillsvidare') factsEl.appendChild(makeChip('📅 ' + duration));
-
-      if (factsEl.children.length > 0) { section.appendChild(factsEl); }
+      // Läs annons-länk
+      if (url) {
+        const readLink = document.createElement('a');
+        readLink.href = url; readLink.target = '_blank'; readLink.rel = 'noopener';
+        readLink.onclick = e => e.stopPropagation();
+        readLink.style.cssText = 'display:inline-block;margin-top:8px;font-size:11px;font-weight:700;color:#3eb489;text-decoration:none;padding:5px 12px;border:1px solid rgba(62,180,137,0.4);border-radius:8px;background:rgba(62,180,137,0.08);';
+        readLink.textContent = 'Läs annons \u2197';
+        section.appendChild(readLink);
+      }
 
       // Kolla om redan matchat
       const alreadyMatchedS3 = (typeof mobGetMatchedCVs === 'function')
         ? mobGetMatchedCVs().some(m => {
-            const mTitle = (m.title || '').replace('Matchat CV – ', '').replace('Matchat CV – ', '').toLowerCase().trim();
+            const mTitle = (m.title || '').replace('Matchat CV \u2013 ', '').toLowerCase().trim();
             const mComp  = (m.company || '').toLowerCase().trim();
             return mTitle === title.toLowerCase().trim() && (!mComp || !company || mComp === company.toLowerCase().trim());
           })
@@ -10608,20 +10578,7 @@ ${styleTexts}
       const extrasDiv = document.createElement('div');
       extrasDiv.id = 'matchaExtras_' + hit.id;
 
-      // Extern länk (enda knappen kvar — Läs annons borttagen)
-      if (url) {
-        const btnRow = document.createElement('div');
-        btnRow.style.cssText = 'margin-top:8px;';
-        const linkEl = document.createElement('a');
-        linkEl.href = url; linkEl.target = '_blank'; linkEl.rel = 'noopener';
-        linkEl.textContent = '↗ Öppna annons';
-        linkEl.onclick = e => e.stopPropagation();
-        linkEl.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.35);text-decoration:none;';
-        btnRow.appendChild(linkEl);
-        extrasDiv.appendChild(btnRow);
-      }
-
-      // Matcha CV-knapp (lila) — eller "redan matchad"-badge
+      // Matcha mot CV-knapp — eller "redan matchad"-badge
       const genBtn = document.createElement('button');
       if (alreadyMatchedS3) {
         genBtn.textContent = '\u2705 CV redan matchat mot detta jobb';
@@ -10629,18 +10586,11 @@ ${styleTexts}
         genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);color:#3eb489;font-size:13px;font-weight:700;border-radius:10px;cursor:default;font-family:inherit;opacity:0.8;';
       } else {
         genBtn.id = 'matchaGenBtn_' + hit.id;
-        genBtn.textContent = '\u2728 Matcha CV mot annons';
-        genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;display:none;';
+        genBtn.textContent = '\u2728 Matcha mot CV';
+        genBtn.style.cssText = 'margin-top:12px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
       }
       const adIdx = i;
-
-      // Info-ruta (dold tills kortet trycks) — visas ovanför matchaknappen
-      const infoBox = document.createElement('div');
-      infoBox.id = 'matchaInfoBox_' + hit.id;
-      infoBox.style.cssText = 'display:none;margin-top:12px;padding:12px;background:rgba(62,180,137,0.06);border:1px solid rgba(62,180,137,0.2);border-radius:10px;';
-      infoBox.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:8px;">\uD83D\uDCC4 L\u00e4s annonsen s\u00e5 vet du exakt vilket jobb det handlar om \u2014 och kan avg\u00f6ra om du verkligen vill s\u00f6ka det.</div>' +
-        (url ? '<a href="' + url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-block;font-size:12px;font-weight:700;color:#3eb489;text-decoration:none;padding:5px 12px;border:1px solid rgba(62,180,137,0.4);border-radius:8px;background:rgba(62,180,137,0.08);">\u2197 \u00d6ppna annons</a>' : '');
-      expandWrapper.appendChild(infoBox);
+      extrasDiv.appendChild(genBtn);
 
       if (!alreadyMatchedS3) genBtn.onclick = (e) => {
         e.stopPropagation();
@@ -10664,8 +10614,7 @@ ${styleTexts}
           }
         });
       }; // end genBtn.onclick
-      expandWrapper.appendChild(genBtn);
-      extrasDiv.appendChild(expandWrapper);
+      // genBtn already appended to extrasDiv above
       section.appendChild(extrasDiv);
 
       // Resultat-container
@@ -10675,11 +10624,7 @@ ${styleTexts}
       resultDiv.style.marginTop = '12px';
       section.appendChild(resultDiv);
 
-      const tapHint = document.createElement('div');
-      tapHint.id = 'matchaTapHint_' + hit.id;
-      tapHint.style.cssText = 'margin-top:12px;text-align:center;font-size:12px;font-weight:700;color:#f0c040;letter-spacing:0.3px;';
-      tapHint.textContent = '👆 Tryck för mer info';
-      section.appendChild(tapHint);
+
 
       container.appendChild(section);
     });
