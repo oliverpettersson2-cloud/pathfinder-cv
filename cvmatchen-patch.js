@@ -311,3 +311,113 @@
   }); // end load
 
 })();
+
+
+  // ══════════════════════════════════════════════
+  // UTBILDNING — Byt fliknamn + Steg 1
+  // ══════════════════════════════════════════════
+  window.addEventListener('load', function () {
+
+    // Byt "AI-SYV" → "Utbildning" i navbaren
+    const tabBtn = document.getElementById('tabBtn-aisyv');
+    if (tabBtn) {
+      const span = tabBtn.querySelector('span');
+      if (span) span.textContent = 'Utbildning';
+    }
+
+    // Skapa steg 1-skärmen och injicera den i AI-SYV-panelen
+    const panel = document.getElementById('mobPanel-aisyv');
+    if (!panel) return;
+
+    const step1 = document.createElement('div');
+    step1.id = 'utbStep1';
+    step1.style.cssText =
+      'position:absolute;inset:0;z-index:50;background:#12172a;overflow-y:auto;padding:20px 16px 40px;';
+
+    step1.innerHTML =
+      // Hero
+      '<div style="text-align:center;padding:16px 0 24px;">' +
+        '<div style="font-size:40px;margin-bottom:10px;">🎓</div>' +
+        '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;">Utbildning</div>' +
+        '<div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">Hitta rätt utbildning och ta nästa steg mot jobbet du vill ha.</div>' +
+      '</div>' +
+
+      // 4 rutor
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">' +
+
+        // Ruta 1
+        _utbCard('🎯','Utbildningar med jobbchanser',
+          'Se utbildningar i regionen som faktiskt leder till jobb.',
+          'rgba(62,180,137,0.12)','rgba(62,180,137,0.3)','#3eb489',
+          'Visa utbildningar med goda jobbchanser i Familjen Helsingborg-regionen') +
+
+        // Ruta 2
+        _utbCard('🗺️','Utbildningar nära dig',
+          'Utbildningar i Helsingborg och Familjen Helsingborgs 11 kommuner.',
+          'rgba(240,192,64,0.1)','rgba(240,192,64,0.3)','#f0c040',
+          'Vilka utbildningar finns nära mig i Familjen Helsingborg?') +
+
+        // Ruta 3
+        _utbCard('💡','Vad passar mig?',
+          'AI analyserar ditt CV och föreslår utbildningar som passar dig.',
+          'rgba(124,58,237,0.1)','rgba(124,58,237,0.3)','#a78bfa',
+          'Analysera mitt CV och föreslå utbildningar som passar mig') +
+
+        // Ruta 4
+        _utbCard('🔖','Mina sparade utbildningar',
+          'Se utbildningar du sparat tidigare.',
+          'rgba(232,93,38,0.1)','rgba(232,93,38,0.3)','#e85d26',
+          null, true) + // null = öppnar sparade, inte chatten
+
+      '</div>' +
+
+      // Gå till AI-chatten-knapp
+      '<button onclick="window._utbGotoChat(\'\')" style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">' +
+        '💬 Ställ en egen fråga till AI-vägledaren' +
+      '</button>';
+
+    panel.style.position = 'relative';
+    panel.appendChild(step1);
+
+    // Hjälpfunktion: skapa en ruta
+    function _utbCard(emoji, title, desc, bg, border, color, prompt, isSaved) {
+      const onclick = isSaved
+        ? 'if(typeof syvShowSaved===\'function\') syvShowSaved()'
+        : 'window._utbGotoChat(\'' + (prompt||'').replace(/'/g,"\\'") + '\')';
+      return '<div onclick="' + onclick + '" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;' +
+        'background:' + bg + ';border:2px solid ' + border + ';transition:all 0.15s;">' +
+        '<div style="font-size:28px;margin-bottom:8px;">' + emoji + '</div>' +
+        '<div style="font-size:12px;font-weight:800;color:' + color + ';margin-bottom:6px;line-height:1.3;">' + title + '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">' + desc + '</div>' +
+        '</div>';
+    }
+
+    // Gå till steg 2 (chatten) och skriv in prompt
+    window._utbGotoChat = function(prompt) {
+      const s1 = document.getElementById('utbStep1');
+      if (s1) s1.style.display = 'none';
+      // Skriv in prompten i chatfältet och skicka
+      if (prompt) {
+        setTimeout(function() {
+          const input = document.getElementById('syvInput') || document.querySelector('#mobPanel-aisyv textarea, #mobPanel-aisyv input[type=text]');
+          if (input) {
+            input.value = prompt;
+            input.dispatchEvent(new Event('input', {bubbles:true}));
+            const sendBtn = document.querySelector('#syvSendBtn, #mobPanel-aisyv button[onclick*="syvSend"], #mobPanel-aisyv button[onclick*="Send"]');
+            if (sendBtn) sendBtn.click();
+          }
+        }, 200);
+      }
+    };
+
+    // Visa steg 1 igen när man byter bort och tillbaka till fliken
+    const _origSwitch2 = window.mobSwitchTab;
+    window.mobSwitchTab = function(tab) {
+      if (_origSwitch2) _origSwitch2(tab);
+      if (tab === 'aisyv') {
+        const s1 = document.getElementById('utbStep1');
+        if (s1) s1.style.display = 'block';
+      }
+    };
+
+  });
