@@ -88,12 +88,18 @@
     // Fallback — MutationObserver på hela dokumentet
     new MutationObserver(function() {
       document.querySelectorAll('button').forEach(function(btn) {
-        if (btn.textContent.trim() === '✨ Matcha mot CV' && !btn.dataset.p) {
+        // Steg 2 — gul knapp → Välj denna annons
+        if (btn.textContent.trim() === '✨ Matcha mot CV' && !btn.dataset.p && !(btn.id||'').startsWith('matchaGenBtn_')) {
           btn.dataset.p = '1';
           btn.textContent = '✅ Välj denna annons';
           btn.style.background = 'linear-gradient(135deg,#3eb489,#10b981)';
           btn.style.color = '#fff';
           btn.style.border = 'none';
+        }
+        // Steg 3 — lila AI-knapp → ✨ Matcha annons med AI
+        if ((btn.id||'').startsWith('matchaGenBtn_') && !btn.dataset.p && !btn.disabled) {
+          btn.dataset.p = '1';
+          btn.textContent = '✨ Matcha annons med AI';
         }
       });
     }).observe(document.body, { childList: true, subtree: true });
@@ -419,5 +425,81 @@
         if (s1) s1.style.display = 'block';
       }
     };
+
+  });
+
+
+  // ══════════════════════════════════════════════
+  // STEG 3 — Röd dagsgräns-banner högst upp
+  // ══════════════════════════════════════════════
+  window.addEventListener('load', function () {
+
+    function updateDagsBanner() {
+      const step3 = document.getElementById('matchaStep3');
+      if (!step3 || step3.style.display === 'none') return;
+
+      const count  = matchedToday();   // redan definierad i patchen
+      const left   = 3 - count;
+      const vip    = isVIP();          // redan definierad i patchen
+
+      let banner = document.getElementById('_dagsBanner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = '_dagsBanner';
+        // Sätt in allra överst i steg 3, innan "Välj CV att matcha mot"
+        step3.insertBefore(banner, step3.firstChild);
+      }
+
+      // Tid till midnatt
+      const mn = new Date(); mn.setHours(24,0,0,0);
+      const diff = mn - new Date();
+      const h = Math.floor(diff/3600000);
+      const m = Math.floor((diff%3600000)/60000);
+      const tid = h + ' tim ' + m + ' min';
+
+      if (vip) {
+        banner.style.display = 'none';
+        return;
+      }
+
+      banner.style.cssText =
+        'display:flex;align-items:center;justify-content:space-between;gap:10px;' +
+        'background:' + (left === 0 ? 'rgba(232,93,38,0.18)' : 'rgba(232,93,38,0.1)') + ';' +
+        'border:2px solid ' + (left === 0 ? '#e85d26' : 'rgba(232,93,38,0.4)') + ';' +
+        'border-radius:12px;padding:10px 14px;margin-bottom:14px;';
+
+      banner.innerHTML =
+        '<div>' +
+          '<div style="font-size:13px;font-weight:900;color:#e85d26;margin-bottom:2px;">' +
+            (left === 0 ? '🔒 Inga matcher kvar idag' : '🎯 ' + left + ' av 3 matcher kvar idag') +
+          '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.4);">' +
+            'Resetar om ' + tid +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:right;flex-shrink:0;">' +
+          '<div style="font-size:20px;font-weight:900;color:' + (left === 0 ? '#e85d26' : '#fff') + ';">' +
+            count + '/3' +
+          '</div>' +
+          '<div style="font-size:10px;color:rgba(255,255,255,0.3);">matcher</div>' +
+        '</div>';
+    }
+
+    // Uppdatera bannern när steg 3 visas
+    const observer = new MutationObserver(function() {
+      const s3 = document.getElementById('matchaStep3');
+      if (s3 && s3.style.display !== 'none') updateDagsBanner();
+    });
+    const s3el = document.getElementById('matchaStep3');
+    if (s3el) observer.observe(s3el, { attributes: true, attributeFilter: ['style'] });
+
+    // Uppdatera efter varje match
+    const _origApply2 = window.matchaApplyTextForAd;
+    if (typeof _origApply2 === 'function') {
+      window.matchaApplyTextForAd = function(hitId, altIdx) {
+        _origApply2(hitId, altIdx);
+        setTimeout(updateDagsBanner, 300);
+      };
+    }
 
   });
