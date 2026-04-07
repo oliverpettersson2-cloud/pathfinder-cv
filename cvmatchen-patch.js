@@ -186,9 +186,9 @@
       const edu     = getEdu();
 
       const cats = [
-        { id:'saved',   emoji:'📄', label:'Sparade CV',           count:saved.length,   max:3    },
-        { id:'matched', emoji:'🎯', label:'Matchade Annonser',    count:matched.length, max:null },
-        { id:'diary',   emoji:'💼', label:'Sökta Arbete',         count:diary.length,   max:null },
+        { id:'saved',   emoji:'📄', label:'Mina CV',           count:saved.length,   max:3    },
+        { id:'matched', emoji:'🎯', label:'Mina Matcher',    count:matched.length, max:null },
+        { id:'diary',   emoji:'💼', label:'Sökta Arbeten',         count:diary.length,   max:null },
         { id:'edu',     emoji:'🎓', label:'Sparade Utbildningar', count:edu.length,     max:null },
       ];
 
