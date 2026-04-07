@@ -9885,8 +9885,8 @@ ${styleTexts}
     // Spara & matcha-knapp — längst ner, precis som steg 3
     if (!alreadyMatched) {
       const matchaBtn = document.createElement('button');
-      matchaBtn.textContent = '\U0001F4BE Spara f\u00f6r att matcha';
-      matchaBtn.style.cssText = 'margin-top:10px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
+      matchaBtn.textContent = '\u2728 Matcha mot CV';
+      matchaBtn.style.cssText = 'margin-top:10px;width:100%;padding:12px;background:linear-gradient(135deg,#f0c040,#f5a623);border:none;color:#1a1a2e;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;';
       matchaBtn.onclick = (e) => {
         e.stopPropagation();
         if (!_matchaSelectedAds.find(a => a.id === hit.id)) {
