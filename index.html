@@ -9885,7 +9885,7 @@ ${styleTexts}
     // Spara & matcha-knapp — längst ner, precis som steg 3
     if (!alreadyMatched) {
       const matchaBtn = document.createElement('button');
-      matchaBtn.textContent = '\u2728 Matcha mot CV';
+      matchaBtn.textContent = '\U0001F4BE Spara f\u00f6r att matcha';
       matchaBtn.style.cssText = 'margin-top:10px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
       matchaBtn.onclick = (e) => {
         e.stopPropagation();
@@ -10919,23 +10919,25 @@ ${styleTexts}
   }
 
   function matchaShowAddedModal(count) {
+    if (count === 3) {
+      // Auto-redirect vid 3/3 — ingen fråga
+      showToast('Du har valt max antal jobb 3/3 — omdirigerar till Matcha CV ✨', 'success');
+      setTimeout(() => matchaSwitchTab(3), 3000);
+      return;
+    }
     const modal = document.getElementById('matchaAddedModal');
     const emoji = document.getElementById('matchaAddedEmoji');
     const title = document.getElementById('matchaAddedTitle');
     const body  = document.getElementById('matchaAddedBody');
     if (!modal) return;
     if (count === 1) {
-      emoji.textContent = '✅';
-      title.textContent = '1 av 3 jobb tillagt!';
-      body.textContent  = 'Bra start! Vill du matcha ditt CV mot detta jobb nu, eller fortsätta söka och lägga till fler?';
-    } else if (count === 2) {
-      emoji.textContent = '✅✅';
-      title.textContent = '2 av 3 jobb tillagda!';
-      body.textContent  = 'Du kan lägga till ett till eller matcha redan nu. Vad vill du göra?';
+      emoji.textContent = '\u2705';
+      title.textContent = '1 av 3 jobb sparat!';
+      body.textContent  = 'Vill du gå vidare och matcha ditt CV mot detta jobb, eller fortsätta söka och lägga till fler?';
     } else {
-      emoji.textContent = '🎯';
-      title.textContent = '3 av 3 — fullt!';
-      body.textContent  = 'Du har valt maximalt antal annonser. Dags att matcha ditt CV mot dessa jobb!';
+      emoji.textContent = '\u2705\u2705';
+      title.textContent = '2 av 3 jobb sparade!';
+      body.textContent  = 'Du kan lägga till ytterligare ett jobb eller matcha ditt CV redan nu.';
     }
     modal.style.display = 'flex';
   }
@@ -10970,11 +10972,11 @@ ${styleTexts}
       <div id="matchaAddedEmoji" style="font-size:28px;text-align:center;margin-bottom:14px;">✅</div>
       <div id="matchaAddedTitle" style="font-size:17px;font-weight:800;color:#fff;text-align:center;margin-bottom:8px;"></div>
       <div id="matchaAddedBody" style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.6;margin-bottom:24px;"></div>
-      <button onclick="matchaGoToStep3(); document.getElementById(&#39;matchaAddedModal&#39;).style.display=&#39;none&#39;;" style="width:100%;padding:14px;background:#3eb489;border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
-        Matcha mot CV nu →
+      <button onclick="matchaGoToStep3(); document.getElementById('matchaAddedModal').style.display='none';" style="width:100%;padding:14px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+        ✨ Matcha mot CV
       </button>
-      <button onclick="document.getElementById(&#39;matchaAddedModal&#39;).style.display=&#39;none&#39;;" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
-        Fortsätt söka jobb
+      <button onclick="document.getElementById('matchaAddedModal').style.display='none';" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
+        Fortsätt söka
       </button>
     </div>
   </div>
