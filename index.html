@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_31.html -->
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_32.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10731,10 +10731,17 @@ ${styleTexts}
         overlay.querySelector('.conf-ja').onclick = () => {
           overlay.remove();
           matchaApplyTextForAd(hit.id, ai);
+          const _savedJobTitle = (hit && hit.headline) || 'jobbet';
           resultEl.innerHTML = '<div style="text-align:center;padding:28px 16px;">' +
             '<div style="font-size:36px;margin-bottom:12px;">\u2705</div>' +
             '<div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:6px;">Profiltext sparad!</div>' +
-            '<div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:20px;">Texten \u00e4r nu i ditt CV. Redigera den under \ud83d\udc64 Profil.</div>' +
+            '<div style="background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;text-align:left;">' +
+            '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(62,180,137,0.8);margin-bottom:4px;">Matchad mot</div>' +
+            '<div style="font-size:13px;font-weight:700;color:#fff;">' + _savedJobTitle + '</div>' +
+            '</div>' +
+            '<div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:20px;text-align:left;">' +
+            'Profiltexten \u00e4r nu sparad i ditt matchade CV. Under <strong style="color:rgba(255,255,255,0.7);">\ud83d\udc64 Profil</strong> kan du l\u00e4sa, redigera, dela och skicka ditt CV via e-post \u2014 det fixar vi \u00e5t dig.' +
+            '</div>' +
             '<div style="display:flex;gap:8px;">' +
             '<button class="done-profil" style="flex:1;padding:12px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83d\udc64 G\u00e5 till Profil</button>' +
             '<button class="done-matcha" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83c\udfaf Forts\u00e4tt matcha</button>' +
@@ -10939,10 +10946,10 @@ ${styleTexts}
       <div id="matchaAddedEmoji" style="font-size:28px;text-align:center;margin-bottom:14px;">✅</div>
       <div id="matchaAddedTitle" style="font-size:17px;font-weight:800;color:#fff;text-align:center;margin-bottom:8px;"></div>
       <div id="matchaAddedBody" style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.6;margin-bottom:24px;"></div>
-      <button onclick="matchaGoToStep3(); document.getElementById('matchaAddedModal').style.display='none';" style="width:100%;padding:14px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+      <button onclick="matchaGoToStep3(); document.getElementById(&#39;matchaAddedModal&#39;).style.display=&#39;none&#39;;" style="width:100%;padding:14px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
         ✨ Matcha mot CV
       </button>
-      <button onclick="document.getElementById('matchaAddedModal').style.display='none';" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
+      <button onclick="document.getElementById(&#39;matchaAddedModal&#39;).style.display=&#39;none&#39;;" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
         Fortsätt söka
       </button>
     </div>
