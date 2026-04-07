@@ -416,16 +416,26 @@
 // ── Fix steg 2-texten i matchaStep1 ─────────────
 window.addEventListener('load', function () {
   setTimeout(function () {
-    document.querySelectorAll('#matchaStep1 div').forEach(function (el) {
-      if (el.childElementCount === 0 && el.textContent.includes('sammanfatta annonsen')) {
-        el.innerHTML =
-          'Sök bland riktiga annonser från <strong style="color:#f0c040;">Platsbanken</strong>. ' +
-          'Tryck på en annons för att öppna den och läsa mer — tryck sedan ' +
-          '<strong style="color:#f0c040;">+ Välj</strong> för att lägga till den. ' +
-          'Du väljer upp till 3 annonser och går sedan vidare till steg 3. ' +
-          'Där matchar AI ditt CV mot varje jobb och skriver en personlig profiltext. ' +
-          '<strong style="color:#a78bfa;">Du väljer vilken text som passar bäst.</strong><br><br>' +
-          '<span style="color:rgba(232,93,38,0.8);">⏰ Max 3 CV-matcher per dag — nya matcher öppnar vid midnatt.</span>';
+    // Hitta steg 2-kortet via det gula sifferbadget med text "2"
+    var allDivs = document.querySelectorAll('#matchaStep1 div');
+    allDivs.forEach(function (el) {
+      if (el.childElementCount === 0 && el.textContent.trim() === '2') {
+        // Hitta beskrivningstexten i samma förälder
+        var parent = el.closest('[style*="rgba(240,192,64"]');
+        if (!parent) return;
+        var textDivs = parent.querySelectorAll('div');
+        textDivs.forEach(function (td) {
+          if (td.textContent.includes('Platsbanken') || td.textContent.includes('sammanfatta')) {
+            td.innerHTML =
+              'Sök bland riktiga annonser från <strong style="color:#f0c040;">Platsbanken</strong>. ' +
+              'Tryck på en annons för att öppna och läsa den — tryck sedan ' +
+              '<strong style="color:#f0c040;">+ Välj</strong> för att lägga till den. ' +
+              'Välj upp till 3 annonser, gå sedan till steg 3. ' +
+              'Där matchar AI ditt CV mot varje jobb och skriver en personlig profiltext. ' +
+              '<strong style="color:#a78bfa;">Du väljer vilken text som passar bäst.</strong><br><br>' +
+              '<span style="color:rgba(232,93,38,0.8);">⏰ Max 3 CV-matcher per dag — återställs vid midnatt.</span>';
+          }
+        });
       }
     });
   }, 300);
