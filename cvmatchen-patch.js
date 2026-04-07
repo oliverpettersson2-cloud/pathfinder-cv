@@ -503,3 +503,84 @@
     }
 
   });
+
+
+  // ══════════════════════════════════════════════
+  // STEG 2 — Snabbknappar Familjen Helsingborg
+  // ══════════════════════════════════════════════
+  window.addEventListener('load', function () {
+
+    const kategorier = [
+      { emoji:'🚫', label:'Utan krav',        q:'lager produktion industri'  },
+      { emoji:'📦', label:'Lager & logistik', q:'lager logistik'             },
+      { emoji:'🤝', label:'Vård & omsorg',    q:'vård omsorg undersköterska' },
+      { emoji:'🏗️', label:'Bygg & anläggning',q:'bygg anläggning'            },
+      { emoji:'🧹', label:'Städ & service',   q:'städ service'               },
+      { emoji:'🍽️', label:'Restaurang & kök', q:'restaurang kök'             },
+      { emoji:'🛒', label:'Butik & handel',   q:'butik handel'               },
+      { emoji:'🏭', label:'Industri',         q:'industri tillverkning'      },
+    ];
+
+    // Hitta rätt plats — efter platsfiltret, innan skeleton
+    const skeleton = document.getElementById('matchaSkeleton');
+    if (!skeleton) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = '_snabbWrap';
+    wrap.style.cssText = 'margin-top:16px;margin-bottom:4px;';
+
+    // Rubrik
+    wrap.innerHTML =
+      '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;' +
+      'color:rgba(255,255,255,0.3);margin-bottom:8px;">⚡ Snabbsök i Familjen Helsingborg</div>' +
+      '<div id="_snabbBtns" style="display:flex;flex-wrap:wrap;gap:7px;"></div>';
+
+    skeleton.parentNode.insertBefore(wrap, skeleton);
+
+    const btnsEl = document.getElementById('_snabbBtns');
+
+    kategorier.forEach(function(k) {
+      const btn = document.createElement('button');
+      btn.dataset.q = k.q;
+      btn.style.cssText =
+        'display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;' +
+        'font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;' +
+        'background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);';
+      btn.innerHTML = k.emoji + ' ' + k.label;
+
+      btn.onclick = function() {
+        // Markera aktiv
+        btnsEl.querySelectorAll('button').forEach(function(b) {
+          b.style.background   = 'rgba(255,255,255,0.06)';
+          b.style.borderColor  = 'rgba(255,255,255,0.12)';
+          b.style.color        = 'rgba(255,255,255,0.6)';
+        });
+        btn.style.background  = 'rgba(62,180,137,0.15)';
+        btn.style.borderColor = '#3eb489';
+        btn.style.color       = '#3eb489';
+
+        // Sätt sökfältet och sök
+        const input = document.getElementById('matchaSearch');
+        if (input) {
+          input.value = k.q;
+          input.dispatchEvent(new Event('input', {bubbles:true}));
+        }
+        if (typeof matchaDoSearch === 'function') matchaDoSearch();
+      };
+
+      btnsEl.appendChild(btn);
+    });
+
+    // Rensa aktiv knapp när användaren skriver själv
+    const input = document.getElementById('matchaSearch');
+    if (input) {
+      input.addEventListener('input', function() {
+        btnsEl.querySelectorAll('button').forEach(function(b) {
+          b.style.background  = 'rgba(255,255,255,0.06)';
+          b.style.borderColor = 'rgba(255,255,255,0.12)';
+          b.style.color       = 'rgba(255,255,255,0.6)';
+        });
+      });
+    }
+
+  });
