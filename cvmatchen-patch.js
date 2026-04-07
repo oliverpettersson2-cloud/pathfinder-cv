@@ -1,9 +1,9 @@
 // cvmatchen-patch.js
-// Lägg till <script src="cvmatchen-patch.js"></script> precis innan </body> i index.html
+// Lägg till EN rad precis innan </body> i index.html:
+// <script src="cvmatchen-patch.js"></script>
 
 (function () {
 
-  // ── VIP: ingen gräns ─────────────────────────────
   const VIP = ['oliver.pettersson2@gmail.com'];
 
   function isVIP() {
@@ -19,16 +19,13 @@
     } catch(e) { return 0; }
   }
 
-
-  // ── Override: matchaApplyTextForAd ───────────────
-  // Väntar tills originalfunktionen finns, sedan ersätter vi den
   window.addEventListener('load', function () {
 
     const _original = window.matchaApplyTextForAd;
 
     window.matchaApplyTextForAd = function (hitId, altIdx) {
 
-      // Stoppa vanliga användare vid 3/dag
+      // Blocka BARA icke-VIP vid 3/dag
       if (!isVIP() && matchedToday() >= 3) {
         if (typeof showToast === 'function') {
           showToast('⚠️ Max 3 CV-matcher per dag — prova igen imorgon!', 'error');
@@ -36,31 +33,43 @@
         return;
       }
 
-      // Annars kör originalet
+      // Kör originalet
       _original(hitId, altIdx);
 
-      // Lägg till räknare i success-rutan (om den finns)
+      // Injicera räknarbadgen efter att success-rutan ritats
       setTimeout(function () {
-        const successTitles = document.querySelectorAll('[style*="Profiltext sparad"]');
-        successTitles.forEach(function (el) {
-          // Lägg inte till räknaren om VIP eller om den redan finns
-          if (isVIP()) return;
-          if (el.previousElementSibling && el.previousElementSibling.classList.contains('cv-counter')) return;
+        const count = Math.min(matchedToday(), 3);
+        const left  = 3 - count;
 
-          const count = Math.min(matchedToday(), 3);
-          const badge = document.createElement('div');
-          badge.className = 'cv-counter';
-          badge.style.cssText =
-            'display:inline-flex;align-items:center;gap:8px;' +
-            'background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);' +
-            'border-radius:20px;padding:7px 18px;margin-bottom:14px;';
-          badge.innerHTML =
-            '<span style="font-size:20px;font-weight:900;color:#3eb489;">CV ' + count + '/3</span>' +
-            '<span style="font-size:11px;color:rgba(255,255,255,0.45);">matcher idag</span>';
+        // Hitta "Profiltext sparad!"-textnoden
+        document.querySelectorAll('*').forEach(function (el) {
+          if (el.childElementCount === 0 && el.textContent.trim() === 'Profiltext sparad!') {
+            // Kolla att badge inte redan finns
+            if (el.parentNode.querySelector('.cv-dagsgrans')) return;
 
-          el.parentNode.insertBefore(badge, el);
+            const badge = document.createElement('div');
+            badge.className = 'cv-dagsgrans';
+            badge.style.cssText =
+              'display:inline-flex;align-items:center;gap:8px;' +
+              'background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);' +
+              'border-radius:20px;padding:5px 14px;margin-bottom:10px;';
+
+            const vip = isVIP();
+            badge.innerHTML =
+              '<span style="font-size:16px;font-weight:900;color:#3eb489;">CV ' + count + '/3</span>' +
+              '<span style="font-size:11px;color:rgba(255,255,255,0.45);">' +
+              (vip
+                ? 'matcher idag (VIP 👑)'
+                : left > 0
+                  ? left + ' matcher kvar idag'
+                  : 'inga matcher kvar idag'
+              ) +
+              '</span>';
+
+            el.parentNode.insertBefore(badge, el);
+          }
         });
-      }, 100);
+      }, 150);
     };
 
   });
