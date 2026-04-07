@@ -411,25 +411,21 @@
 
 
 // ════════════════════════════════════════════════
-// FIXA FÖRKLARINGSTEXT — Steg 2-kortet i matchaStep1
-// ════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', function () {
-  // Hitta steg 2-kortet och byt text
-  const cards = document.querySelectorAll('#matchaStep1 [style*="border-radius:12px"]');
-  cards.forEach(function (card) {
-    if (card.textContent.includes('Sök och välj jobbannonser')) {
-      const body = card.querySelector('div:last-child') || card;
-      const textEl = Array.from(card.querySelectorAll('div')).find(el =>
-        el.textContent.includes('sammanfatta') || el.textContent.includes('Välj upp till')
-      );
-      if (textEl) {
-        textEl.innerHTML =
+
+
+// ── Fix steg 2-texten i matchaStep1 ─────────────
+window.addEventListener('load', function () {
+  setTimeout(function () {
+    document.querySelectorAll('#matchaStep1 div').forEach(function (el) {
+      if (el.childElementCount === 0 && el.textContent.includes('sammanfatta annonsen')) {
+        el.innerHTML =
           'Sök bland riktiga annonser från <strong style="color:#f0c040;">Platsbanken</strong>. ' +
-          'Tryck på en annons för att öppna den — tryck sedan <strong style="color:#f0c040;">+ Välj</strong> för att lägga till den. ' +
+          'Tryck på en annons för att öppna den och läsa mer — tryck sedan ' +
+          '<strong style="color:#f0c040;">+ Välj</strong> för att lägga till den. ' +
           'Du kan välja upp till 3 annonser. ' +
-          'I steg 3 matchar AI ditt CV mot varje vald annons och skriver en unik profiltext — ' +
-          '<strong style="color:#a78bfa;">du väljer sedan vilken text du vill använda.</strong>';
+          'I steg 3 matchar AI ditt CV mot varje annons och skriver din profiltext — ' +
+          '<strong style="color:#a78bfa;">du väljer vilken text som passar bäst.</strong>';
       }
-    }
-  });
+    });
+  }, 300);
 });
