@@ -9877,6 +9877,24 @@ ${styleTexts}
       expandBox.appendChild(readBtn);
     }
 
+    // Matcha-knapp direkt i expandBox
+    if (!alreadyMatched) {
+      const matchaBtn = document.createElement('button');
+      matchaBtn.textContent = '✨ Matcha mot CV';
+      matchaBtn.style.cssText = 'margin-top:10px;width:100%;padding:12px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;';
+      matchaBtn.onclick = (e) => {
+        e.stopPropagation();
+        // Lägg till om ej redan vald
+        if (!_matchaSelectedAds.find(a => a.id === hit.id)) {
+          if (_matchaSelectedAds.length >= 3) { showToast('Max 3 annonser valda', 'error'); return; }
+          _matchaSelectedAds.push(hit);
+          _saveSelectedAds();
+        }
+        matchaSwitchTab(3);
+      };
+      expandBox.appendChild(matchaBtn);
+    }
+
     card.appendChild(expandBox);
 
     // Flytta btnRow in i expandBox (knappar syns bara när kortet expanderas)
