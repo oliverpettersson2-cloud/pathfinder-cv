@@ -4,13 +4,13 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
 
   <!-- PDF Generation Libraries -->
   <!-- PDF Generation Libraries -->
-  <script src="jspdf.umd.min.js"></script>
+  <script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
   
   
   <style>
@@ -7870,7 +7870,7 @@ ${styleTexts}
               <div style="width:28px;height:28px;border-radius:50%;background:#f0c040;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#1a1a2e;flex-shrink:0;">2</div>
               <div>
                 <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">Sök och välj jobbannonser</div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6;">Sök bland riktiga annonser från <strong style="color:#f0c040;">Platsbanken</strong>. Tryck på en annons för att öppna den — tryck sedan <strong style="color:#f0c040;">+ Välj</strong> för att lägga till den. Du väljer upp till 3 annonser och går sedan till steg 3 där AI matchar ditt CV och skriver din profiltext. <strong style="color:#a78bfa;">Du väljer vilken text som passar bäst.</strong><br><br><span style="color:rgba(232,93,38,0.9);">⏰ Max 3 CV-matcher per dag — nya matcher öppnar vid midnatt.</span></div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6;">Sök bland riktiga annonser från <strong style="color:#f0c040;">Platsbanken</strong>. Tryck på en annons för att öppna den — tryck sedan <strong style="color:#f0c040;">+ Välj</strong> för att lägga till. Välj upp till 3 annonser och gå till steg 3 — där matchar AI ditt CV mot varje jobb och skriver din profiltext. <strong style="color:#a78bfa;">Du väljer vilken som passar bäst.</strong> <span style="color:rgba(232,93,38,0.9);">⏰ Max 3 matcher/dag.</span></div>
               </div>
             </div>
 
@@ -8127,7 +8127,6 @@ ${styleTexts}
     mobUpdateCVSteps(tab);
 
     if (tab === 'forhandsgranska') mobRefreshPreview();
-    if (tab === 'export') setTimeout(mobRenderSavedCVs, 100);
     if (tab === 'aisyv') { syvFetchUtbildningar(); syvUpdateSavedBtn(); }
     if (tab === 'jobb') { mobRenderEdu(); } // Utbildning är nu sammanslaget med Jobb
     if (tab === 'profil') {
@@ -8702,167 +8701,142 @@ ${styleTexts}
     const container = document.getElementById('mobSavedCVsList');
     if (!container) return;
 
-    const savedCVs   = mobGetSavedCVs();
-    const matchedCVs = mobGetMatchedCVs();
-    const diary      = diaryGet();
-    const savedEdu   = (function(){ try{ return JSON.parse(localStorage.getItem('pf_saved_edu')||'[]'); }catch(e){ return []; } })();
+    const list = mobGetSavedCVs();
+    const mlist = mobGetMatchedCVs();
+    const count = list.length;
+    const MAX = 3;
 
-    function relDate(ts) {
-      const d = Math.floor((Date.now()-ts)/86400000);
-      if(d===0) return 'idag'; if(d===1) return 'igår';
-      if(d<7) return d+' dagar sedan';
-      return new Date(ts).toLocaleDateString('sv-SE',{day:'numeric',month:'short'});
+    // ── Sparade CV:n — 3 ikoner sida vid sida ──────────
+    let html = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.4);margin-bottom:12px;padding:0 2px;">Dina sparade CV (${count}/${MAX})</div>`;
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">';
+
+    const sorted = [...list].sort((a,b) => b.savedAt - a.savedAt);
+    sorted.forEach(entry => {
+      const dateStr = _mobRelDate(new Date(entry.savedAt));
+      const cvEmoji = matchaCvEmoji ? matchaCvEmoji(entry.title) : '📄';
+      html += `
+        <div onclick="mobShowSavedCVDetail('${entry.id}')"
+             style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px;border-radius:14px;cursor:pointer;text-align:center;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);position:relative;">
+          <div style="font-size:18px;font-weight:900;font-family:Georgia,serif;line-height:1;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">match</span></div>
+          <div style="font-size:11px;font-weight:700;color:#fff;line-height:1.3;word-break:break-word;">${entry.title}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);">${dateStr}</div>
+        </div>`;
+    });
+
+    // Tom plats/platser
+    for (let i = count; i < MAX; i++) {
+      html += `
+        <div onclick="mobOpenCV(); mobSwitchSubTab('info');"
+             style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px;border-radius:14px;cursor:pointer;text-align:center;background:none;border:1.5px dashed rgba(255,255,255,0.15);">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:22px;color:rgba(255,255,255,0.2);">+</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.25);">Nytt CV</div>
+        </div>`;
     }
 
-    if (!window._profileSection) window._profileSection = null;
-
-    const cats = [
-      { id:'saved',   emoji:'📄', label:'Sparade CV',           count:savedCVs.length,   max:3    },
-      { id:'matched', emoji:'🎯', label:'Matchade Annonser',    count:matchedCVs.length, max:null },
-      { id:'diary',   emoji:'💼', label:'Sökta Arbete',         count:diary.length,      max:null },
-      { id:'edu',     emoji:'🎓', label:'Sparade Utbildningar', count:savedEdu.length,   max:null },
-    ];
-
-    let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">';
-    cats.forEach(function(cat) {
-      const active = window._profileSection === cat.id;
-      html += '<div onclick="window._profileToggle(''+cat.id+'')" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;'+
-        'background:'+(active?'rgba(62,180,137,0.12)':'rgba(255,255,255,0.05)')+';'+
-        'border:2px solid '+(active?'#3eb489':'rgba(255,255,255,0.08)')+';transition:all 0.15s;">'+
-        '<div style="font-size:28px;margin-bottom:6px;">'+cat.emoji+'</div>'+
-        '<div style="font-size:12px;font-weight:700;color:'+(active?'#fff':'rgba(255,255,255,0.65)')+';line-height:1.3;margin-bottom:8px;">'+cat.label+'</div>'+
-        '<div style="display:inline-flex;align-items:center;justify-content:center;background:'+(active?'rgba(62,180,137,0.25)':'rgba(255,255,255,0.08)')+';border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:'+(active?'#3eb489':'rgba(255,255,255,0.4)')+';">'+
-        cat.count+(cat.max?'/'+cat.max:'')+
-        '</div>'+
-        '</div>';
-    });
     html += '</div>';
 
-    // ── Sektionsinnehåll ──
-    const sec = window._profileSection;
-    if (sec === 'saved') {
-      if (!savedCVs.length) {
-        html += _profileEmpty('Inga sparade CV ännu','Bygg ett CV och tryck "Spara CV-version"');
-      } else {
-        savedCVs.sort((a,b)=>b.savedAt-a.savedAt).forEach(function(cv){
-          html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">'+
-            '<div style="flex-shrink:0;width:40px;height:40px;border-radius:10px;background:rgba(62,180,137,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;font-family:Georgia,serif;">'+
-            '<span style="color:#f0c040;">CV</span><span style="color:#fff;">match</span></div>'+
-            '<div style="flex:1;min-width:0;">'+
-              '<div style="font-size:13px;font-weight:700;color:#fff;">'+cv.title+'</div>'+
-              '<div style="font-size:11px;color:rgba(255,255,255,0.35);">'+relDate(cv.savedAt)+'</div>'+
-            '</div>'+
-            '<button onclick="if(typeof mobShowSavedCVDetail==='function') mobShowSavedCVDetail(''+cv.id+'')" '+
-              'style="padding:7px 14px;background:#3eb489;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Öppna</button>'+
-            '</div>';
-        });
-        html += '<button onclick="if(typeof mobOpenCV==='function'){mobOpenCV();mobSwitchSubTab('info');}" '+
-          'style="width:100%;margin-top:4px;padding:12px;background:none;border:1.5px dashed rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:13px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">+ Skapa nytt CV</button>';
-      }
+    // ── Matchade CV:n ──────────────────────────────────
+    if (mlist.length > 0) {
+      html += `
+        <div style="margin:20px 0 14px;display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(62,180,137,0.6);white-space:nowrap;">Matchade CV (${mlist.length})</div>
+          <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+        </div>`;
+
+      const msorted = [...mlist].sort((a,b) => b.savedAt - a.savedAt);
+      msorted.forEach(entry => {
+        const dateStr = _mobRelDate(new Date(entry.savedAt));
+        const company = entry.company ? ' · ' + entry.company : '';
+        const hasAdText = !!(entry.adText && entry.adText.length > 10);
+        const hasUrl = !!(entry.jobUrl);
+        html += `
+          <div style="background:rgba(62,180,137,0.05);border:1px solid rgba(62,180,137,0.18);border-radius:14px;padding:14px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div onclick="mobShowMatchedCVDetail('${entry.id}')" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;cursor:pointer;">
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(62,180,137,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3eb489" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${entry.title}</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${dateStr}${company}</div>
+                </div>
+              </div>
+              <button onclick="mobDeleteMatchedCV('${entry.id}')" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0;">✕</button>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+              <button onclick="mobExportMatchedPDF('${entry.id}')" style="flex:1;padding:9px 12px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">📄 CV som PDF</button>
+              ${hasAdText || hasUrl ? `<button onclick="mobExportAnnonsePDF('${entry.id}')" style="padding:9px 12px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);color:#3eb489;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">📋 Annons PDF</button>` : ''}
+              ${hasAdText ? `<button onclick="mobToggleMatchedAdText('${entry.id}')" id="matchedAdBtn_${entry.id}" style="padding:9px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">👁</button>` : ''}
+              ${hasUrl ? `<a href="${entry.jobUrl}" target="_blank" rel="noopener" style="padding:9px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:12px;font-weight:600;border-radius:10px;text-decoration:none;display:inline-block;">↗</a>` : ''}
+            </div>
+            ${hasAdText ? `<div id="matchedAdBox_${entry.id}" style="display:none;margin-top:10px;max-height:240px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.7);white-space:pre-wrap;">${entry.adText.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            </div>` : ''}
+          </div>`;
+      });
     }
 
-    if (sec === 'matched') {
-      if (!matchedCVs.length) {
-        html += _profileEmpty('Inga matchade annonser','Gå till Matcha-fliken och matcha ditt CV mot ett jobb');
-      } else {
-        matchedCVs.sort((a,b)=>b.savedAt-a.savedAt).forEach(function(cv){
-          const sid = cv.id.replace(/'/g,"\'");
-          html += '<div style="background:rgba(62,180,137,0.05);border:1px solid rgba(62,180,137,0.15);border-radius:14px;padding:14px;margin-bottom:8px;">'+
-            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'+
-              '<div style="font-size:20px;">🎯</div>'+
-              '<div style="flex:1;min-width:0;">'+
-                '<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+cv.title.replace('Matchat CV – ','')+'</div>'+
-                '<div style="font-size:11px;color:rgba(255,255,255,0.35);">'+(cv.company?cv.company+' · ':'')+relDate(cv.savedAt)+'</div>'+
-              '</div>'+
-              '<button onclick="if(typeof mobDeleteMatchedCV==='function'){mobDeleteMatchedCV(''+sid+'');window._profileToggle('matched');}" '+
-                'style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:18px;cursor:pointer;">✕</button>'+
-            '</div>'+
-            '<div style="display:flex;gap:7px;">'+
-              '<button onclick="if(typeof mobExportMatchedPDF==='function') mobExportMatchedPDF(''+sid+'')" '+
-                'style="flex:1;padding:9px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">📄 CV som PDF</button>'+
-              (cv.jobUrl?'<a href="'+cv.jobUrl+'" target="_blank" rel="noopener" style="padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;">↗</a>':'')+
-            '</div></div>';
-        });
-      }
-    }
+    // ── Jobbdagbok / Sökta jobb ──
+    const diary = diaryGet();
+    if (diary.length > 0) {
+      html += `
+        <div style="margin:24px 0 14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div>
+              <div style="font-size:16px;font-weight:800;color:#fff;">📋 Sökta jobb</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px;">Sparas i 40 dagar — hjälper vid aktivitetsrapportering</div>
+            </div>
+            <button onclick="diaryExport()" style="padding:7px 14px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);color:#3eb489;font-size:11px;font-weight:700;border-radius:20px;cursor:pointer;font-family:inherit;">📄 Exportera</button>
+          </div>`;
 
-    if (sec === 'diary') {
-      if (!diary.length) {
-        html += _profileEmpty('Inga sökta arbeten','Matchade jobb sparas automatiskt här i 45 dagar');
-      } else {
-        const unapplied = diary.filter(e=>!e.applied);
-        const applied   = diary.filter(e=> e.applied);
-        if (unapplied.length) {
-          html += '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,80,80,0.6);margin-bottom:8px;">⏳ Ej sökt ('+unapplied.length+')</div>';
-          unapplied.forEach(function(e){ html += _diaryCard(e, diary.indexOf(e)); });
-        }
-        if (applied.length) {
-          html += '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.6);margin:14px 0 8px;">✅ Sökt ('+applied.length+')</div>';
-          applied.forEach(function(e){ html += _diaryCard(e, diary.indexOf(e)); });
-        }
-        html += '<button onclick="if(typeof diaryExport==='function') diaryExport()" style="width:100%;margin-top:8px;padding:11px;background:rgba(62,180,137,0.1);border:1px solid rgba(62,180,137,0.25);color:#3eb489;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">📋 Exportera aktivitetsrapport</button>';
-      }
-    }
+      // Gruppera per vecka
+      const weeks = {};
+      diary.forEach(e => {
+        const d = new Date(e.savedAt);
+        const mon = new Date(d); mon.setDate(d.getDate() - d.getDay() + 1);
+        const wk = 'Vecka ' + mon.toLocaleDateString('sv-SE', {day:'numeric', month:'short'});
+        if (!weeks[wk]) weeks[wk] = [];
+        weeks[wk].push(e);
+      });
 
-    if (sec === 'edu') {
-      if (!savedEdu.length) {
-        html += _profileEmpty('Inga sparade utbildningar','Gå till AI-SYV och tryck 🏷️ på en utbildning');
-      } else {
-        savedEdu.forEach(function(u,i){
-          html += '<div style="background:rgba(240,192,64,0.06);border:1px solid rgba(240,192,64,0.18);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;">'+
-            '<div style="font-size:20px;flex-shrink:0;">🎓</div>'+
-            '<div style="flex:1;min-width:0;">'+
-              '<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">'+u.namn+'</div>'+
-              '<div style="font-size:11px;color:#f0c040;">'+u.typ+' · '+u.kommun+'</div>'+
-              (u.info?'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">'+u.info+'</div>':'')+
-            '</div>'+
-            '<button onclick="(function(){var l=JSON.parse(localStorage.getItem('pf_saved_edu')||'[]');l.splice('+i+',1);localStorage.setItem('pf_saved_edu',JSON.stringify(l));window._profileToggle('edu');})()" '+
-              'style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:0;">✕</button>'+
-            '</div>';
+      Object.entries(weeks).forEach(([week, entries]) => {
+        html += `<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:10px 0 6px;">${week}</div>`;
+        entries.forEach((e, ei) => {
+          // Räkna ut global index i hela diary-listan
+          const globalIdx = diary.indexOf(e);
+          const dStr = new Date(e.savedAt).toLocaleDateString('sv-SE', {day:'numeric', month:'short'});
+          const appliedStr = e.applied && e.appliedAt
+            ? new Date(e.appliedAt).toLocaleDateString('sv-SE', {day:'numeric', month:'short'})
+            : null;
+
+          html += `
+            <div style="border-radius:14px;margin-bottom:8px;overflow:hidden;border:2px solid ${e.applied ? 'rgba(62,180,137,0.4)' : 'rgba(255,80,80,0.3)'};background:${e.applied ? 'rgba(62,180,137,0.06)' : 'rgba(255,80,80,0.04)'};">
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
+                <div style="font-size:20px;flex-shrink:0;">${e.applied ? '✅' : '⏳'}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:700;color:#fff;line-height:1.3;">${e.jobTitle}</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${dStr}${e.company ? ' · ' + e.company : ''}${appliedStr ? ' · <span style="color:#3eb489;font-weight:700;">Sökt ' + appliedStr + '</span>' : ''}</div>
+                </div>
+                ${e.jobUrl ? `<a href="${e.jobUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;padding:5px 9px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;flex-shrink:0;">↗</a>` : ''}
+              </div>
+              ${!e.applied ? `
+              <div style="padding:0 14px 12px;">
+                <button onclick="diaryMarkApplied(${globalIdx})" style="width:100%;padding:11px;background:linear-gradient(135deg,#e85d26,#f0a040);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;letter-spacing:0.2px;">
+                  🚀 Ja! Jag sökte detta jobb
+                </button>
+              </div>` : ''}
+            </div>`;
         });
-      }
+      });
+
+      html += '</div>';
     }
 
     container.innerHTML = html;
   }
 
-  function _profileEmpty(title, sub) {
-    return '<div style="text-align:center;padding:32px 16px;">'+
-      '<div style="font-size:36px;margin-bottom:10px;">📭</div>'+
-      '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:6px;">'+title+'</div>'+
-      '<div style="font-size:12px;color:rgba(255,255,255,0.25);line-height:1.6;">'+sub+'</div></div>';
-  }
-
-  function _diaryCard(e, idx) {
-    const dStr = new Date(e.savedAt).toLocaleDateString('sv-SE',{day:'numeric',month:'short'});
-    return '<div style="background:'+(e.applied?'rgba(62,180,137,0.05)':'rgba(255,80,80,0.04)')+';'+
-      'border:1.5px solid '+(e.applied?'rgba(62,180,137,0.25)':'rgba(255,80,80,0.2)')+';'+
-      'border-radius:12px;padding:12px;margin-bottom:7px;">'+
-      '<div style="display:flex;align-items:center;gap:8px;">'+
-        '<div style="font-size:18px;">'+(e.applied?'✅':'⏳')+'</div>'+
-        '<div style="flex:1;min-width:0;">'+
-          '<div style="font-size:13px;font-weight:700;color:#fff;">'+e.jobTitle+'</div>'+
-          '<div style="font-size:11px;color:rgba(255,255,255,0.35);">'+dStr+(e.company?' · '+e.company:'')+'</div>'+
-        '</div>'+
-        (e.jobUrl?'<a href="'+e.jobUrl+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;padding:5px 9px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">↗</a>':'')+
-      '</div>'+
-      (!e.applied?'<button onclick="if(typeof diaryMarkApplied==='function'){diaryMarkApplied('+idx+');window._profileToggle('diary');}" '+
-        'style="width:100%;margin-top:10px;padding:10px;background:linear-gradient(135deg,#e85d26,#f0a040);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">🚀 Ja! Jag sökte detta jobb</button>':'')+
-      '</div>';
-  }
-
-  window._profileToggle = function(id) {
-    window._profileSection = window._profileSection === id ? null : id;
-    mobRenderSavedCVs();
-    if (window._profileSection) {
-      setTimeout(function(){
-        const el = document.getElementById('mobSavedCVsList');
-        if (el) el.scrollIntoView({behavior:'smooth',block:'start'});
-      }, 100);
-    }
-  };
-
-    function diaryMarkApplied(idx) {
+  function diaryMarkApplied(idx) {
     const list = diaryGet();
     if (!list[idx]) return;
     list[idx].applied = true;
@@ -10758,28 +10732,20 @@ ${styleTexts}
           overlay.remove();
           matchaApplyTextForAd(hit.id, ai);
           const _savedJobTitle = (hit && hit.headline) || 'jobbet';
-          const _todayCount = Math.min(_matchedToday(), 3);
-          const _left = 3 - _todayCount;
-          const _vip = _isVIP();
-          resultEl.innerHTML = '<div style="text-align:center;padding:16px 14px;">' +
-            '<div style="font-size:30px;margin-bottom:8px;">\u2705</div>' +
-            // Kompakt räknarbadge
-            '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(62,180,137,0.1);border:1px solid rgba(62,180,137,0.25);border-radius:20px;padding:3px 10px;margin-bottom:8px;">' +
-            '<span style="font-size:13px;font-weight:900;color:#3eb489;">CV ' + _todayCount + '/3</span>' +
-            '<span style="font-size:11px;color:rgba(255,255,255,0.4);">·</span>' +
-            '<span style="font-size:11px;color:rgba(255,255,255,0.45);">' + (_vip ? 'VIP 👑' : _left > 0 ? _left + ' kvar idag' : 'Nytt igen vid midnatt 🌙') + '</span>' +
+          resultEl.innerHTML = '<div style="text-align:center;padding:28px 16px;">' +
+            '<div style="font-size:36px;margin-bottom:12px;">\u2705</div>' +
+            '<div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:6px;">Profiltext sparad!</div>' +
+            '<div style="background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;text-align:left;">' +
+            '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(62,180,137,0.8);margin-bottom:4px;">Matchad mot</div>' +
+            '<div style="font-size:13px;font-weight:700;color:#fff;">' + _savedJobTitle + '</div>' +
             '</div>' +
-            '<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px;">Profiltext sparad!</div>' +
-            // Kompakt "Matchad mot"-pill
-            '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(62,180,137,0.08);border:1px solid rgba(62,180,137,0.2);border-radius:20px;padding:4px 12px;margin-bottom:12px;font-size:12px;color:rgba(255,255,255,0.7);max-width:100%;overflow:hidden;">' +
-            '📌 ' + _savedJobTitle +
+            '<div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:20px;text-align:left;">' +
+            'Profiltexten \u00e4r nu sparad i ditt matchade CV. Under <strong style="color:rgba(255,255,255,0.7);">\ud83d\udc64 Profil</strong> kan du l\u00e4sa, redigera, dela och skicka ditt CV via e-post \u2014 det fixar vi \u00e5t dig.' +
             '</div>' +
             '<div style="display:flex;gap:8px;">' +
-            '<button class="done-profil" style="flex:1;padding:11px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83d\udc64 G\u00e5 till Profil</button>' +
-            (_vip || _left > 0 ? '<button class="done-matcha" style="flex:1;padding:11px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83c\udfaf Forts\u00e4tt</button>' : '') +
+            '<button class="done-profil" style="flex:1;padding:12px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83d\udc64 G\u00e5 till Profil</button>' +
+            '<button class="done-matcha" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83c\udfaf Forts\u00e4tt matcha</button>' +
             '</div></div>';
-          // Visa limit-modal direkt om detta var 3:e matchen (ej VIP)
-          if (!_vip && _todayCount >= 3) { setTimeout(_showLimitModal, 800); }
           resultEl.querySelector('.done-profil').onclick = () => { if (typeof mobSwitchTab === 'function') mobSwitchTab('export'); };
           resultEl.querySelector('.done-matcha').onclick = () => { showBack(); };
           const genBtn = section && section.querySelector('button[id^="matchaGenBtn_"]');
@@ -10880,67 +10846,7 @@ ${styleTexts}
     }
   }
 
-  // ── VIP + dagsgräns helpers ─────────────────────────
-  const _VIP_ACCOUNTS = ['oliver.pettersson2@gmail.com'];
-
-  function _isVIP() {
-    try { return _VIP_ACCOUNTS.includes(JSON.parse(localStorage.getItem('pathfinder_auth')).email); }
-    catch(e) { return false; }
-  }
-
-  function _matchedToday() {
-    const idag = new Date().toDateString();
-    try {
-      return JSON.parse(localStorage.getItem('pathfinder_matched_cvs') || '[]')
-        .filter(c => new Date(c.savedAt).toDateString() === idag).length;
-    } catch(e) { return 0; }
-  }
-
-  function _timeUntilMidnight() {
-    const now = new Date();
-    const midnight = new Date(); midnight.setHours(24,0,0,0);
-    const diff = midnight - now;
-    return Math.floor(diff/3600000) + ' tim ' + Math.floor((diff%3600000)/60000) + ' min';
-  }
-
-  function _showLimitModal() {
-    const ex = document.getElementById('_limitModal'); if (ex) ex.remove();
-    const m = document.createElement('div');
-    m.id = '_limitModal';
-    m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.65);';
-    m.innerHTML = '<div style="background:#1e2440;border-radius:20px 20px 0 0;padding:28px 24px 44px;width:100%;max-width:480px;border-top:3px solid #e85d26;">' +
-      '<div style="font-size:44px;text-align:center;margin-bottom:14px;">🌙</div>' +
-      '<div style="font-size:19px;font-weight:900;color:#fff;text-align:center;margin-bottom:8px;">Du har matchat 3 CV idag!</div>' +
-      '<div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.8;margin-bottom:8px;">Bra jobbat — du har sökt maximalt antal jobb idag. 💪<br>Nya matcher öppnar vid midnatt.</div>' +
-      '<div style="font-size:12px;color:rgba(232,93,38,0.7);text-align:center;margin-bottom:24px;">⏰ ' + _timeUntilMidnight() + ' kvar</div>' +
-      '<button id="_limitClose" style="width:100%;padding:14px;background:#e85d26;border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Okej, ses imorgon! 👋</button>' +
-      '</div>';
-    document.body.appendChild(m);
-    document.getElementById('_limitClose').onclick = function(){ m.remove(); };
-    m.addEventListener('click', function(e){ if(e.target===m) m.remove(); });
-  }
-
-  function _showBlockModal() {
-    const ex = document.getElementById('_limitModal'); if (ex) ex.remove();
-    const m = document.createElement('div');
-    m.id = '_limitModal';
-    m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);padding:20px;';
-    m.innerHTML = '<div style="background:#1e2440;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;border:1px solid rgba(232,93,38,0.4);text-align:center;">' +
-      '<div style="font-size:40px;margin-bottom:12px;">🔒</div>' +
-      '<div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;">Dagsgränsen nådd</div>' +
-      '<div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:8px;">Du har redan matchat 3 CV idag.<br>Nya matcher öppnar vid midnatt.</div>' +
-      '<div style="font-size:12px;color:rgba(232,93,38,0.7);margin-bottom:20px;">⏰ ' + _timeUntilMidnight() + ' kvar</div>' +
-      '<button id="_blockClose" style="width:100%;padding:13px;background:#e85d26;border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Stäng</button>' +
-      '</div>';
-    document.body.appendChild(m);
-    document.getElementById('_blockClose').onclick = function(){ m.remove(); };
-    m.addEventListener('click', function(e){ if(e.target===m) m.remove(); });
-  }
-
   function matchaApplyTextForAd(hitId, altIdx) {
-    // Dagsgräns — blocka icke-VIP vid 3/dag
-    if (!_isVIP() && _matchedToday() >= 3) { _showBlockModal(); return; }
-
     const alts = window._matchaAlts && window._matchaAlts[hitId];
     if (!alts) return;
     const text = alts[altIdx];
@@ -11063,4 +10969,5 @@ ${styleTexts}
       <div id="cpickerList" style="overflow-y:auto;flex:1;padding:8px 0;"></div>
     </div>
   </div>
+<script src="cvmatchen-patch.js" defer></script>
 </body></html>
