@@ -9893,6 +9893,11 @@ ${styleTexts}
           if (_matchaSelectedAds.length >= 3) { showToast('Max 3 annonser valda', 'error'); return; }
           _matchaSelectedAds.push(hit);
           _saveSelectedAds();
+          updateCardState();
+          matchaUpdateStep2Bar();
+          matchaRenderStep3Ads();
+          matchaShowAddedModal(_matchaSelectedAds.length);
+          return;
         }
         matchaSwitchTab(3);
       };
