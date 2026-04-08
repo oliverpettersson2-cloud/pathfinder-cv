@@ -8814,9 +8814,17 @@ ${styleTexts}
     // Ladda datan in i cvData
     Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
     saveData();
+    renderJobs();
+    renderEducation();
+    renderLanguages();
+    renderCerts();
+    renderRefs();
+    renderSkills();
+    renderLicenses();
     updatePreview();
     mobLoadFields();
     mobBuildTemplateGrid();
+    setShowPhoto(cvData.showPhoto === true, true);
     showToast('✅ CV laddat: ' + entry.title, 'success');
   }
 
