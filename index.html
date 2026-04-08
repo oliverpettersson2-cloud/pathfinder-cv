@@ -8027,16 +8027,17 @@ ${styleTexts}
     <div class="mob-panel" id="mobPanel-aisyv" style="flex-direction:column;height:calc(100vh - 56px - 64px);padding:0;overflow:hidden;">
 
       <!-- Header -->
-      <div style="padding:10px 16px 8px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:#1a1f35;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f0c040,#e8a800);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎓</div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:#fff;">Utbildningsvägledaren</div>
-            <div style="font-size:10px;color:#f0c040;">Familjen Helsingborg · 11 kommuner</div>
+      <div style="padding:12px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:linear-gradient(135deg,#1a1a2e,#1e1e3a);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <!-- Robot-avatar -->
+          <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#7c3aed,#a29bfe);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:0 4px 12px rgba(124,58,237,0.4);">🤖</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-0.3px;">AI-Vägledaren</div>
+            <div style="font-size:11px;color:rgba(167,139,250,0.8);margin-top:1px;">📍 Familjen Helsingborg · 11 kommuner</div>
           </div>
-          <div style="margin-left:auto;display:flex;gap:6px;">
-            <button id="syvSavedBtn" onclick="syvShowSaved()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.25);font-size:11px;cursor:pointer;padding:4px 10px;border-radius:8px;font-family:inherit;font-weight:600;">🔖</button>
-            <button onclick="syvClearChat()" style="background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.35);color:#f0c040;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:8px;font-family:inherit;font-weight:600;">↺ Börja om</button>
+          <div style="display:flex;gap:6px;">
+            <button id="syvSavedBtn" onclick="syvShowSaved()" style="background:rgba(167,139,250,0.12);border:1.5px solid rgba(167,139,250,0.3);color:#a78bfa;font-size:11px;font-weight:800;cursor:pointer;padding:6px 12px;border-radius:10px;font-family:inherit;">🔖 Sparade</button>
+            <button onclick="syvClearChat()" style="background:rgba(232,93,38,0.12);border:1.5px solid rgba(232,93,38,0.3);color:#e85d26;font-size:11px;font-weight:800;cursor:pointer;padding:6px 12px;border-radius:10px;font-family:inherit;">↺ Börja om</button>
           </div>
         </div>
       </div>
@@ -8044,17 +8045,46 @@ ${styleTexts}
       <!-- Inriktningar (visas alltid, scrollbar horisontellt) -->
       <div id="syvAreas" style="padding:8px 16px 6px;flex-shrink:0;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,0.06);"></div>
 
-      <!-- Splash screen (visas när chatten är tom) -->
-      <div id="syvSplash" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;text-align:center;">
-        <div style="font-size:48px;margin-bottom:12px;">🎓</div>
-        <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;">Hitta din utbildning</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.5;margin-bottom:28px;">Jag hjälper dig hitta kurser och program i Familjen Helsingborg — kostnadsfritt, dygnet runt.</div>
-        <button onclick="syvInitWizard()" style="background:linear-gradient(135deg,#f0c040,#e8a800);color:#1a1f35;font-size:16px;font-weight:800;border:none;border-radius:16px;padding:16px 36px;cursor:pointer;font-family:inherit;box-shadow:0 4px 18px rgba(240,192,64,0.35);">
-          🚀 Starta vägledning
-        </button>
-        <div style="margin-top:14px;font-size:11px;color:rgba(255,255,255,0.25);">Eller skriv direkt i chatten nedan</div>
+      <!-- Splash screen -->
+      <div id="syvSplash" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 18px;text-align:center;overflow-y:auto;">
+        <!-- Robot stor -->
+        <div style="font-size:64px;margin-bottom:8px;filter:drop-shadow(0 4px 16px rgba(124,58,237,0.5));">🤖</div>
+        <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-0.3px;">Hej! Jag är din AI-Vägledare</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:24px;max-width:280px;">Jag hjälper dig hitta rätt utbildning i <strong style="color:#a78bfa;">Familjen Helsingborg</strong> — gratis, enkelt och dygnet runt.</div>
+
+        <!-- Snabbval-kort -->
+        <div style="width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+          <button onclick="syvInitWizard()" style="width:100%;padding:16px;background:linear-gradient(135deg,#7c3aed,#a29bfe);border:none;border-radius:16px;color:#fff;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:12px;box-shadow:0 4px 18px rgba(124,58,237,0.4);">
+            <span style="font-size:26px;">🚀</span>
+            <div style="text-align:left;">
+              <div>Starta vägledning</div>
+              <div style="font-size:11px;font-weight:400;opacity:0.8;margin-top:2px;">AI guidar dig steg för steg</div>
+            </div>
+          </button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button onclick="syvQuick('Visa utbildningar med bra jobbchanser')" style="padding:14px 10px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.3);border-radius:14px;color:#3eb489;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <span style="font-size:22px;">🎯</span>Jobbchanser
+            </button>
+            <button onclick="syvQuick('Visa utbildningar nära mig i Familjen Helsingborg')" style="padding:14px 10px;background:rgba(56,189,248,0.1);border:1.5px solid rgba(56,189,248,0.3);border-radius:14px;color:#38bdf8;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <span style="font-size:22px;">📍</span>Nära mig
+            </button>
+            <button onclick="syvQuick('Vad passar mig? Analysera mitt CV och föreslå utbildningar')" style="padding:14px 10px;background:rgba(167,139,250,0.1);border:1.5px solid rgba(167,139,250,0.3);border-radius:14px;color:#a78bfa;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <span style="font-size:22px;">💡</span>Vad passar mig?
+            </button>
+            <button onclick="syvShowSaved()" style="padding:14px 10px;background:rgba(240,192,64,0.08);border:1.5px solid rgba(240,192,64,0.25);border-radius:14px;color:#f0c040;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;">
+              <span style="font-size:22px;">🔖</span>Sparade
+            </button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.2);">Eller skriv direkt i chatten nedan</div>
       </div>
 
+      <!-- Tillbaka-knapp (visas i chat-läge) -->
+      <div id="syvBackBar" style="display:none;padding:8px 16px;flex-shrink:0;background:rgba(14,14,30,0.8);border-bottom:1px solid rgba(255,255,255,0.06);">
+        <button onclick="syvGoHome()" style="display:flex;align-items:center;gap:8px;background:rgba(232,93,38,0.15);border:1.5px solid rgba(232,93,38,0.4);color:#e85d26;font-size:13px;font-weight:800;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:inherit;">
+          ← Tillbaka till utbildningsstart
+        </button>
+      </div>
       <!-- Meddelandefeed -->
       <div id="syvMessages" style="flex:1;overflow-y:auto;padding:12px 16px 8px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;display:none;"></div>
 
@@ -9442,6 +9472,7 @@ ${styleTexts}
     var msgs = document.getElementById('syvMessages');
     if (splash && splash.style.display !== 'none') {
       splash.style.display = 'none';
+      const _bb1 = document.getElementById('syvBackBar'); if (_bb1) _bb1.style.display = 'block';
       if (msgs) msgs.style.display = 'flex';
     }
     if (saved.length === 0) {
@@ -9491,6 +9522,7 @@ ${styleTexts}
     const msgs = document.getElementById('syvMessages');
     if (splash && splash.style.display !== 'none') {
       splash.style.display = 'none';
+      const _bb2 = document.getElementById('syvBackBar'); if (_bb2) _bb2.style.display = 'block';
       if (msgs) msgs.style.display = 'flex';
     }
 
@@ -9524,15 +9556,24 @@ ${styleTexts}
       var safeKomm = u.kommun.replace(/"/g,'&quot;');
       var safeInfo = (u.info||'').replace(/"/g,'&quot;');
       var saved = syvIsSaved(u.namn, u.kommun);
-      return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;">' +
-        '<div style="flex:1;">' +
-          '<div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:2px;">' + u.namn + '</div>' +
-          '<div style="font-size:11px;color:#3eb489;margin-bottom:3px;">' + u.typ + ' · ' + u.kommun + '</div>' +
-          (u.info ? '<div style="font-size:11px;color:rgba(255,255,255,0.5);">' + u.info + '</div>' : '') +
+      var savedStyle = saved
+        ? 'background:rgba(167,139,250,0.2);border:1.5px solid #a78bfa;color:#a78bfa;'
+        : 'background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);';
+      return '<div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 14px;margin-bottom:8px;">' +
+        '<div style="display:flex;align-items:flex-start;gap:10px;">' +
+          '<div style="flex:1;">' +
+            '<div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px;line-height:1.3;">' + u.namn + '</div>' +
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">' +
+              '<span style="font-size:11px;font-weight:700;color:#3eb489;background:rgba(62,180,137,0.12);padding:2px 8px;border-radius:6px;">' + u.typ + '</span>' +
+              '<span style="font-size:11px;font-weight:700;color:#38bdf8;background:rgba(56,189,248,0.1);padding:2px 8px;border-radius:6px;">📍 ' + u.kommun + '</span>' +
+            '</div>' +
+            (u.info ? '<div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;">' + u.info + '</div>' : '') +
+          '</div>' +
         '</div>' +
         '<button onclick="syvToggleSave(this,\"' + safeNamn + '\",\"' + safeTyp + '\",\"' + safeKomm + '\",\"' + safeInfo + '\")" ' +
-          'style="background:none;border:none;font-size:20px;cursor:pointer;flex-shrink:0;padding:0;line-height:1;" ' +
-          'title="Spara">' + (saved ? '🔖' : '🏷️') + '</button>' +
+          'style="margin-top:10px;width:100%;padding:9px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;transition:all 0.15s;' + savedStyle + '">' +
+          (saved ? '🔖 Sparad — tryck för att ta bort' : '🔖 Spara utbildning') +
+        '</button>' +
         '</div>';
     }).join('');
 
@@ -9549,14 +9590,20 @@ ${styleTexts}
     syvSend();
   }
 
+  function syvGoHome() {
+    syvClearChat();
+  }
+
   function syvClearChat() {
     syvHistory = [];
     syvWizardStep = 0;
     syvWizardAnswers = {};
     const msgs = document.getElementById('syvMessages');
     const splash = document.getElementById('syvSplash');
+    const backBar = document.getElementById('syvBackBar');
     if (msgs) { msgs.innerHTML = ''; msgs.style.display = 'none'; }
     if (splash) splash.style.display = 'flex';
+    if (backBar) backBar.style.display = 'none';
   }
 
   function syvInitWizard() {
@@ -9565,6 +9612,7 @@ ${styleTexts}
     if (!msgs) return;
     // Dölj splash, visa chatt
     if (splash) splash.style.display = 'none';
+    const _bb3 = document.getElementById('syvBackBar'); if (_bb3) _bb3.style.display = 'block';
     msgs.style.display = 'flex';
     msgs.innerHTML = '';
     syvWizardStep = 0;
@@ -9649,6 +9697,7 @@ ${styleTexts}
     const _msgs = document.getElementById('syvMessages');
     if (_splash && _splash.style.display !== 'none') {
       _splash.style.display = 'none';
+      const _bb4 = document.getElementById('syvBackBar'); if (_bb4) _bb4.style.display = 'block';
       if (_msgs) _msgs.style.display = 'flex';
     }
     await syvSendMessage(text);
