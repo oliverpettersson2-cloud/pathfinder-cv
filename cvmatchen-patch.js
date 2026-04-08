@@ -73,7 +73,6 @@
       window.matchaBuildCard = function(hit) {
         const card = _origBuild(hit);
         if (!card) return card;
-        // Hitta den gula knappen och byt text
         card.querySelectorAll('button').forEach(function(btn) {
           if (btn.textContent.includes('Matcha mot CV')) {
             btn.textContent = '✅ Välj denna annons';
@@ -85,10 +84,9 @@
       };
     }
 
-    // Fallback — MutationObserver på hela dokumentet
+    // Fallback — MutationObserver
     new MutationObserver(function() {
       document.querySelectorAll('button').forEach(function(btn) {
-        // Steg 2 — gul knapp → Välj denna annons
         if (btn.textContent.trim() === '✨ Matcha mot CV' && !btn.dataset.p && !(btn.id||'').startsWith('matchaGenBtn_')) {
           btn.dataset.p = '1';
           btn.textContent = '✅ Välj denna annons';
@@ -96,7 +94,6 @@
           btn.style.color = '#fff';
           btn.style.border = 'none';
         }
-        // Steg 3 — lila AI-knapp → ✨ Matcha annons med AI
         if ((btn.id||'').startsWith('matchaGenBtn_') && !btn.dataset.p && !btn.disabled) {
           btn.dataset.p = '1';
           btn.textContent = '✨ Matcha annons med AI';
@@ -113,11 +110,9 @@
       window.matchaApplyTextForAd = function(hitId, altIdx) {
         if (!isVIP() && matchedToday() >= 3) { showBlockModal(); return; }
         _origApply(hitId, altIdx);
-        // Visa limit-modal om detta var 3:e matchen
         setTimeout(function() {
           if (!isVIP() && matchedToday() >= 3) showLimitModal();
         }, 800);
-        // Injicera räknarbadge
         setTimeout(injectBadge, 200);
       };
     }
@@ -171,7 +166,7 @@
         '<div style="font-size:12px;color:rgba(255,255,255,0.25);line-height:1.6;">'+s+'</div></div>';
     }
 
-    window._ps = null; // aktiv sektion
+    window._ps = null;
 
     window._pt = function(id) {
       window._ps = window._ps === id ? null : id;
@@ -192,10 +187,10 @@
       const edu     = getEdu();
 
       const cats = [
-        { id:'saved',   emoji:'📄', label:'Mina CV',           count:saved.length,   max:3    },
-        { id:'matched', emoji:'🎯', label:'Mina Matcher',    count:matched.length, max:null },
-        { id:'diary',   emoji:'💼', label:'Sökta Arbeten',         count:diary.length,   max:null },
-        { id:'edu',     emoji:'🎓', label:'Sparade Utbildningar', count:edu.length,     max:null },
+        { id:'saved',   emoji:'📄', label:'Mina CV',                count:saved.length,   max:3    },
+        { id:'matched', emoji:'🎯', label:'Mina Matcher',           count:matched.length, max:null },
+        { id:'diary',   emoji:'💼', label:'Sökta Arbeten',          count:diary.length,   max:null },
+        { id:'edu',     emoji:'🎓', label:'Sparade Utbildningar',   count:edu.length,     max:null },
       ];
 
       let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">';
@@ -212,7 +207,6 @@
       });
       html += '</div>';
 
-      // Innehåll
       const s = window._ps;
 
       if (s === 'saved') {
@@ -300,17 +294,14 @@
         '</div>';
     }
 
-    // Override mobRenderSavedCVs
     window.mobRenderSavedCVs = renderGrid;
 
-    // Rendera när man går till Profil-fliken
     const _origSwitch = window.mobSwitchTab;
     window.mobSwitchTab = function(tab) {
       if(_origSwitch) _origSwitch(tab);
       if(tab === 'export') setTimeout(renderGrid, 150);
     };
 
-    // Rendera om redan på Profil
     const ep = document.getElementById('mobPanel-export');
     if(ep && ep.classList.contains('mob-panel--active')) renderGrid();
 
@@ -324,14 +315,12 @@
   // ══════════════════════════════════════════════
   window.addEventListener('load', function () {
 
-    // Byt "AI-SYV" → "Utbildning" i navbaren
     const tabBtn = document.getElementById('tabBtn-aisyv');
     if (tabBtn) {
       const span = tabBtn.querySelector('span');
       if (span) span.textContent = 'Utbildning';
     }
 
-    // Skapa steg 1-skärmen och injicera den i AI-SYV-panelen
     const panel = document.getElementById('mobPanel-aisyv');
     if (!panel) return;
 
@@ -341,43 +330,31 @@
       'position:absolute;inset:0;z-index:50;background:#12172a;overflow-y:auto;padding:20px 16px 40px;';
 
     step1.innerHTML =
-      // Hero
       '<div style="text-align:center;padding:16px 0 24px;">' +
         '<div style="font-size:40px;margin-bottom:10px;">🎓</div>' +
         '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;">Utbildning</div>' +
         '<div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">Hitta rätt utbildning och ta nästa steg mot jobbet du vill ha.</div>' +
       '</div>' +
 
-      // 4 rutor
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">' +
-
-        // Ruta 1
         _utbCard('🎯','Utbildningar med jobbchanser',
           'Se utbildningar i regionen som faktiskt leder till jobb.',
           'rgba(62,180,137,0.12)','rgba(62,180,137,0.3)','#3eb489',
           'Visa utbildningar med goda jobbchanser i Familjen Helsingborg-regionen') +
-
-        // Ruta 2
         _utbCard('🗺️','Utbildningar nära dig',
           'Utbildningar i Helsingborg och Familjen Helsingborgs 11 kommuner.',
           'rgba(240,192,64,0.1)','rgba(240,192,64,0.3)','#f0c040',
           'Vilka utbildningar finns nära mig i Familjen Helsingborg?') +
-
-        // Ruta 3
         _utbCard('💡','Vad passar mig?',
           'AI analyserar ditt CV och föreslår utbildningar som passar dig.',
           'rgba(124,58,237,0.1)','rgba(124,58,237,0.3)','#a78bfa',
           'Analysera mitt CV och föreslå utbildningar som passar mig') +
-
-        // Ruta 4
         _utbCard('🔖','Mina sparade utbildningar',
           'Se utbildningar du sparat tidigare.',
           'rgba(232,93,38,0.1)','rgba(232,93,38,0.3)','#e85d26',
-          null, true) + // null = öppnar sparade, inte chatten
-
+          null, true) +
       '</div>' +
 
-      // Gå till AI-chatten-knapp
       '<button onclick="window._utbGotoChat(\'\')" style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">' +
         '💬 Ställ en egen fråga till AI-vägledaren' +
       '</button>';
@@ -385,7 +362,6 @@
     panel.style.position = 'relative';
     panel.appendChild(step1);
 
-    // Hjälpfunktion: skapa en ruta
     function _utbCard(emoji, title, desc, bg, border, color, prompt, isSaved) {
       const onclick = isSaved
         ? 'if(typeof syvShowSaved===\'function\') syvShowSaved()'
@@ -398,11 +374,9 @@
         '</div>';
     }
 
-    // Gå till steg 2 (chatten) och skriv in prompt
     window._utbGotoChat = function(prompt) {
       const s1 = document.getElementById('utbStep1');
       if (s1) s1.style.display = 'none';
-      // Skriv in prompten i chatfältet och skicka
       if (prompt) {
         setTimeout(function() {
           const input = document.getElementById('syvInput') || document.querySelector('#mobPanel-aisyv textarea, #mobPanel-aisyv input[type=text]');
@@ -416,7 +390,6 @@
       }
     };
 
-    // Visa steg 1 igen när man byter bort och tillbaka till fliken
     const _origSwitch2 = window.mobSwitchTab;
     window.mobSwitchTab = function(tab) {
       if (_origSwitch2) _origSwitch2(tab);
@@ -430,7 +403,7 @@
 
 
   // ══════════════════════════════════════════════
-  // STEG 3 — Röd dagsgräns-banner högst upp
+  // STEG 3 — Röd dagsgräns-banner
   // ══════════════════════════════════════════════
   window.addEventListener('load', function () {
 
@@ -438,29 +411,24 @@
       const step3 = document.getElementById('matchaStep3');
       if (!step3 || step3.style.display === 'none') return;
 
-      const count  = matchedToday();   // redan definierad i patchen
+      const count  = matchedToday();
       const left   = 3 - count;
-      const vip    = isVIP();          // redan definierad i patchen
+      const vip    = isVIP();
 
       let banner = document.getElementById('_dagsBanner');
       if (!banner) {
         banner = document.createElement('div');
         banner.id = '_dagsBanner';
-        // Sätt in allra överst i steg 3, innan "Välj CV att matcha mot"
         step3.insertBefore(banner, step3.firstChild);
       }
 
-      // Tid till midnatt
       const mn = new Date(); mn.setHours(24,0,0,0);
       const diff = mn - new Date();
       const h = Math.floor(diff/3600000);
       const m = Math.floor((diff%3600000)/60000);
       const tid = h + ' tim ' + m + ' min';
 
-      if (vip) {
-        banner.style.display = 'none';
-        return;
-      }
+      if (vip) { banner.style.display = 'none'; return; }
 
       banner.style.cssText =
         'display:flex;align-items:center;justify-content:space-between;gap:10px;' +
@@ -473,19 +441,14 @@
           '<div style="font-size:13px;font-weight:900;color:#e85d26;margin-bottom:2px;">' +
             (left === 0 ? '🔒 Inga matcher kvar idag' : '🎯 ' + left + ' av 3 matcher kvar idag') +
           '</div>' +
-          '<div style="font-size:11px;color:rgba(255,255,255,0.4);">' +
-            'Resetar om ' + tid +
-          '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.4);">Resetar om ' + tid + '</div>' +
         '</div>' +
         '<div style="text-align:right;flex-shrink:0;">' +
-          '<div style="font-size:20px;font-weight:900;color:' + (left === 0 ? '#e85d26' : '#fff') + ';">' +
-            count + '/3' +
-          '</div>' +
+          '<div style="font-size:20px;font-weight:900;color:' + (left === 0 ? '#e85d26' : '#fff') + ';">' + count + '/3</div>' +
           '<div style="font-size:10px;color:rgba(255,255,255,0.3);">matcher</div>' +
         '</div>';
     }
 
-    // Uppdatera bannern när steg 3 visas
     const observer = new MutationObserver(function() {
       const s3 = document.getElementById('matchaStep3');
       if (s3 && s3.style.display !== 'none') updateDagsBanner();
@@ -493,7 +456,6 @@
     const s3el = document.getElementById('matchaStep3');
     if (s3el) observer.observe(s3el, { attributes: true, attributeFilter: ['style'] });
 
-    // Uppdatera efter varje match
     const _origApply2 = window.matchaApplyTextForAd;
     if (typeof _origApply2 === 'function') {
       window.matchaApplyTextForAd = function(hitId, altIdx) {
@@ -506,22 +468,36 @@
 
 
   // ══════════════════════════════════════════════
-  // STEG 2 — Snabbknappar Familjen Helsingborg
+  // STEG 2 — Snabbknappar (horisontell rullista)
+  //           Rätt kommuner för Familjen Hbg
   // ══════════════════════════════════════════════
   window.addEventListener('load', function () {
 
+    // Familjen Helsingborg — rätta SCB-koder
+    const FAM_HBG_MUNICIPALITIES =
+      '&municipality=1260' + // Bjuv
+      '&municipality=1278' + // Båstad
+      '&municipality=1283' + // Helsingborg
+      '&municipality=1284' + // Höganäs
+      '&municipality=1276' + // Klippan
+      '&municipality=1282' + // Landskrona
+      '&municipality=1275' + // Perstorp
+      '&municipality=1214' + // Svalöv
+      '&municipality=1277' + // Åstorp
+      '&municipality=1292' + // Ängelholm
+      '&municipality=1257';  // Örkelljunga
+
     const kategorier = [
-      { emoji:'🚫', label:'Utan krav',        q:'lager produktion industri'  },
-      { emoji:'📦', label:'Lager & logistik', q:'lager logistik'             },
-      { emoji:'🤝', label:'Vård & omsorg',    q:'vård omsorg undersköterska' },
-      { emoji:'🏗️', label:'Bygg & anläggning',q:'bygg anläggning'            },
-      { emoji:'🧹', label:'Städ & service',   q:'städ service'               },
-      { emoji:'🍽️', label:'Restaurang & kök', q:'restaurang kök'             },
-      { emoji:'🛒', label:'Butik & handel',   q:'butik handel'               },
-      { emoji:'🏭', label:'Industri',         q:'industri tillverkning'      },
+      { emoji:'🚫', label:'Utan krav',         q: null,                        experience: false },
+      { emoji:'📦', label:'Lager & logistik',  q: 'lager logistik',            experience: null  },
+      { emoji:'🤝', label:'Vård & omsorg',     q: 'vård omsorg undersköterska',experience: null  },
+      { emoji:'🏗️', label:'Bygg & anläggning', q: 'bygg anläggning',           experience: null  },
+      { emoji:'🧹', label:'Städ & service',    q: 'städ service',              experience: null  },
+      { emoji:'🍽️', label:'Restaurang & kök',  q: 'restaurang kök',            experience: null  },
+      { emoji:'🛒', label:'Butik & handel',    q: 'butik handel',              experience: null  },
+      { emoji:'🏭', label:'Industri',          q: 'industri tillverkning',     experience: null  },
     ];
 
-    // Hitta rätt plats — efter platsfiltret, innan skeleton
     const skeleton = document.getElementById('matchaSkeleton');
     if (!skeleton) return;
 
@@ -529,57 +505,115 @@
     wrap.id = '_snabbWrap';
     wrap.style.cssText = 'margin-top:16px;margin-bottom:4px;';
 
-    // Rubrik
     wrap.innerHTML =
       '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;' +
       'color:rgba(255,255,255,0.3);margin-bottom:8px;">⚡ Snabbsök i Familjen Helsingborg</div>' +
-      '<div id="_snabbBtns" style="display:flex;flex-wrap:wrap;gap:7px;"></div>';
+      '<div id="_snabbBtns" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;' +
+      '-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>';
 
     skeleton.parentNode.insertBefore(wrap, skeleton);
 
+    // Dölj scrollbar i webkit
+    const style = document.createElement('style');
+    style.textContent = '#_snabbBtns::-webkit-scrollbar { display: none; }';
+    document.head.appendChild(style);
+
     const btnsEl = document.getElementById('_snabbBtns');
+
+    function setActive(activeBtn) {
+      btnsEl.querySelectorAll('button').forEach(function(b) {
+        b.style.background  = 'rgba(255,255,255,0.06)';
+        b.style.borderColor = 'rgba(255,255,255,0.12)';
+        b.style.color       = 'rgba(255,255,255,0.6)';
+      });
+      if (activeBtn) {
+        activeBtn.style.background  = 'rgba(62,180,137,0.15)';
+        activeBtn.style.borderColor = '#3eb489';
+        activeBtn.style.color       = '#3eb489';
+      }
+    }
 
     kategorier.forEach(function(k) {
       const btn = document.createElement('button');
-      btn.dataset.q = k.q;
+      btn.dataset.q = k.q || '';
       btn.style.cssText =
-        'display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;' +
-        'font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;' +
+        'flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;' +
+        'border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;' +
+        'transition:all 0.15s;white-space:nowrap;' +
         'background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);';
       btn.innerHTML = k.emoji + ' ' + k.label;
 
       btn.onclick = function() {
-        // Markera aktiv
-        btnsEl.querySelectorAll('button').forEach(function(b) {
-          b.style.background   = 'rgba(255,255,255,0.06)';
-          b.style.borderColor  = 'rgba(255,255,255,0.12)';
-          b.style.color        = 'rgba(255,255,255,0.6)';
-        });
-        btn.style.background  = 'rgba(62,180,137,0.15)';
-        btn.style.borderColor = '#3eb489';
-        btn.style.color       = '#3eb489';
+        setActive(btn);
 
-        // Sätt sökfältet och sök
-        const input = document.getElementById('matchaSearch');
-        if (input) {
-          input.value = k.q;
-          input.dispatchEvent(new Event('input', {bubbles:true}));
+        if (k.experience === false) {
+          // Utan krav: anropa API direkt med experience=false + Familjen Hbg-kommuner
+          _snabbSearchExperience(btn);
+        } else {
+          // Övriga: vanlig sökning via matchaSearch + matchaDoSearch
+          const input = document.getElementById('matchaSearch');
+          if (input) {
+            input.value = k.q || '';
+            input.dispatchEvent(new Event('input', {bubbles:true}));
+          }
+          if (typeof matchaDoSearch === 'function') matchaDoSearch();
         }
-        if (typeof matchaDoSearch === 'function') matchaDoSearch();
       };
 
       btnsEl.appendChild(btn);
     });
 
-    // Rensa aktiv knapp när användaren skriver själv
-    const input = document.getElementById('matchaSearch');
-    if (input) {
-      input.addEventListener('input', function() {
-        btnsEl.querySelectorAll('button').forEach(function(b) {
-          b.style.background  = 'rgba(255,255,255,0.06)';
-          b.style.borderColor = 'rgba(255,255,255,0.12)';
-          b.style.color       = 'rgba(255,255,255,0.6)';
+    // Direkt API-sökning för "Utan krav" (experience=false)
+    function _snabbSearchExperience(activeBtn) {
+      const resultsEl = document.getElementById('matchaSearchResults');
+      const skeleton  = document.getElementById('matchaSkeleton');
+      const visaFler  = document.getElementById('matchaVisaFler');
+      if (!resultsEl) return;
+
+      // Rensa sökfältet visuellt
+      const input = document.getElementById('matchaSearch');
+      if (input) input.value = '';
+
+      skeleton.style.display = 'block';
+      resultsEl.style.display = 'none';
+      if (visaFler) visaFler.style.display = 'none';
+
+      const url = 'https://jobsearch.api.jobtechdev.se/search?experience=false&limit=20' + FAM_HBG_MUNICIPALITIES;
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          skeleton.style.display = 'none';
+          const hits  = data.hits || [];
+          const total = (data.total && data.total.value) || 0;
+          if (!hits.length) {
+            resultsEl.innerHTML = '<div style="padding:14px;font-size:13px;color:rgba(255,255,255,0.35);text-align:center;">Inga annonser hittades</div>';
+            resultsEl.style.display = 'block';
+            return;
+          }
+          resultsEl.innerHTML =
+            '<div style="font-size:11px;color:rgba(255,255,255,0.3);display:flex;justify-content:space-between;margin-bottom:6px;">' +
+            '<span>Visar ' + hits.length + ' av ' + total + '</span><span>Familjen Helsingborg</span></div>' +
+            '<div style="font-size:12px;color:#fff;margin-bottom:12px;opacity:0.75;">👆 Tryck på en annons för att läsa mer och välja</div>';
+          hits.forEach(function(hit) {
+            if (typeof matchaBuildCard === 'function') {
+              resultsEl.appendChild(matchaBuildCard(hit));
+            }
+          });
+          resultsEl.style.display = 'block';
+        })
+        .catch(function() {
+          skeleton.style.display = 'none';
+          resultsEl.innerHTML = '<div style="padding:14px;font-size:13px;color:rgba(232,93,38,0.7);text-align:center;">Kunde inte hämta annonser just nu</div>';
+          resultsEl.style.display = 'block';
         });
+    }
+
+    // Rensa aktiv knapp när användaren skriver manuellt
+    const searchInput = document.getElementById('matchaSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        setActive(null);
       });
     }
 
