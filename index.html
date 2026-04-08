@@ -8124,9 +8124,15 @@ ${styleTexts}
     const drawer = document.createElement('div');
     drawer.style.cssText = 'width:100%;max-width:480px;background:#1a1a2e;border-radius:20px 20px 0 0;padding:20px 16px 36px;box-shadow:0 -8px 40px rgba(0,0,0,0.5);';
 
-    // Handtag
+    // Handtag + förklaring
     drawer.innerHTML = '<div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:4px;margin:0 auto 18px;"></div>' +
-      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:16px;letter-spacing:-0.3px;">📄 Dina CV:n</div>';
+      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:10px;letter-spacing:-0.3px;">📄 Dina CV:n</div>' +
+      '<div style="background:rgba(62,180,137,0.07);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:rgba(255,255,255,0.6);line-height:1.7;">' +
+        'Du fyller i namn, jobb och utbildning — <span style="color:#3eb489;font-weight:700;">AI skriver din profiltext</span>, föreslår kompetenser och hjälper till med arbetsuppgifter. ' +
+        'Välj bland <span style="color:#3eb489;font-weight:700;">10 mallar</span> och spara som PDF direkt i appen. ' +
+        'Du kan ha upp till <span style="color:#fff;font-weight:700;">3 olika CV</span> — ett per yrkesroll. ' +
+        'Alla CV sparas automatiskt under <span style="color:#3eb489;font-weight:700;">👤 Profil</span> och kan öppnas, redigeras eller delas när som helst.' +
+      '</div>';
 
     // Slots
     const slotsDiv = document.createElement('div');
