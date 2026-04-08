@@ -11055,14 +11055,7 @@ ${styleTexts}
       };
     }
 
-    // Fix lila text → gul i steg 1-förklaringskortet
-    setTimeout(function() {
-      document.querySelectorAll('#matchaStep1 strong').forEach(function(el) {
-        if (el.style.color === 'rgb(167, 139, 250)' || el.getAttribute('style') && el.getAttribute('style').includes('#a78bfa')) {
-          el.style.color = '#f0c040';
-        }
-      });
-    }, 300);
+    // lila text fix borttaget
 
     // Fallback — MutationObserver på hela dokumentet
     new MutationObserver(function() {
