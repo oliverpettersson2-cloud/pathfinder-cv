@@ -653,10 +653,18 @@
     function showMatchaConfirm(hitId, genBtn) {
       const ex = document.getElementById('_matchaConfirm'); if(ex) ex.remove();
 
-      // Hämta annonsens URL från kortet
       const section = genBtn ? genBtn.closest('[data-ad-id]') : null;
       const annonsLink = section ? section.querySelector('a[href*="platsbanken"], a[href*="arbetsformedlingen"], a[target="_blank"]') : null;
       const annonsUrl = annonsLink ? annonsLink.href : null;
+
+      // Hämta CV-titeln
+      let cvTitle = '';
+      try {
+        const savedCVs = JSON.parse(localStorage.getItem('pathfinder_saved_cvs') || '[]');
+        const selId = localStorage.getItem('pathfinder_selected_cv');
+        const cv = selId ? savedCVs.find(function(c){ return c.id === selId; }) : savedCVs[0];
+        cvTitle = cv && cv.title ? cv.title : '';
+      } catch(e) {}
 
       const modal = document.createElement('div');
       modal.id = '_matchaConfirm';
@@ -666,17 +674,43 @@
         '<div style="background:#1e2440;border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:480px;border-top:2px solid rgba(255,255,255,0.1);">' +
           '<div style="font-size:24px;text-align:center;margin-bottom:12px;">🧐</div>' +
           '<div style="font-size:17px;font-weight:900;color:#fff;text-align:center;margin-bottom:8px;">Har du läst annonsen?</div>' +
-          '<div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;margin-bottom:24px;">' +
+          '<div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;margin-bottom:20px;">' +
             'Det är viktigt att du vet om jobbet faktiskt passar dig och dina kompetenser — innan AI skriver din profiltext. Vill du läsa annonsen igen?' +
           '</div>' +
 
           // Gå till annonsen (grön)
           (annonsUrl
-            ? '<a href="' + annonsUrl + '" target="_blank" rel="noopener" style="display:block;width:100%;padding:14px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;margin-bottom:10px;">🔗 Läs annonsen först</a>'
+            ? '<a href="' + annonsUrl + '" target="_blank" rel="noopener" style="display:block;width:100%;padding:13px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;margin-bottom:10px;">🔗 Läs annonsen först</a>'
             : '') +
 
+          // Titel-väljare
+          '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;margin-bottom:12px;">' +
+            '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.35);margin-bottom:10px;">🎯 Vilket jobb söker du egentligen?</div>' +
+
+            // Alternativ 1 — CV-titeln
+            '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;background:rgba(62,180,137,0.1);border:1.5px solid #3eb489;margin-bottom:8px;">' +
+              '<input type="radio" name="_roleChoice" id="_roleCV" value="cv" checked style="accent-color:#3eb489;width:16px;height:16px;flex-shrink:0;">' +
+              '<div>' +
+                '<div style="font-size:12px;font-weight:800;color:#3eb489;">Matcha som min CV-titel</div>' +
+                '<div style="font-size:11px;color:rgba(255,255,255,0.4);">' + (cvTitle || 'Hämtas från ditt CV') + '</div>' +
+              '</div>' +
+            '</label>' +
+
+            // Alternativ 2 — Annan titel
+            '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);">' +
+              '<input type="radio" name="_roleChoice" id="_roleAnnan" value="annan" style="accent-color:#a78bfa;width:16px;height:16px;flex-shrink:0;">' +
+              '<div style="flex:1;">' +
+                '<div style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.7);margin-bottom:4px;">Jag söker ett annat jobb</div>' +
+                '<input id="_roleFritext" type="text" placeholder="T.ex. Regionschef, Teamledare..." ' +
+                  'style="width:100%;padding:7px 10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);' +
+                  'border-radius:8px;color:#fff;font-size:12px;font-family:inherit;outline:none;" ' +
+                  'onclick="event.stopPropagation();document.getElementById('_roleAnnan').checked=true;">' +
+              '</div>' +
+            '</label>' +
+          '</div>' +
+
           // Matcha med AI (lila)
-          '<button id="_confirmJa" style="width:100%;padding:14px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:16px;">✨ Ja, matcha mitt CV med AI</button>' +
+          '<button id="_confirmJa" style="width:100%;padding:14px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:16px;">✨ Matcha mitt CV med AI</button>' +
 
           // Gå tillbaka (liten, röd)
           '<button id="_confirmNej" style="display:block;margin:0 auto;padding:8px 20px;background:none;border:1.5px solid rgba(232,93,38,0.5);color:rgba(232,93,38,0.8);font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">← Gå tillbaka</button>' +
@@ -685,8 +719,27 @@
       document.body.appendChild(modal);
 
       document.getElementById('_confirmJa').onclick = function() {
+        const useAnnan = document.getElementById('_roleAnnan').checked;
+        const fritext  = (document.getElementById('_roleFritext').value || '').trim();
+
+        if (useAnnan && fritext) {
+          // Temporärt sätt matchaRole till den angivna titeln
+          const roleInput = document.getElementById('matchaRole');
+          if (roleInput) roleInput.value = fritext;
+          // Sätt även cvData.title temporärt för prompten
+          if (window.cvData) {
+            window._origCvTitle = window.cvData.title;
+            window.cvData.title = fritext;
+            // Återställ efter 5 sek
+            setTimeout(function() {
+              if (window._origCvTitle !== undefined && window.cvData) {
+                window.cvData.title = window._origCvTitle;
+              }
+            }, 5000);
+          }
+        }
+
         modal.remove();
-        // Kör originalet direkt — klicka på genBtn
         if (genBtn) {
           genBtn.dataset.confirmed = '1';
           genBtn.click();
