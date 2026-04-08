@@ -85,6 +85,15 @@
       };
     }
 
+    // Fix lila text → gul i steg 1-förklaringskortet
+    setTimeout(function() {
+      document.querySelectorAll('#matchaStep1 strong').forEach(function(el) {
+        if (el.style.color === 'rgb(167, 139, 250)' || el.getAttribute('style') && el.getAttribute('style').includes('#a78bfa')) {
+          el.style.color = '#f0c040';
+        }
+      });
+    }, 300);
+
     // Fallback — MutationObserver på hela dokumentet
     new MutationObserver(function() {
       document.querySelectorAll('button').forEach(function(btn) {
@@ -328,7 +337,11 @@
     const tabBtn = document.getElementById('tabBtn-aisyv');
     if (tabBtn) {
       const span = tabBtn.querySelector('span');
-      if (span) span.textContent = 'Utbildning';
+      if (span) span.textContent = 'Studier';
+      // Byt emoji i tabBtn
+      const ico = tabBtn.querySelector('div,span:first-child,svg');
+      const emojiEl = tabBtn.querySelector('[style*="font-size"]');
+      if (emojiEl) emojiEl.textContent = '📚';
     }
 
     // Skapa steg 1-skärmen och injicera den i AI-SYV-panelen
@@ -582,5 +595,80 @@
         });
       });
     }
+
+  });
+
+
+  // ══════════════════════════════════════════════
+  // 3. BEKRÄFTELSEDIALOG — innan AI matchar
+  // ══════════════════════════════════════════════
+  window.addEventListener('load', function () {
+
+    function showMatchaConfirm(hitId, genBtn) {
+      const ex = document.getElementById('_matchaConfirm'); if(ex) ex.remove();
+
+      // Hämta annonsens URL från kortet
+      const section = genBtn ? genBtn.closest('[data-ad-id]') : null;
+      const annonsLink = section ? section.querySelector('a[href*="platsbanken"], a[href*="arbetsformedlingen"], a[target="_blank"]') : null;
+      const annonsUrl = annonsLink ? annonsLink.href : null;
+
+      const modal = document.createElement('div');
+      modal.id = '_matchaConfirm';
+      modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.7);';
+
+      modal.innerHTML =
+        '<div style="background:#1e2440;border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:480px;border-top:2px solid rgba(255,255,255,0.1);">' +
+          '<div style="font-size:24px;text-align:center;margin-bottom:12px;">🧐</div>' +
+          '<div style="font-size:17px;font-weight:900;color:#fff;text-align:center;margin-bottom:8px;">Har du läst annonsen?</div>' +
+          '<div style="font-size:13px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.7;margin-bottom:24px;">' +
+            'Det är viktigt att du vet om jobbet faktiskt passar dig och dina kompetenser — innan AI skriver din profiltext. Vill du läsa annonsen igen?' +
+          '</div>' +
+
+          // Gå till annonsen (grön)
+          (annonsUrl
+            ? '<a href="' + annonsUrl + '" target="_blank" rel="noopener" style="display:block;width:100%;padding:14px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;margin-bottom:10px;">🔗 Läs annonsen först</a>'
+            : '') +
+
+          // Matcha med AI (lila)
+          '<button id="_confirmJa" style="width:100%;padding:14px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:16px;">✨ Ja, matcha mitt CV med AI</button>' +
+
+          // Gå tillbaka (liten, röd)
+          '<button id="_confirmNej" style="display:block;margin:0 auto;padding:8px 20px;background:none;border:1.5px solid rgba(232,93,38,0.5);color:rgba(232,93,38,0.8);font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">← Gå tillbaka</button>' +
+        '</div>';
+
+      document.body.appendChild(modal);
+
+      document.getElementById('_confirmJa').onclick = function() {
+        modal.remove();
+        // Kör originalet direkt — klicka på genBtn
+        if (genBtn) {
+          genBtn.dataset.confirmed = '1';
+          genBtn.click();
+        }
+      };
+
+      document.getElementById('_confirmNej').onclick = function() { modal.remove(); };
+      modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+    }
+
+    // Intercepta klick på matchaGenBtn-knappar
+    new MutationObserver(function() {
+      document.querySelectorAll('button[id^="matchaGenBtn_"]').forEach(function(btn) {
+        if (btn.dataset.intercepted || btn.disabled) return;
+        btn.dataset.intercepted = '1';
+
+        const origOnclick = btn.onclick;
+        btn.onclick = function(e) {
+          if (btn.dataset.confirmed === '1') {
+            btn.dataset.confirmed = '';
+            if (origOnclick) origOnclick.call(btn, e);
+            return;
+          }
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          showMatchaConfirm(btn.id.replace('matchaGenBtn_',''), btn);
+        };
+      });
+    }).observe(document.body, { childList: true, subtree: true });
 
   });
