@@ -4675,14 +4675,14 @@
       showToast('🗑️ Profilbild borttagen', 'success');
     }
 
-    function setShowPhoto(show) {
+    function setShowPhoto(show, silent) {
       cvData.showPhoto = show;
       document.getElementById('photoYesBtn').classList.toggle('active', show);
       document.getElementById('photoNoBtn').classList.toggle('active', !show);
       document.getElementById('photoUploadSection').style.display = show ? 'block' : 'none';
       saveData();
       updatePreview();
-      showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
+      if (!silent) showToast(show ? '✅ Profilbild aktiverad' : '❌ Profilbild dold', 'success');
     }
 
     // ===== CUSTOM DATE PICKER =====
@@ -5279,7 +5279,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         removeBtn.removeAttribute('aria-disabled');
       }
       
-      setShowPhoto(cvData.showPhoto === true);
+      setShowPhoto(cvData.showPhoto === true, true);
       renderJobs();
       renderEducation();
       renderLanguages();
