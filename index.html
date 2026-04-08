@@ -8851,6 +8851,11 @@ ${styleTexts}
     cvData = JSON.parse(JSON.stringify(entry.data));
     // Spara direkt till localStorage
     try { localStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
+    // Sätt desktop-fält också så autosave inte skriver över med tomma värden
+    ['name','title','email','phone','summary'].forEach(function(f) {
+      const el = document.getElementById(f);
+      if (el) el.value = cvData[f] || '';
+    });
     renderJobs();
     renderEducation();
     renderLanguages();
