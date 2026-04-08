@@ -336,12 +336,12 @@
     // Byt "AI-SYV" → "Utbildning" i navbaren
     const tabBtn = document.getElementById('tabBtn-aisyv');
     if (tabBtn) {
-      const span = tabBtn.querySelector('span');
-      if (span) span.textContent = 'Studier';
-      // Byt emoji i tabBtn
-      const ico = tabBtn.querySelector('div,span:first-child,svg');
-      const emojiEl = tabBtn.querySelector('[style*="font-size"]');
-      if (emojiEl) emojiEl.textContent = '📚';
+      // Byt text
+      const spans = tabBtn.querySelectorAll('span');
+      spans.forEach(function(s) {
+        if (s.textContent.trim() === 'AI-SYV') s.textContent = 'Utbilda dig';
+        if (s.classList.contains('mob-tab__icon')) s.textContent = '🎓';
+      });
     }
 
     // Skapa steg 1-skärmen och injicera den i AI-SYV-panelen
