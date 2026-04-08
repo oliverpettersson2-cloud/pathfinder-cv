@@ -7778,66 +7778,64 @@ ${styleTexts}
 
     <!-- FLIK: Hej -->
     <div class="mob-panel" id="mobPanel-hej">
-      <div style="padding: 8px 16px 32px;">
+      <div style="padding:8px 16px 32px;">
 
         <!-- Hero -->
-        <div style="text-align:center; padding: 28px 0 20px;">
-          <div style="font-size: 52px; margin-bottom: 10px; filter: drop-shadow(0 4px 12px rgba(62,180,137,0.4));">🧭</div>
-          <div style="font-size: 24px; font-weight: 800; color: #f0c040; letter-spacing: -0.5px; margin-bottom: 6px;">CV<span style="color: #fff;">matchen</span></div>
-          <div style="font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.6;">Gör ett CV med AI på 15 minuter, en kvart.<br>Vi matchar ditt CV mot utbildning &amp; jobbannonser.</div>
+        <div style="text-align:center;padding:28px 0 24px;">
+          <div style="font-size:56px;margin-bottom:10px;filter:drop-shadow(0 4px 16px rgba(62,180,137,0.5));">🎯</div>
+          <div style="font-size:26px;font-weight:900;letter-spacing:-0.5px;margin-bottom:6px;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">matchen</span></div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.7;">Bygg ett proffsigt CV med AI på 15 minuter.<br>Matcha mot jobbannonser &amp; hitta rätt utbildning.</div>
         </div>
 
-        <!-- Klickbara kort -->
-        <div style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Kort -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
 
-          <!-- CV-kortet -->
-          <div onclick="mobToggleCVMenu()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; active:background:rgba(255,255,255,0.12);">
-            <div style="font-size: 24px; flex-shrink: 0;">✍️</div>
-            <div style="flex: 1;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
-                <div style="font-size: 13px; font-weight: 700; color: #fff;">Nytt CV? AI hjälper dig</div>
-                <span style="font-size: 14px; color: rgba(255,255,255,0.3);">›</span>
+          <!-- CV -->
+          <div onclick="mobToggleCVMenu()" style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(62,180,137,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">📄</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <div style="font-size:15px;font-weight:800;color:#fff;">Bygg ditt CV</div>
+                <span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>
               </div>
-              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.5; margin-bottom: 10px;">Fyll i namn, jobb och utbildning — AI hjälper dig med resten. 10 mallar att välja bland, spara som PDF direkt eller dela direkt.</div>
-              <div style="display: flex; justify-content: flex-end;">
-                <button onclick="event.stopPropagation(); mobToggleCVMenu();" style="padding: 6px 13px; background: rgba(62,180,137,0.15); color: #3eb489; font-size: 11px; font-weight: 700; border: 1px solid rgba(62,180,137,0.35); border-radius: 8px; cursor: pointer;">Skapa CV →</button>
-              </div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:12px;">Fyll i din info — AI skriver profiltext, föreslår kompetenser och hjälper dig med arbetsuppgifter. 10 mallar. Spara &amp; dela som PDF.</div>
+              <button onclick="event.stopPropagation();mobToggleCVMenu();" style="padding:8px 16px;background:rgba(62,180,137,0.18);color:#3eb489;font-size:12px;font-weight:800;border:1.5px solid rgba(62,180,137,0.4);border-radius:10px;cursor:pointer;font-family:inherit;">Skapa CV →</button>
             </div>
           </div>
 
-          <!-- Matcha-kortet -->
-          <div onclick="mobSwitchTab(&#39;matcha&#39;)" style="background: rgba(232,93,38,0.1); border: 1px solid rgba(232,93,38,0.22); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
-            <div style="font-size: 24px; flex-shrink: 0;">🎯</div>
-            <div style="flex: 1;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <div style="font-size: 13px; font-weight: 700; color: #e85d26;">Matcha Annonsen</div>
-                <span style="font-size: 14px; color: rgba(232,93,38,0.5);">›</span>
+          <!-- Matcha -->
+          <div onclick="mobSwitchTab(&#39;matcha&#39;)" style="background:rgba(232,93,38,0.08);border:1.5px solid rgba(232,93,38,0.25);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(232,93,38,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🎯</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <div style="font-size:15px;font-weight:800;color:#e85d26;">Matcha mot jobb</div>
+                <span style="font-size:16px;color:rgba(232,93,38,0.3);">›</span>
               </div>
-              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4;">Klistra in en jobbannons — AI anpassar ditt CV direkt mot den tjänsten.</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Sök bland riktiga annonser från Platsbanken. AI anpassar ditt CV och skriver en personlig profiltext för varje jobb. Max 3 matcher/dag.</div>
             </div>
           </div>
 
-          <!-- AI-SYV-kortet -->
-          <div onclick="mobSwitchTab(&#39;aisyv&#39;)" style="background: rgba(62,180,137,0.1); border: 1px solid rgba(62,180,137,0.22); border-radius: 14px; padding: 14px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
-            <div style="font-size: 24px; flex-shrink: 0;">🤖</div>
-            <div style="flex: 1;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <div style="font-size: 13px; font-weight: 700; color: #3eb489;">AI-SYV</div>
-                <span style="font-size: 14px; color: rgba(62,180,137,0.5);">›</span>
+          <!-- Utbilda dig -->
+          <div onclick="mobSwitchTab(&#39;aisyv&#39;)" style="background:rgba(124,58,237,0.08);border:1.5px solid rgba(124,58,237,0.25);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(124,58,237,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🎓</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <div style="font-size:15px;font-weight:800;color:#a78bfa;">Utbilda dig</div>
+                <span style="font-size:16px;color:rgba(124,58,237,0.3);">›</span>
               </div>
-              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4;">Din digitala karriärvägledare — fråga mig om utbildning, jag är kopplad mot Familjen Helsingborg och många andra utbildningssamordnare.</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Din AI-vägledare för utbildning — kopplad mot Familjen Helsingborg och Skolverket. Fråga om kurser, yrkesvägar och jobbchanser.</div>
             </div>
           </div>
 
-          <!-- Profil-kortet -->
-          <div onclick="mobSwitchTab(&#39;export&#39;)" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
-            <div style="font-size: 24px; flex-shrink: 0;">👤</div>
-            <div style="flex: 1;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-                <div style="font-size: 13px; font-weight: 700; color: #fff;">Profil</div>
-                <span style="font-size: 14px; color: rgba(255,255,255,0.3);">›</span>
+          <!-- Profil -->
+          <div onclick="mobSwitchTab(&#39;export&#39;)" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">👤</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <div style="font-size:15px;font-weight:800;color:#fff;">Profil</div>
+                <span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>
               </div>
-              <div style="font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4;">Dina sparade CV:n och matchade CV:n — öppna, redigera eller dela.</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Dina sparade CV:n och matchade CV:n — öppna, redigera, dela eller spara som PDF.</div>
             </div>
           </div>
 
