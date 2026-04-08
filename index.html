@@ -7926,26 +7926,37 @@ ${styleTexts}
               Sök
             </button>
           </div>
-          <!-- Ort-dropdown + Heltid/Deltid -->
-          <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;">
-            <div style="position:relative;flex:1;min-width:140px;">
-              <select id="matchaOrtSelect" onchange="matchaSetFilterFromSelect(this.value)" style="width:100%;appearance:none;-webkit-appearance:none;background:rgba(255,255,255,0.08);border:2px solid rgba(62,180,137,0.5);border-radius:10px;padding:9px 32px 9px 12px;color:#3eb489;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;outline:none;">
-                <option value="hbg">📍 Helsingborg</option>
-                <option value="fam" selected>📍 Familjen Helsingborg</option>
-                <option value="angeholm">📍 Ängelholm</option>
-                <option value="landskrona">📍 Landskrona</option>
-                <option value="hoganas">📍 Höganäs</option>
-                <option value="bjuv">📍 Bjuv</option>
-                <option value="astorp">📍 Åstorp</option>
-                <option value="klippan">📍 Klippan</option>
-                <option value="skane">📍 Skåne</option>
-                <option value="all">🌐 Hela Sverige</option>
-              </select>
-              <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#3eb489" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <!-- Ort + Anställning dropdowns -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
+            <div>
+              <div style="font-size:10px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:rgba(62,180,137,0.7);margin-bottom:5px;">📍 Var vill du jobba?</div>
+              <div style="position:relative;">
+                <select id="matchaOrtSelect" onchange="matchaSetFilterFromSelect(this.value)" style="width:100%;appearance:none;-webkit-appearance:none;background:rgba(62,180,137,0.1);border:2px solid rgba(62,180,137,0.5);border-radius:10px;padding:10px 30px 10px 12px;color:#3eb489;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;outline:none;">
+                  <option value="hbg">Helsingborg</option>
+                  <option value="fam" selected>Familjen Helsingborg</option>
+                  <option value="angeholm">Ängelholm</option>
+                  <option value="landskrona">Landskrona</option>
+                  <option value="hoganas">Höganäs</option>
+                  <option value="bjuv">Bjuv</option>
+                  <option value="astorp">Åstorp</option>
+                  <option value="klippan">Klippan</option>
+                  <option value="skane">Skåne</option>
+                  <option value="all">Hela Sverige</option>
+                </select>
+                <svg style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#3eb489" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
             </div>
-            <div style="display:flex;gap:6px;flex-shrink:0;">
-              <button id="matchaBtnHeltid" onclick="matchaSetTid(&#39;heltid&#39;)" style="padding:9px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:2px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);transition:all 0.15s;">Heltid</button>
-              <button id="matchaBtnDeltid" onclick="matchaSetTid(&#39;deltid&#39;)" style="padding:9px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:2px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);transition:all 0.15s;">Deltid</button>
+            <div>
+              <div style="font-size:10px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:rgba(62,180,137,0.7);margin-bottom:5px;">⏱ Anställningsform</div>
+              <div style="position:relative;">
+                <select id="matchaTidSelect" onchange="matchaSetTidFromSelect(this.value)" style="width:100%;appearance:none;-webkit-appearance:none;background:rgba(62,180,137,0.1);border:2px solid rgba(62,180,137,0.5);border-radius:10px;padding:10px 30px 10px 12px;color:#3eb489;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;outline:none;">
+                  <option value="">Alla former</option>
+                  <option value="FULL_TIME">Heltid</option>
+                  <option value="PART_TIME">Deltid</option>
+                  <option value="TEMPORARY">Timanställning</option>
+                </select>
+                <svg style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#3eb489" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
             </div>
           </div>
         </div>
@@ -9703,28 +9714,8 @@ ${styleTexts}
   }
 
   let matchaTidFilter = '';
-  function matchaSetTid(val) {
-    if (matchaTidFilter === val) {
-      matchaTidFilter = '';
-    } else {
-      matchaTidFilter = val;
-    }
-    ['heltid','deltid'].forEach(t => {
-      const btn = document.getElementById('matchaBtnHeltid'.replace('heltid', t === 'heltid' ? 'Heltid' : 'Deltid').replace('matchaBtn','matchaBtn'));
-      const b = document.getElementById('matchaBtn' + t.charAt(0).toUpperCase() + t.slice(1));
-      if (!b) return;
-      if (t === matchaTidFilter) {
-        b.style.background = '#3eb489';
-        b.style.borderColor = '#3eb489';
-        b.style.color = '#fff';
-      } else {
-        b.style.background = 'rgba(255,255,255,0.06)';
-        b.style.borderColor = 'rgba(255,255,255,0.15)';
-        b.style.color = 'rgba(255,255,255,0.5)';
-      }
-    });
-    matchaDoSearch();
-  }
+  function matchaSetTid(val) { matchaTidFilter = val; matchaDoSearch(); }
+  function matchaSetTidFromSelect(val) { matchaTidFilter = val; matchaDoSearch(); }
 
   function matchaSearchDebounce() {
     clearTimeout(matchaSearchTimer);
@@ -9968,7 +9959,7 @@ ${styleTexts}
   async function matchaFetch(q, offset) {
     let url = 'https://jobsearch.api.jobtechdev.se/search?q=' + encodeURIComponent(q) + '&limit=20&offset=' + offset;
     if (typeof matchaTidFilter !== 'undefined' && matchaTidFilter) {
-      url += '&working-hours-type=' + encodeURIComponent(matchaTidFilter === 'heltid' ? 'FULL_TIME' : 'PART_TIME');
+      url += '&working-hours-type=' + encodeURIComponent(matchaTidFilter);
     }
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('API-fel');
@@ -11578,12 +11569,7 @@ ${styleTexts}
           b.style.color        = 'rgba(255,255,255,0.6)';
           b.style.fontWeight   = '700';
         });
-        btn.style.background  = 'linear-gradient(135deg,#3eb489,#10b981)';
-        btn.style.borderColor = '#3eb489';
-        btn.style.color       = '#fff';
-        btn.style.fontWeight  = '900';
-        btn.style.boxShadow   = '0 0 0 4px rgba(62,180,137,0.5), 0 4px 14px rgba(62,180,137,0.6)';
-        btn.style.transform   = 'scale(1.06)';
+        btn.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;transition:all 0.15s;background:linear-gradient(135deg,#3eb489,#10b981);border:2px solid #3eb489;color:#fff;box-shadow:0 0 0 4px rgba(62,180,137,0.45),0 4px 16px rgba(62,180,137,0.55);transform:scale(1.06);';
 
         const input = document.getElementById('matchaSearch');
         if (k.q === '__ALLA__') {
@@ -11603,13 +11589,10 @@ ${styleTexts}
     if (input) {
       input.addEventListener('input', function() {
         btnsEl.querySelectorAll('button').forEach(function(b) {
-          b.style.background  = 'rgba(255,255,255,0.06)';
-          b.style.borderColor = 'rgba(255,255,255,0.12)';
-          b.style.color       = 'rgba(255,255,255,0.6)';
-          b.style.fontWeight  = '700';
-          b.style.boxShadow   = 'none';
-          b.style.transform   = 'scale(1)';
+          b.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);';
         });
+        const cvbReset = document.getElementById('_cvTitelBtn');
+        if (cvbReset) cvbReset.style.cssText = 'width:100%;margin-top:12px;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;background:rgba(62,180,137,0.12);border:2px solid rgba(62,180,137,0.5);color:#3eb489;display:flex;align-items:center;justify-content:center;gap:8px;';
       });
     }
 
@@ -11619,8 +11602,8 @@ ${styleTexts}
     cvTitelBtn.style.cssText =
       'width:100%;margin-top:12px;padding:11px 16px;border-radius:12px;' +
       'font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;' +
-      'background:rgba(240,192,64,0.12);border:2px solid rgba(240,192,64,0.4);' +
-      'color:#f0c040;display:flex;align-items:center;justify-content:center;gap:8px;';
+      'background:rgba(62,180,137,0.12);border:2px solid rgba(62,180,137,0.5);' +
+      'color:#3eb489;display:flex;align-items:center;justify-content:center;gap:8px;';
     cvTitelBtn.innerHTML = '🎯 Sök jobb som matchar min CV-titel';
 
     cvTitelBtn.onclick = function() {
@@ -11642,9 +11625,7 @@ ${styleTexts}
             b.style.borderColor = 'rgba(255,255,255,0.12)';
             b.style.color       = 'rgba(255,255,255,0.6)';
           });
-          cvTitelBtn.style.background  = '#f0c040';
-          cvTitelBtn.style.borderColor = '#f0c040';
-          cvTitelBtn.style.color       = '#1a1a2e';
+          cvTitelBtn.style.cssText = 'width:100%;margin-top:12px;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#3eb489,#10b981);border:2px solid #3eb489;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 0 4px rgba(62,180,137,0.45),0 4px 16px rgba(62,180,137,0.55);transform:scale(1.03);';
         } else {
           if(typeof showToast==='function') showToast('Inget CV valt — gå till steg 1 först', 'error');
         }
