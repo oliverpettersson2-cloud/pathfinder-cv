@@ -4736,8 +4736,7 @@
       const next = nextMap[prevField];
       // Hoppa inte till jobEndYear automatiskt (brukar vara Pågående eller väljs manuellt)
       // Men för utbildning: vi auto-advancear hela vägen inkl. eduEndYear
-      const skipLast = prevField && prevField.startsWith('job') ? 'jobEndYear' : null;
-      if (next && next !== skipLast) {
+      if (next) {
         const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
         const label = labelMap[next] || 'TILL - Ar';
         const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
