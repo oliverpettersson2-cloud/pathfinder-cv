@@ -8153,9 +8153,34 @@ ${styleTexts}
           '<span style="font-size:18px;color:rgba(62,180,137,0.6);">›</span>';
         btn.onclick = function() {
           overlay.remove();
-          mobLoadCVFromList(cv.id);
           mobEnterCVMode();
-          mobSwitchSubTab(_mobLastCVTab || 'info');
+          mobSwitchSubTab('info');
+
+          // Visa laddnings-overlay
+          const loader = document.createElement('div');
+          loader.id = '_cvLoadingOverlay';
+          loader.style.cssText = 'position:fixed;inset:0;background:rgba(14,14,30,0.85);z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+          loader.innerHTML =
+            '<div style="font-size:52px;animation:_spin 1.2s linear infinite;">⏳</div>' +
+            '<div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.3px;">Laddar ditt CV</div>' +
+            '<div style="font-size:12px;color:rgba(255,255,255,0.4);">AI förbereder dina uppgifter…</div>';
+          document.body.appendChild(loader);
+
+          // Lägg till spin-animation om den saknas
+          if (!document.getElementById('_cvSpinStyle')) {
+            const s = document.createElement('style');
+            s.id = '_cvSpinStyle';
+            s.textContent = '@keyframes _spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }';
+            document.head.appendChild(s);
+          }
+
+          setTimeout(function() {
+            mobLoadCVFromList(cv.id);
+            // Fade out loader
+            loader.style.transition = 'opacity 0.3s';
+            loader.style.opacity = '0';
+            setTimeout(function() { loader.remove(); }, 320);
+          }, 200);
         };
       } else {
         btn.style.cssText = 'width:100%;padding:14px 16px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;';
