@@ -8159,7 +8159,16 @@ ${styleTexts}
           '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.4);">Nytt CV</div>';
         btn.onclick = function() {
           overlay.remove();
-          nyttCVConfirm();
+          // Behåll allt utom yrkestitel + profiltext
+          cvData.title   = '';
+          cvData.summary = '';
+          const titleEl   = document.getElementById('title');
+          const summaryEl = document.getElementById('summary');
+          if (titleEl)   titleEl.value   = '';
+          if (summaryEl) summaryEl.value = '';
+          saveData();
+          updatePreview();
+          showToast('Nytt CV startat!', 'success');
           mobEnterCVMode();
           mobSwitchSubTab('info');
         };
