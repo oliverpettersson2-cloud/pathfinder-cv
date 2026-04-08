@@ -8176,11 +8176,21 @@ ${styleTexts}
 
           setTimeout(function() {
             mobLoadCVFromList(cv.id);
+            // Sätt fält direkt som backup
+            setTimeout(function() {
+              ['name','title','email','phone'].forEach(function(f) {
+                const el = document.getElementById('mob-' + f);
+                if (el && cvData[f]) el.value = cvData[f];
+              });
+              const sum = document.getElementById('mob-summary');
+              if (sum && cvData.summary) sum.value = cvData.summary;
+              updatePreview();
+            }, 100);
             // Fade out loader
             loader.style.transition = 'opacity 0.3s';
             loader.style.opacity = '0';
-            setTimeout(function() { loader.remove(); }, 320);
-          }, 200);
+            setTimeout(function() { loader.remove(); }, 350);
+          }, 300);
         };
       } else {
         btn.style.cssText = 'width:100%;padding:14px 16px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;';
