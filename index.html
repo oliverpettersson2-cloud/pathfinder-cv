@@ -1872,6 +1872,19 @@
         filter: drop-shadow(0 0 8px rgba(62,180,137,0.6));
         transform: scale(1.1);
       }
+      /* Lila AI-tab */
+      .mob-tab--ai { color: rgba(167,139,250,0.55); }
+      .mob-tab--ai.mob-tab--active {
+        color: #a78bfa;
+        background: rgba(124,58,237,0.12);
+      }
+      .mob-tab--ai.mob-tab--active::before {
+        background: linear-gradient(90deg,#7c3aed,#a29bfe);
+      }
+      .mob-tab--ai.mob-tab--active .mob-tab__icon {
+        filter: drop-shadow(0 0 10px rgba(124,58,237,0.7));
+        transform: scale(1.15);
+      }
 
       /* ── Mobil innehållsyta ─────────────────────────── */
       #mobileContent {
@@ -7574,10 +7587,10 @@ ${styleTexts}
       <span class="mob-tab__icon">🎯</span>
       <span>Matcha</span>
     </button>
-    <!-- 4. AI-SYV -->
-    <button class="mob-tab" id="tabBtn-aisyv" onclick="mobSwitchTab(&#39;aisyv&#39;)">
-      <span class="mob-tab__icon">🤖</span>
-      <span>AI-SYV</span>
+    <!-- 4. AI-Vägledare -->
+    <button class="mob-tab mob-tab--ai" id="tabBtn-aisyv" onclick="mobSwitchTab(&#39;aisyv&#39;)">
+      <span class="mob-tab__icon" style="font-size:24px;line-height:1;">🤖</span>
+      <span style="font-size:8px;font-weight:900;letter-spacing:0.3px;">AI-Vägledare</span>
     </button>
     <!-- 5. Profil -->
     <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
@@ -11339,8 +11352,8 @@ ${styleTexts}
       // Byt text
       const spans = tabBtn.querySelectorAll('span');
       spans.forEach(function(s) {
-        if (s.textContent.trim() === 'AI-SYV') s.textContent = 'Utbilda dig';
-        if (s.classList.contains('mob-tab__icon')) s.textContent = '🎓';
+        if (s.textContent.trim() === 'AI-SYV' || s.textContent.trim() === 'AI-Vägledare') return;
+        if (s.classList.contains('mob-tab__icon')) return;
       });
     }
 
