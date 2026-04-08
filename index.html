@@ -8097,9 +8097,84 @@ ${styleTexts}
   // Öppna CV-läge — visar steg-indikator i nav, öppnar senast aktiv sub-tab
   let _mobLastCVTab = 'info';
   function mobOpenCV() {
-    if (!isMobile()) return;
-    mobEnterCVMode();
-    mobSwitchSubTab(_mobLastCVTab || 'info');
+    mobShowCVPicker();
+  }
+
+  function mobShowCVPicker() {
+    // Ta bort gammal om den finns
+    const existing = document.getElementById('_cvPickerOverlay');
+    if (existing) existing.remove();
+
+    const saved = mobGetSavedCVs();
+    const MAX = 3;
+
+    // Bygg slots: sparade CV + tomma = "Nytt CV"
+    const slots = [];
+    for (let i = 0; i < MAX; i++) {
+      if (i < saved.length) slots.push({ type: 'saved', cv: saved[i] });
+      else slots.push({ type: 'new' });
+    }
+
+    // Overlay
+    const overlay = document.createElement('div');
+    overlay.id = '_cvPickerOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    // Drawer
+    const drawer = document.createElement('div');
+    drawer.style.cssText = 'width:100%;max-width:480px;background:#1a1a2e;border-radius:20px 20px 0 0;padding:20px 16px 36px;box-shadow:0 -8px 40px rgba(0,0,0,0.5);';
+
+    // Handtag
+    drawer.innerHTML = '<div style="width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:4px;margin:0 auto 18px;"></div>' +
+      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:16px;letter-spacing:-0.3px;">📄 Dina CV:n</div>';
+
+    // Slots
+    const slotsDiv = document.createElement('div');
+    slotsDiv.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+
+    slots.forEach(function(slot, i) {
+      const btn = document.createElement('button');
+      if (slot.type === 'saved') {
+        const cv = slot.cv;
+        const date = cv.savedAt ? new Date(cv.savedAt).toLocaleDateString('sv-SE', {day:'numeric',month:'short'}) : '';
+        btn.style.cssText = 'width:100%;padding:14px 16px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;';
+        btn.innerHTML =
+          '<div style="width:42px;height:42px;border-radius:12px;background:rgba(62,180,137,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📄</div>' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:14px;font-weight:800;color:#fff;">' + (cv.title || 'Namnlöst CV') + '</div>' +
+            '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + (cv.data && cv.data.name ? cv.data.name + ' · ' : '') + date + '</div>' +
+          '</div>' +
+          '<span style="font-size:18px;color:rgba(62,180,137,0.6);">›</span>';
+        btn.onclick = function() {
+          overlay.remove();
+          mobLoadCVFromList(cv.id);
+          mobEnterCVMode();
+          mobSwitchSubTab(_mobLastCVTab || 'info');
+        };
+      } else {
+        btn.style.cssText = 'width:100%;padding:14px 16px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;';
+        btn.innerHTML =
+          '<div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">➕</div>' +
+          '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.4);">Nytt CV</div>';
+        btn.onclick = function() {
+          overlay.remove();
+          nyttCVConfirm();
+          mobEnterCVMode();
+          mobSwitchSubTab('info');
+        };
+      }
+      slotsDiv.appendChild(btn);
+    });
+
+    drawer.appendChild(slotsDiv);
+    overlay.appendChild(drawer);
+    document.body.appendChild(overlay);
+
+    // Slide in-animation
+    drawer.style.transform = 'translateY(100%)';
+    drawer.style.transition = 'transform 0.28s cubic-bezier(0.32,0.72,0,1)';
+    requestAnimationFrame(() => requestAnimationFrame(() => { drawer.style.transform = 'translateY(0)'; }));
   }
 
   function mobEnterCVMode() {
