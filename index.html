@@ -8847,8 +8847,10 @@ ${styleTexts}
     const entry = list.find(c => c.id === id);
     if (!entry) return;
     // Ladda datan in i cvData
-    Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
-    saveData();
+    // Ersätt cvData helt utan att anropa saveData() (som läser desktop-fält)
+    cvData = JSON.parse(JSON.stringify(entry.data));
+    // Spara direkt till localStorage
+    try { localStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
     renderJobs();
     renderEducation();
     renderLanguages();
