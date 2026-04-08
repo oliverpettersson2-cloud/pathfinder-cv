@@ -11574,9 +11574,9 @@ ${styleTexts}
         const input = document.getElementById('matchaSearch');
         if (k.q === '__ALLA__') {
           // Bred sökning — populära jobb i Familjen Hbg
-          if (input) { input.value = 'jobb'; input.dispatchEvent(new Event('input', {bubbles:true})); }
+          if (input) { input.value = 'jobb'; }
         } else {
-          if (input) { input.value = k.q; input.dispatchEvent(new Event('input', {bubbles:true})); }
+          if (input) { input.value = k.q; }
         }
         if (typeof matchaDoSearch === 'function') matchaDoSearch();
       };
@@ -11617,7 +11617,6 @@ ${styleTexts}
         const title = cv && cv.title ? cv.title : '';
         if (title && input) {
           input.value = title;
-          input.dispatchEvent(new Event('input', {bubbles:true}));
           if (typeof matchaDoSearch === 'function') matchaDoSearch();
           // Markera knappen aktiv
           btnsEl.querySelectorAll('button').forEach(function(b){
