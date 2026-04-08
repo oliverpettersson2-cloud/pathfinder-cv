@@ -524,14 +524,14 @@
   window.addEventListener('load', function () {
 
     const kategorier = [
-      { emoji:'🚫', label:'Utan krav',        q:'lager produktion industri'  },
-      { emoji:'📦', label:'Lager & logistik', q:'lager logistik'             },
-      { emoji:'🤝', label:'Vård & omsorg',    q:'vård omsorg undersköterska' },
-      { emoji:'🏗️', label:'Bygg & anläggning',q:'bygg anläggning'            },
-      { emoji:'🧹', label:'Städ & service',   q:'städ service'               },
-      { emoji:'🍽️', label:'Restaurang & kök', q:'restaurang kök'             },
-      { emoji:'🛒', label:'Butik & handel',   q:'butik handel'               },
-      { emoji:'🏭', label:'Industri',         q:'industri tillverkning'      },
+      { emoji:'🌐', label:'Alla jobb',         q:'__ALLA__'                   },
+      { emoji:'📦', label:'Lager & logistik',  q:'lager logistik'             },
+      { emoji:'🤝', label:'Vård & omsorg',     q:'vård omsorg undersköterska' },
+      { emoji:'🏗️', label:'Bygg & anläggning', q:'bygg anläggning'            },
+      { emoji:'🧹', label:'Städ & service',    q:'städ service'               },
+      { emoji:'🍽️', label:'Restaurang & kök',  q:'restaurang kök'             },
+      { emoji:'🛒', label:'Butik & handel',    q:'butik handel'               },
+      { emoji:'🏭', label:'Industri',          q:'industri tillverkning'      },
     ];
 
     // Hitta rätt plats — efter platsfiltret, innan skeleton
@@ -562,21 +562,24 @@
       btn.innerHTML = k.emoji + ' ' + k.label;
 
       btn.onclick = function() {
-        // Markera aktiv
+        // Markera aktiv — tydlig grön fylld stil
         btnsEl.querySelectorAll('button').forEach(function(b) {
           b.style.background   = 'rgba(255,255,255,0.06)';
           b.style.borderColor  = 'rgba(255,255,255,0.12)';
           b.style.color        = 'rgba(255,255,255,0.6)';
+          b.style.fontWeight   = '700';
         });
-        btn.style.background  = 'rgba(62,180,137,0.15)';
+        btn.style.background  = '#3eb489';
         btn.style.borderColor = '#3eb489';
-        btn.style.color       = '#3eb489';
+        btn.style.color       = '#fff';
+        btn.style.fontWeight  = '800';
 
-        // Sätt sökfältet och sök
         const input = document.getElementById('matchaSearch');
-        if (input) {
-          input.value = k.q;
-          input.dispatchEvent(new Event('input', {bubbles:true}));
+        if (k.q === '__ALLA__') {
+          // Bred sökning — populära jobb i Familjen Hbg
+          if (input) { input.value = 'jobb'; input.dispatchEvent(new Event('input', {bubbles:true})); }
+        } else {
+          if (input) { input.value = k.q; input.dispatchEvent(new Event('input', {bubbles:true})); }
         }
         if (typeof matchaDoSearch === 'function') matchaDoSearch();
       };
@@ -592,9 +595,52 @@
           b.style.background  = 'rgba(255,255,255,0.06)';
           b.style.borderColor = 'rgba(255,255,255,0.12)';
           b.style.color       = 'rgba(255,255,255,0.6)';
+          b.style.fontWeight  = '700';
         });
       });
     }
+
+    // ── "Matcha mot CV-titeln"-knapp ─────────────
+    const cvTitelBtn = document.createElement('button');
+    cvTitelBtn.id = '_cvTitelBtn';
+    cvTitelBtn.style.cssText =
+      'width:100%;margin-top:12px;padding:11px 16px;border-radius:12px;' +
+      'font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;' +
+      'background:rgba(240,192,64,0.12);border:2px solid rgba(240,192,64,0.4);' +
+      'color:#f0c040;display:flex;align-items:center;justify-content:center;gap:8px;';
+    cvTitelBtn.innerHTML = '🎯 Sök jobb som matchar min CV-titel';
+
+    cvTitelBtn.onclick = function() {
+      // Hämta CV-titeln från valt CV
+      try {
+        const savedCVs = JSON.parse(localStorage.getItem('pathfinder_saved_cvs') || '[]');
+        const selectedId = localStorage.getItem('pathfinder_selected_cv');
+        const cv = selectedId
+          ? savedCVs.find(function(c){ return c.id === selectedId; })
+          : savedCVs[0];
+        const title = cv && cv.title ? cv.title : '';
+        if (title && input) {
+          input.value = title;
+          input.dispatchEvent(new Event('input', {bubbles:true}));
+          if (typeof matchaDoSearch === 'function') matchaDoSearch();
+          // Markera knappen aktiv
+          btnsEl.querySelectorAll('button').forEach(function(b){
+            b.style.background  = 'rgba(255,255,255,0.06)';
+            b.style.borderColor = 'rgba(255,255,255,0.12)';
+            b.style.color       = 'rgba(255,255,255,0.6)';
+          });
+          cvTitelBtn.style.background  = '#f0c040';
+          cvTitelBtn.style.borderColor = '#f0c040';
+          cvTitelBtn.style.color       = '#1a1a2e';
+        } else {
+          if(typeof showToast==='function') showToast('Inget CV valt — gå till steg 1 först', 'error');
+        }
+      } catch(e) {
+        if(typeof showToast==='function') showToast('Kunde inte hämta CV-titel', 'error');
+      }
+    };
+
+    wrap.appendChild(cvTitelBtn);
 
   });
 
