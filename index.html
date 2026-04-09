@@ -12207,11 +12207,13 @@ ${styleTexts}
         }
       ],
       exercise: {
-        type: 'fill',
-        prompt: 'Fyll i meningen:',
-        question: 'Om jag blir sjuk ska jag ________ min handläggare.',
-        answer: 'meddela',
-        hint: 'Tänk på vad du ska göra samma dag.'
+        type: 'write',
+        title: 'Skriv ett frånvaromeddelande',
+        description: 'Du är sjuk och kan inte delta i dagens aktivitet. Skriv ett korrekt och professionellt meddelande till din handläggare.',
+        tips: 'Inkludera: vem du är, vilken aktivitet du missar, varför du är frånvarande och när du förväntar dig att vara tillbaka.',
+        placeholder: 'Hej [handläggarens namn],\n\nJag heter... och jag deltar i... \n\nJag kontaktar dig för att meddela att jag idag inte kan delta på grund av...\n\nJag förväntar mig att vara tillbaka...',
+        minChars: 80,
+        minHeight: 180
       },
       quiz: [
         { q: 'Vad betyder aktivitetskrav?', options: ['Du kan göra vad du vill', 'Du ska delta i planerade aktiviteter', 'Du behöver inte meddela frånvaro'], correct: 1 },
@@ -12252,12 +12254,18 @@ ${styleTexts}
         }
       ],
       exercise: {
-        type: 'match',
-        prompt: 'Matcha funktion med beskrivning:',
-        pairs: [
-          { left: 'Se din plan', right: 'SKills' },
-          { left: 'Skapa CV', right: 'CVmatchen' },
-          { left: 'Markera gjorda aktiviteter', right: 'SKills' }
+        type: 'sort',
+        title: 'SKills eller CVmatchen?',
+        description: 'Sortera funktionerna i rätt verktyg.',
+        catA: 'SKills',
+        catB: 'CVmatchen',
+        items: [
+          { label: 'Se din plan', cat: 'A' },
+          { label: 'Skapa CV', cat: 'B' },
+          { label: 'Markera aktiviteter', cat: 'A' },
+          { label: 'Matcha mot jobb', cat: 'B' },
+          { label: 'Kommunicera med handläggare', cat: 'A' },
+          { label: 'Exportera PDF', cat: 'B' }
         ]
       },
       quiz: [
@@ -12297,12 +12305,13 @@ ${styleTexts}
         }
       ],
       exercise: {
-        type: 'prompt',
-        prompt: 'Välj den bättre prompten:',
-        options: [
-          { text: '"Hjälp mig."', correct: false, feedback: 'För vag — AI vet inte vad du behöver.' },
-          { text: '"Skriv en pitch för en lagerarbetare med 3 års erfarenhet."', correct: true, feedback: 'Bra! Specifik och tydlig.' },
-          { text: '"CV tack."', correct: false, feedback: 'För kort — saknar kontext.' }
+        type: 'build',
+        title: 'Skriv din egen AI-prompt',
+        description: 'En bra prompt är specifik. Fyll i dessa delar för att bygga en kraftfull prompt.',
+        fields: [
+          { label: 'Vad söker du för jobb?', type: 'input', placeholder: 't.ex. lagerarbetare, kock, säljare...', hint: 'Var specifik med yrkestitel.' },
+          { label: 'Vilken erfarenhet har du?', type: 'input', placeholder: 't.ex. 2 år i butik, kör truck...', hint: 'Beskriv kort vad du kan.' },
+          { label: 'Vad ska AI hjälpa dig med?', type: 'input', placeholder: 't.ex. skriva profiltext, hitta jobb, förbättra CV...', hint: 'Var tydlig med uppdraget.' }
         ]
       },
       quiz: [
@@ -12319,12 +12328,601 @@ ${styleTexts}
   ];
 
   // ── Veckodagsstruktur ──
+
+  // ── Tisdag: Moduler ──
+  const TISDAG_MODULES = [
+    {
+      id: 'tis1',
+      icon: '🧠',
+      title: 'Mina kompetenser',
+      subtitle: 'Hårda, mjuka & överförbara',
+      color: '#f0c040',
+      borderColor: 'rgba(240,192,64,0.3)',
+      bg: 'rgba(240,192,64,0.07)',
+      lessons: [
+        {
+          title: 'Vad är kompetenser?',
+          simple: 'Kompetenser är saker du kan. Det kan vara något du lärt dig i skolan, på jobbet eller i livet.\n\nExempel: köra bil, prata med kunder, laga mat.',
+          advanced: 'Kompetenser är förmågor du använder för att utföra arbetsuppgifter. De delas ofta in i hårda (tekniska) och mjuka (sociala) kompetenser. Arbetsgivare söker båda.'
+        },
+        {
+          title: 'Hårda och mjuka kompetenser',
+          simple: 'Hårda kompetenser = saker du kan mäta (t.ex. Excel, truckkort).\n\nMjuka kompetenser = hur du är med andra (t.ex. samarbete, tålamod).',
+          advanced: 'Hårda kompetenser är specifika färdigheter som kan testas eller certifieras. Mjuka kompetenser handlar om beteenden, kommunikation och problemlösning.'
+        },
+        {
+          title: 'Överförbara kompetenser',
+          simple: 'Överförbara kompetenser är saker du kan använda i många jobb.\n\nExempel: service, planering, ansvar.',
+          advanced: 'Överförbara kompetenser är generella förmågor som fungerar i olika branscher. De är viktiga när du byter yrke eller söker bredare roller.'
+        }
+      ],
+      exercise: {
+        type: 'sort',
+        title: 'Hård eller mjuk kompetens?',
+        description: 'Sortera kompetenserna i rätt kategori.',
+        catA: '🔧 Hård kompetens',
+        catB: '🤝 Mjuk kompetens',
+        items: [
+          { label: 'Excel', cat: 'A' }, { label: 'Tålamod', cat: 'B' },
+          { label: 'Truckkort', cat: 'A' }, { label: 'Samarbete', cat: 'B' },
+          { label: 'Körkort B', cat: 'A' }, { label: 'Kommunikation', cat: 'B' },
+          { label: 'Kassahantering', cat: 'A' }, { label: 'Empati', cat: 'B' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är en kompetens?', options: ['En utbildning', 'En förmåga du använder för att utföra arbetsuppgifter', 'Ett certifikat'], correct: 1 },
+        { q: 'Vad är en hård kompetens?', options: ['Att vara tålmodig', 'Excel eller truckkort', 'Att lyssna på andra'], correct: 1 },
+        { q: 'Vad är en mjuk kompetens?', options: ['Körkort', 'Samarbete och kommunikation', 'Programmeringsspråk'], correct: 1 },
+        { q: 'Vad betyder överförbar kompetens?', options: ['En kompetens du glömt', 'En förmåga som funkar i många branscher', 'En teknisk certifiering'], correct: 1 },
+        { q: 'Vilken kompetens passar bäst till kundservice?', options: ['Truckkort', 'Kommunikation och tålamod', 'Programmering'], correct: 1 }
+      ],
+      prompts: [
+        'Sammanfatta mina kompetenser baserat på dessa ord: …',
+        'Vilka kompetenser passar denna jobbannons?',
+        'Förklara skillnaden mellan hårda och mjuka kompetenser på enkel svenska.'
+      ]
+    },
+    {
+      id: 'tis2',
+      icon: '💪',
+      title: 'Styrkor & drivkrafter',
+      subtitle: 'Vad är du bra på och vad motiverar dig?',
+      color: '#f0c040',
+      borderColor: 'rgba(240,192,64,0.3)',
+      bg: 'rgba(240,192,64,0.07)',
+      lessons: [
+        {
+          title: 'Vad är styrkor?',
+          simple: 'Styrkor är saker du är bra på.\n\nExempel: lyssna, hjälpa andra, jobba snabbt.',
+          advanced: 'Styrkor är återkommande beteenden där du presterar bra och känner dig trygg. De kan vara både personliga och yrkesmässiga.'
+        },
+        {
+          title: 'Drivkrafter',
+          simple: 'Drivkrafter är saker som gör dig motiverad.\n\nExempel: hjälpa andra, lära dig nytt, tjäna pengar.',
+          advanced: 'Drivkrafter är inre motivationsfaktorer som påverkar hur du trivs och presterar. De är viktiga för att hitta rätt jobbmatchning.'
+        },
+        {
+          title: 'Koppla styrkor till jobb',
+          simple: 'Exempel:\n"Jag är bra med människor → passar i service."',
+          advanced: 'Att koppla styrkor till arbetsuppgifter gör det lättare att argumentera för sin kompetens i CV och intervju.'
+        }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Identifiera dina styrkor',
+        description: 'Välj och beskriv dina tre starkaste egenskaper. Ge ett konkret exempel på varje.',
+        fields: [
+          { label: 'Min starkaste styrka', placeholder: 'T.ex. Jag är lösningsorienterad...', type: 'text', hint: 'Välj en egenskap du alltid fått beröm för.' },
+          { label: 'Konkret exempel — när använde du den?', placeholder: 'T.ex. På mitt förra jobb hanterade jag... och resultatet var...', type: 'textarea', rows: 2 },
+          { label: 'Min andra styrka', placeholder: 'T.ex. Jag är strukturerad och noggrann...', type: 'text' },
+          { label: 'Konkret exempel', placeholder: 'T.ex. Jag organiserade... vilket ledde till...', type: 'textarea', rows: 2 },
+          { label: 'Vad motiverar dig mest i jobbet?', placeholder: 'T.ex. Att hjälpa andra, att lösa problem, att se resultat av mitt arbete...', type: 'textarea', rows: 2, hint: 'Din drivkraft hjälper dig hitta rätt jobb.' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är en styrka?', options: ['En examen', 'Återkommande beteende där du presterar bra', 'En arbetsuppgift'], correct: 1 },
+        { q: 'Vad är en drivkraft?', options: ['En skyldighet', 'Inre motivation som påverkar trivsel', 'Ett mål'], correct: 1 },
+        { q: 'Varför är styrkor viktiga i jobbsök?', options: ['De är inte viktiga', 'De hjälper dig argumentera för din kompetens', 'Arbetsgivare bryr sig inte'], correct: 1 }
+      ],
+      prompts: [
+        'Sammanfatta mina styrkor baserat på dessa ord: …',
+        'Vilka styrkor passar denna annons?',
+        'Hjälp mig beskriva min starkaste egenskap på ett sätt som passar i ett CV.'
+      ]
+    },
+    {
+      id: 'tis3',
+      icon: '🎯',
+      title: 'SMARTA mål',
+      subtitle: 'Sätt tydliga och uppföljningsbara mål',
+      color: '#f0c040',
+      borderColor: 'rgba(240,192,64,0.3)',
+      bg: 'rgba(240,192,64,0.07)',
+      lessons: [
+        {
+          title: 'Vad är SMARTA mål?',
+          simple: 'SMARTA mål hjälper dig att veta vad du ska göra. De ska vara tydliga och möjliga att följa.',
+          advanced: 'SMART är en metod för att skapa tydliga, mätbara och realistiska mål som går att följa upp.'
+        },
+        {
+          title: 'Genomgång av SMART',
+          simple: 'S – Specifikt: Vad exakt ska du göra?\nM – Mätbart: Hur många? Hur ofta?\nA – Accepterat: Är målet rimligt för dig?\nR – Realistiskt: Har du tid och resurser?\nT – Tidsbundet: När ska det vara klart?',
+          advanced: 'Varje bokstav i SMART är ett krav på målet. Saknas ett av dem är målet otydligt och svårt att följa upp — vilket gör det lätt att ge upp.'
+        },
+        {
+          title: 'Exempel på SMARTA mål',
+          simple: '❌ Dåligt mål:\n"Jag ska söka jobb."\n\n✅ SMART mål:\n"Jag ska söka 3 jobb i veckan via CVmatchen under april."',
+          advanced: 'Det dåliga målet saknar mätbarhet och tidsram. Det smarta målet är specifikt (CVmatchen), mätbart (3/vecka), accepterat, realistiskt och tidsbundet (april).'
+        }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Skriv ditt eget SMARTA mål',
+        description: 'Fyll i varje del av SMART-mallen för att skapa ett konkret jobbsökmål. Var så specifik som möjligt.',
+        fields: [
+          { label: 'S — Specifikt: Vad exakt ska du göra?', placeholder: 'T.ex. Söka jobb som lagerarbetare via CVmatchen och Platsbanken', type: 'text', hint: 'Undvik vaga formuleringar som "söka jobb".' },
+          { label: 'M — Mätbart: Hur mycket / hur ofta?', placeholder: 'T.ex. Minst 3 ansökningar per vecka', type: 'text', hint: 'Sätt ett konkret antal eller frekvens.' },
+          { label: 'A — Accepterat: Är detta rimligt för dig?', placeholder: 'T.ex. Ja, jag har 2 timmar varje förmiddag', type: 'text' },
+          { label: 'R — Realistiskt: Har du resurser och tid?', placeholder: 'T.ex. Ja, jag har dator och bra CV klart', type: 'text' },
+          { label: 'T — Tidsbundet: När ska det vara klart?', placeholder: 'T.ex. Senast 31 maj 2025', type: 'text', hint: 'Sätt ett datum — det ökar motivationen.' },
+          { label: 'Ditt kompletta SMARTA mål (skriv ihop det)', placeholder: 'T.ex. "Jag ska söka 3 jobb per vecka som lagerarbetare via CVmatchen från 1 april till 31 maj."', type: 'textarea', rows: 3 }
+        ]
+      },
+      quiz: [
+        { q: 'Vad betyder S i SMART?', options: ['Snabbt', 'Specifikt', 'Socialt'], correct: 1 },
+        { q: 'Vad betyder T i SMART?', options: ['Tydligt', 'Tidsbundet', 'Tillgängligt'], correct: 1 },
+        { q: 'Vilket av dessa är ett SMART mål?', options: ['"Jag ska söka jobb"', '"Jag ska söka 3 jobb i veckan under april"', '"Jag ska ha ett jobb snart"'], correct: 1 }
+      ],
+      prompts: [
+        'Hjälp mig skriva ett SMART mål för jobbsök.',
+        'Gör detta mål mer SMART: "Jag ska bli bättre på att söka jobb."',
+        'Kontrollera om mitt mål är SMART och ge feedback.'
+      ]
+    },
+    {
+      id: 'tis4',
+      icon: '🎤',
+      title: 'Min pitch',
+      subtitle: 'Presentera dig själv på 30 sekunder',
+      color: '#f0c040',
+      borderColor: 'rgba(240,192,64,0.3)',
+      bg: 'rgba(240,192,64,0.07)',
+      lessons: [
+        {
+          title: 'Vad är en pitch?',
+          simple: 'En pitch är en kort presentation av vem du är, vad du kan och vad du söker.',
+          advanced: 'En pitch är en strukturerad, kortfattad presentation som du kan använda på intervjuer, nätverksevent och i din ansökan.'
+        },
+        {
+          title: '3-stegsmodellen',
+          simple: '1. Vem jag är\n2. Vad jag kan\n3. Vad jag söker',
+          advanced: 'De tre delarna bygger upp en tydlig bild: din bakgrund, dina kompetenser och din riktning. Håll det under 30 sekunder.'
+        },
+        {
+          title: 'Exempel på pitch',
+          simple: '"Jag heter Sara. Jag är bra på service. Jag söker jobb i butik."',
+          advanced: '"Jag heter Sara och har 4 års erfarenhet av kundservice. Jag är stark på problemlösning och relationsbyggande. Jag söker tjänster inom butik eller reception."'
+        }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Bygg din 30-sekunders pitch',
+        description: 'Fyll i varje del av 3-stegsmodellen. Din färdiga pitch kan du använda på intervjuer, nätverksevent och i din ansökan.',
+        fields: [
+          { label: '1. VEM ÄR DU? (namn och bakgrund)', placeholder: 'T.ex. Jag heter Maria och har 5 år erfarenhet av kundservice inom dagligvaruhandel...', type: 'textarea', rows: 2, hint: 'Håll det kort — max 2 meningar.' },
+          { label: '2. VAD KAN DU? (styrkor och kompetenser)', placeholder: 'T.ex. Mina starka sidor är kundkontakt, kassahantering och att arbeta i högt tempo...', type: 'textarea', rows: 2 },
+          { label: '3. VAD SÖKER DU? (mål och bransch)', placeholder: 'T.ex. Jag söker nu en ny tjänst inom butik eller lager där jag kan bidra med min erfarenhet...', type: 'textarea', rows: 2 },
+          { label: 'Din kompletta pitch (skriv ihop alla tre delar)', placeholder: 'Skriv din färdiga pitch här — läs igenom och justera tills den låter naturlig och personlig.', type: 'textarea', rows: 4, hint: 'Testa att läsa den högt. Den ska ta ca 25-30 sekunder.' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är en pitch?', options: ['Ett CV', 'En kort presentation av vem du är och vad du kan', 'En jobbannons'], correct: 1 },
+        { q: 'Vilka tre delar ska ingå?', options: ['Namn, ålder, adress', 'Vem jag är, vad jag kan, vad jag söker', 'Skola, jobb, hobby'], correct: 1 },
+        { q: 'Hur lång ska en pitch vara?', options: ['5 minuter', 'Under 30 sekunder', '2 meningar max'], correct: 1 }
+      ],
+      prompts: [
+        'Skapa en pitch baserat på mina styrkor.',
+        'Förbättra min pitch men behåll min stil.',
+        'Gör min pitch kortare och tydligare.'
+      ]
+    }
+  ];
+
+
+  // ── Onsdag: Moduler ──
+  const ONSDAG_MODULES = [
+    {
+      id: 'ons1',
+      icon: '🌐',
+      title: 'Digital närvaro',
+      subtitle: 'Ditt Google-fotavtryck & första intryck',
+      color: '#a78bfa',
+      borderColor: 'rgba(167,139,250,0.3)',
+      bg: 'rgba(167,139,250,0.07)',
+      lessons: [
+        {
+          title: 'Vad är digital närvaro?',
+          simple: 'Digital närvaro är allt som finns om dig på internet.\n\nBilder, texter, profiler och kommentarer.',
+          advanced: 'Digital närvaro är ditt samlade digitala fotavtryck: sociala medier, sökresultat, gamla konton, artiklar och offentliga register. Arbetsgivare använder detta för att skapa en första bild av dig.'
+        },
+        {
+          title: 'Vad ser arbetsgivare när de googlar dig?',
+          simple: 'Arbetsgivare söker ditt namn. De ser bilder, profiler och gamla inlägg.',
+          advanced: 'Rekryterare gör ofta en snabb bakgrundskoll. De tittar på professionalism, språkbruk, bilder, aktivitet och om något sticker ut negativt.'
+        },
+        {
+          title: 'Städa ditt digitala fotavtryck',
+          simple: 'Ta bort gamla bilder, stäng gamla konton, ändra profilbilder.',
+          advanced: 'Optimera sökresultat genom att uppdatera LinkedIn, skapa professionella profiler och dölja eller radera olämpligt innehåll.'
+        }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Ditt digitala fotavtryck — analys och plan',
+        description: 'Gör en snabb analys av din digitala närvaro och skapa en konkret förbättringsplan.',
+        fields: [
+          { label: 'Googla ditt namn — vad hittar du?', placeholder: 'T.ex. Jag hittade mitt Instagram-konto, en gammal blogg och ett Flashback-inlägg...', type: 'textarea', rows: 2, hint: 'Öppna Google och sök på ditt förnamn och efternamn.' },
+          { label: 'Vad bör tas bort eller döljas?', placeholder: 'T.ex. Gamla partybilder på Facebook, olämpliga kommentarer...', type: 'textarea', rows: 2 },
+          { label: 'Vad bör läggas till eller förbättras?', placeholder: 'T.ex. Uppdatera LinkedIn-profilbild, skapa professionell bio...', type: 'textarea', rows: 2 },
+          { label: 'Ditt konkreta nästa steg (vad gör du idag?)', placeholder: 'T.ex. Idag ska jag ändra min profilbild på Facebook.', type: 'text', hint: 'Ett litet steg räcker — gör det direkt!' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är digital närvaro?', options: ['Att ha en dator', 'Allt som finns om dig på internet', 'En e-postadress'], correct: 1 },
+        { q: 'Varför googlar arbetsgivare kandidater?', options: ['De är nyfikna', 'De gör en professionell bakgrundskoll', 'Det är ett krav i lagen'], correct: 1 },
+        { q: 'Vad är ett digitalt fotavtryck?', options: ['En bild på din fot', 'Ditt samlade digitala spår på internet', 'Din e-signatur'], correct: 1 },
+        { q: 'Vad bör du ta bort från sociala medier?', options: ['Din yrkeshistorik', 'Stötande bilder och kommentarer', 'Din profilbild'], correct: 1 },
+        { q: 'Vad är en professionell profilbild?', options: ['En bild från en fest', 'En tydlig bild av ansiktet med neutral bakgrund', 'En bild med solglasögon'], correct: 1 }
+      ],
+      prompts: [
+        'Sammanfatta mitt digitala fotavtryck baserat på detta: …',
+        'Ge mig 5 förbättringar för min digitala närvaro.',
+        'Förklara vad arbetsgivare tittar på när de googlar mig.'
+      ]
+    },
+    {
+      id: 'ons2',
+      icon: '🔵',
+      title: 'LinkedIn-grunder',
+      subtitle: 'Din professionella profil online',
+      color: '#a78bfa',
+      borderColor: 'rgba(167,139,250,0.3)',
+      bg: 'rgba(167,139,250,0.07)',
+      lessons: [
+        {
+          title: 'Varför LinkedIn?',
+          simple: 'LinkedIn är en jobbsida där arbetsgivare hittar dig.',
+          advanced: 'LinkedIn är världens största professionella nätverk. Rekryterare använder det för att söka kandidater, verifiera erfarenhet och bedöma professionalism.'
+        },
+        {
+          title: 'Profilens 5 viktigaste delar',
+          simple: '1. Profilbild\n2. Rubrik\n3. Om mig\n4. Erfarenhet\n5. Kompetenser\n\nDessa fem delar räcker för att komma igång.',
+          advanced: 'Dessa delar påverkar hur ofta du visas i sökningar och hur professionell du uppfattas av rekryterare och arbetsgivare.'
+        },
+        {
+          title: 'Rubrik & Om mig',
+          simple: 'Rubrik = vad du gör.\nOm mig = vem du är.',
+          advanced: 'Rubriken ska innehålla yrkesroll + styrkor + bransch.\n"Om mig" ska vara 3–5 meningar med pitch, erfarenhet och mål.'
+        }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Bygg din LinkedIn-profil',
+        description: 'Skriv de viktigaste delarna av din LinkedIn-profil. Dessa texter kan du sedan kopiera direkt till LinkedIn.',
+        fields: [
+          { label: 'Rubrik (Jobbsökande inom ___ med erfarenhet av ___)', placeholder: 'T.ex. Jobbsökande lagerarbetare med erfarenhet av truck och lagerlogistik', type: 'text', hint: 'Max 120 tecken. Var specifik med bransch och styrkor.' },
+          { label: 'Om mig — Mening 1: Din pitch (vem du är)', placeholder: 'T.ex. Jag är en engagerad lagerarbetare med 4 års erfarenhet av logistik.', type: 'textarea', rows: 2 },
+          { label: 'Om mig — Mening 2: Dina styrkor', placeholder: 'T.ex. Mina starka sidor är struktur, effektivitet och teamarbete.', type: 'textarea', rows: 2 },
+          { label: 'Om mig — Mening 3: Ditt mål', placeholder: 'T.ex. Jag söker nu en ny utmaning inom lager eller logistik i Helsingborgsregionen.', type: 'textarea', rows: 2, hint: 'Avsluta gärna med hur man kontaktar dig.' }
+        ]
+      },
+      quiz: [
+        { q: 'Varför är LinkedIn viktigt?', options: ['Det är en social nöjessida', 'Rekryterare söker kandidater där', 'Det är obligatoriskt'], correct: 1 },
+        { q: 'Vilka 5 delar är viktigast på LinkedIn?', options: ['Hobbies, vänner, grupper, inlägg, bilder', 'Profilbild, rubrik, om mig, erfarenhet, kompetenser', 'Ålder, adress, telefon, e-post, skola'], correct: 1 },
+        { q: 'Vad ska en LinkedIn-rubrik innehålla?', options: ['Din favoritfilm', 'Yrkesroll + styrkor + bransch', 'Alla dina utbildningar'], correct: 1 },
+        { q: 'Vad ska "Om mig" innehålla?', options: ['Din familjebakgrund', 'Pitch, erfarenhet och mål i 3–5 meningar', 'En lista med alla jobb du haft'], correct: 1 }
+      ],
+      prompts: [
+        'Skapa en LinkedIn-rubrik baserat på min erfarenhet.',
+        'Skriv en Om mig-text i 3 meningar.',
+        'Förbättra min LinkedIn-profil baserat på detta: …'
+      ]
+    },
+    {
+      id: 'ons3',
+      icon: '👤',
+      title: 'Bygg din digitala profil',
+      subtitle: 'Presentera dig professionellt online',
+      color: '#a78bfa',
+      borderColor: 'rgba(167,139,250,0.3)',
+      bg: 'rgba(167,139,250,0.07)',
+      lessons: [
+        {
+          title: 'Vad är en digital profil?',
+          simple: 'En digital profil är en kort presentation av dig online: bild, text, kompetenser och kontaktuppgifter.',
+          advanced: 'En digital profil samlar din yrkesidentitet på ett ställe — den ska kommunicera vem du är, vad du kan och vad du söker på ett snabbt och professionellt sätt.'
+        },
+        {
+          title: 'Så bygger du en enkel profil',
+          simple: '1. Profilbild\n2. Kort presentation\n3. Styrkor\n4. Erfarenhet\n5. Kontaktuppgifter',
+          advanced: 'Varje del av profilen fyller en funktion. Profilbilden skapar förtroende, presentationen berättar vem du är, styrkor och erfarenhet visar vad du kan — och kontaktuppgifterna gör det enkelt att nå dig.'
+        },
+        {
+          title: 'Koppla din pitch till profilen',
+          simple: 'Din pitch ska vara grunden för din digitala presentation. Den ska vara kort, tydlig och matcha dina mål.',
+          advanced: 'En konsekvent pitch i CV, LinkedIn och din digitala profil skapar ett starkt, enhetligt varumärke som arbetsgivare minns.'
+        }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Bygg din digitala profil i 5 steg',
+        description: 'Skapa en komplett digital profil. Använd din pitch och dina styrkor som grund.',
+        fields: [
+          { label: 'Profilbild — vad behöver förbättras?', placeholder: 'T.ex. Jag har en selfie hemma med suddig bakgrund. Jag ska ta en ny med neutral bakgrund.', type: 'text', hint: 'Neutral bakgrund, tydligt ansikte, professionella kläder.' },
+          { label: 'Kort presentation (2-3 meningar om dig)', placeholder: 'Skriv din pitch-text som passar för en digital profil...', type: 'textarea', rows: 3 },
+          { label: 'Dina 5 viktigaste kompetenser', placeholder: '1. \n2. \n3. \n4. \n5. ', type: 'textarea', rows: 4, hint: 'Mixa hårda och mjuka kompetenser.' },
+          { label: 'Kort erfarenhetssammanfattning', placeholder: 'T.ex. 3 år som lagerarbetare hos X, 2 år i butik hos Y...', type: 'textarea', rows: 2 },
+          { label: 'Vilka branscher vill du arbeta i?', placeholder: 'T.ex. Lager & logistik, Handel & butik, Transport...', type: 'text', hint: 'Välj 2-4 branscher som matchar dina kompetenser.' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är en digital profil?', options: ['Ett konto på spelsidor', 'En professionell presentation av dig online', 'Din e-postadress'], correct: 1 },
+        { q: 'Vilka delar är viktigast?', options: ['Hobbies och intressen', 'Bild, presentation, styrkor, erfarenhet och kontakt', 'Antal vänner online'], correct: 1 },
+        { q: 'Varför ska pitch och profil hänga ihop?', options: ['Det är ett krav', 'Det skapar ett enhetligt och professionellt intryck', 'Det sparar tid'], correct: 1 }
+      ],
+      prompts: [
+        'Skapa en digital profil baserat på min pitch.',
+        'Förbättra min digitala presentation.',
+        'Vad saknas i min digitala profil baserat på detta: …'
+      ]
+    }
+  ];
+
+
+  // ── Torsdag: Moduler ──
+  const TORSDAG_MODULES = [
+    {
+      id: 'tor1', icon: '📋', title: 'Förstå jobbannonser', subtitle: 'Krav, önskemål och dolda signaler',
+      color: '#f87171', borderColor: 'rgba(248,113,113,0.3)', bg: 'rgba(248,113,113,0.07)',
+      lessons: [
+        { title: 'Hur en jobbannons är uppbyggd',
+          simple: 'En jobbannons berättar vad jobbet är, vad du ska göra och vad arbetsgivaren söker.',
+          advanced: 'En jobbannons består ofta av: rollbeskrivning, arbetsuppgifter, krav, meriterande kompetenser, personliga egenskaper och information om arbetsgivaren.' },
+        { title: 'Krav vs önskemål',
+          simple: 'Krav = måste ha.\nÖnskemål = bra att ha.',
+          advanced: 'Krav är minimikrav för att kunna utföra jobbet. Önskemål är extra kompetenser som ger fördel men inte är nödvändiga.' },
+        { title: 'Dolda signaler i annonser',
+          simple: 'Ord som "flexibel" eller "självständig" betyder hur du ska vara.',
+          advanced: 'Annonser innehåller ofta kulturella signaler: tempo, ansvarsnivå, arbetsmiljö och förväntningar på dig som person.' }
+      ],
+      exercise: {
+        type: 'sort',
+        title: 'Krav eller önskemål?',
+        description: 'Läs varje punkt från en jobbannons och sortera den som Krav (måste ha) eller Önskemål (meriterande).',
+        catA: 'Krav (måste ha)',
+        catB: 'Önskemål (meriterande)',
+        items: [
+          { label: 'Truckkort A+B', cat: 'A' },
+          { label: 'Erfarenhet av WMS-system', cat: 'B' },
+          { label: 'Körkort B', cat: 'A' },
+          { label: 'Engelska i tal och skrift', cat: 'B' },
+          { label: 'Kan arbeta skift', cat: 'A' },
+          { label: 'Erfarenhet av LEAN', cat: 'B' },
+          { label: 'God fysik', cat: 'A' },
+          { label: 'Forkliftcertifikat', cat: 'B' },
+          { label: 'Pålitlig och punktlig', cat: 'A' },
+          { label: 'Erfarenhet av tung industri', cat: 'B' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är ett krav i en jobbannons?', options: ['Något bra att ha', 'Något du måste ha för jobbet', 'En önskad egenskap'], correct: 1 },
+        { q: 'Vad är ett önskemål?', options: ['Obligatorisk kompetens', 'Extra kompetens som ger fördel', 'Personlig egenskap'], correct: 1 },
+        { q: 'Vilka delar finns ofta i en annons?', options: ['Lön och semester', 'Rollbeskrivning, krav, meriterande och arbetsgivarinfo', 'Bara arbetsuppgifter'], correct: 1 },
+        { q: 'Vad betyder "meriterande"?', options: ['Obligatoriskt', 'Ger fördel men krävs inte', 'Negativt'], correct: 1 },
+        { q: 'Vad är en dold signal i en annons?', options: ['En felstavning', 'Kulturella signaler om tempo och arbetsmiljö', 'Lönen'], correct: 1 }
+      ],
+      prompts: [
+        'Förklara denna annons på enkel svenska: [klistra in text]',
+        'Vilka kompetenser är viktigast i denna annons?',
+        'Sammanfatta kravprofilen i 3 punkter.'
+      ]
+    },
+    {
+      id: 'tor2', icon: '🔍', title: 'Matchning & analys', subtitle: 'Dina styrkor vs jobbets krav',
+      color: '#f87171', borderColor: 'rgba(248,113,113,0.3)', bg: 'rgba(248,113,113,0.07)',
+      lessons: [
+        { title: 'Vad är matchning?',
+          simple: 'Matchning betyder att jämföra dig med jobbet.',
+          advanced: 'Matchning är en analys av hur dina kompetenser, erfarenheter och styrkor passar mot kravprofilen.' },
+        { title: 'Styrkor vs luckor',
+          simple: 'Styrkor = det du kan.\nLuckor = det du behöver lära dig.',
+          advanced: 'Luckor är kompetensområden där du inte uppfyller kraven. De kan ofta lösas med kort utbildning eller erfarenhet.' },
+        { title: 'CVmatchen som verktyg',
+          simple: '1. Bygg ditt CV\n2. Sök bland annonser\n3. AI matchar och anpassar\n4. Exportera och skicka',
+          advanced: 'CVmatchen analyserar jobbannonsens krav mot din profil och genererar ett skräddarsytt CV och profiltext för just det jobbet.' }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Din matchningsanalys',
+        description: 'Välj en jobbannons du är intresserad av och gör din egen matchningsanalys. Identifiera styrkor och luckor.',
+        fields: [
+          { label: 'Vilket jobb analyserar du?', placeholder: 'T.ex. Lagerarbetare hos PostNord i Helsingborg', type: 'text' },
+          { label: 'Jobbets 3 viktigaste krav', placeholder: '1. \n2. \n3. ', type: 'textarea', rows: 3, hint: 'Läs annonsen noga — vad nämns först och upprepas?' },
+          { label: 'Dina styrkor som matchar (vad du kan av kraven)', placeholder: 'T.ex. Jag har truckkort och 2 års lagererfarenhet...', type: 'textarea', rows: 2 },
+          { label: 'Dina luckor (vad du saknar av kraven)', placeholder: 'T.ex. Jag saknar erfarenhet av WMS-system...', type: 'textarea', rows: 2 },
+          { label: 'Plan: Hur täpper du till dina luckor?', placeholder: 'T.ex. Ta kurs i WMS via Komvux, eller lyfta fram liknande erfarenhet...', type: 'textarea', rows: 2, hint: 'Luckor är möjligheter — visa initiativ!' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad betyder matchning?', options: ['Att söka många jobb', 'Att jämföra dina kompetenser med jobbets krav', 'Att skriva CV'], correct: 1 },
+        { q: 'Vad är en lucka?', options: ['En paus i jobbsöket', 'En kompetens du saknar', 'Ett fel i CV:t'], correct: 1 },
+        { q: 'Hur hjälper CVmatchen dig?', options: ['Den söker jobb åt dig', 'Den anpassar ditt CV mot annonsens krav med AI', 'Den skickar ansökan'], correct: 1 }
+      ],
+      prompts: [
+        'Analysera denna annons och ge mig mina styrkor och luckor.',
+        'Hur kan jag förbättra min matchning mot detta jobb?',
+        'Vilka kompetenser behöver jag utveckla för detta jobb?'
+      ]
+    },
+    {
+      id: 'tor3', icon: '🗓️', title: 'Jobbsökstrategi', subtitle: 'Plan, aktiviteter och uppföljning',
+      color: '#f87171', borderColor: 'rgba(248,113,113,0.3)', bg: 'rgba(248,113,113,0.07)',
+      lessons: [
+        { title: 'Varför strategi?',
+          simple: 'En plan gör det lättare att hitta jobb.',
+          advanced: 'Strategi minskar stress, ökar träffsäkerhet och gör jobbsökandet effektivt och strukturerat.' },
+        { title: '3 delar av en strategi',
+          simple: '1. Mål — vad vill du uppnå?\n2. Aktiviteter — vad ska du göra?\n3. Uppföljning — hur vet du att det funkar?',
+          advanced: 'Mål ger riktning, aktiviteter ger struktur och uppföljning säkerställer att du är på rätt spår och kan justera vid behov.' },
+        { title: 'Veckoplanering',
+          simple: 'Bestäm vad du ska göra varje dag.\n\nExempel: Måndag = söka jobb. Tisdag = uppdatera CV.',
+          advanced: 'Planera aktiviteter baserat på energi, tid och prioritet. Varva intensiva uppgifter med enklare för att hålla motivationen uppe.' }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Bygg din jobbsökstrategi',
+        description: 'Skapa en konkret och realistisk strategi för din jobbsökning. Detta är din personliga handlingsplan.',
+        fields: [
+          { label: 'Ditt mål (vilket jobb och när?)', placeholder: 'T.ex. Jag vill ha ett jobb som lagerarbetare senast 1 juni 2025', type: 'textarea', rows: 2 },
+          { label: 'Vilka kanaler använder du?', placeholder: 'T.ex. CVmatchen, Platsbanken, LinkedIn, ringa direkt till företag...', type: 'text', hint: 'Använd minst 2-3 kanaler.' },
+          { label: 'Din veckoplan (vad gör du varje dag?)', placeholder: 'Måndag: \nTisdag: \nOnsdag: \nTorsdag: \nFredag: ', type: 'textarea', rows: 5, hint: 'Planera specifika aktiviteter, inte bara "söka jobb".' },
+          { label: 'Hur följer du upp framstegen?', placeholder: 'T.ex. Jag räknar ansökningar per vecka och noterar svar i en lista...', type: 'textarea', rows: 2 },
+          { label: 'Vem kan hjälpa dig?', placeholder: 'T.ex. Min handläggare, CVmatchen, Arbetsförmedlingen, vänner i branschen...', type: 'text' }
+        ]
+      },
+      quiz: [
+        { q: 'Varför behövs strategi?', options: ['Det behövs inte', 'Det minskar stress och ökar träffsäkerhet', 'Handläggaren kräver det'], correct: 1 },
+        { q: 'Vilka tre delar ingår?', options: ['CV, ansökan, intervju', 'Mål, aktiviteter och uppföljning', 'LinkedIn, email, telefon'], correct: 1 },
+        { q: 'Vad är en veckoplan?', options: ['En lista med jobb att söka', 'En planering av vad du ska göra varje dag', 'En kalender med intervjuer'], correct: 1 }
+      ],
+      prompts: [
+        'Skapa en jobbsökstrategi baserat på mina mål.',
+        'Gör min veckoplan mer realistisk.',
+        'Hjälp mig prioritera mina jobbsökaktiviteter.'
+      ]
+    }
+  ];
+
+  // ── Fredag: Moduler ──
+  const FREDAG_MODULES = [
+    {
+      id: 'fre1', icon: '🤝', title: 'Intervju-grunder', subtitle: 'Förberedelse, frågor och trygghet',
+      color: '#38bdf8', borderColor: 'rgba(56,189,248,0.3)', bg: 'rgba(56,189,248,0.07)',
+      lessons: [
+        { title: 'Vad är en intervju?',
+          simple: 'Intervjun är ett samtal där arbetsgivaren vill lära känna dig.',
+          advanced: 'Intervjun är en strukturerad bedömning av kompetens, beteende och motivation — och ett tillfälle för dig att bedöma om jobbet passar dig.' },
+        { title: 'Vanliga intervjufrågor',
+          simple: '• Berätta om dig själv\n• Varför söker du jobbet?\n• Vad är dina styrkor?\n• Vad är dina svagheter?',
+          advanced: 'Förbered konkreta svar med exempel. Använd din pitch som grund för "berätta om dig själv" och koppla dina styrkor till jobbets krav.' },
+        { title: 'Kroppsspråk & trygghet',
+          simple: 'Sitt rakt, le, titta i kameran eller på personen.',
+          advanced: 'Använd lugn röst, tydlig struktur och aktivt lyssnande. Pauser är okej — det visar att du tänker innan du svarar.' }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Intervjuförberedelse — dina svar',
+        description: 'Förbered konkreta svar på de vanligaste intervjufrågorna. Skriv svaren och träna att säga dem högt efteråt.',
+        fields: [
+          { label: '"Berätta om dig själv" — skriv ditt svar', placeholder: 'T.ex. Jag heter... och har jobbat med... Mina starka sidor är... och jag söker nu...', type: 'textarea', rows: 3, hint: 'Börja med din pitch. Max 60 sekunder att läsa högt.' },
+          { label: '"Varför söker du just detta jobb?"', placeholder: 'T.ex. Jag söker detta jobb för att... och jag ser att mina kunskaper i... passar väl för...', type: 'textarea', rows: 3 },
+          { label: '"Vad är din största styrka?"', placeholder: 'T.ex. Min starkaste egenskap är... och ett konkret exempel är när jag...', type: 'textarea', rows: 2, hint: 'Ge alltid ett konkret exempel!' },
+          { label: '"Vad är din svaghet?"', placeholder: 'T.ex. Jag kan ibland vara för självkritisk, men jag jobbar på det genom att...', type: 'textarea', rows: 2, hint: 'Välj en äkta svaghet och visa att du jobbar på den.' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är syftet med en intervju?', options: ['Att testa dina kunskaper i skrift', 'Att arbetsgivaren lär känna dig och bedömer din lämplighet', 'Att skriva kontrakt'], correct: 1 },
+        { q: 'Nämn en vanlig intervjufråga.', options: ['"Vad är din favoritfilm?"', '"Berätta om dig själv"', '"Vad tjänar du idag?"'], correct: 1 },
+        { q: 'Vad är bra kroppsspråk i en intervju?', options: ['Luta sig tillbaka och kryssa armarna', 'Sitta rakt, le och ha ögonkontakt', 'Titta ner och prata snabbt'], correct: 1 }
+      ],
+      prompts: [
+        'Hjälp mig svara på frågan: Berätta om dig själv.',
+        'Förbättra mina intervjusvar.',
+        'Vilka frågor bör jag förbereda inför intervju som lagerarbetare?'
+      ]
+    },
+    {
+      id: 'fre2', icon: '⭐', title: 'STAR-metoden', subtitle: 'Ge konkreta exempel i intervjun',
+      color: '#38bdf8', borderColor: 'rgba(56,189,248,0.3)', bg: 'rgba(56,189,248,0.07)',
+      lessons: [
+        { title: 'Vad är STAR?',
+          simple: 'S – Situation: Vad hände?\nT – Task: Vad var din uppgift?\nA – Action: Vad gjorde du?\nR – Result: Vad blev resultatet?',
+          advanced: 'STAR är en beprövad metod för att ge strukturerade, konkreta och övertygande svar på beteendefrågor i intervjuer.' },
+        { title: 'STAR i praktiken',
+          simple: '"Jag hjälpte en kund (S). Jag skulle lösa ett problem (T). Jag lyssnade och fixade det (A). Kunden blev nöjd (R)."',
+          advanced: '"Under mitt arbete i kassan fick jag en upprörd kund (S). Min uppgift var att lösa reklamationen snabbt (T). Jag lyssnade aktivt, bad om ursäkt och erbjöd ersättning (A). Kunden lämnade nöjd och jag fick beröm av chefen (R)."' },
+        { title: 'Vanliga STAR-frågor',
+          simple: '• "Berätta om en utmaning du löst."\n• "Ge ett exempel på när du samarbetade bra."',
+          advanced: 'STAR-frågor börjar ofta med: "Ge ett exempel på…", "Berätta om en gång då…" eller "Hur hanterade du…"' }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Bygg ditt STAR-svar',
+        description: 'Välj en situation från ditt arbetsliv och bygg ett fullständigt STAR-svar som du kan använda i intervjun.',
+        fields: [
+          { label: 'S — Situation: Vad var bakgrunden?', placeholder: 'T.ex. Jag jobbade på ICA och en fredagskväll var det extremt många kunder...', type: 'textarea', rows: 2, hint: 'Beskriv sammanhanget kort och tydligt.' },
+          { label: 'T — Task: Vad var din uppgift?', placeholder: 'T.ex. Jag ansvarade för att hålla flödet igång...', type: 'textarea', rows: 2 },
+          { label: 'A — Action: Exakt vad DU gjorde', placeholder: 'T.ex. Jag öppnade extra kassa, hjälpte kollegorna och kommunicerade tydligt...', type: 'textarea', rows: 3, hint: 'Fokusera på VAD DU gjorde — inte vad teamet gjorde.' },
+          { label: 'R — Result: Vad blev resultatet?', placeholder: 'T.ex. Kundkön minskade inom 10 minuter och chefen berömde mig...', type: 'textarea', rows: 2, hint: 'Mätbara resultat är extra starka. T.ex. "reducerade väntetiden med 40%".' },
+          { label: 'Ditt kompletta STAR-svar (skriv ihop det flytande)', placeholder: 'Skriv hela svaret som du skulle säga det i intervjun — naturligt och sammanhängande.', type: 'textarea', rows: 5 }
+        ]
+      },
+      quiz: [
+        { q: 'Vad betyder S i STAR?', options: ['Styrka', 'Situation', 'Strategi'], correct: 1 },
+        { q: 'Vad betyder R i STAR?', options: ['Roll', 'Resultat', 'Relation'], correct: 1 },
+        { q: 'Vilken fråga passar STAR bäst?', options: ['"Vad heter du?"', '"Berätta om en utmaning du löst"', '"Vad söker du för lön?"'], correct: 1 }
+      ],
+      prompts: [
+        'Skapa ett STAR-svar baserat på denna situation: …',
+        'Förbättra mitt STAR-svar.',
+        'Hjälp mig hitta ett bra STAR-exempel från mitt arbetsliv.'
+      ]
+    },
+    {
+      id: 'fre3', icon: '🧘', title: 'Kommunikation & trygghet', subtitle: 'Hantera nervositet och avsluta starkt',
+      color: '#38bdf8', borderColor: 'rgba(56,189,248,0.3)', bg: 'rgba(56,189,248,0.07)',
+      lessons: [
+        { title: 'Tydlig kommunikation',
+          simple: 'Korta meningar, tydlig struktur och tala lugnt.',
+          advanced: 'Effektiv kommunikation i intervju bygger på tydlighet, struktur och att anpassa ditt språk efter situationen. Undvik alltför långa svar.' },
+        { title: 'Hantera nervositet',
+          simple: 'Tips:\n• Andas djupt\n• Förbered dig väl\n• Ta pauser när du behöver',
+          advanced: 'Nervositet är normalt. Förberedelse är den bästa motgiftet. Öva dina svar högt, sov bra och kom i god tid.' },
+        { title: 'Avslutning av intervjun',
+          simple: '• Ställ minst en fråga\n• Tacka för mötet\n• Fråga om nästa steg',
+          advanced: 'Att ställa genomtänkta frågor visar engagemang. Fråga exempelvis om teamet, introduktionen eller vad som är viktigast i rollen de första månaderna.' }
+      ],
+      exercise: {
+        type: 'build',
+        title: 'Din trygghetsplan inför intervjun',
+        description: 'Skapa din personliga plan för att känna dig trygg och kommunicera bra i intervjun.',
+        fields: [
+          { label: '3 frågor att ställa till arbetsgivaren', placeholder: '1. Hur ser introduktionen ut de första veckorna?\n2. Vad är viktigast för att lyckas i rollen?\n3. Hur ser teamet ut och hur samarbetar ni?', type: 'textarea', rows: 4, hint: 'Genomtänkta frågor visar engagemang och intresse.' },
+          { label: 'Min nervositetsplan (vad gör jag om jag är nervös?)', placeholder: 'T.ex. Jag andas djupt 3 gånger, påminner mig om mina styrkor och tar en paus om jag behöver...', type: 'textarea', rows: 2 },
+          { label: 'Vad gör jag kvällen innan intervjun?', placeholder: 'T.ex. Lägger fram mina kläder, läser annonsen, repeterar min pitch och sover tidigt...', type: 'textarea', rows: 2 },
+          { label: 'Mina 3 viktigaste styrkor att lyfta i intervjun', placeholder: '1. \n2. \n3. ', type: 'textarea', rows: 3, hint: 'Välj styrkor som är relevanta för just det jobbet.' },
+          { label: 'En sak som ger mig trygghet', placeholder: 'T.ex. Att jag är väl förberedd och vet vad jag kan bidra med...', type: 'text' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är tydlig kommunikation?', options: ['Att prata länge och detaljerat', 'Korta, strukturerade meningar anpassade efter situationen', 'Att aldrig hålla paus'], correct: 1 },
+        { q: 'Hur kan du minska nervositet?', options: ['Undvika att förbereda sig', 'Djupandning, förberedelse och att komma i god tid', 'Prata så snabbt som möjligt'], correct: 1 },
+        { q: 'Vad ska du göra i slutet av intervjun?', options: ['Ingenting, bara gå', 'Ställa frågor, tacka och fråga om nästa steg', 'Fråga direkt om du fick jobbet'], correct: 1 }
+      ],
+      prompts: [
+        'Hjälp mig formulera lugna och tydliga intervjusvar.',
+        'Skapa en trygghetsplan inför min intervju imorgon.',
+        'Ge mig 3 bra frågor att ställa i slutet av intervjun.'
+      ]
+    }
+  ];
+
   const DAYS = [
     { id: 'mandag',  label: 'M\u00e5ndag',  short: 'M\u00e5n', modules: MODULES, theme: '#3eb489' },
-    { id: 'tisdag',  label: 'Tisdag',  short: 'Tis', modules: [], theme: '#f0c040' },
-    { id: 'onsdag',  label: 'Onsdag',  short: 'Ons', modules: [], theme: '#a78bfa' },
-    { id: 'torsdag', label: 'Torsdag', short: 'Tor', modules: [], theme: '#f87171' },
-    { id: 'fredag',  label: 'Fredag',  short: 'Fre', modules: [], theme: '#38bdf8' }
+    { id: 'tisdag',  label: 'Tisdag',  short: 'Tis', modules: TISDAG_MODULES, theme: '#f0c040' },
+    { id: 'onsdag',  label: 'Onsdag',  short: 'Ons', modules: ONSDAG_MODULES, theme: '#a78bfa' },
+    { id: 'torsdag', label: 'Torsdag', short: 'Tor', modules: TORSDAG_MODULES, theme: '#f87171' },
+    { id: 'fredag',  label: 'Fredag',  short: 'Fre', modules: FREDAG_MODULES, theme: '#38bdf8' }
   ];
 
   let _ovnActiveDay = 'mandag';
@@ -12473,80 +13071,435 @@ ${styleTexts}
   };
 
   // ── Visa övning ──
+  // ══════════════════════════════════════
+  // ÖVNINGAR — Ny motor med rika övningstyper
+  // ══════════════════════════════════════
+
+  // Hitta modul i alla dagars arrays
+  function _ovnFindMod(modId) {
+    const all = [].concat(
+      (typeof MODULES !== 'undefined' ? MODULES : []),
+      (typeof TISDAG_MODULES !== 'undefined' ? TISDAG_MODULES : []),
+      (typeof ONSDAG_MODULES !== 'undefined' ? ONSDAG_MODULES : []),
+      (typeof TORSDAG_MODULES !== 'undefined' ? TORSDAG_MODULES : []),
+      (typeof FREDAG_MODULES !== 'undefined' ? FREDAG_MODULES : [])
+    );
+    return all.find(function(m){ return m.id === modId; });
+  }
+
+  // ── Gemensam header för övning/quiz ──
+  function _ovnHeader(mod, step, total, showBack) {
+    const pct = Math.round((step / total) * 100);
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-top:16px;">' +
+      (showBack ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (mod.lessons.length-1) + ')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:0 4px;">←</button>' : '') +
+      '<div style="flex:1;">' +
+      '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:6px;overflow:hidden;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.5s ease;"></div></div>' +
+      '</div>' +
+      '<span style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;">' + step + '/' + total + '</span>' +
+      '</div>';
+  }
+
+  // ══════════════════════════════════════
+  // QUIZ — Ny proffsig design
+  // ══════════════════════════════════════
+  function ovnShowQuiz(mod, qIdx, score) {
+    const view = document.getElementById('ovnModuleView');
+    if (!view) return;
+    const q = mod.quiz[qIdx];
+    const labels = ['A', 'B', 'C', 'D'];
+    const totalSteps = mod.lessons.length + 2;
+    const qPct = Math.round(((qIdx) / mod.quiz.length) * 100);
+
+    view.innerHTML =
+      _ovnHeader(mod, totalSteps, totalSteps, false) +
+      // Quiz label
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">' +
+      '<div style="font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:' + mod.color + ';">' + mod.icon + ' QUIZ</div>' +
+      '<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);">Fråga ' + (qIdx+1) + ' av ' + mod.quiz.length + '</div>' +
+      '</div>' +
+      // Question progress dots
+      '<div style="display:flex;gap:5px;margin-bottom:18px;">' +
+      mod.quiz.map(function(_, i){
+        return '<div style="flex:1;height:4px;border-radius:2px;background:' + (i < qIdx ? mod.color : i === qIdx ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.1)') + ';transition:background 0.3s;"></div>';
+      }).join('') +
+      '</div>' +
+      // Question
+      '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 16px;margin-bottom:20px;">' +
+      '<div style="font-size:16px;font-weight:800;color:#fff;line-height:1.5;">' + q.q + '</div>' +
+      '</div>' +
+      // Options
+      '<div id="ovnQuizOptions">' +
+      q.options.map(function(opt, i) {
+        return '<button onclick="ovnAnswerQuiz(this,' + i + ',' + q.correct + ',\'' + mod.id + '\',' + qIdx + ',' + score + ')" style="width:100%;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:inherit;transition:all 0.15s;">' +
+          '<span style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,255,255,0.5);">' + labels[i] + '</span>' +
+          '<span style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.4;">' + opt + '</span>' +
+          '</button>';
+      }).join('') +
+      '</div>' +
+      '<div id="ovnQuizFeedback" style="min-height:20px;margin-top:4px;"></div>';
+  }
+
+  window.ovnAnswerQuiz = function(el, chosen, correct, modId, qIdx, score) {
+    const mod = _ovnFindMod(modId);
+    const opts = document.querySelectorAll('#ovnQuizOptions button');
+    opts.forEach(function(o){ o.disabled = true; o.style.cursor = 'default'; });
+    const isCorrect = chosen === correct;
+    const newScore = score + (isCorrect ? 1 : 0);
+
+    // Style chosen
+    el.style.background = isCorrect ? 'rgba(62,180,137,0.2)' : 'rgba(239,68,68,0.15)';
+    el.style.border = '1.5px solid ' + (isCorrect ? '#3eb489' : '#ef4444');
+    el.querySelector('span').style.background = isCorrect ? '#3eb489' : '#ef4444';
+    el.querySelector('span').style.color = '#fff';
+
+    // If wrong, show correct
+    if (!isCorrect && opts[correct]) {
+      opts[correct].style.background = 'rgba(62,180,137,0.15)';
+      opts[correct].style.border = '1.5px solid rgba(62,180,137,0.6)';
+    }
+
+    const fb = document.getElementById('ovnQuizFeedback');
+    if (fb) {
+      fb.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:' +
+        (isCorrect ? 'rgba(62,180,137,0.12)' : 'rgba(239,68,68,0.1)') +
+        ';border-radius:10px;margin-top:4px;">' +
+        '<span style="font-size:16px;">' + (isCorrect ? '✅' : '❌') + '</span>' +
+        '<span style="font-size:12px;color:rgba(255,255,255,0.7);">' +
+        (isCorrect ? 'Rätt svar!' : 'Rätt svar: <strong>' + mod.quiz[qIdx].options[correct] + '</strong>') +
+        '</span></div>';
+    }
+
+    setTimeout(function(){
+      if (qIdx < mod.quiz.length - 1) {
+        ovnShowQuiz(mod, qIdx + 1, newScore);
+      } else {
+        ovnShowResult(mod, newScore);
+      }
+    }, isCorrect ? 900 : 1600);
+  };
+
+  // ══════════════════════════════════════
+  // ÖVNING — Ny motor
+  // ══════════════════════════════════════
   function ovnShowExercise(mod) {
     const view = document.getElementById('ovnModuleView');
     if (!view) return;
-    const progress = getProgress();
-    const p = progress[mod.id] || {};
+    const ex = mod.exercise;
     const totalSteps = mod.lessons.length + 2;
     const currentStep = mod.lessons.length + 1;
-    const pct = Math.round((currentStep / totalSteps) * 100);
-    const ex = mod.exercise;
-    let exHtml = '';
 
-    if (ex.type === 'fill') {
-      exHtml = '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:12px;">' + ex.prompt + '</div>' +
-        '<div style="font-size:15px;color:#fff;font-weight:700;margin-bottom:16px;">' + ex.question + '</div>' +
-        '<input id="ovnFillInput" type="text" placeholder="Ditt svar..." style="width:100%;box-sizing:border-box;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;margin-bottom:8px;">' +
-        '<div id="ovnFillFeedback" style="font-size:12px;min-height:18px;margin-bottom:12px;"></div>' +
-        '<button onclick="ovnCheckFill(\'' + mod.id + '\',\'' + ex.answer + '\')" style="width:100%;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">Kontrollera svar</button>';
-    } else if (ex.type === 'match') {
-      exHtml = '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:12px;">' + ex.prompt + '</div>';
-      ex.pairs.forEach(function(pair, i) {
-        exHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
-          '<div style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;font-size:12px;color:rgba(255,255,255,0.7);">' + pair.left + '</div>' +
-          '<div style="font-size:14px;color:' + mod.color + ';">→</div>' +
-          '<div style="flex:1;background:' + mod.bg + ';border:1px solid ' + mod.borderColor + ';border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;color:' + mod.color + ';">' + pair.right + '</div>' +
-          '</div>';
-      });
-      exHtml += '<button onclick="ovnExerciseDone(\'' + mod.id + '\')" style="width:100%;margin-top:8px;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">Jag förstår! Gå till quiz →</button>';
-    } else if (ex.type === 'prompt') {
-      exHtml = '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:14px;">' + ex.prompt + '</div>';
-      ex.options.forEach(function(opt, i) {
-        exHtml += '<div id="ovnPromptOpt' + i + '" onclick="ovnCheckPrompt(this,' + opt.correct + ',\'' + mod.id + '\',\'' + opt.feedback.replace(/'/g,"&#39;") + '\')" style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.7);">' + opt.text + '</div>';
-      });
-      exHtml += '<div id="ovnPromptFeedback" style="font-size:12px;min-height:18px;margin-top:4px;"></div>';
+    let exHtml = _ovnHeader(mod, currentStep, totalSteps, true);
+    exHtml += '<div style="font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:8px;">' + mod.icon + ' ÖVNING</div>';
+
+    if (ex.type === 'write') {
+      exHtml += _ovnRenderWrite(mod, ex);
+    } else if (ex.type === 'sort') {
+      exHtml += _ovnRenderSort(mod, ex);
+    } else if (ex.type === 'multi') {
+      exHtml += _ovnRenderMulti(mod, ex);
+    } else if (ex.type === 'build') {
+      exHtml += _ovnRenderBuild(mod, ex);
+    } else if (ex.type === 'industries') {
+      exHtml += _ovnRenderIndustries(mod, ex);
+    } else if (ex.type === 'fill') {
+      exHtml += _ovnRenderFill(mod, ex);
+    } else if (ex.type === 'choice') {
+      exHtml += _ovnRenderChoice(mod, ex);
+    } else {
+      // fallback for old 'prompt' type
+      exHtml += _ovnRenderChoice(mod, ex);
     }
 
-    view.innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:16px;">' +
-      '<button onclick="ovnShowLesson(MODULES.find(function(m){return m.id===\'' + mod.id + '\'}),'+( mod.lessons.length-1)+')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;padding:0;">←</button>' +
-      '<div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:5px;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;"></div></div>' +
-      '<span style="font-size:10px;color:rgba(255,255,255,0.35);">' + currentStep + '/' + totalSteps + '</span>' +
-      '</div>' +
-      '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:6px;">' + mod.icon + ' Övning</div>' +
-      '<div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;">Testa dina kunskaper</div>' +
-      exHtml;
+    view.innerHTML = exHtml;
   }
+
+  // ── Write: Skriv fri text ──
+  function _ovnRenderWrite(mod, ex) {
+    let h = '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;margin-bottom:16px;">' +
+      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;">' + ex.title + '</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;">' + ex.description + '</div>' +
+      '</div>';
+    if (ex.tips) {
+      h += '<div style="background:rgba(240,192,64,0.08);border:1px solid rgba(240,192,64,0.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;">' +
+        '<div style="font-size:10px;font-weight:800;color:rgba(240,192,64,0.8);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">💡 Tips</div>' +
+        '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6;">' + ex.tips + '</div>' +
+        '</div>';
+    }
+    h += '<textarea id="ovnWriteArea" placeholder="' + (ex.placeholder || 'Skriv ditt svar här...') + '" style="width:100%;min-height:' + (ex.minHeight || 120) + 'px;box-sizing:border-box;padding:14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;color:#fff;font-size:14px;font-family:inherit;line-height:1.6;resize:vertical;"></textarea>' +
+      '<div style="display:flex;justify-content:flex-end;margin-bottom:12px;"><span id="ovnWriteCount" style="font-size:10px;color:rgba(255,255,255,0.25);">0 tecken</span></div>' +
+      '<div id="ovnWriteFeedback" style="min-height:16px;margin-bottom:8px;"></div>' +
+      '<button onclick="ovnCheckWrite(\'' + mod.id + '\',' + (ex.minChars || 20) + ')" style="width:100%;padding:14px;background:' + mod.color + ';border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Spara svar →</button>';
+    // Add character counter script inline
+    h += '<' + 'script>document.getElementById("ovnWriteArea").addEventListener("input",function(){document.getElementById("ovnWriteCount").textContent=this.value.length+" tecken";});</' + 'script>';
+    return h;
+  }
+
+  // ── Sort: Sortera i två kategorier ──
+  function _ovnRenderSort(mod, ex) {
+    let h = '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;">' + ex.title + '</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:16px;">' + ex.description + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">' +
+      '<div id="ovnSortA" style="background:rgba(62,180,137,0.08);border:2px dashed rgba(62,180,137,0.3);border-radius:12px;padding:12px;min-height:100px;">' +
+      '<div style="font-size:10px;font-weight:800;color:#3eb489;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">' + ex.catA + '</div></div>' +
+      '<div id="ovnSortB" style="background:rgba(167,139,250,0.08);border:2px dashed rgba(167,139,250,0.3);border-radius:12px;padding:12px;min-height:100px;">' +
+      '<div style="font-size:10px;font-weight:800;color:#a78bfa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">' + ex.catB + '</div></div>' +
+      '</div>' +
+      '<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);margin-bottom:10px;text-align:center;">TRYCK FÖR ATT SORTERA</div>' +
+      '<div id="ovnSortItems" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">';
+    ex.items.forEach(function(item, i) {
+      h += '<button onclick="ovnSortItem(this,\'' + mod.id + '\',' + i + ',\'' + item.cat + '\')" data-cat="' + item.cat + '" style="padding:8px 14px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:20px;color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">' + item.label + '</button>';
+    });
+    h += '</div><div id="ovnSortFeedback" style="min-height:16px;margin-bottom:10px;"></div>';
+    h += '<button onclick="ovnCheckSort(\'' + mod.id + '\')" style="width:100%;padding:14px;background:' + mod.color + ';border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Kontrollera →</button>';
+    return h;
+  }
+
+  // ── Multi-select: Välj flera alternativ ──
+  function _ovnRenderMulti(mod, ex) {
+    let h = '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;">' + ex.title + '</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:16px;">' + ex.description + '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">';
+    ex.options.forEach(function(opt, i) {
+      h += '<button onclick="ovnToggleMulti(this," + i + ")" data-idx="' + i + '" data-correct="' + opt.correct + '" style="padding:9px 16px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:20px;color:rgba(255,255,255,0.65);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;">' + opt.label + '</button>';
+    });
+    h += '</div><div id="ovnMultiFeedback" style="min-height:16px;margin-bottom:10px;"></div>';
+    h += '<button onclick="ovnCheckMulti(\'' + mod.id + '\',' + (ex.minSelect || 1) + ')" style="width:100%;padding:14px;background:' + mod.color + ';border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Klar →</button>';
+    return h;
+  }
+
+  // ── Build: Fyll i steg-för-steg formulär ──
+  function _ovnRenderBuild(mod, ex) {
+    let h = '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;">' + ex.title + '</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:16px;">' + ex.description + '</div>';
+    ex.fields.forEach(function(field, i) {
+      h += '<div style="margin-bottom:14px;">' +
+        '<label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:' + mod.color + ';text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">' +
+        '<span style="background:' + mod.color + ';color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;">' + (i+1) + '</span>' +
+        field.label + '</label>';
+      if (field.type === 'textarea') {
+        h += '<textarea id="ovnBuild_' + i + '" placeholder="' + (field.placeholder || '') + '" rows="' + (field.rows || 2) + '" style="width:100%;box-sizing:border-box;padding:12px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:13px;font-family:inherit;line-height:1.5;resize:none;"></textarea>';
+      } else {
+        h += '<input id="ovnBuild_' + i + '" type="text" placeholder="' + (field.placeholder || '') + '" style="width:100%;box-sizing:border-box;padding:12px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;font-size:13px;font-family:inherit;">';
+      }
+      if (field.hint) {
+        h += '<div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">' + field.hint + '</div>';
+      }
+      h += '</div>';
+    });
+    h += '<div id="ovnBuildFeedback" style="min-height:16px;margin-bottom:10px;"></div>';
+    h += '<button onclick="ovnCheckBuild(\'' + mod.id + '\',' + ex.fields.length + ')" style="width:100%;padding:14px;background:' + mod.color + ';border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Spara & fortsätt →</button>';
+    return h;
+  }
+
+  // ── Industries: Välj branscher ──
+  function _ovnRenderIndustries(mod, ex) {
+    const industries = ['Handel & butik','Lager & logistik','Vård & omsorg','Bygg & anläggning','IT & teknik','Restaurang & kök','Transport & fordon','Utbildning','Kontor & administration','Tillverkning','Städ & service','Säkerhet','Handel online','Hotell & turism','Barn & fritid'];
+    let h = '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;">' + (ex.title || 'Vilka branscher vill du arbeta i?') + '</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px;">' + (ex.description || 'Välj minst 3 branscher som intresserar dig.') + '</div>' +
+      '<div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:14px;">Du kan ändra detta senare i din profil.</div>' +
+      '<div id="ovnIndustriesGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">';
+    industries.forEach(function(ind, i) {
+      h += '<button onclick="ovnToggleIndustry(this)" style="padding:9px 14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:20px;color:rgba(255,255,255,0.6);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;">' + ind + '</button>';
+    });
+    h += '</div><div id="ovnIndustriesFeedback" style="min-height:16px;margin-bottom:10px;"></div>';
+    h += '<button onclick="ovnCheckIndustries(\'' + mod.id + '\')" style="width:100%;padding:14px;background:' + mod.color + ';border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Spara mina branscher →</button>';
+    return h;
+  }
+
+  // ── Fill: Fyll i luckan ──
+  function _ovnRenderFill(mod, ex) {
+    return '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;margin-bottom:16px;">' +
+      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:12px;">' + ex.prompt + '</div>' +
+      '<div style="font-size:15px;color:rgba(255,255,255,0.8);font-weight:600;line-height:1.6;">' + ex.question + '</div>' +
+      '</div>' +
+      '<input id="ovnFillInput" type="text" placeholder="Ditt svar..." style="width:100%;box-sizing:border-box;padding:14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;color:#fff;font-size:14px;font-family:inherit;margin-bottom:8px;">' +
+      (ex.hint ? '<div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:12px;">💡 ' + ex.hint + '</div>' : '<div style="margin-bottom:12px;"></div>') +
+      '<div id="ovnFillFeedback" style="min-height:16px;margin-bottom:10px;"></div>' +
+      '<button onclick="ovnCheckFill(\'' + mod.id + '\',\'' + ex.answer + '\')" style="width:100%;padding:14px;background:' + mod.color + ';border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Kontrollera svar</button>';
+  }
+
+  // ── Choice: Välj rätt svar ──
+  function _ovnRenderChoice(mod, ex) {
+    let h = '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;margin-bottom:16px;">' +
+      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:6px;">' + (ex.title || ex.prompt) + '</div>' +
+      (ex.description ? '<div style="font-size:13px;color:rgba(255,255,255,0.5);">' + ex.description + '</div>' : '') +
+      '</div>';
+    const opts = ex.options || [];
+    const labels = ['A','B','C','D'];
+    opts.forEach(function(opt, i) {
+      h += '<button onclick="ovnCheckChoice(this,' + opt.correct + ',\'' + mod.id + '\',\'' + (opt.feedback||'').replace(/'/g,"&#39;") + '\')" style="width:100%;display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;text-align:left;font-family:inherit;transition:all 0.15s;">' +
+        '<span style="flex-shrink:0;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,255,255,0.5);">' + labels[i] + '</span>' +
+        '<span style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.4;padding-top:2px;">' + opt.text + '</span>' +
+        '</button>';
+    });
+    h += '<div id="ovnChoiceFeedback" style="min-height:16px;margin-top:4px;"></div>';
+    return h;
+  }
+
+  // ══════════════════════════════════════
+  // ÖVNING — Kontrollera svar
+  // ══════════════════════════════════════
+
+  window.ovnCheckWrite = function(modId, minChars) {
+    const area = document.getElementById('ovnWriteArea');
+    const fb = document.getElementById('ovnWriteFeedback');
+    if (!area) return;
+    const val = area.value.trim();
+    if (val.length < minChars) {
+      if (fb) { fb.innerHTML = '<div style="color:#f87171;font-size:12px;">✏️ Skriv minst ' + minChars + ' tecken (du har ' + val.length + ').</div>'; }
+      return;
+    }
+    if (fb) { fb.innerHTML = '<div style="color:#3eb489;font-size:12px;">✅ Bra! Ditt svar är sparat.</div>'; }
+    // Save to progress
+    const p = getProgress();
+    const mod = _ovnFindMod(modId);
+    if (!p[modId]) p[modId] = {};
+    p[modId].writeAnswer = val;
+    saveProgress(p);
+    setTimeout(function(){ ovnExerciseDone(modId); }, 800);
+  };
+
+  window.ovnSortItem = function(el, modId, idx, correctCat) {
+    const mod = _ovnFindMod(modId);
+    const isA = correctCat === 'A';
+    const targetId = isA ? 'ovnSortA' : 'ovnSortB';
+    const color = isA ? '#3eb489' : '#a78bfa';
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    // Mark button
+    el.style.background = color + '22';
+    el.style.border = '1.5px solid ' + color;
+    el.style.color = color;
+    el.disabled = true;
+    // Clone into target
+    const chip = document.createElement('div');
+    chip.style.cssText = 'display:inline-block;padding:5px 10px;background:' + color + '22;border:1px solid ' + color + ';border-radius:20px;font-size:11px;font-weight:700;color:' + color + ';margin:2px;';
+    chip.textContent = el.textContent;
+    target.appendChild(chip);
+  };
+
+  window.ovnCheckSort = function(modId) {
+    const btns = document.querySelectorAll('#ovnSortItems button:not(:disabled)');
+    const fb = document.getElementById('ovnSortFeedback');
+    if (btns.length > 0) {
+      if (fb) fb.innerHTML = '<div style="color:#f87171;font-size:12px;">❌ Sortera alla kort först!</div>';
+      return;
+    }
+    if (fb) fb.innerHTML = '<div style="color:#3eb489;font-size:12px;">✅ Perfekt! Alla rätt sorterade.</div>';
+    setTimeout(function(){ ovnExerciseDone(modId); }, 800);
+  };
+
+  window.ovnToggleMulti = function(el) {
+    const active = el.dataset.active === '1';
+    if (active) {
+      el.dataset.active = '0';
+      el.style.background = 'rgba(255,255,255,0.06)';
+      el.style.border = '1.5px solid rgba(255,255,255,0.12)';
+      el.style.color = 'rgba(255,255,255,0.65)';
+    } else {
+      el.dataset.active = '1';
+      el.style.background = 'rgba(62,180,137,0.18)';
+      el.style.border = '1.5px solid #3eb489';
+      el.style.color = '#3eb489';
+    }
+  };
+
+  window.ovnCheckMulti = function(modId, minSelect) {
+    const selected = document.querySelectorAll('#ovnMultiFeedback ~ * button[data-active="1"], .ovnModuleView button[data-active="1"]');
+    const allSelected = document.querySelectorAll('[data-active="1"]');
+    const fb = document.getElementById('ovnMultiFeedback');
+    if (allSelected.length < minSelect) {
+      if (fb) fb.innerHTML = '<div style="color:#f87171;font-size:12px;">Välj minst ' + minSelect + ' alternativ.</div>';
+      return;
+    }
+    if (fb) fb.innerHTML = '<div style="color:#3eb489;font-size:12px;">✅ Ditt val är sparat!</div>';
+    setTimeout(function(){ ovnExerciseDone(modId); }, 800);
+  };
+
+  window.ovnCheckBuild = function(modId, fieldCount) {
+    const fb = document.getElementById('ovnBuildFeedback');
+    let allFilled = true;
+    let result = [];
+    for (let i = 0; i < fieldCount; i++) {
+      const el = document.getElementById('ovnBuild_' + i);
+      if (el && el.value.trim().length < 3) { allFilled = false; break; }
+      if (el) result.push(el.value.trim());
+    }
+    if (!allFilled) {
+      if (fb) fb.innerHTML = '<div style="color:#f87171;font-size:12px;">✏️ Fyll i alla fält för att fortsätta.</div>';
+      return;
+    }
+    const p = getProgress();
+    if (!p[modId]) p[modId] = {};
+    p[modId].buildResult = result;
+    saveProgress(p);
+    if (fb) fb.innerHTML = '<div style="color:#3eb489;font-size:12px;">✅ Sparat!</div>';
+    setTimeout(function(){ ovnExerciseDone(modId); }, 800);
+  };
+
+  window.ovnToggleIndustry = function(el) {
+    const active = el.dataset.active === '1';
+    const count = document.querySelectorAll('[data-active="1"]').length;
+    if (active) {
+      el.dataset.active = '0';
+      el.style.background = 'rgba(255,255,255,0.06)';
+      el.style.border = '1.5px solid rgba(255,255,255,0.1)';
+      el.style.color = 'rgba(255,255,255,0.6)';
+    } else {
+      el.dataset.active = '1';
+      el.style.background = 'rgba(62,180,137,0.18)';
+      el.style.border = '1.5px solid #3eb489';
+      el.style.color = '#3eb489';
+    }
+  };
+
+  window.ovnCheckIndustries = function(modId) {
+    const selected = document.querySelectorAll('[data-active="1"]');
+    const fb = document.getElementById('ovnIndustriesFeedback');
+    if (selected.length < 2) {
+      if (fb) fb.innerHTML = '<div style="color:#f87171;font-size:12px;">Välj minst 2 branscher.</div>';
+      return;
+    }
+    const labels = Array.from(selected).map(function(el){ return el.textContent; });
+    const p = getProgress();
+    if (!p[modId]) p[modId] = {};
+    p[modId].industries = labels;
+    saveProgress(p);
+    if (fb) fb.innerHTML = '<div style="color:#3eb489;font-size:12px;">✅ ' + labels.length + ' branscher sparade!</div>';
+    setTimeout(function(){ ovnExerciseDone(modId); }, 900);
+  };
 
   window.ovnCheckFill = function(modId, answer) {
     const input = document.getElementById('ovnFillInput');
     const fb = document.getElementById('ovnFillFeedback');
     if (!input || !fb) return;
     const val = input.value.trim().toLowerCase();
-    const mod = MODULES.find(function(m){ return m.id === modId; });
+    const mod = _ovnFindMod(modId);
     if (val === answer.toLowerCase() || val.includes(answer.toLowerCase())) {
-      fb.style.color = '#3eb489'; fb.textContent = '✅ Rätt! Bra jobbat.';
-      setTimeout(function(){ ovnExerciseDone(modId); }, 1000);
+      fb.innerHTML = '<div style="color:#3eb489;font-size:12px;">✅ Rätt! Bra jobbat.</div>';
+      setTimeout(function(){ ovnExerciseDone(modId); }, 900);
     } else {
-      fb.style.color = '#f87171'; fb.textContent = '❌ Försök igen. Tips: ' + (mod.exercise.hint || '');
+      fb.innerHTML = '<div style="color:#f87171;font-size:12px;">❌ Försök igen.' + (mod && mod.exercise && mod.exercise.hint ? ' Tips: ' + mod.exercise.hint : '') + '</div>';
     }
   };
 
-  window.ovnCheckPrompt = function(el, correct, modId, feedback) {
-    const fb = document.getElementById('ovnPromptFeedback');
-    const mod = MODULES.find(function(m){ return m.id === modId; });
+  window.ovnCheckChoice = function(el, correct, modId, feedback) {
+    const allBtns = el.parentElement.querySelectorAll('button');
+    allBtns.forEach(function(b){ b.disabled = true; });
+    const fb = document.getElementById('ovnChoiceFeedback');
     if (correct) {
-      el.style.border = '1.5px solid ' + mod.color;
-      el.style.background = mod.bg;
-      el.style.color = mod.color;
-      if (fb) { fb.style.color = '#3eb489'; fb.textContent = '✅ ' + feedback; }
-      setTimeout(function(){ ovnExerciseDone(modId); }, 1200);
+      el.style.background = 'rgba(62,180,137,0.2)';
+      el.style.border = '1.5px solid #3eb489';
+      if (fb) fb.innerHTML = '<div style="color:#3eb489;font-size:12px;">✅ ' + feedback + '</div>';
+      setTimeout(function(){ ovnExerciseDone(modId); }, 1000);
     } else {
-      el.style.border = '1.5px solid rgba(239,68,68,0.5)';
-      el.style.color = '#f87171';
-      if (fb) { fb.style.color = '#f87171'; fb.textContent = '❌ ' + feedback; }
+      el.style.background = 'rgba(239,68,68,0.12)';
+      el.style.border = '1.5px solid rgba(239,68,68,0.4)';
+      el.querySelector('span') && (el.querySelector('span:last-child').style.color = '#f87171');
+      if (fb) fb.innerHTML = '<div style="color:#f87171;font-size:12px;">❌ ' + feedback + '</div>';
+      allBtns.forEach(function(b){ b.disabled = false; });
+      el.disabled = true;
     }
   };
 
@@ -12555,58 +13508,13 @@ ${styleTexts}
     if (!p[modId]) p[modId] = {};
     p[modId].exerciseDone = true;
     saveProgress(p);
-    const mod = MODULES.find(function(m){ return m.id === modId; });
+    const mod = _ovnFindMod(modId);
     ovnShowQuiz(mod, 0, 0);
   };
 
-  // ── Visa quiz ──
-  function ovnShowQuiz(mod, qIdx, score) {
-    const view = document.getElementById('ovnModuleView');
-    if (!view) return;
-    const q = mod.quiz[qIdx];
-    const totalSteps = mod.lessons.length + 2;
-    const pct = 100;
-
-    view.innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:16px;">' +
-      '<div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:5px;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;"></div></div>' +
-      '<span style="font-size:10px;color:rgba(255,255,255,0.35);">Quiz ' + (qIdx+1) + '/' + mod.quiz.length + '</span>' +
-      '</div>' +
-      '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:6px;">' + mod.icon + ' Quiz</div>' +
-      '<div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:20px;">' + q.q + '</div>' +
-      '<div id="ovnQuizOptions">' +
-      q.options.map(function(opt, i) {
-        return '<div onclick="ovnAnswerQuiz(this,' + i + ',' + q.correct + ',\'' + mod.id + '\',' + qIdx + ',' + score + ')" style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 14px;margin-bottom:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.7);">' + opt + '</div>';
-      }).join('') +
-      '</div>' +
-      '<div id="ovnQuizFeedback" style="font-size:12px;min-height:18px;margin-top:8px;"></div>';
-  }
-
-  window.ovnAnswerQuiz = function(el, chosen, correct, modId, qIdx, score) {
-    const mod = MODULES.find(function(m){ return m.id === modId; });
-    const fb = document.getElementById('ovnQuizFeedback');
-    const opts = document.querySelectorAll('#ovnQuizOptions > div');
-    opts.forEach(function(o){ o.style.pointerEvents='none'; });
-    const isCorrect = chosen === correct;
-    el.style.border = '1.5px solid ' + (isCorrect ? mod.color : 'rgba(239,68,68,0.5)');
-    el.style.color = isCorrect ? mod.color : '#f87171';
-    if (!isCorrect) {
-      opts[correct].style.border = '1.5px solid ' + mod.color;
-      opts[correct].style.color = mod.color;
-    }
-    const newScore = score + (isCorrect ? 1 : 0);
-    if (fb) { fb.style.color = isCorrect ? '#3eb489' : '#f87171'; fb.textContent = isCorrect ? '✅ Rätt!' : '❌ Rätt svar: ' + mod.quiz[qIdx].options[correct]; }
-    setTimeout(function(){
-      if (qIdx < mod.quiz.length - 1) {
-        ovnShowQuiz(mod, qIdx + 1, newScore);
-      } else {
-        ovnShowResult(mod, newScore);
-      }
-    }, 1000);
-  };
-
-  // ── Slutresultat ──
+  // ══════════════════════════════════════
+  // RESULTAT
+  // ══════════════════════════════════════
   function ovnShowResult(mod, score) {
     const view = document.getElementById('ovnModuleView');
     if (!view) return;
@@ -12617,27 +13525,34 @@ ${styleTexts}
     saveProgress(p);
     const pct = Math.round((score / mod.quiz.length) * 100);
     const great = pct >= 80;
+    const stars = pct === 100 ? '⭐⭐⭐' : pct >= 80 ? '⭐⭐' : pct >= 60 ? '⭐' : '';
 
     view.innerHTML =
-      '<div style="text-align:center;padding:32px 0 20px;">' +
-      '<div style="font-size:48px;margin-bottom:12px;">' + (great ? '🎉' : '💪') + '</div>' +
-      '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;">' + (great ? 'Bra jobbat!' : 'Fortsätt öva!') + '</div>' +
-      '<div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:20px;">Du fick ' + score + ' av ' + mod.quiz.length + ' rätt</div>' +
-      '<div style="background:rgba(255,255,255,0.05);border-radius:12px;height:10px;overflow:hidden;margin-bottom:20px;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:12px;"></div></div>' +
+      '<div style="text-align:center;padding:24px 0 16px;">' +
+      '<div style="font-size:52px;margin-bottom:10px;">' + (pct === 100 ? '🏆' : great ? '🎉' : '💪') + '</div>' +
+      '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:4px;">' + (pct === 100 ? 'Perfekt!' : great ? 'Bra jobbat!' : 'Fortsätt öva!') + '</div>' +
+      (stars ? '<div style="font-size:20px;margin-bottom:10px;">' + stars + '</div>' : '<div style="margin-bottom:10px;"></div>') +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:18px;">' + score + ' av ' + mod.quiz.length + ' rätt — ' + pct + '%</div>' +
+      '<div style="background:rgba(255,255,255,0.06);border-radius:20px;height:12px;overflow:hidden;margin:0 20px 20px;">' +
+      '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,' + mod.color + ',#fff);border-radius:20px;transition:width 1s ease;"></div></div>' +
       '</div>' +
-      // AI-prompts
-      '<div style="font-size:12px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px;">🤖 Prova i AI-SYV</div>' +
+      '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;margin-bottom:16px;">' +
+      '<div style="font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px;">🤖 Fördjupa med AI — tryck för att kopiera</div>' +
       mod.prompts.map(function(pr) {
-        return '<div onclick="ovnSendPrompt(\'' + pr.replace(/'/g,"&#39;") + '\')" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:10px 12px;margin-bottom:7px;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.6);">💬 ' + pr + '</div>';
+        return '<div onclick="ovnSendPrompt(\'' + pr.replace(/'/g,"&#39;") + '\')" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:11px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:flex-start;gap:8px;transition:background 0.15s;">' +
+          '<span style="flex-shrink:0;font-size:14px;">💬</span>' +
+          '<span style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;">' + pr + '</span>' +
+          '</div>';
       }).join('') +
-      '<div style="display:flex;gap:8px;margin-top:16px;">' +
-      (pct < 80 ? '<button onclick="ovnOpenModule(\'' + mod.id + '\')" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">Försök igen</button>' : '') +
-      '<button onclick="renderModuleGrid()" style="flex:1;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">← Tillbaka</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      (!great ? '<button onclick="ovnOpenModule(\'' + mod.id + '\')" style="flex:1;padding:13px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">🔄 Försök igen</button>' : '') +
+      '<button onclick="renderModuleGrid()" style="flex:1;padding:13px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">← Tillbaka</button>' +
       '</div>';
   }
 
-  window.ovnSendPrompt = function(prompt) {
+
+    window.ovnSendPrompt = function(prompt) {
     if (typeof mobSwitchTab === 'function') mobSwitchTab('aisyv');
     setTimeout(function() {
       const inp = document.querySelector('#syvInput, #aiSyvInput, textarea[id*="syv"]');
