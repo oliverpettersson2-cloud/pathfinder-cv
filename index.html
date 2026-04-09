@@ -12318,7 +12318,18 @@ ${styleTexts}
     }
   ];
 
-  // ── Rendera modulöversikt ──
+  // ── Veckodagsstruktur ──
+  const DAYS = [
+    { id: 'mandag',  label: 'M\u00e5ndag',  short: 'M\u00e5n', modules: MODULES, theme: '#3eb489' },
+    { id: 'tisdag',  label: 'Tisdag',  short: 'Tis', modules: [], theme: '#f0c040' },
+    { id: 'onsdag',  label: 'Onsdag',  short: 'Ons', modules: [], theme: '#a78bfa' },
+    { id: 'torsdag', label: 'Torsdag', short: 'Tor', modules: [], theme: '#f87171' },
+    { id: 'fredag',  label: 'Fredag',  short: 'Fre', modules: [], theme: '#38bdf8' }
+  ];
+
+  let _ovnActiveDay = 'mandag';
+
+  // ── Rendera veckovy ──
   function renderModuleGrid() {
     const grid = document.getElementById('ovnModuleGrid');
     if (!grid) return;
@@ -12326,36 +12337,69 @@ ${styleTexts}
     if (view) view.style.display = 'none';
     grid.style.display = '';
     const progress = getProgress();
-    let html = '';
-    MODULES.forEach(function(mod) {
-      const p = progress[mod.id] || {};
-      const lessonsOk = (p.lessonsRead || 0);
-      const exerciseOk = p.exerciseDone ? 1 : 0;
-      const quizScore = p.quizScore || 0;
-      const totalSteps = mod.lessons.length + 1 + 1; // lessons + exercise + quiz
-      const doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
-      const pct = Math.round((doneSteps / totalSteps) * 100);
-      html += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="background:' + mod.bg + ';border:1.5px solid ' + mod.borderColor + ';border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.15s;">' +
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
-        '<div style="font-size:28px;">' + mod.icon + '</div>' +
-        '<div style="flex:1;">' +
-        '<div style="font-size:14px;font-weight:800;color:#fff;">' + mod.title + '</div>' +
-        '<div style="font-size:11px;color:rgba(255,255,255,0.45);">' + mod.subtitle + '</div>' +
-        '</div>' +
-        (pct === 100 ? '<div style="font-size:20px;">✅</div>' : '<div style="font-size:12px;font-weight:700;color:' + mod.color + ';">' + pct + '%</div>') +
-        '</div>' +
-        '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:5px;overflow:hidden;">' +
-        '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div>' +
-        '</div>' +
-        '<div style="display:flex;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35);">' +
-        '<span>' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + ' lektioner</span>' +
-        '<span>·</span><span>Övning ' + (exerciseOk ? '✓' : '–') + '</span>' +
-        '<span>·</span><span>Quiz ' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '–') + '</span>' +
-        '</div>' +
-        '</div>';
+    const today = new Date().getDay();
+    const dayMap = [null,'mandag','tisdag','onsdag','torsdag','fredag',null];
+    const todayId = dayMap[today] || null;
+
+    // Dag-flikar
+    let tabHtml = '<div style="display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;">';
+    DAYS.forEach(function(day) {
+      const isActive = _ovnActiveDay === day.id;
+      const isToday = todayId === day.id;
+      const hasContent = day.modules.length > 0;
+      tabHtml += '<button onclick="ovnSwitchDay(\'' + day.id + '\')" style="flex-shrink:0;padding:7px 14px;border-radius:20px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:800;transition:all 0.15s;' +
+        (isActive ? 'background:' + day.theme + ';color:#fff;' : 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,' + (hasContent ? '0.65' : '0.25') + ');') +
+        '">' + day.short + (isToday ? ' \uD83D\uDCCD' : '') + '</button>';
     });
-    grid.innerHTML = html;
+    tabHtml += '</div>';
+
+    const activeDay = DAYS.find(function(d){ return d.id === _ovnActiveDay; });
+    let modulesHtml = '';
+
+    if (!activeDay || activeDay.modules.length === 0) {
+      modulesHtml = '<div style="text-align:center;padding:50px 20px;">' +
+        '<div style="font-size:40px;margin-bottom:12px;">\uD83D\uDD12</div>' +
+        '<div style="font-size:15px;font-weight:800;color:rgba(255,255,255,0.4);margin-bottom:6px;">Kommer snart</div>' +
+        '<div style="font-size:12px;color:rgba(255,255,255,0.25);">Inneh\u00e5ll f\u00f6r ' + (activeDay ? activeDay.label : '') + ' \u00e4r under produktion.</div>' +
+        '</div>';
+    } else {
+      activeDay.modules.forEach(function(mod) {
+        const p = progress[mod.id] || {};
+        const lessonsOk = (p.lessonsRead || 0);
+        const exerciseOk = p.exerciseDone ? 1 : 0;
+        const quizScore = p.quizScore || 0;
+        const totalSteps = mod.lessons.length + 2;
+        const doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
+        const pct = Math.round((doneSteps / totalSteps) * 100);
+        modulesHtml += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="background:' + mod.bg + ';border:1.5px solid ' + mod.borderColor + ';border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.15s;">' +
+          '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
+          '<div style="font-size:28px;">' + mod.icon + '</div>' +
+          '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:800;color:#fff;">' + mod.title + '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.45);">' + mod.subtitle + '</div>' +
+          '</div>' +
+          (pct === 100 ? '<div style="font-size:20px;">\u2705</div>' : '<div style="font-size:12px;font-weight:700;color:' + mod.color + ';">' + pct + '%</div>') +
+          '</div>' +
+          '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:5px;overflow:hidden;">' +
+          '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35);">' +
+          '<span>' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + ' lektioner</span>' +
+          '<span>\u00b7</span><span>\u00d6vning ' + (exerciseOk ? '\u2713' : '\u2013') + '</span>' +
+          '<span>\u00b7</span><span>Quiz ' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '\u2013') + '</span>' +
+          '</div>' +
+          '</div>';
+      });
+    }
+
+    grid.innerHTML = tabHtml + modulesHtml;
   }
+
+  window.ovnSwitchDay = function(dayId) {
+    _ovnActiveDay = dayId;
+    renderModuleGrid();
+  };
+
 
   // ── Öppna en modul ──
   window.ovnOpenModule = function(modId) {
