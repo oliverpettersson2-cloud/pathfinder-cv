@@ -4,13 +4,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
 
   <!-- PDF Generation Libraries -->
   <!-- PDF Generation Libraries -->
-  <script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   
   <style>
@@ -4266,7 +4267,7 @@
     </div>
   </div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -10989,6 +10990,8 @@ ${styleTexts}
           overlay.remove();
           matchaApplyTextForAd(hit.id, ai);
           const _savedJobTitle = (hit && hit.headline) || 'jobbet';
+          const _savedJobUrl   = (hit && hit.webpage_url) || '';
+          const _savedMatchTitle = 'Matchat CV – ' + _savedJobTitle;
           resultEl.innerHTML = '<div style="text-align:center;padding:28px 16px;">' +
             '<div style="font-size:36px;margin-bottom:12px;">\u2705</div>' +
             '<div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:6px;">Profiltext sparad!</div>' +
@@ -10999,12 +11002,26 @@ ${styleTexts}
             '<div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:20px;text-align:left;">' +
             'Profiltexten \u00e4r nu sparad i ditt matchade CV. Under <strong style="color:rgba(255,255,255,0.7);">\ud83d\udc64 Profil</strong> kan du l\u00e4sa, redigera, dela och skicka ditt CV via e-post \u2014 det fixar vi \u00e5t dig.' +
             '</div>' +
-            '<div style="display:flex;gap:8px;">' +
+            '<div style="display:flex;gap:8px;margin-bottom:10px;">' +
             '<button class="done-profil" style="flex:1;padding:12px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83d\udc64 G\u00e5 till Profil</button>' +
             '<button class="done-matcha" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83c\udfaf Forts\u00e4tt matcha</button>' +
-            '</div></div>';
+            '</div>' +
+            '<button class="done-export" style="width:100%;padding:12px;background:rgba(240,192,64,0.12);border:1.5px solid rgba(240,192,64,0.35);color:#f0c040;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">\ud83d\udcc4 Exportera CV &amp; öppna annons</button>' +
+            '</div>';
           resultEl.querySelector('.done-profil').onclick = () => { if (typeof mobSwitchTab === 'function') mobSwitchTab('export'); };
           resultEl.querySelector('.done-matcha').onclick = () => { showBack(); };
+          resultEl.querySelector('.done-export').onclick = () => {
+            // Hitta snapshot-id för det just matchade CV:t
+            const mlist = (typeof mobGetMatchedCVs === 'function') ? mobGetMatchedCVs() : [];
+            const snap = mlist.find(function(c){ return c.title === _savedMatchTitle; });
+            if (snap && typeof window._exportMatchedWithReminder === 'function') {
+              window._exportMatchedWithReminder(snap.id);
+            } else if (typeof mobExportMatchedPDF === 'function' && snap) {
+              mobExportMatchedPDF(snap.id);
+            }
+            // Öppna jobannons separat i ny flik
+            if (_savedJobUrl) window.open(_savedJobUrl, '_blank', 'noopener');
+          };
           const genBtn = section && section.querySelector('button[id^="matchaGenBtn_"]');
           if (genBtn) { genBtn.textContent = '\u2705 Profiltext vald'; genBtn.style.background = 'rgba(62,180,137,0.15)'; genBtn.style.border = '1.5px solid rgba(62,180,137,0.4)'; genBtn.style.color = '#3eb489'; genBtn.style.cursor = 'default'; genBtn.onclick = null; }
         };
@@ -11423,6 +11440,39 @@ ${styleTexts}
       return Math.max(1, Math.ceil((MATCHED_TTL_MS - (Date.now() - cv.savedAt)) / (24*3600*1000)));
     }
 
+    // Force a section open without toggling
+    function _forceOpen(id) {
+      window._ps = id;
+      renderGrid();
+    }
+
+    // PDF export med påminnelse om personalisering
+    window._exportMatchedWithReminder = function(id) {
+      // Visa ett snyggt påminnelsemodal
+      const existing = document.getElementById('_pdfReminderModal');
+      if (existing) existing.remove();
+      const modal = document.createElement('div');
+      modal.id = '_pdfReminderModal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:flex-end;padding:16px;';
+      modal.innerHTML = '<div style="width:100%;background:#1a1a2e;border:1.5px solid rgba(62,180,137,0.3);border-radius:20px;padding:20px;max-width:480px;margin:0 auto;">' +
+        '<div style="font-size:22px;margin-bottom:10px;">✨</div>' +
+        '<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px;">Innan du exporterar — gör det personligt!</div>' +
+        '<div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:16px;">' +
+          '🔍 <strong style="color:rgba(255,255,255,0.8);">Läs igenom annonsen noga</strong> — vilka ord och krav lyfter de fram?<br><br>' +
+          '✏️ <strong style="color:rgba(255,255,255,0.8);">Justera din profiltext</strong> så att den speglar just det här jobbet.<br><br>' +
+          '🎯 <strong style="color:rgba(255,255,255,0.8);">Matcha dina kompetenser</strong> mot annonsens kravlista — lägg till det som saknas.<br><br>' +
+          'Ett anpassat CV ökar dina chanser <strong style="color:#3eb489;">markant</strong>.' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;">' +
+          '<button onclick="document.getElementById(\'_pdfReminderModal\').remove()" ' +
+          'style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">← Gå tillbaka</button>' +
+          '<button onclick="document.getElementById(\'_pdfReminderModal\').remove();if(typeof mobExportMatchedPDF===\'function\') mobExportMatchedPDF(\'' + "'+id+'" + '\');" ' +
+          'style="flex:1;padding:12px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">📄 Exportera CV</button>' +
+        '</div></div>';
+      document.body.appendChild(modal);
+      modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+    };
+
     window._matchMarkSokt = function(matchedId) {
       try {
         const raw = localStorage.getItem('pathfinder_job_diary');
@@ -11434,8 +11484,13 @@ ${styleTexts}
           localStorage.setItem('pathfinder_job_diary', JSON.stringify(list));
         }
       } catch(e){}
-      if (typeof mobDeleteMatchedCV === 'function') mobDeleteMatchedCV(matchedId);
-      window._pt('matched');
+      // Remove from matched list directly without going through mobDeleteMatchedCV (which calls mobRenderSavedCVs/renderGrid)
+      try {
+        const MKEY = 'pathfinder_matched_cvs';
+        const ml = JSON.parse(localStorage.getItem(MKEY)||'[]').filter(function(c){ return c.id !== matchedId; });
+        localStorage.setItem(MKEY, JSON.stringify(ml));
+      } catch(e){}
+      _forceOpen('matched');
     };
 
     window._matchMarkInte = function(matchedId) {
@@ -11446,8 +11501,12 @@ ${styleTexts}
           localStorage.setItem('pathfinder_job_diary', JSON.stringify(list));
         }
       } catch(e){}
-      if (typeof mobDeleteMatchedCV === 'function') mobDeleteMatchedCV(matchedId);
-      window._pt('matched');
+      try {
+        const MKEY = 'pathfinder_matched_cvs';
+        const ml = JSON.parse(localStorage.getItem(MKEY)||'[]').filter(function(c){ return c.id !== matchedId; });
+        localStorage.setItem(MKEY, JSON.stringify(ml));
+      } catch(e){}
+      _forceOpen('matched');
     };
 
     window._diarySetStatus = function(realIdx, status) {
@@ -11458,7 +11517,7 @@ ${styleTexts}
         if (list[realIdx]) { list[realIdx].status = status; list[realIdx].applied = true; }
         localStorage.setItem('pathfinder_job_diary', JSON.stringify(list));
       } catch(e){}
-      window._pt('diary');
+      _forceOpen('diary');
     };
 
     function renderGrid() {
@@ -11529,29 +11588,54 @@ ${styleTexts}
       if (s === 'matched') {
         if (!matched.length) { html += empty('Inga aktiva matcher', 'Gå till Matcha och matcha ditt CV mot ett jobb — matcher försvinner efter 14 dagar'); }
         else {
-          matched.sort((a, b) => b.savedAt - a.savedAt).forEach(function(cv) {
+          matched.sort((a, b) => b.savedAt - a.savedAt).forEach(function(cv, idx) {
             const sid = cv.id.replace(/'/g, "\\'");
             const dl = matchedDaysLeft(cv);
             const urgent = dl <= 3;
-            html += '<div style="background:rgba(62,180,137,0.05);border:1px solid rgba(62,180,137,0.15);border-radius:14px;padding:14px;margin-bottom:8px;">' +
-              '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
-              '<div style="font-size:20px;">🎯</div>' +
-              '<div style="flex:1;min-width:0;">' +
-              '<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + cv.title.replace('Matchat CV – ', '') + '</div>' +
-              '<div style="font-size:11px;color:rgba(255,255,255,0.35);">' + (cv.company ? cv.company + ' · ' : '') + rd(cv.savedAt) + '</div>' +
-              '<div style="font-size:10px;color:' + (urgent ? '#ef4444' : 'rgba(255,255,255,0.25)') + ';margin-top:2px;">Försvinner om ' + dl + ' dag' + (dl === 1 ? '' : 'ar') + '</div>' +
+
+            // Chips från _hit om det finns
+            const hit = cv._hit || {};
+            let chipsHtml = '';
+            const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
+            const empType   = (hit.employment_type   && hit.employment_type.label)   || '';
+            const licReq    = hit.driving_license_required;
+            const licTypes  = (hit.driving_license || []).map(function(l){ return l.label; }).filter(Boolean).join(', ');
+            const salDesc   = hit.salary_description || (hit.salary_type && hit.salary_type.label) || '';
+            const duration  = (hit.duration && hit.duration.label) || '';
+            const chipStyle = 'display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;margin:2px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);';
+            const chipYellow = 'display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;margin:2px;background:rgba(240,192,64,0.18);color:rgba(240,192,64,0.9);';
+            if (hoursType || empType || licReq !== undefined || salDesc || duration) {
+              chipsHtml += '<div style="display:flex;flex-wrap:wrap;gap:2px;margin:8px 0;">';
+              if (hoursType) chipsHtml += '<span style="' + chipStyle + '">⏱ ' + hoursType + '</span>';
+              if (empType)   chipsHtml += '<span style="' + chipStyle + '">📋 ' + empType + '</span>';
+              if (licReq)    chipsHtml += '<span style="' + chipYellow + '">🚗 Körkort krävs' + (licTypes ? ': ' + licTypes : '') + '</span>';
+              if (salDesc)   chipsHtml += '<span style="' + chipStyle + '">💰 ' + salDesc.substring(0,35) + '</span>';
+              if (duration && duration !== 'Tillsvidare') chipsHtml += '<span style="' + chipStyle + '">📅 ' + duration + '</span>';
+              chipsHtml += '</div>';
+            }
+
+            html += '<div style="position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-bottom:12px;">' +
+              // Header label
+              '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.6);margin-bottom:6px;">Match ' + (idx+1) + ' av ' + matched.length + '</div>' +
+              // Title + meta
+              '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;">' + cv.title.replace('Matchat CV – ', '') + '</div>' +
+              '<div style="font-size:11px;color:rgba(255,255,255,0.4);">' + (cv.company || '') + '</div>' +
+              // Chips
+              chipsHtml +
+              // Expiry + URL link
+              '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+              '<div style="font-size:10px;color:' + (urgent ? '#ef4444' : 'rgba(255,255,255,0.25)') + ';">Försvinner om ' + dl + ' dag' + (dl === 1 ? '' : 'ar') + '</div>' +
+              (cv.jobUrl ? '<a href="' + cv.jobUrl + '" target="_blank" rel="noopener" style="font-size:11px;color:rgba(62,180,137,0.7);text-decoration:none;border:1px solid rgba(62,180,137,0.3);padding:3px 10px;border-radius:20px;">↗ Öppna annons</a>' : '') +
               '</div>' +
-              (cv.jobUrl ? '<a href="' + cv.jobUrl + '" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;padding:5px 9px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">↗</a>' : '') +
-              '</div>' +
-              '<div style="display:flex;gap:7px;margin-bottom:8px;">' +
-              '<button onclick="if(typeof mobExportMatchedPDF===\'function\') mobExportMatchedPDF(\'' + sid + '\')" ' +
-              'style="flex:1;padding:9px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);color:#3eb489;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">📄 CV som PDF</button>' +
-              '</div>' +
+              // PDF button
+              '<button onclick="window._exportMatchedWithReminder(\'' + sid + '\')" ' +
+              'style="width:100%;padding:10px;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);color:#3eb489;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;">📄 Spara CV som PDF</button>' +
+              // Decision buttons
               '<div style="display:flex;gap:7px;">' +
               '<button onclick="window._matchMarkSokt(\'' + sid + '\')" ' +
               'style="flex:1;padding:10px 6px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:11px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">✅ Jag har sökt detta</button>' +
               '<button onclick="window._matchMarkInte(\'' + sid + '\')" ' +
-              'style="flex:1;padding:10px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.45);font-size:11px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">✕ Inget svar</button>' +
+              'style="flex:1;padding:10px 6px;background:rgba(220,38,38,0.15);border:1.5px solid rgba(220,38,38,0.45);color:#f87171;font-size:11px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">✕ Inget svar</button>' +
               '</div></div>';
           });
         }
