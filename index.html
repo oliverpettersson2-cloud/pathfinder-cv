@@ -8779,6 +8779,32 @@ ${styleTexts}
     showToast('✅ ' + entry.title + ' öppnat — dela eller spara som PDF', 'success');
   }
 
+  async function mobExportSavedCVPDF(id) {
+    const list = mobGetSavedCVs();
+    const entry = list.find(c => c.id === id);
+    if (!entry) return;
+
+    // Hitta knappen och visa laddningsstate
+    const btn = document.querySelector('[onclick*="mobExportSavedCVPDF(\'' + id + '\')"]');
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; btn.style.opacity = '0.6'; }
+
+    const prevData = JSON.parse(JSON.stringify(cvData));
+    Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+    updatePreview();
+    window._activeMatchedAdText = '';
+    window._mobAdPdfForced = false;
+    if (typeof showAiLoader === 'function') showAiLoader('Skapar PDF…', 'Genererar ditt CV som PDF-fil');
+    else showToast('⏳ Skapar PDF...', 'info');
+    try {
+      await mobGenerateAndSharePDF();
+    } finally {
+      Object.assign(cvData, prevData);
+      updatePreview();
+      if (typeof hideAiLoader === 'function') hideAiLoader();
+      if (btn) { btn.textContent = '📤'; btn.disabled = false; btn.style.opacity = ''; }
+    }
+  }
+
   function mobGetSavedCVs() {
     try {
       const raw = localStorage.getItem(SAVED_CVS_KEY);
@@ -10554,7 +10580,8 @@ ${styleTexts}
     window._activeMatchedAdText = entry.adText || '';
     window._activeMatchedAdTitle = entry.title || '';
     window._mobAdPdfForced = true; // override toggle
-    showToast('⏳ Skapar PDF...', 'info');
+    if (typeof showAiLoader === 'function') showAiLoader('Skapar PDF…', 'Genererar ditt matchade CV som PDF-fil');
+    else showToast('⏳ Skapar PDF...', 'info');
     try {
       await mobGenerateAndSharePDF();
     } finally {
@@ -10563,6 +10590,7 @@ ${styleTexts}
       updatePreview();
       window._activeMatchedAdText = '';
       window._mobAdPdfForced = false;
+      if (typeof hideAiLoader === 'function') hideAiLoader();
     }
   }
 
@@ -11576,9 +11604,12 @@ ${styleTexts}
               '<span style="color:#f0c040;">CV</span><span style="color:#fff;">match</span></div>' +
               '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">' + cv.title + '</div>' +
               '<div style="font-size:11px;color:rgba(255,255,255,0.35);">' + rd(cv.savedAt) + '</div></div>' +
+              '<div style="display:flex;gap:6px;flex-shrink:0;">' +
+              '<button onclick="if(typeof mobExportSavedCVPDF===\'function\') mobExportSavedCVPDF(\'' + cv.id + '\')" ' +
+              'style="padding:7px 10px;background:rgba(240,192,64,0.12);border:1.5px solid rgba(240,192,64,0.35);color:#f0c040;font-size:14px;border-radius:8px;cursor:pointer;" title="Dela/Exportera som PDF">📤</button>' +
               '<button onclick="if(typeof mobShowSavedCVDetail===\'function\') mobShowSavedCVDetail(\'' + cv.id + '\')" ' +
               'style="padding:7px 14px;background:#3eb489;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Öppna</button>' +
-              '</div>';
+              '</div></div>';
           });
           html += '<button onclick="if(typeof mobOpenCV===\'function\'){mobOpenCV();mobSwitchSubTab(\'info\');}" ' +
             'style="width:100%;margin-top:4px;padding:12px;background:none;border:1.5px dashed rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:13px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">+ Skapa nytt CV</button>';
