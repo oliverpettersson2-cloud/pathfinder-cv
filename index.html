@@ -10,8 +10,7 @@
 
   <!-- PDF Generation Libraries -->
   <!-- PDF Generation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
   
   
   <style>
@@ -7768,8 +7767,8 @@ ${styleTexts}
     <!-- FLIK 5: Sparade CV -->
     <div class="mob-panel" id="mobPanel-export" style="padding-bottom:100px; padding-top:16px;">
       <div style="padding:0 4px 16px;">
-        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Mina CV:n</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);">Sparade från CV-byggaren och matchade mot annonser</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Min Profil</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);">Sparade CV:n, matcher och sökta arbeten</div>
       </div>
       <div style="padding: 0 4px;">
         <div id="mobSavedCVsList"></div>
@@ -9057,7 +9056,14 @@ ${styleTexts}
     const diary = allDiary.filter(e => e.applied);
     if (!diary.length) { showToast('Markera jobb som sökta först!', 'info'); return; }
 
-    // Generera text för aktivitetsrapport (bara faktiskt sökta)
+    const statusLabels = {
+      sokt:     'Sökt',
+      intervju: 'Kallad på intervju',
+      fatt:     'Fått jobbet!',
+      nej:      'Inget svar / Nej'
+    };
+
+    // Generera text för aktivitetsrapport
     const weeks = {};
     diary.forEach(e => {
       const d = new Date(e.savedAt);
@@ -9067,18 +9073,31 @@ ${styleTexts}
       weeks[wk].push(e);
     });
 
+    const today = new Date().toLocaleDateString('sv-SE', {day:'numeric', month:'long', year:'numeric'});
     let text = 'JOBBSÖKNING — AKTIVITETSRAPPORT\n';
-    text += '='.repeat(35) + '\n\n';
+    text += '='.repeat(35) + '\n';
+    text += 'Skapad: ' + today + '\n\n';
     Object.entries(weeks).forEach(([week, entries]) => {
       text += week + '\n';
       entries.forEach(e => {
         const dStr = new Date(e.savedAt).toLocaleDateString('sv-SE', {day:'numeric', month:'long'});
+        const statusTxt = statusLabels[e.status] || 'Sökt';
         text += '  • ' + e.jobTitle + (e.company ? ' hos ' + e.company : '') + ' (' + dStr + ')\n';
+        text += '    Status: ' + statusTxt + '\n';
         if (e.jobUrl) text += '    ' + e.jobUrl + '\n';
       });
       text += '\n';
     });
-    text += 'Skapad med CVmatchen av PathfinderAI';
+
+    // Sammanfattning
+    const counts = { sokt:0, intervju:0, fatt:0, nej:0 };
+    diary.forEach(e => { const s = e.status || 'sokt'; if (counts[s] !== undefined) counts[s]++; });
+    text += '-'.repeat(35) + '\n';
+    text += 'Totalt sökta: ' + diary.length + ' jobb\n';
+    if (counts.intervju) text += 'Kallad på intervju: ' + counts.intervju + '\n';
+    if (counts.fatt)     text += 'Fått jobbet: ' + counts.fatt + '\n';
+    if (counts.nej)      text += 'Inget svar: ' + counts.nej + '\n';
+    text += '\nSkapad med CVmatchen av PathfinderAI';
 
     // Försök dela/kopiera
     if (navigator.share) {
@@ -11392,49 +11411,113 @@ ${styleTexts}
       }, 100);
     };
 
+    // ── Helpers för Mina Matcher: 14-dagars TTL ──
+    const MATCHED_TTL_MS = 14 * 24 * 3600 * 1000;
+
+    function matchedActiveList() {
+      const now = Date.now();
+      return getMatched().filter(function(cv){ return now - cv.savedAt < MATCHED_TTL_MS; });
+    }
+
+    function matchedDaysLeft(cv) {
+      return Math.max(1, Math.ceil((MATCHED_TTL_MS - (Date.now() - cv.savedAt)) / (24*3600*1000)));
+    }
+
+    window._matchMarkSokt = function(matchedId) {
+      try {
+        const raw = localStorage.getItem('pathfinder_job_diary');
+        if (raw) {
+          const list = JSON.parse(raw);
+          const idx = list.findIndex(function(e){ return e.matchedCVId === matchedId; });
+          if (idx >= 0) { list[idx].applied = true; list[idx].status = 'sokt'; }
+          else { list.unshift({ savedAt: Date.now(), jobTitle: matchedId, company: '', jobUrl: '', matchedCVId: matchedId, applied: true, status: 'sokt' }); }
+          localStorage.setItem('pathfinder_job_diary', JSON.stringify(list));
+        }
+      } catch(e){}
+      if (typeof mobDeleteMatchedCV === 'function') mobDeleteMatchedCV(matchedId);
+      window._pt('matched');
+    };
+
+    window._matchMarkInte = function(matchedId) {
+      try {
+        const raw = localStorage.getItem('pathfinder_job_diary');
+        if (raw) {
+          const list = JSON.parse(raw).filter(function(e){ return e.matchedCVId !== matchedId; });
+          localStorage.setItem('pathfinder_job_diary', JSON.stringify(list));
+        }
+      } catch(e){}
+      if (typeof mobDeleteMatchedCV === 'function') mobDeleteMatchedCV(matchedId);
+      window._pt('matched');
+    };
+
+    window._diarySetStatus = function(realIdx, status) {
+      try {
+        const raw = localStorage.getItem('pathfinder_job_diary');
+        if (!raw) return;
+        const list = JSON.parse(raw);
+        if (list[realIdx]) { list[realIdx].status = status; list[realIdx].applied = true; }
+        localStorage.setItem('pathfinder_job_diary', JSON.stringify(list));
+      } catch(e){}
+      window._pt('diary');
+    };
+
     function renderGrid() {
       const container = document.getElementById('mobSavedCVsList');
       if (!container) return;
 
       const saved   = getSaved();
-      const matched = getMatched();
-      const diary   = getDiary();
+      const matched = matchedActiveList();
+      const allDiary = getDiary();
+      const diary   = allDiary.filter(function(e){ return e.applied; });
       const edu     = getEdu();
 
+      const uncatCount = matched.length;
+      let soonestDays = null;
+      if (matched.length) {
+        soonestDays = Math.min.apply(null, matched.map(matchedDaysLeft));
+      }
+
       const cats = [
-        { id:'saved',   emoji:'📄', label:'Mina CV',           count:saved.length,   max:3    },
-        { id:'matched', emoji:'🎯', label:'Mina Matcher',    count:matched.length, max:null },
-        { id:'diary',   emoji:'💼', label:'Sökta Arbeten',         count:diary.length,   max:null },
-        { id:'edu',     emoji:'🎓', label:'Sparade Utbildningar', count:edu.length,     max:null },
+        { id:'saved',   emoji:'\uD83D\uDCC4', label:'Mina CV',             count:saved.length,   max:3,   badge:0,          badgeDays:null },
+        { id:'matched', emoji:'\uD83C\uDFAF', label:'Mina Matcher',        count:matched.length, max:null, badge:uncatCount, badgeDays:soonestDays },
+        { id:'diary',   emoji:'\uD83D\uDCBC', label:'Sökta Arbeten',       count:diary.length,   max:null, badge:0,          badgeDays:null },
+        { id:'edu',     emoji:'\uD83C\uDF93', label:'Sparade Utbildningar', count:edu.length,     max:null, badge:0,          badgeDays:null },
       ];
 
       let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">';
       cats.forEach(function(c) {
         const a = window._ps === c.id;
-        html += '<div onclick="window._pt(\''+c.id+'\')" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;' +
-          'background:'+(a?'rgba(62,180,137,0.12)':'rgba(255,255,255,0.05)')+';' +
-          'border:2px solid '+(a?'#3eb489':'rgba(255,255,255,0.08)')+';transition:all 0.15s;">' +
-          '<div style="font-size:28px;margin-bottom:6px;">'+c.emoji+'</div>' +
-          '<div style="font-size:12px;font-weight:700;color:'+(a?'#fff':'rgba(255,255,255,0.65)')+';line-height:1.3;margin-bottom:8px;">'+c.label+'</div>' +
-          '<div style="display:inline-flex;align-items:center;justify-content:center;background:'+(a?'rgba(62,180,137,0.25)':'rgba(255,255,255,0.08)')+';border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:'+(a?'#3eb489':'rgba(255,255,255,0.4)')+';">' +
-          c.count+(c.max?'/'+c.max:'')+
-          '</div></div>';
+        html += '<div onclick="window._pt(\'' + c.id + '\')" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;' +
+          'background:' + (a ? 'rgba(62,180,137,0.12)' : 'rgba(255,255,255,0.05)') + ';' +
+          'border:2px solid ' + (a ? '#3eb489' : 'rgba(255,255,255,0.08)') + ';transition:all 0.15s;">';
+        if (c.badge > 0) {
+          html += '<div style="position:absolute;top:8px;right:8px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;border-radius:10px;padding:1px 7px;min-width:18px;">' + c.badge + '</div>';
+        }
+        html += '<div style="font-size:28px;margin-bottom:6px;">' + c.emoji + '</div>' +
+          '<div style="font-size:12px;font-weight:700;color:' + (a ? '#fff' : 'rgba(255,255,255,0.65)') + ';line-height:1.3;margin-bottom:8px;">' + c.label + '</div>' +
+          '<div style="display:inline-flex;align-items:center;justify-content:center;background:' + (a ? 'rgba(62,180,137,0.25)' : 'rgba(255,255,255,0.08)') + ';border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:' + (a ? '#3eb489' : 'rgba(255,255,255,0.4)') + ';">' +
+          c.count + (c.max ? '/' + c.max : '') + '</div>';
+        if (c.badge > 0 && c.badgeDays !== null && c.badgeDays <= 7) {
+          html += '<div style="font-size:10px;color:rgba(239,68,68,0.8);margin-top:6px;font-weight:700;">' + c.badge + ' ann. försvinner om ' + c.badgeDays + ' dag' + (c.badgeDays === 1 ? '' : 'ar') + '</div>';
+        } else if (c.badge > 0) {
+          html += '<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px;">' + c.badge + ' okategoriserade</div>';
+        }
+        html += '</div>';
       });
       html += '</div>';
 
-      // Innehåll
       const s = window._ps;
 
       if (s === 'saved') {
-        if (!saved.length) { html += empty('Inga sparade CV ännu','Bygg ett CV och tryck "Spara CV-version"'); }
+        if (!saved.length) { html += empty('Inga sparade CV ännu', 'Bygg ett CV och tryck "Spara CV-version"'); }
         else {
-          saved.sort((a,b)=>b.savedAt-a.savedAt).forEach(function(cv){
+          saved.sort((a, b) => b.savedAt - a.savedAt).forEach(function(cv) {
             html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">' +
               '<div style="flex-shrink:0;width:40px;height:40px;border-radius:10px;background:rgba(62,180,137,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;font-family:Georgia,serif;">' +
               '<span style="color:#f0c040;">CV</span><span style="color:#fff;">match</span></div>' +
-              '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">'+cv.title+'</div>' +
-              '<div style="font-size:11px;color:rgba(255,255,255,0.35);">'+rd(cv.savedAt)+'</div></div>' +
-              '<button onclick="if(typeof mobShowSavedCVDetail===\'function\') mobShowSavedCVDetail(\''+cv.id+'\')" ' +
+              '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">' + cv.title + '</div>' +
+              '<div style="font-size:11px;color:rgba(255,255,255,0.35);">' + rd(cv.savedAt) + '</div></div>' +
+              '<button onclick="if(typeof mobShowSavedCVDetail===\'function\') mobShowSavedCVDetail(\'' + cv.id + '\')" ' +
               'style="padding:7px 14px;background:#3eb489;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Öppna</button>' +
               '</div>';
           });
@@ -11444,49 +11527,57 @@ ${styleTexts}
       }
 
       if (s === 'matched') {
-        if (!matched.length) { html += empty('Inga matchade annonser','Gå till Matcha och matcha ditt CV mot ett jobb'); }
+        if (!matched.length) { html += empty('Inga aktiva matcher', 'Gå till Matcha och matcha ditt CV mot ett jobb — matcher försvinner efter 14 dagar'); }
         else {
-          matched.sort((a,b)=>b.savedAt-a.savedAt).forEach(function(cv){
-            const sid = cv.id.replace(/'/g,"\\'");
+          matched.sort((a, b) => b.savedAt - a.savedAt).forEach(function(cv) {
+            const sid = cv.id.replace(/'/g, "\\'");
+            const dl = matchedDaysLeft(cv);
+            const urgent = dl <= 3;
             html += '<div style="background:rgba(62,180,137,0.05);border:1px solid rgba(62,180,137,0.15);border-radius:14px;padding:14px;margin-bottom:8px;">' +
               '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
-                '<div style="font-size:20px;">🎯</div>' +
-                '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+cv.title.replace('Matchat CV – ','')+' </div>' +
-                '<div style="font-size:11px;color:rgba(255,255,255,0.35);">'+(cv.company?cv.company+' · ':'')+rd(cv.savedAt)+'</div></div>' +
-                '<button onclick="if(typeof mobDeleteMatchedCV===\'function\'){mobDeleteMatchedCV(\''+sid+'\');window._pt(\'matched\');}" ' +
-                'style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:18px;cursor:pointer;">✕</button>' +
+              '<div style="font-size:20px;">🎯</div>' +
+              '<div style="flex:1;min-width:0;">' +
+              '<div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + cv.title.replace('Matchat CV – ', '') + '</div>' +
+              '<div style="font-size:11px;color:rgba(255,255,255,0.35);">' + (cv.company ? cv.company + ' · ' : '') + rd(cv.savedAt) + '</div>' +
+              '<div style="font-size:10px;color:' + (urgent ? '#ef4444' : 'rgba(255,255,255,0.25)') + ';margin-top:2px;">Försvinner om ' + dl + ' dag' + (dl === 1 ? '' : 'ar') + '</div>' +
+              '</div>' +
+              (cv.jobUrl ? '<a href="' + cv.jobUrl + '" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;padding:5px 9px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">↗</a>' : '') +
+              '</div>' +
+              '<div style="display:flex;gap:7px;margin-bottom:8px;">' +
+              '<button onclick="if(typeof mobExportMatchedPDF===\'function\') mobExportMatchedPDF(\'' + sid + '\')" ' +
+              'style="flex:1;padding:9px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);color:#3eb489;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">📄 CV som PDF</button>' +
               '</div>' +
               '<div style="display:flex;gap:7px;">' +
-                '<button onclick="if(typeof mobExportMatchedPDF===\'function\') mobExportMatchedPDF(\''+sid+'\')" ' +
-                'style="flex:1;padding:9px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">📄 CV som PDF</button>' +
-                (cv.jobUrl?'<a href="'+cv.jobUrl+'" target="_blank" rel="noopener" style="padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:12px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;">↗</a>':'')+
+              '<button onclick="window._matchMarkSokt(\'' + sid + '\')" ' +
+              'style="flex:1;padding:10px 6px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:11px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">✅ Jag har sökt detta</button>' +
+              '<button onclick="window._matchMarkInte(\'' + sid + '\')" ' +
+              'style="flex:1;padding:10px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.45);font-size:11px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">✕ Inget svar</button>' +
               '</div></div>';
           });
         }
       }
 
       if (s === 'diary') {
-        if (!diary.length) { html += empty('Inga sökta arbeten','Matchade jobb sparas automatiskt här i 45 dagar'); }
+        if (!diary.length) { html += empty('Inga sökta arbeten', 'Tryck "Jag har sökt detta" i Mina Matcher för att spara ett jobb här'); }
         else {
-          const un = diary.filter(e=>!e.applied);
-          const ap = diary.filter(e=> e.applied);
-          if(un.length){ html += '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,80,80,0.6);margin-bottom:8px;">⏳ Ej sökt ('+un.length+')</div>'; un.forEach(function(e){ html += dc(e,diary.indexOf(e)); }); }
-          if(ap.length){ html += '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.6);margin:14px 0 8px;">✅ Sökt ('+ap.length+')</div>'; ap.forEach(function(e){ html += dc(e,diary.indexOf(e)); }); }
+          diary.sort((a, b) => b.savedAt - a.savedAt).forEach(function(e) {
+            html += dc(e);
+          });
           html += '<button onclick="if(typeof diaryExport===\'function\') diaryExport()" style="width:100%;margin-top:8px;padding:11px;background:rgba(62,180,137,0.1);border:1px solid rgba(62,180,137,0.25);color:#3eb489;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">📋 Exportera aktivitetsrapport</button>';
         }
       }
 
       if (s === 'edu') {
-        if (!edu.length) { html += empty('Inga sparade utbildningar','Gå till AI-SYV och tryck 🏷️ på en utbildning'); }
+        if (!edu.length) { html += empty('Inga sparade utbildningar', 'Gå till AI-SYV och tryck 🏷️ på en utbildning'); }
         else {
-          edu.forEach(function(u,i){
+          edu.forEach(function(u, i) {
             html += '<div style="background:rgba(240,192,64,0.06);border:1px solid rgba(240,192,64,0.18);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;">' +
               '<div style="font-size:20px;flex-shrink:0;">🎓</div>' +
-              '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">'+u.namn+'</div>' +
-              '<div style="font-size:11px;color:#f0c040;">'+u.typ+' · '+u.kommun+'</div>' +
-              (u.info?'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">'+u.info+'</div>':'')+
+              '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">' + u.namn + '</div>' +
+              '<div style="font-size:11px;color:#f0c040;">' + u.typ + ' · ' + u.kommun + '</div>' +
+              (u.info ? '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + u.info + '</div>' : '') +
               '</div>' +
-              '<button onclick="(function(){var l=JSON.parse(localStorage.getItem(\'pf_saved_edu\')||\'[]\');l.splice('+i+',1);localStorage.setItem(\'pf_saved_edu\',JSON.stringify(l));window._pt(\'edu\');})()" ' +
+              '<button onclick="(function(){var l=JSON.parse(localStorage.getItem(\'pf_saved_edu\')||\'[]\');l.splice(' + i + ',1);localStorage.setItem(\'pf_saved_edu\',JSON.stringify(l));window._pt(\'edu\');})() " ' +
               'style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:0;">✕</button>' +
               '</div>';
           });
@@ -11496,17 +11587,44 @@ ${styleTexts}
       container.innerHTML = html;
     }
 
-    function dc(e, idx) {
-      const dStr = new Date(e.savedAt).toLocaleDateString('sv-SE',{day:'numeric',month:'short'});
-      return '<div style="background:'+(e.applied?'rgba(62,180,137,0.05)':'rgba(255,80,80,0.04)')+';border:1.5px solid '+(e.applied?'rgba(62,180,137,0.25)':'rgba(255,80,80,0.2)')+';border-radius:12px;padding:12px;margin-bottom:7px;">' +
-        '<div style="display:flex;align-items:center;gap:8px;">' +
-          '<div style="font-size:18px;">'+(e.applied?'✅':'⏳')+'</div>' +
-          '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">'+e.jobTitle+'</div>' +
-          '<div style="font-size:11px;color:rgba(255,255,255,0.35);">'+dStr+(e.company?' · '+e.company:'')+'</div></div>' +
-          (e.jobUrl?'<a href="'+e.jobUrl+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;padding:5px 9px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">↗</a>':'')+
+    function dc(e) {
+      const dStr = new Date(e.savedAt).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+      const status = e.status || 'sokt';
+      let realIdx = -1;
+      try {
+        const raw = JSON.parse(localStorage.getItem('pathfinder_job_diary') || '[]');
+        realIdx = raw.findIndex(function(r) { return r.savedAt === e.savedAt && r.jobTitle === e.jobTitle; });
+      } catch (err) {}
+      const statusConfig = {
+        sokt:     { icon: '📤', label: 'Sökt',               color: 'rgba(62,180,137,0.8)' },
+        intervju: { icon: '📞', label: 'Kallas på intervju',  color: 'rgba(240,192,64,0.9)' },
+        fatt:     { icon: '🎉', label: 'Fått jobbet!',        color: 'rgba(62,180,137,1.0)' },
+        nej:      { icon: '❌', label: 'Inget svar / Nej',   color: 'rgba(239,68,68,0.7)'  }
+      };
+      const sc = statusConfig[status] || statusConfig.sokt;
+      let actionBtns = '';
+      if (realIdx >= 0) {
+        if (status === 'sokt') {
+          actionBtns = '<div style="display:flex;gap:6px;margin-top:8px;">' +
+            '<button onclick="window._diarySetStatus(' + realIdx + ',\'intervju\')" style="flex:1;padding:6px 4px;background:rgba(240,192,64,0.1);border:1px solid rgba(240,192,64,0.3);color:rgba(240,192,64,0.9);font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">📞 Kallas på intervju</button>' +
+            '<button onclick="window._diarySetStatus(' + realIdx + ',\'nej\')" style="flex:1;padding:6px 4px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.7);font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">❌ Inget svar / Nej</button>' +
+            '</div>';
+        } else if (status === 'intervju') {
+          actionBtns = '<div style="display:flex;gap:6px;margin-top:8px;">' +
+            '<button onclick="window._diarySetStatus(' + realIdx + ',\'fatt\')" style="flex:1;padding:6px 4px;background:rgba(62,180,137,0.15);border:1px solid rgba(62,180,137,0.4);color:#3eb489;font-size:11px;font-weight:800;border-radius:8px;cursor:pointer;font-family:inherit;">🎉 Fått jobbet!</button>' +
+            '<button onclick="window._diarySetStatus(' + realIdx + ',\'nej\')" style="flex:1;padding:6px 4px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.7);font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">❌ Inget svar / Nej</button>' +
+            '</div>';
+        }
+      }
+      return '<div style="background:rgba(62,180,137,0.04);border:1.5px solid rgba(62,180,137,0.18);border-radius:12px;padding:12px;margin-bottom:7px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
+        '<div style="font-size:18px;">' + sc.icon + '</div>' +
+        '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:#fff;">' + e.jobTitle + '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.35);">' + dStr + (e.company ? ' · ' + e.company : '') + '</div></div>' +
+        (e.jobUrl ? '<a href="' + e.jobUrl + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none;padding:5px 9px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;">↗</a>' : '') +
         '</div>' +
-        (!e.applied?'<button onclick="if(typeof diaryMarkApplied===\'function\'){diaryMarkApplied('+idx+');window._pt(\'diary\');}" ' +
-          'style="width:100%;margin-top:10px;padding:10px;background:linear-gradient(135deg,#e85d26,#f0a040);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">🚀 Ja! Jag sökte detta jobb</button>':'')+
+        '<div style="font-size:11px;font-weight:800;color:' + sc.color + ';background:rgba(255,255,255,0.05);border-radius:8px;padding:4px 10px;display:inline-block;">' + sc.icon + ' ' + sc.label + '</div>' +
+        actionBtns +
         '</div>';
     }
 
