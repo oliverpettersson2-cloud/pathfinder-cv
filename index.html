@@ -7592,7 +7592,12 @@ ${styleTexts}
       <span class="mob-tab__icon" style="font-size:22px;line-height:1;">🎓</span>
       <span style="font-size:8px;font-weight:900;letter-spacing:0.3px;">Utbilda dig</span>
     </button>
-    <!-- 5. Profil -->
+    <!-- 5. Övningar -->
+    <button class="mob-tab" id="tabBtn-ovningar" onclick="mobSwitchTab(&#39;ovningar&#39;)">
+      <span class="mob-tab__icon">🏋️</span>
+      <span style="font-size:8px;font-weight:900;letter-spacing:0.3px;">Övningar</span>
+    </button>
+    <!-- 6. Profil -->
     <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
       <span class="mob-tab__icon">👤</span>
       <span>Profil</span>
@@ -7765,7 +7770,18 @@ ${styleTexts}
       </button>
     </div>
 
-    <!-- FLIK 5: Sparade CV -->
+    <!-- FLIK: Övningar -->
+    <div class="mob-panel" id="mobPanel-ovningar" style="padding-bottom:100px;overflow-y:auto;">
+      <div style="padding:16px 16px 0;">
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Övningar</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;">Lär dig regler, verktyg och AI — i din takt</div>
+        <div id="ovnModuleGrid"></div>
+      </div>
+      <!-- Modul-innehåll (injectas dynamiskt) -->
+      <div id="ovnModuleView" style="display:none;padding:0 16px 20px;"></div>
+    </div>
+
+        <!-- FLIK 5: Sparade CV -->
     <div class="mob-panel" id="mobPanel-export" style="padding-bottom:100px; padding-top:16px;">
       <div style="padding:0 4px 16px;">
         <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Min Profil</div>
@@ -12146,5 +12162,464 @@ ${styleTexts}
 
   });
 
+</script>
+
+<script>
+// ══════════════════════════════════════════════
+// ÖVNINGAR — Tre interaktiva moduler
+// ══════════════════════════════════════════════
+(function() {
+
+  const OVN_KEY = 'cvmatchen_ovningar_progress';
+
+  function getProgress() {
+    try { return JSON.parse(localStorage.getItem(OVN_KEY) || '{}'); } catch(e) { return {}; }
+  }
+  function saveProgress(p) {
+    try { localStorage.setItem(OVN_KEY, JSON.stringify(p)); } catch(e) {}
+  }
+
+  // ── Moduldata ──
+  const MODULES = [
+    {
+      id: 'mod1',
+      icon: '📋',
+      title: 'Regler & Rättigheter',
+      subtitle: 'Närvaro, frånvaro & skyldigheter',
+      color: '#3eb489',
+      borderColor: 'rgba(62,180,137,0.3)',
+      bg: 'rgba(62,180,137,0.07)',
+      lessons: [
+        {
+          title: 'Vad är aktivitetskrav?',
+          simple: 'Aktivitetskrav betyder att du ska delta i de aktiviteter som du och din handläggare har bestämt. Det kan vara möten, jobbsök, praktik eller utbildning. Du behöver delta för att få ekonomiskt bistånd.',
+          advanced: 'Aktivitetskrav innebär att du förväntas följa den planering som beslutats tillsammans med din handläggare. Syftet är att stärka din väg mot självförsörjning. Om du inte deltar kan det påverka din ersättning.'
+        },
+        {
+          title: 'Närvaro & frånvaro',
+          simple: 'Om du blir sjuk måste du säga till direkt. Du ska meddela samma dag. Du kan behöva lämna intyg.',
+          advanced: 'Frånvaro ska alltid meddelas samma dag, helst innan aktiviteten börjar. Vid upprepad frånvaro kan handläggaren begära intyg eller uppdaterad planering.'
+        },
+        {
+          title: 'Rättigheter & skyldigheter',
+          simple: 'Du har rätt till stöd, planering och information.\nDu har skyldighet att delta, lämna korrekta uppgifter och följa planen.',
+          advanced: 'Du har rätt till en individuell plan, tydlig kommunikation och skälig handläggningstid.\nDu har skyldighet att medverka aktivt, lämna korrekta uppgifter och följa beslutade aktiviteter.'
+        }
+      ],
+      exercise: {
+        type: 'fill',
+        prompt: 'Fyll i meningen:',
+        question: 'Om jag blir sjuk ska jag ________ min handläggare.',
+        answer: 'meddela',
+        hint: 'Tänk på vad du ska göra samma dag.'
+      },
+      quiz: [
+        { q: 'Vad betyder aktivitetskrav?', options: ['Du kan göra vad du vill', 'Du ska delta i planerade aktiviteter', 'Du behöver inte meddela frånvaro'], correct: 1 },
+        { q: 'När ska du meddela frånvaro?', options: ['Dagen efter', 'Samma dag', 'Nästa vecka'], correct: 1 },
+        { q: 'Vad är en skyldighet?', options: ['Något du kan välja', 'Något du måste göra', 'En rättighet'], correct: 1 },
+        { q: 'Vad är en rättighet?', options: ['Något du är tvungen att göra', 'Något du har rätt till', 'En aktivitet'], correct: 1 },
+        { q: 'Vad kan hända om du inte deltar?', options: ['Ingenting', 'Din ersättning kan påverkas', 'Du får mer tid'], correct: 1 }
+      ],
+      prompts: [
+        'Förklara mina skyldigheter på enkel svenska.',
+        'Skriv ett korrekt meddelande till min handläggare om sjukfrånvaro.',
+        'Sammanfatta reglerna för aktivitetskrav i tre meningar.'
+      ]
+    },
+    {
+      id: 'mod2',
+      icon: '💻',
+      title: 'SKills-systemet',
+      subtitle: 'Introduktion till SKills & din plan',
+      color: '#f0c040',
+      borderColor: 'rgba(240,192,64,0.3)',
+      bg: 'rgba(240,192,64,0.07)',
+      lessons: [
+        {
+          title: 'Vad är SKills?',
+          simple: 'SKills är ett system där du ser din plan, dina aktiviteter och vad du ska göra.',
+          advanced: 'SKills är ett digitalt verktyg för planering, uppföljning och kommunikation mellan dig och din handläggare.'
+        },
+        {
+          title: 'Så använder du SKills',
+          simple: 'Du loggar in, ser din plan och markerar vad du gjort.',
+          advanced: 'Du kan följa din utveckling, se deadlines och kommunicera med handläggare direkt i systemet.'
+        },
+        {
+          title: 'SKills + CVmatchen',
+          simple: 'SKills visar vad du ska göra. CVmatchen hjälper dig göra det.',
+          advanced: 'CVmatchen genererar CV, profiltext och matchningar som du sedan kan använda när du söker de jobb som finns i din SKills-plan.'
+        }
+      ],
+      exercise: {
+        type: 'match',
+        prompt: 'Matcha funktion med beskrivning:',
+        pairs: [
+          { left: 'Se din plan', right: 'SKills' },
+          { left: 'Skapa CV', right: 'CVmatchen' },
+          { left: 'Markera gjorda aktiviteter', right: 'SKills' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad är SKills?', options: ['En jobbsökarsida', 'Ett planeringsverktyg', 'En CV-mall'], correct: 1 },
+        { q: 'Vad kan du göra i SKills?', options: ['Skriva CV', 'Följa din plan och kommunicera', 'Söka utbildning'], correct: 1 },
+        { q: 'Hur hänger SKills och CVmatchen ihop?', options: ['De är samma sak', 'SKills planerar, CVmatchen levererar', 'De har inget med varandra att göra'], correct: 1 }
+      ],
+      prompts: [
+        'Förklara SKills för mig som om jag vore ny i Sverige.',
+        'Hjälp mig skapa en veckoplan för mina aktiviteter.',
+        'Vad ska jag tänka på när jag loggar in i SKills första gången?'
+      ]
+    },
+    {
+      id: 'mod3',
+      icon: '🤖',
+      title: 'AI & CVmatchen',
+      subtitle: 'Hur AI hjälper dig hitta jobb',
+      color: '#a78bfa',
+      borderColor: 'rgba(167,139,250,0.3)',
+      bg: 'rgba(167,139,250,0.07)',
+      lessons: [
+        {
+          title: 'Vad AI kan göra för dig',
+          simple: 'AI hjälper dig skriva, förstå och hitta jobb snabbare.',
+          advanced: 'AI analyserar texter, skapar CV och profiltext och ger feedback baserat på dina styrkor och den jobbannons du söker.'
+        },
+        {
+          title: 'Hur CVmatchen fungerar',
+          simple: '1. Bygg ditt CV\n2. Sök bland riktiga jobb\n3. AI anpassar ditt CV mot jobbet\n4. Exportera och skicka',
+          advanced: 'CVmatchen laddar jobbdata från Platsbanken, låter AI matcha din profil mot annonsens krav och genererar en skräddarsydd profiltext och ett anpassat CV för varje ansökan.'
+        },
+        {
+          title: 'Bra prompts = bättre resultat',
+          simple: '❌ "Hjälp mig."\n✅ "Skapa en pitch baserat på min erfarenhet som butikssäljare."',
+          advanced: 'En bra prompt är specifik och ger AI rätt kontext. Ju mer du berättar om din bakgrund och vad du söker, desto bättre svar får du.'
+        }
+      ],
+      exercise: {
+        type: 'prompt',
+        prompt: 'Välj den bättre prompten:',
+        options: [
+          { text: '"Hjälp mig."', correct: false, feedback: 'För vag — AI vet inte vad du behöver.' },
+          { text: '"Skriv en pitch för en lagerarbetare med 3 års erfarenhet."', correct: true, feedback: 'Bra! Specifik och tydlig.' },
+          { text: '"CV tack."', correct: false, feedback: 'För kort — saknar kontext.' }
+        ]
+      },
+      quiz: [
+        { q: 'Vad kan AI hjälpa dig med?', options: ['Bara skriva brev', 'Skriva CV, profiltext och ge feedback', 'Inget av ovanstående'], correct: 1 },
+        { q: 'Vad gör CVmatchen?', options: ['Söker jobb åt dig', 'Matchar ditt CV mot riktiga jobbannonser med AI', 'Skickar din ansökan'], correct: 1 },
+        { q: 'Vad är en bra prompt?', options: ['Kort och vag', 'Specifik med rätt kontext', 'Så lång som möjligt'], correct: 1 }
+      ],
+      prompts: [
+        'Skapa en kort pitch baserat på min erfarenhet.',
+        'Förklara denna jobbannons på enkel svenska.',
+        'Ge mig tre förbättringar till mitt CV.'
+      ]
+    }
+  ];
+
+  // ── Rendera modulöversikt ──
+  function renderModuleGrid() {
+    const grid = document.getElementById('ovnModuleGrid');
+    if (!grid) return;
+    const view = document.getElementById('ovnModuleView');
+    if (view) view.style.display = 'none';
+    grid.style.display = '';
+    const progress = getProgress();
+    let html = '';
+    MODULES.forEach(function(mod) {
+      const p = progress[mod.id] || {};
+      const lessonsOk = (p.lessonsRead || 0);
+      const exerciseOk = p.exerciseDone ? 1 : 0;
+      const quizScore = p.quizScore || 0;
+      const totalSteps = mod.lessons.length + 1 + 1; // lessons + exercise + quiz
+      const doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
+      const pct = Math.round((doneSteps / totalSteps) * 100);
+      html += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="background:' + mod.bg + ';border:1.5px solid ' + mod.borderColor + ';border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.15s;">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
+        '<div style="font-size:28px;">' + mod.icon + '</div>' +
+        '<div style="flex:1;">' +
+        '<div style="font-size:14px;font-weight:800;color:#fff;">' + mod.title + '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.45);">' + mod.subtitle + '</div>' +
+        '</div>' +
+        (pct === 100 ? '<div style="font-size:20px;">✅</div>' : '<div style="font-size:12px;font-weight:700;color:' + mod.color + ';">' + pct + '%</div>') +
+        '</div>' +
+        '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:5px;overflow:hidden;">' +
+        '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35);">' +
+        '<span>' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + ' lektioner</span>' +
+        '<span>·</span><span>Övning ' + (exerciseOk ? '✓' : '–') + '</span>' +
+        '<span>·</span><span>Quiz ' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '–') + '</span>' +
+        '</div>' +
+        '</div>';
+    });
+    grid.innerHTML = html;
+  }
+
+  // ── Öppna en modul ──
+  window.ovnOpenModule = function(modId) {
+    const mod = MODULES.find(function(m){ return m.id === modId; });
+    if (!mod) return;
+    const grid = document.getElementById('ovnModuleGrid');
+    const view = document.getElementById('ovnModuleView');
+    if (grid) grid.style.display = 'none';
+    if (view) { view.style.display = ''; }
+    ovnShowLesson(mod, 0);
+  };
+
+  // ── Visa lektion ──
+  function ovnShowLesson(mod, idx) {
+    const view = document.getElementById('ovnModuleView');
+    if (!view) return;
+    const lesson = mod.lessons[idx];
+    const progress = getProgress();
+    const p = progress[mod.id] || {};
+    const level = p.level || 'simple';
+    const totalSteps = mod.lessons.length + 2;
+    const currentStep = idx + 1;
+    const pct = Math.round((currentStep / totalSteps) * 100);
+
+    view.innerHTML =
+      // Back + progress
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:16px;">' +
+      '<button onclick="renderModuleGrid()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;padding:0;">←</button>' +
+      '<div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:5px;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div></div>' +
+      '<span style="font-size:10px;color:rgba(255,255,255,0.35);">' + currentStep + '/' + totalSteps + '</span>' +
+      '</div>' +
+      // Module label
+      '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:6px;">' + mod.icon + ' ' + mod.title + '</div>' +
+      // Lesson title
+      '<div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:14px;">' + lesson.title + '</div>' +
+      // Level toggle
+      '<div style="display:flex;gap:6px;margin-bottom:14px;">' +
+      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'simple\')" style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:none;' + (level==='simple'?'background:'+mod.color+';color:#fff;':'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);') + '">Enkel nivå</button>' +
+      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'advanced\')" style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:none;' + (level==='advanced'?'background:'+mod.color+';color:#fff;':'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);') + '">Avancerad nivå</button>' +
+      '</div>' +
+      // Lesson text
+      '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7;margin-bottom:20px;white-space:pre-line;">' + (level === 'advanced' ? lesson.advanced : lesson.simple) + '</div>' +
+      // Nav buttons
+      '<div style="display:flex;gap:8px;">' +
+      (idx > 0 ? '<button onclick="ovnShowLesson(MODULES.find(function(m){return m.id===\'' + mod.id + '\'}),' + (idx-1) + ')" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">← Föregående</button>' : '') +
+      '<button onclick="ovnLessonNext(\'' + mod.id + '\',' + idx + ')" style="flex:1;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">' + (idx < mod.lessons.length - 1 ? 'Nästa lektion →' : 'Gå till övning →') + '</button>' +
+      '</div>';
+  }
+
+  window.ovnSetLevel = function(modId, idx, level) {
+    const p = getProgress();
+    if (!p[modId]) p[modId] = {};
+    p[modId].level = level;
+    saveProgress(p);
+    const mod = MODULES.find(function(m){ return m.id === modId; });
+    ovnShowLesson(mod, parseInt(idx));
+  };
+
+  window.ovnLessonNext = function(modId, idx) {
+    const mod = MODULES.find(function(m){ return m.id === modId; });
+    const p = getProgress();
+    if (!p[modId]) p[modId] = {};
+    p[modId].lessonsRead = Math.max(p[modId].lessonsRead || 0, idx + 1);
+    saveProgress(p);
+    if (idx < mod.lessons.length - 1) {
+      ovnShowLesson(mod, idx + 1);
+    } else {
+      ovnShowExercise(mod);
+    }
+  };
+
+  // ── Visa övning ──
+  function ovnShowExercise(mod) {
+    const view = document.getElementById('ovnModuleView');
+    if (!view) return;
+    const progress = getProgress();
+    const p = progress[mod.id] || {};
+    const totalSteps = mod.lessons.length + 2;
+    const currentStep = mod.lessons.length + 1;
+    const pct = Math.round((currentStep / totalSteps) * 100);
+    const ex = mod.exercise;
+    let exHtml = '';
+
+    if (ex.type === 'fill') {
+      exHtml = '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:12px;">' + ex.prompt + '</div>' +
+        '<div style="font-size:15px;color:#fff;font-weight:700;margin-bottom:16px;">' + ex.question + '</div>' +
+        '<input id="ovnFillInput" type="text" placeholder="Ditt svar..." style="width:100%;box-sizing:border-box;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;margin-bottom:8px;">' +
+        '<div id="ovnFillFeedback" style="font-size:12px;min-height:18px;margin-bottom:12px;"></div>' +
+        '<button onclick="ovnCheckFill(\'' + mod.id + '\',\'' + ex.answer + '\')" style="width:100%;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">Kontrollera svar</button>';
+    } else if (ex.type === 'match') {
+      exHtml = '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:12px;">' + ex.prompt + '</div>';
+      ex.pairs.forEach(function(pair, i) {
+        exHtml += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+          '<div style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;font-size:12px;color:rgba(255,255,255,0.7);">' + pair.left + '</div>' +
+          '<div style="font-size:14px;color:' + mod.color + ';">→</div>' +
+          '<div style="flex:1;background:' + mod.bg + ';border:1px solid ' + mod.borderColor + ';border-radius:8px;padding:8px 10px;font-size:12px;font-weight:700;color:' + mod.color + ';">' + pair.right + '</div>' +
+          '</div>';
+      });
+      exHtml += '<button onclick="ovnExerciseDone(\'' + mod.id + '\')" style="width:100%;margin-top:8px;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">Jag förstår! Gå till quiz →</button>';
+    } else if (ex.type === 'prompt') {
+      exHtml = '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:14px;">' + ex.prompt + '</div>';
+      ex.options.forEach(function(opt, i) {
+        exHtml += '<div id="ovnPromptOpt' + i + '" onclick="ovnCheckPrompt(this,' + opt.correct + ',\'' + mod.id + '\',\'' + opt.feedback.replace(/'/g,"&#39;") + '\')" style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.7);">' + opt.text + '</div>';
+      });
+      exHtml += '<div id="ovnPromptFeedback" style="font-size:12px;min-height:18px;margin-top:4px;"></div>';
+    }
+
+    view.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:16px;">' +
+      '<button onclick="ovnShowLesson(MODULES.find(function(m){return m.id===\'' + mod.id + '\'}),'+( mod.lessons.length-1)+')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;padding:0;">←</button>' +
+      '<div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:5px;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;"></div></div>' +
+      '<span style="font-size:10px;color:rgba(255,255,255,0.35);">' + currentStep + '/' + totalSteps + '</span>' +
+      '</div>' +
+      '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:6px;">' + mod.icon + ' Övning</div>' +
+      '<div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:16px;">Testa dina kunskaper</div>' +
+      exHtml;
+  }
+
+  window.ovnCheckFill = function(modId, answer) {
+    const input = document.getElementById('ovnFillInput');
+    const fb = document.getElementById('ovnFillFeedback');
+    if (!input || !fb) return;
+    const val = input.value.trim().toLowerCase();
+    const mod = MODULES.find(function(m){ return m.id === modId; });
+    if (val === answer.toLowerCase() || val.includes(answer.toLowerCase())) {
+      fb.style.color = '#3eb489'; fb.textContent = '✅ Rätt! Bra jobbat.';
+      setTimeout(function(){ ovnExerciseDone(modId); }, 1000);
+    } else {
+      fb.style.color = '#f87171'; fb.textContent = '❌ Försök igen. Tips: ' + (mod.exercise.hint || '');
+    }
+  };
+
+  window.ovnCheckPrompt = function(el, correct, modId, feedback) {
+    const fb = document.getElementById('ovnPromptFeedback');
+    const mod = MODULES.find(function(m){ return m.id === modId; });
+    if (correct) {
+      el.style.border = '1.5px solid ' + mod.color;
+      el.style.background = mod.bg;
+      el.style.color = mod.color;
+      if (fb) { fb.style.color = '#3eb489'; fb.textContent = '✅ ' + feedback; }
+      setTimeout(function(){ ovnExerciseDone(modId); }, 1200);
+    } else {
+      el.style.border = '1.5px solid rgba(239,68,68,0.5)';
+      el.style.color = '#f87171';
+      if (fb) { fb.style.color = '#f87171'; fb.textContent = '❌ ' + feedback; }
+    }
+  };
+
+  window.ovnExerciseDone = function(modId) {
+    const p = getProgress();
+    if (!p[modId]) p[modId] = {};
+    p[modId].exerciseDone = true;
+    saveProgress(p);
+    const mod = MODULES.find(function(m){ return m.id === modId; });
+    ovnShowQuiz(mod, 0, 0);
+  };
+
+  // ── Visa quiz ──
+  function ovnShowQuiz(mod, qIdx, score) {
+    const view = document.getElementById('ovnModuleView');
+    if (!view) return;
+    const q = mod.quiz[qIdx];
+    const totalSteps = mod.lessons.length + 2;
+    const pct = 100;
+
+    view.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:16px;">' +
+      '<div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:5px;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;"></div></div>' +
+      '<span style="font-size:10px;color:rgba(255,255,255,0.35);">Quiz ' + (qIdx+1) + '/' + mod.quiz.length + '</span>' +
+      '</div>' +
+      '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:6px;">' + mod.icon + ' Quiz</div>' +
+      '<div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:20px;">' + q.q + '</div>' +
+      '<div id="ovnQuizOptions">' +
+      q.options.map(function(opt, i) {
+        return '<div onclick="ovnAnswerQuiz(this,' + i + ',' + q.correct + ',\'' + mod.id + '\',' + qIdx + ',' + score + ')" style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 14px;margin-bottom:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.7);">' + opt + '</div>';
+      }).join('') +
+      '</div>' +
+      '<div id="ovnQuizFeedback" style="font-size:12px;min-height:18px;margin-top:8px;"></div>';
+  }
+
+  window.ovnAnswerQuiz = function(el, chosen, correct, modId, qIdx, score) {
+    const mod = MODULES.find(function(m){ return m.id === modId; });
+    const fb = document.getElementById('ovnQuizFeedback');
+    const opts = document.querySelectorAll('#ovnQuizOptions > div');
+    opts.forEach(function(o){ o.style.pointerEvents='none'; });
+    const isCorrect = chosen === correct;
+    el.style.border = '1.5px solid ' + (isCorrect ? mod.color : 'rgba(239,68,68,0.5)');
+    el.style.color = isCorrect ? mod.color : '#f87171';
+    if (!isCorrect) {
+      opts[correct].style.border = '1.5px solid ' + mod.color;
+      opts[correct].style.color = mod.color;
+    }
+    const newScore = score + (isCorrect ? 1 : 0);
+    if (fb) { fb.style.color = isCorrect ? '#3eb489' : '#f87171'; fb.textContent = isCorrect ? '✅ Rätt!' : '❌ Rätt svar: ' + mod.quiz[qIdx].options[correct]; }
+    setTimeout(function(){
+      if (qIdx < mod.quiz.length - 1) {
+        ovnShowQuiz(mod, qIdx + 1, newScore);
+      } else {
+        ovnShowResult(mod, newScore);
+      }
+    }, 1000);
+  };
+
+  // ── Slutresultat ──
+  function ovnShowResult(mod, score) {
+    const view = document.getElementById('ovnModuleView');
+    if (!view) return;
+    const p = getProgress();
+    if (!p[mod.id]) p[mod.id] = {};
+    p[mod.id].quizDone = true;
+    p[mod.id].quizScore = score;
+    saveProgress(p);
+    const pct = Math.round((score / mod.quiz.length) * 100);
+    const great = pct >= 80;
+
+    view.innerHTML =
+      '<div style="text-align:center;padding:32px 0 20px;">' +
+      '<div style="font-size:48px;margin-bottom:12px;">' + (great ? '🎉' : '💪') + '</div>' +
+      '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;">' + (great ? 'Bra jobbat!' : 'Fortsätt öva!') + '</div>' +
+      '<div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:20px;">Du fick ' + score + ' av ' + mod.quiz.length + ' rätt</div>' +
+      '<div style="background:rgba(255,255,255,0.05);border-radius:12px;height:10px;overflow:hidden;margin-bottom:20px;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:12px;"></div></div>' +
+      '</div>' +
+      // AI-prompts
+      '<div style="font-size:12px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px;">🤖 Prova i AI-SYV</div>' +
+      mod.prompts.map(function(pr) {
+        return '<div onclick="ovnSendPrompt(\'' + pr.replace(/'/g,"&#39;") + '\')" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:10px 12px;margin-bottom:7px;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.6);">💬 ' + pr + '</div>';
+      }).join('') +
+      '<div style="display:flex;gap:8px;margin-top:16px;">' +
+      (pct < 80 ? '<button onclick="ovnOpenModule(\'' + mod.id + '\')" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">Försök igen</button>' : '') +
+      '<button onclick="renderModuleGrid()" style="flex:1;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">← Tillbaka</button>' +
+      '</div>';
+  }
+
+  window.ovnSendPrompt = function(prompt) {
+    if (typeof mobSwitchTab === 'function') mobSwitchTab('aisyv');
+    setTimeout(function() {
+      const inp = document.querySelector('#syvInput, #aiSyvInput, textarea[id*="syv"]');
+      if (inp) { inp.value = prompt; inp.dispatchEvent(new Event('input')); }
+      showToast('💬 Prompt kopierad till AI-SYV!', 'info');
+    }, 400);
+    if (navigator.clipboard) navigator.clipboard.writeText(prompt).catch(function(){});
+  };
+
+  // Hook into mobSwitchTab for övningar
+  const _origSwitchForOvn = window.mobSwitchTab;
+  window.mobSwitchTab = function(tab) {
+    if (_origSwitchForOvn) _origSwitchForOvn(tab);
+    if (tab === 'ovningar') {
+      setTimeout(function() {
+        renderModuleGrid();
+      }, 100);
+    }
+  };
+
+  // Init if already on övningar
+  window.addEventListener('load', function() {
+    const panel = document.getElementById('mobPanel-ovningar');
+    if (panel && panel.classList.contains('mob-panel--active')) renderModuleGrid();
+  });
+
+})();
 </script>
 </body></html>
