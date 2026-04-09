@@ -11038,16 +11038,15 @@ ${styleTexts}
             '</div>';
           resultEl.querySelector('.done-profil').onclick = () => { if (typeof mobSwitchTab === 'function') mobSwitchTab('export'); };
           resultEl.querySelector('.done-matcha').onclick = () => { showBack(); };
-          resultEl.querySelector('.done-export').onclick = () => {
+          resultEl.querySelector('.done-export').onclick = async () => {
             // Hitta snapshot-id för det just matchade CV:t
             const mlist = (typeof mobGetMatchedCVs === 'function') ? mobGetMatchedCVs() : [];
             const snap = mlist.find(function(c){ return c.title === _savedMatchTitle; });
-            if (snap && typeof window._exportMatchedWithReminder === 'function') {
-              window._exportMatchedWithReminder(snap.id);
-            } else if (typeof mobExportMatchedPDF === 'function' && snap) {
-              mobExportMatchedPDF(snap.id);
+            // Steg 1: Exportera CV som PDF
+            if (snap && typeof mobExportMatchedPDF === 'function') {
+              await mobExportMatchedPDF(snap.id);
             }
-            // Öppna jobannons separat i ny flik
+            // Steg 2: Öppna jobannons i webbläsare efteråt
             if (_savedJobUrl) window.open(_savedJobUrl, '_blank', 'noopener');
           };
           const genBtn = section && section.querySelector('button[id^="matchaGenBtn_"]');
@@ -11487,8 +11486,8 @@ ${styleTexts}
         '<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:8px;">Innan du exporterar — gör det personligt!</div>' +
         '<div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:16px;">' +
           '🔍 <strong style="color:rgba(255,255,255,0.8);">Läs igenom annonsen noga</strong> — vilka ord och krav lyfter de fram?<br><br>' +
-          '✏️ <strong style="color:rgba(255,255,255,0.8);">Justera din profiltext</strong> så att den speglar just det här jobbet.<br><br>' +
-          '🎯 <strong style="color:rgba(255,255,255,0.8);">Matcha dina kompetenser</strong> mot annonsens kravlista — lägg till det som saknas.<br><br>' +
+          '✨ <strong style="color:rgba(255,255,255,0.8);">Förbättra din profiltext</strong> för att göra den mer personlig — AI har redan matchat den mot annonsen!<br><br>' +
+          '👀 <strong style="color:rgba(255,255,255,0.8);">Kolla igenom ditt CV en extra gång</strong> så att allt ser bra ut innan du skickar.<br><br>' +
           'Ett anpassat CV ökar dina chanser <strong style="color:#3eb489;">markant</strong>.' +
         '</div>' +
         '<div style="display:flex;gap:8px;">' +
