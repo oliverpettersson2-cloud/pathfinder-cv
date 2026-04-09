@@ -2452,7 +2452,9 @@
       #mobileTabBar { display: none !important; }
       #mobileContent { display: none !important; }
     }
-</style>
+    #profilMenuModal.active { display: flex !important; }
+    #gdprPolicyModal.active { display: flex !important; }
+  </style>
   <style>
     .cpicker-item {
       padding: 14px 20px;
@@ -7358,18 +7360,29 @@ ${styleTexts}
     function authShowUserMenu() {
       const saved = pfRead(AUTH_STORAGE_KEY);
       const email = saved ? JSON.parse(saved).email : '';
-      if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
-        pfRemove(AUTH_STORAGE_KEY);
-        window.authUserId = null;
-        window.authAccessToken = null;
-        document.getElementById('authUserBadge').style.display = 'none';
-        document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-        document.getElementById('authStep1').classList.add('active');
-        document.getElementById('authEmail').value = '';
-        authCurrentEmail = '';
-        setNavStep(1);
-        document.getElementById('authOverlay').classList.remove('hidden');
-      }
+      document.getElementById('profilMenuEmail').textContent = email || '–';
+      document.getElementById('profilMenuModal').classList.add('active');
+    }
+    function authDoSignOut() {
+      document.getElementById('profilMenuModal').classList.remove('active');
+      pfRemove(AUTH_STORAGE_KEY);
+      window.authUserId = null;
+      window.authAccessToken = null;
+      document.getElementById('authUserBadge').style.display = 'none';
+      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('authStep1').classList.add('active');
+      document.getElementById('authEmail').value = '';
+      authCurrentEmail = '';
+      setNavStep(1);
+      document.getElementById('authOverlay').classList.remove('hidden');
+    }
+    function authDoDeleteAccount() {
+      const el = document.getElementById('profilDeleteConfirm');
+      el.style.display = el.style.display === 'none' ? '' : 'none';
+    }
+    function authConfirmDeleteAccount() {
+      try { localStorage.clear(); } catch(e) {}
+      authDoSignOut();
     }
     // ===== SLUT AUTENTISERING =====
 
@@ -12968,7 +12981,6 @@ ${styleTexts}
         const doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
         const pct = Math.round((doneSteps / totalSteps) * 100);
         const modNum = modIdx + 1;
-        // Sequential lock: requires previous module 100% done
         var isLocked = false;
         if (modIdx > 0) {
           var prevMod = activeDay.modules[modIdx - 1];
@@ -12979,13 +12991,12 @@ ${styleTexts}
         if (isLocked) {
           modulesHtml += '<div style="background:rgba(255,255,255,0.03);border:1.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin-bottom:12px;">' +
             '<div style="display:flex;align-items:center;gap:12px;">' +
-            '<div style="font-size:26px;filter:grayscale(1);opacity:0.4;">🔒</div>' +
+            '<div style="font-size:26px;opacity:0.35;">🔒</div>' +
             '<div style="flex:1;">' +
             '<div style="font-size:10px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:3px;">Modul ' + modNum + '</div>' +
             '<div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.3);">' + mod.title + '</div>' +
-            '<div style="font-size:11px;color:rgba(255,255,255,0.18);">Klar Modul ' + modIdx + ' för att låsa upp</div>' +
+            '<div style="font-size:11px;color:rgba(255,255,255,0.18);">Klar Modul ' + modIdx + ' f\u00f6r att l\u00e5sa upp</div>' +
             '</div>' +
-            '<div style="font-size:16px;opacity:0.25;">🔒</div>' +
             '</div>' +
             '</div>';
         } else {
@@ -13604,4 +13615,87 @@ ${styleTexts}
 })();
 </script>
 
+
+  <div id="profilMenuModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);align-items:flex-end;justify-content:center;">
+    <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 20px 36px;box-sizing:border-box;">
+      <div style="width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:4px;margin:0 auto 20px;"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(62,180,137,0.15);border:1.5px solid rgba(62,180,137,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">👤</div>
+        <div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Inloggad som</div>
+          <div id="profilMenuEmail" style="font-size:13px;font-weight:700;color:#fff;"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button onclick="document.getElementById('profilMenuModal').classList.remove('active');document.getElementById('gdprPolicyModal').classList.add('active');" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;">
+          <span style="font-size:20px;">📄</span><span style="flex:1;">Integritetspolicy</span><span style="color:rgba(255,255,255,0.25);font-size:16px;">›</span>
+        </button>
+        <button onclick="authDoDeleteAccount()" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:rgba(220,50,50,0.06);border:1px solid rgba(220,50,50,0.2);border-radius:14px;color:rgba(255,100,100,0.85);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;">
+          <span style="font-size:20px;">🗑️</span><span style="flex:1;">Radera mitt konto</span><span style="color:rgba(255,100,100,0.35);font-size:16px;">›</span>
+        </button>
+        <div id="profilDeleteConfirm" style="display:none;background:rgba(220,50,50,0.1);border:1px solid rgba(220,50,50,0.3);border-radius:12px;padding:14px 16px;">
+          <div style="font-size:12px;color:rgba(255,150,150,0.9);margin-bottom:12px;line-height:1.5;">⚠️ Ditt konto och all lokal data raderas permanent. Det går inte att ångra.</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="authDoDeleteAccount()" style="flex:1;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Avbryt</button>
+            <button onclick="authConfirmDeleteAccount()" style="flex:1;padding:10px;background:rgba(220,50,50,0.4);border:1px solid rgba(220,50,50,0.6);border-radius:10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Ja, radera allt</button>
+          </div>
+        </div>
+        <button onclick="authDoSignOut()" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;">
+          <span style="font-size:20px;">🚪</span><span style="flex:1;">Logga ut</span>
+        </button>
+      </div>
+      <button onclick="document.getElementById('profilMenuModal').classList.remove('active')" style="margin-top:18px;width:100%;padding:13px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:rgba(255,255,255,0.4);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Stäng</button>
+    </div>
+  </div>
+
+  <div id="gdprPolicyModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;box-sizing:border-box;">
+    <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;">
+      <div style="padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <span style="font-size:20px;">📄</span>
+        <div style="flex:1;"><div style="font-size:15px;font-weight:900;color:#fff;">Integritetspolicy</div><div style="font-size:11px;color:rgba(255,255,255,0.35);">CVmatchen · Senast uppdaterad april 2025</div></div>
+        <button onclick="document.getElementById('gdprPolicyModal').classList.remove('active')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:0;line-height:1;">×</button>
+      </div>
+      <div style="overflow-y:auto;padding:20px;font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">1. Personuppgiftsansvarig</div>
+        <p style="margin:0 0 16px;">PathfinderAI, hej@pathfinderai.se, är personuppgiftsansvarig för behandlingen av dina personuppgifter i CVmatchen.</p>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">2. Vilka uppgifter samlar vi in?</div>
+        <ul style="margin:0 0 16px;padding-left:18px;">
+          <li style="margin-bottom:4px;"><b>E-postadress</b> — för inloggning via engångskod (OTP)</li>
+          <li style="margin-bottom:4px;"><b>CV-information</b> — namn, arbetslivserfarenhet, utbildning, kompetenser m.m. som du själv fyller i</li>
+          <li style="margin-bottom:4px;"><b>Tekniska loggar</b> — anonyma felloggar för att förbättra tjänsten</li>
+        </ul>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">3. Varför behandlar vi dina uppgifter?</div>
+        <ul style="margin:0 0 16px;padding-left:18px;">
+          <li style="margin-bottom:4px;">Tillhandahålla tjänsten (avtal, GDPR art. 6.1.b)</li>
+          <li style="margin-bottom:4px;">Skicka inloggningskod (berättigat intresse, art. 6.1.f)</li>
+          <li style="margin-bottom:4px;">Uppfylla rättsliga skyldigheter (art. 6.1.c)</li>
+        </ul>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">4. Var lagras dina uppgifter?</div>
+        <ul style="margin:0 0 16px;padding-left:18px;">
+          <li style="margin-bottom:4px;"><b>Supabase</b> (EU/USA) — autentisering och e-postadress</li>
+          <li style="margin-bottom:4px;"><b>Anthropic</b> (USA) — AI-bearbetning av CV-text (ej sparad)</li>
+          <li style="margin-bottom:4px;"><b>Resend</b> (USA) — e-postutskick av inloggningskod</li>
+          <li style="margin-bottom:4px;"><b>Din enhet</b> — CV-data lagras lokalt i webbläsaren (localStorage)</li>
+        </ul>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">5. Hur länge sparas uppgifterna?</div>
+        <p style="margin:0 0 16px;">Din e-postadress sparas så länge ditt konto är aktivt. CV-data lagras lokalt och raderas när du rensar webbläsaren eller raderar ditt konto. Anthropic sparar inte din text efter varje AI-förfrågan.</p>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">6. Dina rättigheter</div>
+        <ul style="margin:0 0 16px;padding-left:18px;">
+          <li style="margin-bottom:4px;"><b>Tillgång</b> — begära utdrag av dina uppgifter</li>
+          <li style="margin-bottom:4px;"><b>Rättelse</b> — korrigera felaktiga uppgifter</li>
+          <li style="margin-bottom:4px;"><b>Radering</b> — "rätten att bli bortglömd"</li>
+          <li style="margin-bottom:4px;"><b>Dataportabilitet</b> — få ut dina uppgifter maskinläsbart</li>
+          <li style="margin-bottom:4px;"><b>Invändning</b> — invända mot viss behandling</li>
+        </ul>
+        <p style="margin:0 0 16px;">Kontakta oss på <b>hej@pathfinderai.se</b>. Du kan också klaga till <b>IMY</b> på imy.se.</p>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">7. Cookies &amp; lokal lagring</div>
+        <p style="margin:0 0 16px;">CVmatchen använder localStorage för att spara ditt CV lokalt. Vi använder inga tracking-cookies eller reklamkakor.</p>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">8. Kontakt</div>
+        <p style="margin:0;">PathfinderAI · hej@pathfinderai.se</p>
+      </div>
+      <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+        <button onclick="document.getElementById('gdprPolicyModal').classList.remove('active')" style="width:100%;padding:13px;background:#3eb489;border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">Stäng</button>
+      </div>
+    </div>
+  </div>
 </body></html>
