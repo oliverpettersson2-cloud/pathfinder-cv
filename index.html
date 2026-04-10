@@ -17652,6 +17652,14 @@ ${styleTexts}
   // Alias för anrop från mobSwitchTab
   window.syvUpdateSavedBtn = updateSavedBadge;
   window.syvFetchUtbildningar = function() { loadEduData(); };
+  window.showEduModal = showEduModal;
+
+  // Global delegation for edu-link-btn (data-attribute approach, no inline onclick)
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.edu-link-btn');
+    if (!btn) return;
+    showEduModal(btn.dataset.namn || '', btn.dataset.url || '');
+  });
 
   // 30 Framtidsyrken
   var FRAMTIDSYRKEN = [
@@ -17803,7 +17811,7 @@ ${styleTexts}
         '<button class="edu-save-btn" data-namn="' + (prog.namn||'').replace(/"/g,'&quot;') + '" data-ort="' + (prog.ort||'').replace(/"/g,'&quot;') + '" data-skola="' + (prog.skola||'').replace(/"/g,'&quot;') + '" data-typ="' + (prog.typ||'').replace(/"/g,'&quot;') + '" data-krav="' + (prog.krav||'').replace(/"/g,'&quot;') + '" data-langd="' + (prog.langd||'').replace(/"/g,'&quot;') + '" data-url="' + linkUrl.replace(/"/g,'&quot;') + '" style="flex-shrink:0;align-self:flex-start;background:' + (isSav?'rgba(240,192,64,0.2)':'rgba(62,180,137,0.12)') + ';border:1.5px solid ' + (isSav?'rgba(240,192,64,0.5)':'rgba(62,180,137,0.35)') + ';border-radius:20px;padding:7px 13px;color:' + (isSav?'#f0c040':'#3eb489') + ';font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap;">' + (isSav?'🔖 Sparad':'+ Spara') + '</button>' +
       '</div>' +
       // Läs mer-länk
-      '<button onclick="showEduModal(' + JSON.stringify(prog.namn||'').replace(/"/g,\'&quot;\') + ',' + JSON.stringify(linkUrl).replace(/"/g,\'&quot;\') + ')" style="background:none;border:none;display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:700;cursor:pointer;font-family:inherit;padding:0;">🔗 Sök utbildningen</button>';
+      '<button class="edu-link-btn" data-namn="' + (prog.namn||'').replace(/"/g,'&quot;') + '" data-url="' + linkUrl.replace(/"/g,'&quot;') + '" style="background:none;border:none;display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:700;cursor:pointer;font-family:inherit;padding:0;">🔗 Sök utbildningen</button>';
     return div;
   }
 
@@ -17989,7 +17997,7 @@ ${styleTexts}
           '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;">' + prog.namn + '</div>' +
           '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;">' + [prog.typ,prog.ort,prog.skola].filter(Boolean).join(' · ') + '</div>' +
           (prog.krav ? '<span style="background:rgba(240,192,64,0.12);border:1px solid rgba(240,192,64,0.25);border-radius:8px;padding:2px 7px;font-size:11px;color:#f0c040;font-weight:600;">Krav: ' + prog.krav + '</span>' : '') +
-          '<br><button onclick="showEduModal(' + JSON.stringify(prog.namn||'').replace(/"/g,\'&quot;\') + ',' + JSON.stringify(getEduUrl(prog)).replace(/"/g,\'&quot;\') + ')" style="background:none;border:none;display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:#3eb489;font-weight:600;cursor:pointer;font-family:inherit;padding:0;">🔗 Sök utbildningen</button>' +
+          '<br><button class="edu-link-btn" data-namn="' + (prog.namn||'').replace(/"/g,'&quot;') + '" data-url="' + getEduUrl(prog).replace(/"/g,'&quot;') + '" style="background:none;border:none;display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:#3eb489;font-weight:600;cursor:pointer;font-family:inherit;padding:0;">🔗 Sök utbildningen</button>' +
           '<div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px;">Sparad ' + (prog.sparad||'') + '</div>' +
         '</div>';
       var rmBtn = document.createElement('button');
