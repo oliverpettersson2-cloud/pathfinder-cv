@@ -2446,6 +2446,9 @@
       #mobileTabBar { display: none !important; }
       #mobileContent { display: none !important; }
     }
+
+  @keyframes capBounce { 0%,100%{transform:translateY(0) rotate(-5deg);} 40%{transform:translateY(-6px) rotate(5deg);} }
+  .profil-edu-cap { animation:capBounce 2.4s ease-in-out infinite; display:inline-block; }
 </style>
   <style>
     .cpicker-item {
@@ -7835,29 +7838,7 @@ ${styleTexts}
         <div id="mobSavedCVsList"></div>
       </div>
 
-      <!-- Övningar-länk -->
-      <div style="padding:0 4px;margin-top:20px;">
-        <div onclick="mobSwitchTab(&#39;ovningar&#39;)" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;cursor:pointer;">
-          <div style="width:44px;height:44px;border-radius:12px;background:rgba(240,192,64,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🏋️</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;">Övningar</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;">Träna jobbsökning, CV-skrivning och presentationsteknik med interaktiva övningar.</div>
-          </div>
-          <span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>
-        </div>
-      </div>
-
-      <!-- Sparade utbildningar-länk -->
-      <div style="padding:0 4px;margin-top:12px;">
-        <div id="profil-edu-link" style="display:flex;align-items:center;gap:14px;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.15);border-radius:16px;padding:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-          <div style="width:44px;height:44px;border-radius:12px;background:rgba(62,180,137,0.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🔖</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;">Sparade utbildningar <span id="profil-edu-count" style="color:#3eb489;"></span></div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;">Utbildningar du sparat via AI-SYV.</div>
-          </div>
-          <span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>
-        </div>
-      </div>
+      <!-- Övningar och Sparade utbildningar hanteras i kortraden ovan -->
 
       <!-- Avtal och inställningar -->
       <div style="padding:0 4px;margin-top:24px;">
@@ -15649,19 +15630,37 @@ ${styleTexts}
       });
       html += '</div>';
 
-      // Rad 2: Övningar + Sparade utbildningar som fyrkanter
-      const aOvn = window._ps === 'ovningar';
-      const aEdu = window._ps === 'edu';
+      // Rad 2: Övningar (% klarat) + Sparade utbildningar (🎓 animerad + badge)
+      var ovnPct = 0;
+      try {
+        var ovnP = JSON.parse(localStorage.getItem('cvmatchen_ovningar_progress') || '{}');
+        var ovnTotal = 0, ovnDone = 0;
+        if (typeof MODULES !== 'undefined') {
+          MODULES.forEach(function(mod) {
+            var mp = ovnP[mod.id] || {};
+            ovnTotal += (mod.lessons ? mod.lessons.length : 0) + 2;
+            ovnDone += Math.min(mp.lessonsRead||0, mod.lessons ? mod.lessons.length : 0) + (mp.exerciseDone?1:0) + (mp.quizDone?1:0);
+          });
+        }
+        ovnPct = ovnTotal > 0 ? Math.round((ovnDone/ovnTotal)*100) : 0;
+      } catch(e) {}
+      var eduSaved = [];
+      try { eduSaved = JSON.parse(localStorage.getItem('cvmatchen_edu_saved') || '[]'); } catch(e) {}
+      var eduN = eduSaved.length;
+
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
+      // Övningar — visar % klarat
       html += '<div onclick="mobSwitchTab(\'ovningar\')" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(240,192,64,0.07);border:2px solid rgba(240,192,64,0.2);transition:all 0.15s;">' +
         '<div style="font-size:28px;margin-bottom:6px;">🏋️</div>' +
         '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.65);line-height:1.3;margin-bottom:8px;">Övningar</div>' +
-        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:rgba(255,255,255,0.4);">›</div>' +
+        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(240,192,64,0.15);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:#f0c040;">' + ovnPct + '% klarat</div>' +
         '</div>';
-      html += '<div onclick="mobSwitchTab(\'aisyv\');setTimeout(function(){if(typeof showChat===\'function\')showChat(\'saved\');},120);" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(62,180,137,0.07);border:2px solid rgba(62,180,137,0.2);transition:all 0.15s;">' +
-        '<div style="font-size:28px;margin-bottom:6px;">🔖</div>' +
+      // Sparade utbildningar — 🎓 animerad, röd badge om sparade finns
+      html += '<div onclick="mobSwitchTab(\'aisyv\');setTimeout(function(){if(typeof showChat===\'function\')showChat(\'saved\');},120);" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(124,58,237,0.07);border:2px solid rgba(124,58,237,0.2);transition:all 0.15s;">' +
+        (eduN > 0 ? '<div style="position:absolute;top:8px;right:8px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;border-radius:999px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px;">' + eduN + '</div>' : '') +
+        '<div class="profil-edu-cap" style="font-size:28px;margin-bottom:6px;">🎓</div>' +
         '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.65);line-height:1.3;margin-bottom:8px;">Sparade<br>utbildningar</div>' +
-        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:rgba(255,255,255,0.4);"><span id="profil-edu-count2" style="color:#3eb489;"></span></div>' +
+        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(124,58,237,0.15);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:#a78bfa;">' + (eduN > 0 ? eduN + ' sparad' + (eduN > 1 ? 'e' : '') : '0 sparade') + '</div>' +
         '</div>';
       html += '</div>';
 
