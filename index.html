@@ -7773,7 +7773,13 @@ ${styleTexts}
     <!-- FLIK: Övningar -->
     <div class="mob-panel" id="mobPanel-ovningar" style="padding-bottom:100px;overflow-y:auto;">
       <div style="padding:16px 16px 0;">
-        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Övningar</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;">
+          <div style="font-size:22px;font-weight:900;color:#fff;">Övningar</div>
+          <div id="ovnProgressBadge" style="background:rgba(62,180,137,0.15);border:1.5px solid rgba(62,180,137,0.4);border-radius:20px;padding:5px 12px;text-align:center;flex-shrink:0;">
+            <div style="font-size:13px;font-weight:900;color:#3eb489;" id="ovnProgressFrac">0/16</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.4);" id="ovnProgressPct">0%</div>
+          </div>
+        </div>
         <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">Lär dig regler, verktyg och AI — i din takt</div>
         <!-- Förklaringsbox -->
         <div id="ovnInfoBox" style="background:linear-gradient(135deg,rgba(62,180,137,0.12),rgba(56,189,248,0.08));border:1px solid rgba(62,180,137,0.35);border-radius:16px;padding:16px;margin-bottom:20px;">
@@ -13003,8 +13009,24 @@ ${styleTexts}
 
     var progress = getProgress();
 
-    // Om ingen vecka är expanderad ännu — auto-init
-    if (_ovnExpandedWeeks.size === 0) _ovnInitExpanded();
+      // ── Uppdatera progress-badge ──
+    var allUniqueMods = (function() {
+      var seen = {};
+      var result = [];
+      DAYS.forEach(function(d) {
+        d.modules.forEach(function(m) {
+          if (!seen[m.id]) { seen[m.id] = true; result.push(m); }
+        });
+      });
+      return result;
+    })();
+    var totalMods = allUniqueMods.length;
+    var doneMods = allUniqueMods.filter(function(m){ return (progress[m.id]||{}).quizDone; }).length;
+    var pctTotal = totalMods > 0 ? Math.round((doneMods / totalMods) * 100) : 0;
+    var fracEl = document.getElementById('ovnProgressFrac');
+    var pctEl  = document.getElementById('ovnProgressPct');
+    if (fracEl) fracEl.textContent = doneMods + '/' + totalMods;
+    if (pctEl)  pctEl.textContent  = pctTotal + '%';
 
     var html = '';
 
