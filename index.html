@@ -8241,8 +8241,8 @@ ${styleTexts}
           <!-- Kort 3 -->
           <div class="edu-card" data-view="search" style="background:rgba(56,189,248,0.1);border:1.5px solid rgba(56,189,248,0.35);border-radius:18px;padding:18px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;">
             <div style="font-size:32px;margin-bottom:10px;">🤖</div>
-            <div style="font-size:14px;font-weight:900;color:#38bdf8;margin-bottom:6px;line-height:1.3;">Sök fritt</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;margin-top:auto;">Skriv ett yrke eller ämne — AI tolkar.</div>
+            <div style="font-size:14px;font-weight:900;color:#38bdf8;margin-bottom:6px;line-height:1.3;">Din AI-SYV</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;margin-top:auto;">Fråga vad du vill om studier.</div>
           </div>
 
           <!-- Kort 4 -->
@@ -17529,128 +17529,160 @@ ${styleTexts}
 
 <script>
 // ══════════════════════════════════════
-// UTBILDA DIG — v2
+// UTBILDA DIG — v3 med MYH-data
 // ══════════════════════════════════════
 (function() {
 
   var eduHistory = [];
   var eduCurrentView = null;
+  var eduData = null; // laddas från /api/utbildningar
   var EDU_SAVED_KEY = 'cvmatchen_edu_saved';
 
-  var SYSTEM_PROMPT = "Du ar en utbildningsvagledare for Familjen Helsingborg (Helsingborg + 10 kranskommuner). Du hjalper anvandare hitta ratt utbildning: SFI, Komvux, Yrkesutbildning, Yrkeshogskola (YH) och Hogskola. Svara ALLTID pa svenska. Hall meningarna korta och tydliga. Inga markdown-symboler som ##, ** eller ---. Skriv vanlig text med radbrytningar. Avsluta ALLTID med 2-3 klickbara alternativ pa detta exakta format (>>text): >>Alternativ ett\n>>Alternativ tva\n>>Tillbaka till start. Utbildningar: SFI A/B/C/D, Komvux, Yrkesutbildning 1-2 ar, YH 1-3 ar krav gymnasieexamen, Hogskola 3+ ar. Kombinationsutbildningar SFI+yrke ar viktiga. Om du inte vet - ge generella rad. Nar du namner en webbsida eller URL, skriv den pa en egen rad med prefixet LANK: t.ex. LANK:https://helsingborg.se";
+  // Ladda utbildningsdata
+  async function loadEduData() {
+    if (eduData) return;
+    try {
+      var res = await fetch('/api/utbildningar');
+      if (res.ok) eduData = await res.json();
+    } catch(e) { eduData = { utbildningar: [], antal: 0 }; }
+  }
 
-  var VIEW_TITLES = {
-    'region':   '🗺️ Familjen Helsingborg',
-    'cv-match': '🤖 Matchar ditt CV',
-    'search':   '🔍 Sök fritt',
-    'saved':    '🔖 Sparade utbildningar'
-  };
+  // Bygg AI system-prompt med riktig data
+  function buildSystem() {
+    var base = "Du ar en AI-SYV (studie- och yrkesvagledare) for Familjen Helsingborg. Hjalp anvandaren hitta ratt utbildning. Svara pa svenska, kort och tydligt. Inga markdown-symboler (##, **, ---). Vanlig text med radbrytningar. Avsluta ALLTID med 2-3 klickbara alternativ: >>Alternativ ett\n>>Alternativ tva\n>>Tillbaka till start. Nar du namner en specifik utbildning, skriv den pa en egen rad med exakt detta format: KORT:namn|skola|typ|ort|krav|url sa anvandaren kan spara den.";
 
-  // Sparade utbildningar
+    if (!eduData || !eduData.utbildningar || !eduData.utbildningar.length) return base;
+
+    var lista = eduData.utbildningar.slice(0, 30).map(function(u) {
+      return u.namn + ' (' + u.typ + ', ' + u.ort + ', ' + (u.langd || '') + ', krav: ' + (u.krav || '') + ', ' + u.url + ')';
+    }).join('; ');
+
+    return base + " REELLA UTBILDNINGAR I FAMILJEN HELSINGBORG (kalla: " + (eduData.kalla || '') + "): " + lista + ". Anvand dessa nar det passar. Mer info: skanevux.se, myh.se, lu.se/campus-helsingborg.";
+  }
+
+  // Spara-funktioner
   function getSaved() {
     try { return JSON.parse(localStorage.getItem(EDU_SAVED_KEY) || '[]'); } catch(e) { return []; }
   }
   function setSaved(arr) {
     try { localStorage.setItem(EDU_SAVED_KEY, JSON.stringify(arr)); } catch(e) {}
+    updateSavedBadge();
   }
-  function isSaved(title) {
-    return getSaved().some(function(s){ return s.title === title; });
-  }
-  function toggleSaved(title, context) {
+  function toggleSaved(prog) {
     var saved = getSaved();
-    var idx = saved.findIndex(function(s){ return s.title === title; });
-    if (idx >= 0) { saved.splice(idx, 1); } else { saved.push({ title: title, context: context, date: new Date().toLocaleDateString('sv-SE') }); }
-    setSaved(saved);
-    return idx < 0; // true = nu sparad
+    var idx = saved.findIndex(function(s){ return s.namn === prog.namn && s.ort === prog.ort; });
+    if (idx >= 0) { saved.splice(idx, 1); setSaved(saved); return false; }
+    else { saved.push(Object.assign({}, prog, { sparad: new Date().toLocaleDateString('sv-SE') })); setSaved(saved); return true; }
+  }
+  function updateSavedBadge() {
+    var n = getSaved().length;
+    var kort4 = document.querySelector('.edu-card[data-view="saved"] .edu-saved-count');
+    if (kort4) kort4.textContent = n > 0 ? ' (' + n + ')' : '';
   }
 
-  // Hämta CV-data
+  // CV-kontext
   function getCVContext() {
     try {
-      var cvData = null;
       var keys = ['cvData', 'PATHFINDER_CV', 'cvmatchen_cv'];
-      for (var k of keys) {
-        var raw = localStorage.getItem(k);
-        if (raw) { cvData = JSON.parse(raw); break; }
-      }
+      var cvData = null;
+      for (var k of keys) { var r = localStorage.getItem(k); if (r) { cvData = JSON.parse(r); break; } }
       if (!cvData) return '';
       var parts = [];
       if (cvData.name) parts.push('Namn: ' + cvData.name);
       if (cvData.title) parts.push('Yrke: ' + cvData.title);
-      if (cvData.summary) parts.push('Om: ' + cvData.summary.slice(0, 200));
-      if (cvData.jobs && cvData.jobs.length) parts.push('Erfarenhet: ' + cvData.jobs.slice(0,3).map(function(j){ return j.title || ''; }).join(', '));
-      if (cvData.education && cvData.education.length) parts.push('Utbildning: ' + cvData.education.slice(0,2).map(function(e){ return e.degree || e.school || ''; }).join(', '));
-      if (cvData.skills && cvData.skills.length) parts.push('Kompetenser: ' + cvData.skills.slice(0,6).join(', '));
+      if (cvData.jobs && cvData.jobs.length) parts.push('Erfarenhet: ' + cvData.jobs.slice(0,3).map(function(j){ return j.title||''; }).join(', '));
+      if (cvData.education && cvData.education.length) parts.push('Utbildning: ' + cvData.education.slice(0,2).map(function(e){ return e.degree||e.school||''; }).join(', '));
+      if (cvData.skills && cvData.skills.length) parts.push('Kompetenser: ' + cvData.skills.slice(0,5).join(', '));
       return parts.length ? ' Anvandarens CV: ' + parts.join('. ') : '';
     } catch(e) { return ''; }
   }
 
-  // Rendera text: markdown-liknande → HTML
-  function renderText(text) {
-    // Ta bort markdown-symboler
-    text = text.replace(/^#{1,3}\s*/gm, '');
-    text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    text = text.replace(/^---+$/gm, '');
+  // Rendera text — rensa markdown, hantera LANK: och KORT:
+  function renderText(rawText) {
+    var lines = rawText.split('\n');
+    var mainLines = [], quickReplies = [], cards = [];
 
-    // Hantera LANK:-rader → klickbara knappar
-    var lines = text.split('\n');
-    var htmlLines = lines.map(function(line) {
-      var trimmed = line.trim();
-      if (trimmed.startsWith('LANK:')) {
-        var url = trimmed.slice(5).trim();
-        var display = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-        return '<a href="' + url + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;background:rgba(62,180,137,0.15);border:1px solid rgba(62,180,137,0.4);border-radius:20px;padding:6px 14px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;">🔗 ' + display + '</a>';
+    lines.forEach(function(line) {
+      var t = line.trim();
+      if (t.startsWith('>>')) {
+        quickReplies.push(t.slice(2).trim());
+      } else if (t.startsWith('KORT:')) {
+        // Format: KORT:namn|skola|typ|ort|krav|url
+        var parts = t.slice(5).split('|');
+        cards.push({ namn: parts[0]||'', skola: parts[1]||'', typ: parts[2]||'', ort: parts[3]||'', krav: parts[4]||'', url: parts[5]||'' });
+      } else if (t.startsWith('LANK:')) {
+        var url = t.slice(5).trim();
+        mainLines.push('<a href="' + url + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:4px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);border-radius:20px;padding:5px 12px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;">🔗 ' + url.replace(/^https?:\/\//, '').replace(/\/$/, '') + '</a>');
+      } else {
+        // Rensa markdown
+        var cleaned = line
+          .replace(/^#{1,3}\s*/g, '')
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+          .replace(/^---+$/, '');
+        mainLines.push(cleaned);
       }
-      return line;
     });
-    return htmlLines.join('\n');
+
+    return { text: mainLines.join('\n').trim(), quickReplies: quickReplies, cards: cards };
+  }
+
+  // Utbildningskort (sparbart)
+  function makeEduCard(prog) {
+    var saved = getSaved().some(function(s){ return s.namn === prog.namn && s.ort === prog.ort; });
+    var div = document.createElement('div');
+    div.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-top:8px;';
+    div.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:3px;">' + (prog.namn||'') + '</div>' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.45);">' + [prog.typ, prog.ort, prog.skola].filter(Boolean).join(' · ') + '</div>' +
+          (prog.krav ? '<div style="margin-top:5px;"><span style="background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.3);border-radius:10px;padding:2px 8px;font-size:11px;color:#f0c040;font-weight:700;">Krav: ' + prog.krav + '</span></div>' : '') +
+        '</div>' +
+        '<button class="edu-save-btn" data-namn="' + (prog.namn||'').replace(/"/g,'') + '" data-ort="' + (prog.ort||'').replace(/"/g,'') + '" data-skola="' + (prog.skola||'').replace(/"/g,'') + '" data-typ="' + (prog.typ||'').replace(/"/g,'') + '" data-krav="' + (prog.krav||'').replace(/"/g,'') + '" data-url="' + (prog.url||'').replace(/"/g,'') + '" style="flex-shrink:0;background:' + (saved?'rgba(240,192,64,0.2)':'rgba(62,180,137,0.1)') + ';border:1px solid ' + (saved?'rgba(240,192,64,0.5)':'rgba(62,180,137,0.3)') + ';border-radius:20px;padding:6px 12px;color:' + (saved?'#f0c040':'#3eb489') + ';font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">' + (saved?'🔖 Sparad':'+ Spara') + '</button>' +
+      '</div>' +
+      (prog.url ? '<a href="' + prog.url + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:12px;color:#3eb489;text-decoration:none;">Läs mer →</a>' : '');
+    return div;
   }
 
   // Lägg till bot-bubbla
-  function addBot(text) {
+  function addBot(rawText) {
     var msgs = document.getElementById('edu-messages');
     if (!msgs) return;
 
-    // Dela text och snabbsvar
-    var lines = text.split('\n');
-    var mainLines = [], quickReplies = [], links = [];
-    lines.forEach(function(l) {
-      var t = l.trim();
-      if (t.startsWith('>>')) { quickReplies.push(t.slice(2)); }
-      else { mainLines.push(l); }
-    });
-    var mainText = mainLines.join('\n').trim();
-    var rendered = renderText(mainText);
+    var parsed = renderText(rawText);
 
     var wrapper = document.createElement('div');
     wrapper.style.cssText = 'display:flex;align-items:flex-start;gap:10px;';
 
-    // Avatar
     var av = document.createElement('div');
     av.style.cssText = 'width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin-top:2px;';
     av.textContent = '🤖';
 
-    // Bubbla
     var bubble = document.createElement('div');
-    bubble.style.cssText = 'background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:13px 16px;max-width:85%;min-width:60px;';
+    bubble.style.cssText = 'background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:13px 16px;max-width:85%;';
 
-    // Text
+    // Huvudtext
     var textEl = document.createElement('div');
     textEl.style.cssText = 'font-size:16px;color:rgba(255,255,255,0.92);line-height:1.65;white-space:pre-wrap;';
-    textEl.innerHTML = rendered;
+    textEl.innerHTML = parsed.text;
     bubble.appendChild(textEl);
 
-    // Snabbsvar-knappar
-    if (quickReplies.length) {
+    // Utbildningskort
+    parsed.cards.forEach(function(prog) {
+      bubble.appendChild(makeEduCard(prog));
+    });
+
+    // Snabbsvar
+    if (parsed.quickReplies.length) {
       var qDiv = document.createElement('div');
       qDiv.style.cssText = 'margin-top:12px;display:flex;flex-wrap:wrap;gap:7px;';
-      quickReplies.forEach(function(qr) {
+      parsed.quickReplies.forEach(function(qr) {
         var btn = document.createElement('button');
         btn.textContent = qr;
         btn.style.cssText = 'background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);border-radius:20px;padding:7px 14px;color:#3eb489;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;text-align:left;';
         btn.addEventListener('click', function() {
-          if (qr === 'Tillbaka till start') showHome();
+          if (qr.toLowerCase().includes('tillbaka')) showHome();
           else sendMessage(qr);
         });
         qDiv.appendChild(btn);
@@ -17662,35 +17694,25 @@ ${styleTexts}
     wrapper.appendChild(bubble);
     msgs.appendChild(wrapper);
 
-    // Scrolla: visa toppen av AI-svaret, men låt padding-bottom hantera knappar
+    // Scroll smart
     setTimeout(function() {
-      var msgs2 = document.getElementById('edu-messages');
-      if (!msgs2) return;
-      // Om meddelandet är kort nog att rymmas → scrolla till botten (visar allt)
-      // Om långt → scrolla till toppen av meddelandet (visa från start)
-      var msgH = wrapper.offsetHeight;
-      var containerH = msgs2.clientHeight;
-      if (msgH < containerH * 0.6) {
-        msgs2.scrollTop = msgs2.scrollHeight;
-      } else {
-        wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      var h = wrapper.offsetHeight, ch = msgs.clientHeight;
+      if (h < ch * 0.65) msgs.scrollTop = msgs.scrollHeight;
+      else wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 80);
 
-    eduHistory.push({ role: 'assistant', content: text });
+    eduHistory.push({ role: 'assistant', content: rawText });
   }
 
-  // Lägg till user-bubbla
   function addUser(text) {
     var msgs = document.getElementById('edu-messages');
     if (!msgs) return;
     var div = document.createElement('div');
     div.style.cssText = 'display:flex;justify-content:flex-end;';
-    var bubble = document.createElement('div');
-    bubble.style.cssText = 'background:linear-gradient(135deg,#3eb489,#10b981);border-radius:18px;border-bottom-right-radius:4px;padding:12px 16px;max-width:80%;font-size:16px;color:#fff;line-height:1.5;word-break:break-word;';
-    bubble.textContent = text;
-    div.appendChild(bubble);
-    msgs.appendChild(div);
+    var b = document.createElement('div');
+    b.style.cssText = 'background:linear-gradient(135deg,#3eb489,#10b981);border-radius:18px;border-bottom-right-radius:4px;padding:12px 16px;max-width:80%;font-size:16px;color:#fff;line-height:1.5;word-break:break-word;';
+    b.textContent = text;
+    div.appendChild(b); msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
     eduHistory.push({ role: 'user', content: text });
   }
@@ -17698,48 +17720,42 @@ ${styleTexts}
   function showTyping() {
     var msgs = document.getElementById('edu-messages');
     if (!msgs) return;
-    var div = document.createElement('div');
-    div.id = 'edu-typing';
-    div.style.cssText = 'display:flex;align-items:center;gap:10px;';
-    div.innerHTML = '<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div><div style="background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;"><span style="color:rgba(255,255,255,0.4);font-size:15px;">Tänker...</span></div>';
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
+    var d = document.createElement('div');
+    d.id = 'edu-typing';
+    d.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    d.innerHTML = '<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div><div style="background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;"><span style="color:rgba(255,255,255,0.4);font-size:15px;">Tänker...</span></div>';
+    msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
   }
-
-  function hideTyping() {
-    var t = document.getElementById('edu-typing');
-    if (t) t.remove();
-  }
+  function hideTyping() { var t = document.getElementById('edu-typing'); if (t) t.remove(); }
 
   async function sendMessage(text) {
     if (!text || !text.trim()) return;
-    var input = document.getElementById('edu-input');
-    var sendBtn = document.getElementById('edu-send');
-    if (input) { input.value = ''; input.style.height = 'auto'; }
-    if (sendBtn) { sendBtn.disabled = true; sendBtn.style.opacity = '0.5'; }
+    var inp = document.getElementById('edu-input');
+    var btn = document.getElementById('edu-send');
+    if (inp) { inp.value = ''; inp.style.height = 'auto'; }
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
 
     addUser(text);
     showTyping();
+    await loadEduData(); // se till att data finns
 
     var cvCtx = (eduCurrentView === 'cv-match') ? getCVContext() : '';
-    var system = SYSTEM_PROMPT + (cvCtx ? ' ' + cvCtx : '');
-    var messages = eduHistory.filter(function(m){ return m.role === 'user' || m.role === 'assistant'; });
+    var system = buildSystem() + (cvCtx ? ' ' + cvCtx : '');
+    var messages = eduHistory.filter(function(m){ return m.role==='user'||m.role==='assistant'; });
 
     try {
       var resp = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, system: system, messages: messages })
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 800, system: system, messages: messages })
       });
       var data = await resp.json();
-      var reply = (data.content || []).filter(function(b){ return b.type==='text'; }).map(function(b){ return b.text; }).join('').trim() || 'Nagot gick fel. Forsok igen!';
-      hideTyping();
-      addBot(reply);
+      var reply = (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim() || 'Nagot gick fel.';
+      hideTyping(); addBot(reply);
     } catch(e) {
-      hideTyping();
-      addBot('Kunde inte ansluta just nu. Forsok igen!\n\n>>Forsok igen\n>>Tillbaka till start');
+      hideTyping(); addBot('Kunde inte ansluta.\n\n>>Forsok igen\n>>Tillbaka till start');
     }
-    if (sendBtn) { sendBtn.disabled = false; sendBtn.style.opacity = '1'; }
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
   }
 
   function showChat(viewKey) {
@@ -17749,31 +17765,30 @@ ${styleTexts}
     var chat = document.getElementById('edu-chat');
     var title = document.getElementById('edu-chat-title');
     var msgs = document.getElementById('edu-messages');
+    var titles = { 'region':'🗺️ Familjen Helsingborg', 'cv-match':'🤖 Matchar ditt CV', 'search':'🤖 Din AI-SYV', 'saved':'🔖 Sparade utbildningar' };
     if (home) home.style.display = 'none';
     if (chat) { chat.style.display = 'flex'; chat.style.flexDirection = 'column'; }
-    if (title) title.textContent = VIEW_TITLES[viewKey] || 'Utbildningar';
+    if (title) title.textContent = titles[viewKey] || 'Utbildningar';
     if (msgs) msgs.innerHTML = '';
 
-    if (viewKey === 'saved') {
-      showSavedList();
-      return;
-    }
-    if (viewKey === 'cv-match') {
-      setTimeout(function() {
+    if (viewKey === 'saved') { showSavedList(); return; }
+
+    loadEduData().then(function() {
+      if (viewKey === 'cv-match') {
         var cvCtx = getCVContext();
         var prompt = cvCtx
-          ? 'Baserat pa mitt CV, vilka utbildningar i Familjen Helsingborg passar mig bast? Ge 2-3 konkreta forslag med nivå och krav.' + cvCtx
-          : 'Jag vill hitta utbildningar som matchar min bakgrund. Stall mig 2-3 fragor om mina erfarenheter.';
-        addBot('Jag analyserar din bakgrund...');
-        setTimeout(function() { sendMessage(prompt); }, 400);
-      }, 200);
-      return;
-    }
-    var openers = {
-      'region': 'Hej!\n\nJag hjalper dig hitta utbildningar i Familjen Helsingborg.\n\nVilken typ av utbildning letar du efter?\n\n>>SFI (svenska for invandrare)\n>>Komvux\n>>Yrkesutbildning\n>>Yrkeshogskola (YH)\n>>Hogskola/Universitet\n>>Jag vet inte - hjalp mig!',
-      'search': 'Vad letar du efter?\n\nSkriv ett yrke, en utbildning eller ett amne - jag hjalper dig!\n\n>>Vard och omsorg\n>>IT och teknik\n>>Barn och pedagogik\n>>Bygg och hantverk'
-    };
-    setTimeout(function() { addBot(openers[viewKey] || 'Hjalp mig!'); }, 200);
+          ? 'Baserat pa mitt CV, vilka utbildningar i Familjen Helsingborg passar mig bast? Ge 2-3 forslag med KORT-format.' + cvCtx
+          : 'Jag vill hitta utbildningar. Stall mig fragor om vad jag vill gora och min bakgrund.';
+        addBot('Analyserar din bakgrund...');
+        setTimeout(function(){ sendMessage(prompt); }, 400);
+      } else {
+        var openers = {
+          'region': 'Hej! Jag hjalper dig hitta utbildningar i Familjen Helsingborg.\n\nVilken typ letar du efter?\n\n>>SFI\n>>Komvux / Yrkesutbildning\n>>Yrkeshogskola (YH)\n>>Hogskola\n>>Jag vet inte - hjalp mig!',
+          'search': 'Hej! Fraga mig vad som helst om utbildningar och studier.\n\n>>Vad tjänar man som sjuksköterska?\n>>Vilka YH-utbildningar finns i Helsingborg?\n>>Hur söker man till Komvux?'
+        };
+        setTimeout(function(){ addBot(openers[viewKey]||'Hur kan jag hjälpa dig?'); }, 200);
+      }
+    });
   }
 
   function showSavedList() {
@@ -17781,37 +17796,37 @@ ${styleTexts}
     if (!msgs) return;
     var saved = getSaved();
     if (!saved.length) {
-      addBot('Du har inga sparade utbildningar an.\n\nNar AI namner en utbildning visas en Spara-knapp. Tryck pa den for att spara!\n\n>>Utforska Familjen Helsingborg\n>>Sok fritt');
+      addBot('Du har inga sparade utbildningar an.\n\nNar AI namner en utbildning visas ett kort med en Spara-knapp!\n\n>>Utforska Familjen Helsingborg\n>>Fraga AI-SYV');
       return;
     }
-    var html = '<div style="font-size:16px;color:rgba(255,255,255,0.9);font-weight:700;margin-bottom:12px;">Dina sparade utbildningar:</div>';
-    saved.forEach(function(s, i) {
-      html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
-        '<div><div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;">' + s.title + '</div><div style="font-size:12px;color:rgba(255,255,255,0.35);">Sparad ' + s.date + '</div></div>' +
-        '<button data-idx="' + i + '" class="edu-remove-saved" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:4px 10px;color:#ef4444;font-size:12px;cursor:pointer;font-family:inherit;flex-shrink:0;">Ta bort</button>' +
-        '</div>';
-    });
-
-    var msgs2 = document.getElementById('edu-messages');
-    var div = document.createElement('div');
-    div.style.cssText = 'display:flex;align-items:flex-start;gap:10px;';
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;align-items:flex-start;gap:10px;';
     var av = document.createElement('div');
-    av.style.cssText = 'width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin-top:2px;';
+    av.style.cssText = 'width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;';
     av.textContent = '🤖';
     var bubble = document.createElement('div');
-    bubble.style.cssText = 'background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:13px 16px;max-width:90%;';
-    bubble.innerHTML = html;
-    // Ta bort-knappar
-    bubble.querySelectorAll('.edu-remove-saved').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var idx = parseInt(btn.getAttribute('data-idx'));
-        var arr = getSaved(); arr.splice(idx, 1); setSaved(arr);
-        msgs2.innerHTML = '';
-        showSavedList();
+    bubble.style.cssText = 'background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:13px 16px;max-width:92%;width:100%;';
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-size:16px;color:#fff;font-weight:700;margin-bottom:10px;';
+    hdr.textContent = 'Dina sparade utbildningar (' + saved.length + ')';
+    bubble.appendChild(hdr);
+    saved.forEach(function(prog, i) {
+      var card = document.createElement('div');
+      card.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;';
+      card.innerHTML = '<div><div style="font-size:14px;font-weight:700;color:#fff;">' + prog.namn + '</div><div style="font-size:12px;color:rgba(255,255,255,0.4);">' + [prog.typ,prog.ort].filter(Boolean).join(' · ') + ' · Sparad ' + (prog.sparad||'') + '</div></div>';
+      var rmBtn = document.createElement('button');
+      rmBtn.textContent = '✕';
+      rmBtn.style.cssText = 'background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:5px 10px;color:#ef4444;font-size:13px;cursor:pointer;font-family:inherit;flex-shrink:0;';
+      rmBtn.addEventListener('click', function() {
+        var arr = getSaved(); arr.splice(i,1); setSaved(arr);
+        msgs.innerHTML = ''; showSavedList();
       });
+      card.appendChild(rmBtn);
+      bubble.appendChild(card);
     });
-    div.appendChild(av); div.appendChild(bubble);
-    msgs2.appendChild(div);
+    wrapper.appendChild(av); wrapper.appendChild(bubble);
+    msgs.appendChild(wrapper);
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
   function showHome() {
@@ -17820,68 +17835,56 @@ ${styleTexts}
     if (home) home.style.display = '';
     if (chat) chat.style.display = 'none';
     eduCurrentView = null; eduHistory = [];
+    updateSavedBadge();
   }
 
-  // Init
   function init() {
-    // Kort-klick
+    // Ladda data i bakgrunden direkt
+    loadEduData();
+    updateSavedBadge();
+
     document.querySelectorAll('.edu-card').forEach(function(card) {
-      card.addEventListener('click', function() {
-        var view = card.getAttribute('data-view');
-        if (view) showChat(view);
-      });
+      card.addEventListener('click', function() { var v = card.getAttribute('data-view'); if(v) showChat(v); });
     });
 
-    // Tillbaka
     var backBtn = document.getElementById('edu-back');
     if (backBtn) backBtn.addEventListener('click', showHome);
 
-    // Send
     var sendBtn = document.getElementById('edu-send');
-    if (sendBtn) {
-      sendBtn.addEventListener('click', function() {
-        var inp = document.getElementById('edu-input');
-        if (inp) sendMessage(inp.value.trim());
-      });
-    }
+    if (sendBtn) sendBtn.addEventListener('click', function() {
+      var inp = document.getElementById('edu-input');
+      if (inp) sendMessage(inp.value.trim());
+    });
 
-    // Enter
     var inp = document.getElementById('edu-input');
     if (inp) {
       inp.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(inp.value.trim()); }
+        if (e.key==='Enter'&&!e.shiftKey) { e.preventDefault(); sendMessage(inp.value.trim()); }
       });
       inp.addEventListener('input', function() {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        this.style.height = Math.min(this.scrollHeight,100)+'px';
       });
     }
 
-    // Spara-knapp via event delegation på messages (AI namnger utbildning → spara)
+    // Spara via event delegation
     var msgs = document.getElementById('edu-messages');
     if (msgs) {
       msgs.addEventListener('click', function(e) {
         var btn = e.target.closest('.edu-save-btn');
         if (!btn) return;
-        var title = btn.getAttribute('data-title');
-        var ctx = btn.getAttribute('data-ctx') || '';
-        var saved = toggleSaved(title, ctx);
-        btn.textContent = saved ? '🔖 Sparad!' : '+ Spara';
-        btn.style.background = saved ? 'rgba(240,192,64,0.2)' : 'rgba(62,180,137,0.1)';
-        btn.style.borderColor = saved ? 'rgba(240,192,64,0.5)' : 'rgba(62,180,137,0.3)';
-        btn.style.color = saved ? '#f0c040' : '#3eb489';
+        var prog = { namn: btn.dataset.namn, skola: btn.dataset.skola, typ: btn.dataset.typ, ort: btn.dataset.ort, krav: btn.dataset.krav, url: btn.dataset.url };
+        var isSaved = toggleSaved(prog);
+        btn.textContent = isSaved ? '🔖 Sparad' : '+ Spara';
+        btn.style.background = isSaved ? 'rgba(240,192,64,0.2)' : 'rgba(62,180,137,0.1)';
+        btn.style.borderColor = isSaved ? 'rgba(240,192,64,0.5)' : 'rgba(62,180,137,0.3)';
+        btn.style.color = isSaved ? '#f0c040' : '#3eb489';
       });
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
-  // Exponera globalt om det behövs
-  window._eduShowHome = showHome;
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 
 })();
 </script>
