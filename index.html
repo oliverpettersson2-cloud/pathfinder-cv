@@ -13073,12 +13073,13 @@ ${styleTexts}
     if (!p[modId]) p[modId] = {};
     p[modId].level = level;
     saveProgress(p);
-    const mod = MODULES.find(function(m){ return m.id === modId; });
-    ovnShowLesson(mod, parseInt(idx));
+    const mod = _ovnFindMod(modId);
+    if (mod) ovnShowLesson(mod, parseInt(idx));
   };
 
   window.ovnLessonNext = function(modId, idx) {
-    const mod = MODULES.find(function(m){ return m.id === modId; });
+    const mod = _ovnFindMod(modId);
+    if (!mod) return;
     const p = getProgress();
     if (!p[modId]) p[modId] = {};
     p[modId].lessonsRead = Math.max(p[modId].lessonsRead || 0, idx + 1);
