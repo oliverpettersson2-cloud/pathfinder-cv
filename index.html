@@ -17728,11 +17728,12 @@ ${styleTexts}
   // URL-generator baserat på utbildningstyp
   function getEduUrl(prog) {
     var typ = (prog.typ || '').toLowerCase();
-    if (typ === 'yh') return 'https://www.yh-antagning.se/';
-    if (typ === 'yrkesvux' || typ === 'yrkesutbildning') return 'https://skanevux.se/utbildningar/';
-    if (typ === 'komvux') return 'https://skanevux.se/utbildningar/';
-    if (typ === 'sfi' || typ === 'kombi sfi+yrke') return 'https://skanevux.se/utbildningar/';
-    if (typ === 'af-utbildning') return 'https://arbetsformedlingen.se/for-arbetssokande/stod-och-ersattning/stod-for-dig-som-behover-rusta-dig/arbetsmarknadsutbildning';
+    if (typ === 'yh') return 'https://www.myh.se/';
+    if (typ === 'yrkesvux' || typ === 'yrkesutbildning') return 'https://helsingborg.se/utbildning-och-arbete/vuxenutbildning/';
+    if (typ === 'komvux') return 'https://helsingborg.se/utbildning-och-arbete/vuxenutbildning/';
+    if (typ === 'sfi') return 'https://helsingborg.se/utbildning-och-arbete/vuxenutbildning/svenska-for-invandrare-sfi/';
+    if (typ === 'kombi sfi+yrke') return 'https://helsingborg.se/utbildning-och-arbete/vuxenutbildning/';
+    if (typ === 'af-utbildning') return 'https://arbetsformedlingen.se/';
     if (typ === 'hogskola' || typ === 'högskola') return 'https://www.antagning.se/';
     return 'https://www.antagning.se/';
   }
