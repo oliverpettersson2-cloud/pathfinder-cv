@@ -7373,6 +7373,62 @@ ${styleTexts}
     }
     // ===== SLUT AUTENTISERING =====
 
+    // ===== INTEGRITETSPOLICY =====
+    function showPrivacyPolicy() {
+      document.getElementById('privacyPolicyModal').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    // ===== RADERA KONTO =====
+    async function handleDeleteAccount() {
+      const saved = pfRead(AUTH_STORAGE_KEY);
+      const email = saved ? JSON.parse(saved).email : 'ditt konto';
+      const confirmed = confirm(
+        'Radera konto för: ' + email + '\n\n' +
+        'All data raderas permanent:\n' +
+        '• Ditt konto\n• Sparade CV:n\n• Matcher och jobbdagbok\n\n' +
+        'Vill du fortsätta?'
+      );
+      if (!confirmed) return;
+
+      try {
+        // Rensa localStorage-data
+        localStorage.removeItem('SAVED_CVS_KEY');
+        localStorage.removeItem('MATCHED_CVS_KEY');
+        localStorage.removeItem('_matchaSelectedAds');
+        localStorage.removeItem('pf_saved_edu');
+        localStorage.removeItem('pf_diary');
+        localStorage.removeItem('pf_ai_cache');
+        localStorage.removeItem('cvmatchen_ovningar_progress');
+
+        // Försök radera via Supabase
+        const token = window.authAccessToken;
+        if (token) {
+          try {
+            await fetch('/api/delete-account', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+            });
+          } catch(e) { /* API kan saknas, fortsätt ändå */ }
+        }
+
+        // Logga ut
+        pfRemove(AUTH_STORAGE_KEY);
+        window.authUserId = null;
+        window.authAccessToken = null;
+        document.getElementById('authUserBadge').style.display = 'none';
+        document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+        document.getElementById('authStep1').classList.add('active');
+        document.getElementById('authEmail').value = '';
+        authCurrentEmail = '';
+        setNavStep(1);
+        document.getElementById('authOverlay').classList.remove('hidden');
+        showToast('✅ Konto raderat', 'success');
+      } catch(err) {
+        showToast('⚠️ Något gick fel. Kontakta hej@pathfinderai.se', 'error');
+      }
+    }
+
     // ===== NYTT CV =====
     function nyttCV() {
       document.getElementById('nyttCVModal').classList.add('active');
@@ -7773,36 +7829,8 @@ ${styleTexts}
     <!-- FLIK: Övningar -->
     <div class="mob-panel" id="mobPanel-ovningar" style="padding-bottom:100px;overflow-y:auto;">
       <div style="padding:16px 16px 0;">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px;">
-          <div style="font-size:22px;font-weight:900;color:#fff;">Övningar</div>
-          <div id="ovnProgressBadge" style="background:rgba(62,180,137,0.15);border:1.5px solid rgba(62,180,137,0.4);border-radius:20px;padding:5px 12px;text-align:center;flex-shrink:0;">
-            <div style="font-size:13px;font-weight:900;color:#3eb489;" id="ovnProgressFrac">0/16</div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);" id="ovnProgressPct">0%</div>
-          </div>
-        </div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">Lär dig regler, verktyg och AI — i din takt</div>
-        <!-- Förklaringsbox -->
-        <div id="ovnInfoBox" style="background:linear-gradient(135deg,rgba(62,180,137,0.12),rgba(56,189,248,0.08));border:1px solid rgba(62,180,137,0.35);border-radius:16px;padding:16px;margin-bottom:20px;">
-          <div style="font-size:13px;font-weight:900;color:#3eb489;margin-bottom:10px;letter-spacing:0.3px;">📖 Hur fungerar det?</div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <div style="display:flex;align-items:flex-start;gap:10px;">
-              <div style="font-size:16px;flex-shrink:0;">📚</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff;">Lektioner</strong> — Läs och välj din nivå: enkel eller avancerad.</div>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;">
-              <div style="font-size:16px;flex-shrink:0;">✏️</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff;">Övning</strong> — Träna det du lärt dig med en praktisk uppgift.</div>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;">
-              <div style="font-size:16px;flex-shrink:0;">🎯</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff;">Quiz</strong> — Testa dina kunskaper och se hur mycket du lärt dig.</div>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;">
-              <div style="font-size:16px;flex-shrink:0;">🏆</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff;">Veckor</strong> — Nytt innehåll varje vecka. Klicka på en vecka för att öppna eller stänga den.</div>
-            </div>
-          </div>
-        </div>
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Övningar</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;">Lär dig regler, verktyg och AI — i din takt</div>
         <div id="ovnModuleGrid"></div>
       </div>
       <!-- Modul-innehåll (injectas dynamiskt) -->
@@ -7810,13 +7838,120 @@ ${styleTexts}
     </div>
 
         <!-- FLIK 5: Sparade CV -->
-    <div class="mob-panel" id="mobPanel-export" style="padding-bottom:100px; padding-top:16px;">
+    <div class="mob-panel" id="mobPanel-export" style="padding-bottom:120px; padding-top:16px;">
       <div style="padding:0 4px 16px;">
         <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Min Profil</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);">Sparade CV:n, matcher och sökta arbeten</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Dina sparade CV:n, matchade profiler, sökta arbeten och utbildningar — allt på ett ställe. Öppna, redigera, exportera som PDF eller dela direkt.</div>
       </div>
       <div style="padding: 0 4px;">
         <div id="mobSavedCVsList"></div>
+      </div>
+
+      <!-- Övningar-länk -->
+      <div style="padding:0 4px;margin-top:20px;">
+        <div onclick="mobSwitchTab('ovningar')" style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;cursor:pointer;">
+          <div style="width:44px;height:44px;border-radius:12px;background:rgba(240,192,64,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🏋️</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;">Övningar</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;">Träna jobbsökning, CV-skrivning och presentationsteknik med interaktiva övningar.</div>
+          </div>
+          <span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>
+        </div>
+      </div>
+
+      <!-- Avtal och inställningar -->
+      <div style="padding:0 4px;margin-top:24px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:10px;padding:0 2px;">Avtal och inställningar</div>
+
+        <!-- Integritetspolicy -->
+        <div onclick="showPrivacyPolicy()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;">
+          <div style="font-size:20px;flex-shrink:0;">📄</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);">Integritetspolicy</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.3);">Hur CVmatchen hanterar dina uppgifter</div>
+          </div>
+          <span style="font-size:14px;color:rgba(255,255,255,0.15);">›</span>
+        </div>
+
+        <!-- Radera konto -->
+        <div onclick="handleDeleteAccount()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;background:rgba(220,38,38,0.04);border:1px solid rgba(220,38,38,0.15);margin-bottom:8px;">
+          <div style="font-size:20px;flex-shrink:0;">🗑️</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:rgba(248,113,113,0.85);">Radera konto</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.25);">Ta bort ditt konto och all data</div>
+          </div>
+          <span style="font-size:14px;color:rgba(220,38,38,0.2);">›</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="padding:28px 4px 8px;text-align:center;">
+        <div style="font-size:10px;color:rgba(255,255,255,0.18);line-height:2;">CVmatchen av PathfinderAI</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.12);">hej@pathfinderai.se</div>
+      </div>
+    </div>
+
+    <!-- Integritetspolicy-modal -->
+    <div id="privacyPolicyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);overflow-y:auto;">
+      <div style="background:#12172a;min-height:100%;padding:24px 20px 60px;max-width:600px;margin:0 auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+          <div style="font-size:18px;font-weight:900;color:#fff;">📄 Integritetspolicy</div>
+          <button onclick="document.getElementById('privacyPolicyModal').style.display='none'" style="background:rgba(255,255,255,0.08);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:20px;">Senast uppdaterad: maj 2025</div>
+
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
+
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Personuppgiftsansvarig</div>
+          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: hej@pathfinderai.se</p>
+          <p style="margin:0 0 20px;">PathfinderAI är personuppgiftsansvarig för CVmatchen — appen du använder för att bygga CV, matcha mot jobb och söka utbildningar.</p>
+
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Vilka uppgifter samlar vi in?</div>
+          <p style="margin:0 0 8px;">CVmatchen samlar in och behandlar följande uppgifter:</p>
+          <ul style="margin:0 0 20px;padding-left:20px;color:rgba(255,255,255,0.65);">
+            <li style="margin-bottom:6px;"><strong style="color:#fff;">E-postadress</strong> — för inloggning via engångskod (OTP)</li>
+            <li style="margin-bottom:6px;"><strong style="color:#fff;">CV-innehåll</strong> — namn, kontaktuppgifter, arbetslivserfarenhet, utbildning, kompetenser och profiltext som du fyller i</li>
+            <li style="margin-bottom:6px;"><strong style="color:#fff;">Jobbmatchningsdata</strong> — vilka annonser du väljer att matcha mot</li>
+            <li style="margin-bottom:6px;"><strong style="color:#fff;">Teknisk data</strong> — felloggar och användningsmönster för att förbättra tjänsten</li>
+          </ul>
+
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">3. Ändamål och rättslig grund</div>
+          <ul style="margin:0 0 20px;padding-left:20px;color:rgba(255,255,255,0.65);">
+            <li style="margin-bottom:6px;">Tillhandahålla och förbättra tjänsten <em>(berättigat intresse, avtal)</em></li>
+            <li style="margin-bottom:6px;">Autentisering och kontosäkerhet <em>(avtal)</em></li>
+            <li style="margin-bottom:6px;">AI-genererade profiler och matchningar behandlas av Anthropic via API — inga uppgifter används för träning av AI-modeller</li>
+          </ul>
+
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">4. Tredjeparter och underbiträden</div>
+          <ul style="margin:0 0 20px;padding-left:20px;color:rgba(255,255,255,0.65);">
+            <li style="margin-bottom:6px;"><strong style="color:#fff;">Supabase</strong> — databas och autentisering (EU-region)</li>
+            <li style="margin-bottom:6px;"><strong style="color:#fff;">Anthropic</strong> — AI-generering av profil och matchning (API, inga uppgifter sparas för träning)</li>
+            <li style="margin-bottom:6px;"><strong style="color:#fff;">Resend</strong> — utskick av inloggningskoder via e-post</li>
+            <li style="margin-bottom:6px;"><strong style="color:#fff;">Vercel</strong> — hosting av applikationen</li>
+          </ul>
+
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">5. Lagring och radering</div>
+          <p style="margin:0 0 8px;">Ditt konto och dina uppgifter lagras så länge du använder tjänsten. Du kan när som helst radera ditt konto under <em>Avtal och inställningar</em> i Profil-fliken — all data raderas då omedelbart.</p>
+          <p style="margin:0 0 20px;">CV-data sparas lokalt i din webbläsare (localStorage) och rensas automatiskt om du rensar webbläsardata.</p>
+
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">6. Dina rättigheter (GDPR)</div>
+          <p style="margin:0 0 8px;">Enligt GDPR har du rätt att:</p>
+          <ul style="margin:0 0 20px;padding-left:20px;color:rgba(255,255,255,0.65);">
+            <li style="margin-bottom:6px;">Begära tillgång till dina uppgifter (registerutdrag)</li>
+            <li style="margin-bottom:6px;">Rätta felaktiga uppgifter</li>
+            <li style="margin-bottom:6px;">Radera dina uppgifter ("rätten att bli glömd")</li>
+            <li style="margin-bottom:6px;">Invända mot behandling</li>
+            <li style="margin-bottom:6px;">Lämna in klagomål till Integritetsskyddsmyndigheten (IMY)</li>
+          </ul>
+
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Kontakt</div>
+          <p style="margin:0 0 4px;">För frågor om dataskydd, kontakta oss på:</p>
+          <p style="margin:0;"><a href="mailto:hej@pathfinderai.se" style="color:#3eb489;">hej@pathfinderai.se</a></p>
+
+        </div>
+
+        <button onclick="document.getElementById('privacyPolicyModal').style.display='none'" style="width:100%;margin-top:32px;padding:14px;background:#3eb489;border:none;color:#fff;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Stäng</button>
       </div>
     </div>
 
@@ -8141,7 +8276,7 @@ ${styleTexts}
         <textarea id="syvInput" rows="1" placeholder="Skriv din fråga..." style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;max-height:100px;overflow-y:auto;line-height:1.4;" oninput="syvAutoResize(this)" onkeydown="if(event.key===&#39;Enter&#39;&amp;&amp;!event.shiftKey){event.preventDefault();syvSend();}"></textarea>
         <button id="syvSendBtn" onclick="syvSend()" style="width:42px;height:42px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
       </div>
-    </div></div>
+    <div id="utbStep1" style="position: absolute; inset: 0px; z-index: 50; background: rgb(18, 23, 42); overflow-y: auto; padding: 20px 16px 40px;"><div style="text-align:center;padding:16px 0 24px;"><div style="font-size:40px;margin-bottom:10px;">🎓</div><div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;">Utbildning</div><div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">Hitta rätt utbildning och ta nästa steg mot jobbet du vill ha.</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;"><div onclick="window._utbGotoChat(&#39;Visa utbildningar med goda jobbchanser i Familjen Helsingborg-regionen&#39;)" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(62,180,137,0.12);border:2px solid rgba(62,180,137,0.3);transition:all 0.15s;"><div style="font-size:28px;margin-bottom:8px;">🎯</div><div style="font-size:12px;font-weight:800;color:#3eb489;margin-bottom:6px;line-height:1.3;">Utbildningar med jobbchanser</div><div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Se utbildningar i regionen som faktiskt leder till jobb.</div></div><div onclick="window._utbGotoChat(&#39;Vilka utbildningar finns nära mig i Familjen Helsingborg?&#39;)" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(240,192,64,0.1);border:2px solid rgba(240,192,64,0.3);transition:all 0.15s;"><div style="font-size:28px;margin-bottom:8px;">🗺️</div><div style="font-size:12px;font-weight:800;color:#f0c040;margin-bottom:6px;line-height:1.3;">Utbildningar nära dig</div><div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Utbildningar i Helsingborg och Familjen Helsingborgs 11 kommuner.</div></div><div onclick="window._utbGotoChat(&#39;Analysera mitt CV och föreslå utbildningar som passar mig&#39;)" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(56,189,248,0.1);border:2px solid rgba(56,189,248,0.4);transition:all 0.15s;"><div style="font-size:28px;margin-bottom:8px;">💡</div><div style="font-size:12px;font-weight:800;color:#38bdf8;margin-bottom:6px;line-height:1.3;">Vad passar mig?</div><div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">AI analyserar ditt CV och föreslår utbildningar som passar dig.</div></div><div onclick="if(typeof syvShowSaved===&#39;function&#39;) syvShowSaved()" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(232,93,38,0.1);border:2px solid rgba(232,93,38,0.3);transition:all 0.15s;"><div style="font-size:28px;margin-bottom:8px;">🔖</div><div style="font-size:12px;font-weight:800;color:#e85d26;margin-bottom:6px;line-height:1.3;">Mina sparade utbildningar</div><div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Se utbildningar du sparat tidigare.</div></div></div><button onclick="window._utbGotoChat(&#39;&#39;)" style="width:100%;padding:28px 20px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(162,155,254,0.15));border:2px solid rgba(124,58,237,0.5);color:#fff;font-size:18px;font-weight:900;border-radius:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 20px rgba(124,58,237,0.2);"><span style="font-size:44px;line-height:1;">🤖</span><span>Ställ en egen fråga till AI-vägledaren</span></button></div></div>
 
   </div>
   <!-- SLUT MOBIL UI -->
@@ -11889,7 +12024,8 @@ ${styleTexts}
 
     // Gå till steg 2 (chatten) och skriv in prompt
     window._utbGotoChat = function(prompt) {
-      document.querySelectorAll('#utbStep1').forEach(function(s){ s.style.display = 'none'; });
+      const s1 = document.getElementById('utbStep1');
+      if (s1) s1.style.display = 'none';
       // Skriv in prompten i chatfältet och skicka
       if (prompt) {
         setTimeout(function() {
@@ -12943,232 +13079,96 @@ ${styleTexts}
   ];
 
   const DAYS = [
-    { id: 'mandag',  label: 'Måndag',  short: 'Mån', modules: MODULES,         theme: '#3eb489' },
-    { id: 'tisdag',  label: 'Tisdag',  short: 'Tis', modules: TISDAG_MODULES,  theme: '#f0c040' },
-    { id: 'onsdag',  label: 'Onsdag',  short: 'Ons', modules: ONSDAG_MODULES,  theme: '#a78bfa' },
+    { id: 'mandag',  label: 'M\u00e5ndag',  short: 'M\u00e5n', modules: MODULES, theme: '#3eb489' },
+    { id: 'tisdag',  label: 'Tisdag',  short: 'Tis', modules: TISDAG_MODULES, theme: '#f0c040' },
+    { id: 'onsdag',  label: 'Onsdag',  short: 'Ons', modules: ONSDAG_MODULES, theme: '#a78bfa' },
     { id: 'torsdag', label: 'Torsdag', short: 'Tor', modules: TORSDAG_MODULES, theme: '#f87171' },
-    { id: 'fredag',  label: 'Fredag',  short: 'Fre', modules: FREDAG_MODULES,  theme: '#38bdf8' }
+    { id: 'fredag',  label: 'Fredag',  short: 'Fre', modules: FREDAG_MODULES, theme: '#38bdf8' }
   ];
 
-  // ── 4 veckor: Vecka 1 har innehåll, 2-4 är under arbete ──
-  const WEEKS = [
-    { id: 'vecka1', label: 'Vecka 1', days: DAYS, theme: '#3eb489', done: false },
-    { id: 'vecka2', label: 'Vecka 2', placeholder: true, theme: '#f0c040' },
-    { id: 'vecka3', label: 'Vecka 3', placeholder: true, theme: '#a78bfa' },
-    { id: 'vecka4', label: 'Vecka 4', placeholder: true, theme: '#38bdf8' }
-  ];
+  let _ovnActiveDay = 'mandag';
 
-  // Vilka veckor är öppna/stängda i accordion
-  var _ovnExpandedWeeks = new Set();
+  // ── Rendera veckovy ──
+  function renderModuleGrid() {
+    const grid = document.getElementById('ovnModuleGrid');
+    if (!grid) return;
+    const view = document.getElementById('ovnModuleView');
+    if (view) view.style.display = 'none';
+    grid.style.display = '';
+    const progress = getProgress();
+    const today = new Date().getDay();
+    const dayMap = [null,'mandag','tisdag','onsdag','torsdag','fredag',null];
+    const todayId = dayMap[today] || null;
 
-  // Räkna hur många moduler i vecka1 är klara
-  function _ovnWeek1Complete(progress) {
-    var allMods = DAYS.reduce(function(acc, d){ return acc.concat(d.modules); }, []);
-    return allMods.every(function(mod) {
-      var p = progress[mod.id] || {};
-      return p.quizDone;
+    // Dag-flikar
+    let tabHtml = '<div style="display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;">';
+    DAYS.forEach(function(day) {
+      const isActive = _ovnActiveDay === day.id;
+      const isToday = todayId === day.id;
+      const hasContent = day.modules.length > 0;
+      tabHtml += '<button onclick="ovnSwitchDay(\'' + day.id + '\')" style="flex-shrink:0;padding:7px 14px;border-radius:20px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:800;transition:all 0.15s;' +
+        (isActive ? 'background:' + day.theme + ';color:#fff;' : 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,' + (hasContent ? '0.65' : '0.25') + ');') +
+        '">' + day.short + (isToday ? ' \uD83D\uDCCD' : '') + '</button>';
     });
-  }
+    tabHtml += '</div>';
 
-  // Auto-expandera rätt vecka vid första render
-  function _ovnInitExpanded() {
-    var progress = getProgress();
-    if (!_ovnWeek1Complete(progress)) {
-      _ovnExpandedWeeks.add('vecka1');
+    const activeDay = DAYS.find(function(d){ return d.id === _ovnActiveDay; });
+    let modulesHtml = '';
+
+    if (!activeDay || activeDay.modules.length === 0) {
+      modulesHtml = '<div style="text-align:center;padding:50px 20px;">' +
+        '<div style="font-size:40px;margin-bottom:12px;">\uD83D\uDD12</div>' +
+        '<div style="font-size:15px;font-weight:800;color:rgba(255,255,255,0.4);margin-bottom:6px;">Kommer snart</div>' +
+        '<div style="font-size:12px;color:rgba(255,255,255,0.25);">Inneh\u00e5ll f\u00f6r ' + (activeDay ? activeDay.label : '') + ' \u00e4r under produktion.</div>' +
+        '</div>';
     } else {
-      _ovnExpandedWeeks.add('vecka2');
+      activeDay.modules.forEach(function(mod) {
+        const p = progress[mod.id] || {};
+        const lessonsOk = (p.lessonsRead || 0);
+        const exerciseOk = p.exerciseDone ? 1 : 0;
+        const quizScore = p.quizScore || 0;
+        const totalSteps = mod.lessons.length + 2;
+        const doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
+        const pct = Math.round((doneSteps / totalSteps) * 100);
+        modulesHtml += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="background:' + mod.bg + ';border:1.5px solid ' + mod.borderColor + ';border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.15s;">' +
+          '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
+          '<div style="font-size:28px;">' + mod.icon + '</div>' +
+          '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:800;color:#fff;">' + mod.title + '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.45);">' + mod.subtitle + '</div>' +
+          '</div>' +
+          (pct === 100 ? '<div style="font-size:20px;">\u2705</div>' : '<div style="font-size:12px;font-weight:700;color:' + mod.color + ';">' + pct + '%</div>') +
+          '</div>' +
+          '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:5px;overflow:hidden;">' +
+          '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35);">' +
+          '<span>' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + ' lektioner</span>' +
+          '<span>\u00b7</span><span>\u00d6vning ' + (exerciseOk ? '\u2713' : '\u2013') + '</span>' +
+          '<span>\u00b7</span><span>Quiz ' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '\u2013') + '</span>' +
+          '</div>' +
+          '</div>';
+      });
     }
+
+    grid.innerHTML = tabHtml + modulesHtml;
   }
-
-  window.ovnToggleWeek = function(weekId) {
-    if (_ovnExpandedWeeks.has(weekId)) {
-      _ovnExpandedWeeks.delete(weekId);
-    } else {
-      _ovnExpandedWeeks.add(weekId);
-    }
-    renderModuleGrid();
-  };
-
-  // Aktiv dag inom vecka1
-  var _ovnActiveDay = 'mandag';
 
   window.ovnSwitchDay = function(dayId) {
     _ovnActiveDay = dayId;
     renderModuleGrid();
   };
 
-  // ── Rendera veckovy ──
-  window.renderModuleGrid = function() {
-    var grid = document.getElementById('ovnModuleGrid');
-    if (!grid) return;
-    var view = document.getElementById('ovnModuleView');
-    if (view) view.style.display = 'none';
-    grid.style.display = '';
-    // Göm förklaringsboxen när man är i modulvy
-    var infoBox = document.getElementById('ovnInfoBox');
-
-    var progress = getProgress();
-
-      // ── Uppdatera progress-badge ──
-    var allUniqueMods = (function() {
-      var seen = {};
-      var result = [];
-      DAYS.forEach(function(d) {
-        d.modules.forEach(function(m) {
-          if (!seen[m.id]) { seen[m.id] = true; result.push(m); }
-        });
-      });
-      return result;
-    })();
-    var totalMods = allUniqueMods.length;
-    var doneMods = allUniqueMods.filter(function(m){ return (progress[m.id]||{}).quizDone; }).length;
-    var pctTotal = totalMods > 0 ? Math.round((doneMods / totalMods) * 100) : 0;
-    var fracEl = document.getElementById('ovnProgressFrac');
-    var pctEl  = document.getElementById('ovnProgressPct');
-    if (fracEl) fracEl.textContent = doneMods + '/' + totalMods;
-    if (pctEl)  pctEl.textContent  = pctTotal + '%';
-
-    var html = '';
-
-    WEEKS.forEach(function(week) {
-      var isOpen = _ovnExpandedWeeks.has(week.id);
-
-      // Räkna progress för vecka 1
-      var weekPct = 0;
-      var weekDone = false;
-      if (week.days) {
-        var allMods = week.days.reduce(function(acc, d){ return acc.concat(d.modules); }, []);
-        var doneCount = allMods.filter(function(mod){ return (progress[mod.id] || {}).quizDone; }).length;
-        weekPct = allMods.length > 0 ? Math.round((doneCount / allMods.length) * 100) : 0;
-        weekDone = doneCount === allMods.length;
-      }
-
-      // ── Vecka-header (klickbar) ──
-      html += '<div style="border-radius:16px;margin-bottom:10px;overflow:hidden;border:1.5px solid ' + week.theme + (isOpen ? '88' : '33') + ';">';
-      html += '<div onclick="ovnToggleWeek(\'' + week.id + '\')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:' + (isOpen ? 'linear-gradient(135deg,' + week.theme + '22,rgba(0,0,0,0.2))' : 'rgba(255,255,255,0.04)') + ';cursor:pointer;">';
-      html += '<div style="flex:1;">';
-      html += '<div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:-0.2px;">' + week.label + (weekDone ? ' ✅' : '') + '</div>';
-      if (week.days) {
-        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + weekPct + '% klart</div>';
-      } else {
-        html += '<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px;">Under arbete</div>';
-      }
-      html += '</div>';
-      // Progress-ring or lock icon
-      if (week.days) {
-        html += '<div style="font-size:15px;font-weight:900;color:' + week.theme + ';min-width:36px;text-align:right;">' + weekPct + '%</div>';
-      } else {
-        html += '<div style="font-size:18px;">🔒</div>';
-      }
-      html += '<div style="font-size:18px;color:rgba(255,255,255,0.5);transition:transform 0.2s;' + (isOpen ? 'transform:rotate(180deg)' : '') + '">▾</div>';
-      html += '</div>';
-
-      // Progress bar under header
-      if (week.days) {
-        html += '<div style="height:3px;background:rgba(255,255,255,0.07);">' +
-          '<div style="height:100%;width:' + weekPct + '%;background:' + week.theme + ';transition:width 0.4s;box-shadow:0 0 8px ' + week.theme + '88;"></div>' +
-          '</div>';
-      }
-
-      // ── Expanderat innehåll ──
-      if (isOpen) {
-        html += '<div style="padding:12px 12px 14px;background:rgba(0,0,0,0.15);">';
-
-        if (week.placeholder) {
-          // Under arbete
-          html += '<div style="text-align:center;padding:30px 16px;">' +
-            '<div style="font-size:36px;margin-bottom:10px;">🚧</div>' +
-            '<div style="font-size:15px;font-weight:800;color:rgba(255,255,255,0.5);margin-bottom:6px;">Under arbete</div>' +
-            '<div style="font-size:12px;color:rgba(255,255,255,0.25);line-height:1.6;">Innehåll för ' + week.label + ' är under produktion.<br>Kom tillbaka snart!</div>' +
-            '</div>';
-        } else {
-          // Dag-flikar
-          html += '<div style="display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;">';
-          week.days.forEach(function(day) {
-            var isActive = _ovnActiveDay === day.id;
-            var dayMods = day.modules;
-            var dayDone = dayMods.length > 0 && dayMods.every(function(m){ return (progress[m.id]||{}).quizDone; });
-            html += '<button onclick="ovnSwitchDay(\'' + day.id + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:20px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:900;' +
-              (isActive ? 'background:' + day.theme + ';color:#fff;box-shadow:0 2px 8px ' + day.theme + '55;' : 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.55);') + '">' +
-              day.short + (dayDone ? ' ✓' : '') + '</button>';
-          });
-          html += '</div>';
-
-          // Modulkort för aktiv dag
-          var activeDay = week.days.find(function(d){ return d.id === _ovnActiveDay; }) || week.days[0];
-          if (activeDay.modules.length === 0) {
-            html += '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">Inga moduler för ' + activeDay.label + ' ännu.</div>';
-          } else {
-            activeDay.modules.forEach(function(mod) {
-              var p = progress[mod.id] || {};
-              var lessonsOk = p.lessonsRead || 0;
-              var exerciseOk = p.exerciseDone ? 1 : 0;
-              var quizScore = p.quizScore || 0;
-              var totalSteps = mod.lessons.length + 2;
-              var doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
-              var pct = Math.round((doneSteps / totalSteps) * 100);
-
-              html += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="position:relative;background:linear-gradient(135deg,' + mod.bg + ' 0%,rgba(0,0,0,0.2) 100%);border:1.5px solid ' + mod.color + '44;border-left:4px solid ' + mod.color + ';border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);">' +
-                '<div style="position:absolute;top:0;right:0;width:60px;height:60px;background:radial-gradient(circle at top right,' + mod.color + '18,transparent 70%);pointer-events:none;"></div>' +
-                '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
-                '<div style="font-size:28px;filter:drop-shadow(0 2px 4px ' + mod.color + '66);">' + mod.icon + '</div>' +
-                '<div style="flex:1;">' +
-                '<div style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-0.2px;">' + mod.title + '</div>' +
-                '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px;">' + mod.subtitle + '</div>' +
-                '</div>' +
-                (pct === 100 ? '<div style="font-size:22px;">✅</div>' : '<div style="font-size:17px;font-weight:900;color:' + mod.color + ';text-shadow:0 0 10px ' + mod.color + '88;">' + pct + '%</div>') +
-                '</div>' +
-                '<div style="background:rgba(255,255,255,0.08);border-radius:8px;height:5px;overflow:hidden;margin-bottom:10px;">' +
-                '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:8px;transition:width 0.4s;box-shadow:0 0 6px ' + mod.color + '88;"></div>' +
-                '</div>' +
-                '<div style="display:flex;gap:5px;">' +
-                '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:5px 8px;text-align:center;">' +
-                '<div style="font-size:12px;font-weight:900;color:#fff;">' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + '</div>' +
-                '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Lektioner</div>' +
-                '</div>' +
-                '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:5px 8px;text-align:center;">' +
-                '<div style="font-size:12px;font-weight:900;color:' + (exerciseOk ? '#3eb489' : 'rgba(255,255,255,0.3)') + ';">' + (exerciseOk ? '✓ Klar' : '–') + '</div>' +
-                '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Övning</div>' +
-                '</div>' +
-                '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:5px 8px;text-align:center;">' +
-                '<div style="font-size:12px;font-weight:900;color:' + (p.quizDone ? mod.color : 'rgba(255,255,255,0.3)') + ';">' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '–') + '</div>' +
-                '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Quiz</div>' +
-                '</div>' +
-                '</div>' +
-                '</div>';
-            });
-          }
-        }
-        html += '</div>'; // expanderat innehåll
-      }
-
-      html += '</div>'; // vecka-block
-    });
-
-    grid.innerHTML = html;
-  };
 
   // ── Öppna en modul ──
   window.ovnOpenModule = function(modId) {
-    const mod = _ovnFindMod(modId);
+    const mod = MODULES.find(function(m){ return m.id === modId; });
     if (!mod) return;
     const grid = document.getElementById('ovnModuleGrid');
     const view = document.getElementById('ovnModuleView');
-    const info = document.getElementById('ovnInfoBox');
     if (grid) grid.style.display = 'none';
-    if (info) info.style.display = 'none';
-    if (view) { view.style.display = ''; view.scrollTop = 0; }
+    if (view) { view.style.display = ''; }
     ovnShowLesson(mod, 0);
-  };
-
-  window._ovnGoBack = function() {
-    const grid = document.getElementById('ovnModuleGrid');
-    const view = document.getElementById('ovnModuleView');
-    const info = document.getElementById('ovnInfoBox');
-    if (view) view.style.display = 'none';
-    if (grid) grid.style.display = '';
-    if (info) info.style.display = '';
-    renderModuleGrid();
   };
 
   // ── Visa lektion ──
@@ -13184,33 +13184,28 @@ ${styleTexts}
     const pct = Math.round((currentStep / totalSteps) * 100);
 
     view.innerHTML =
-      // Top row: red back button + progress
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-top:16px;">' +
-      '<button onclick="_ovnGoBack()" style="display:flex;align-items:center;gap:6px;background:#c0392b;border:none;color:#fff;font-size:12px;font-weight:900;padding:9px 18px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 2px 14px rgba(192,57,43,0.55);">← Tillbaka</button>' +
-      '<div style="flex:1;background:rgba(255,255,255,0.07);border-radius:10px;height:4px;overflow:hidden;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;box-shadow:0 0 10px ' + mod.color + 'aa;"></div></div>' +
-      '<span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:700;">' + currentStep + '/' + totalSteps + '</span>' +
+      // Back + progress
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:16px;">' +
+      '<button onclick="renderModuleGrid()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;padding:0;">←</button>' +
+      '<div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:5px;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div></div>' +
+      '<span style="font-size:10px;color:rgba(255,255,255,0.35);">' + currentStep + '/' + totalSteps + '</span>' +
       '</div>' +
-      // Module label pill
-      '<div style="display:inline-flex;align-items:center;gap:6px;background:' + mod.color + '22;border:1px solid ' + mod.color + '55;border-radius:20px;padding:5px 12px;margin-bottom:14px;">' +
-      '<span style="font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';">' + mod.icon + ' ' + mod.title + '</span>' +
-      '</div>' +
-      // Lesson title — BIG
-      '<div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:18px;line-height:1.2;letter-spacing:-0.5px;">' + lesson.title + '</div>' +
+      // Module label
+      '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:6px;">' + mod.icon + ' ' + mod.title + '</div>' +
+      // Lesson title
+      '<div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:14px;">' + lesson.title + '</div>' +
       // Level toggle
-      '<div style="display:flex;gap:5px;margin-bottom:18px;background:rgba(255,255,255,0.05);border-radius:12px;padding:4px;">' +
-      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'simple\')" style="flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;border:none;transition:all 0.2s;' + (level==='simple'?'background:'+mod.color+';color:#fff;box-shadow:0 2px 10px '+mod.color+'55;':'background:transparent;color:rgba(255,255,255,0.3);') + '">Enkel nivå</button>' +
-      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'advanced\')" style="flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;border:none;transition:all 0.2s;' + (level==='advanced'?'background:'+mod.color+';color:#fff;box-shadow:0 2px 10px '+mod.color+'55;':'background:transparent;color:rgba(255,255,255,0.3);') + '">Avancerad nivå</button>' +
+      '<div style="display:flex;gap:6px;margin-bottom:14px;">' +
+      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'simple\')" style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:none;' + (level==='simple'?'background:'+mod.color+';color:#fff;':'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);') + '">Enkel nivå</button>' +
+      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'advanced\')" style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:none;' + (level==='advanced'?'background:'+mod.color+';color:#fff;':'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);') + '">Avancerad nivå</button>' +
       '</div>' +
-      // Lesson text card — BOLD TECH
-      '<div style="position:relative;background:linear-gradient(145deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.02) 100%);border:1px solid ' + mod.color + '44;border-left:4px solid ' + mod.color + ';border-radius:16px;padding:22px 18px;font-size:16px;color:#fff;line-height:1.8;margin-bottom:24px;white-space:pre-line;box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.06);">' +
-      '<div style="position:absolute;top:-1px;right:16px;background:' + mod.color + ';color:#000;font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:0 0 8px 8px;">Lektion ' + currentStep + '</div>' +
-      (level === 'advanced' ? lesson.advanced : lesson.simple) +
-      '</div>' +
+      // Lesson text
+      '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7;margin-bottom:20px;white-space:pre-line;">' + (level === 'advanced' ? lesson.advanced : lesson.simple) + '</div>' +
       // Nav buttons
       '<div style="display:flex;gap:8px;">' +
-      (idx > 0 ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (idx-1) + ')" style="padding:14px 18px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);font-size:14px;font-weight:800;border-radius:14px;cursor:pointer;font-family:inherit;">← Föregående</button>' : '') +
-      '<button onclick="ovnLessonNext(\'' + mod.id + '\',' + idx + ')" style="flex:1;padding:15px;background:' + mod.color + ';border:none;color:#fff;font-size:15px;font-weight:900;border-radius:14px;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px ' + mod.color + '66;letter-spacing:0.2px;">' + (idx < mod.lessons.length - 1 ? 'Nästa lektion →' : 'Gå till övning →') + '</button>' +
+      (idx > 0 ? '<button onclick="ovnShowLesson(MODULES.find(function(m){return m.id===\'' + mod.id + '\'}),' + (idx-1) + ')" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">← Föregående</button>' : '') +
+      '<button onclick="ovnLessonNext(\'' + mod.id + '\',' + idx + ')" style="flex:1;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">' + (idx < mod.lessons.length - 1 ? 'Nästa lektion →' : 'Gå till övning →') + '</button>' +
       '</div>';
   }
 
@@ -13219,13 +13214,12 @@ ${styleTexts}
     if (!p[modId]) p[modId] = {};
     p[modId].level = level;
     saveProgress(p);
-    const mod = _ovnFindMod(modId);
-    if (mod) ovnShowLesson(mod, parseInt(idx));
+    const mod = MODULES.find(function(m){ return m.id === modId; });
+    ovnShowLesson(mod, parseInt(idx));
   };
 
   window.ovnLessonNext = function(modId, idx) {
-    const mod = _ovnFindMod(modId);
-    if (!mod) return;
+    const mod = MODULES.find(function(m){ return m.id === modId; });
     const p = getProgress();
     if (!p[modId]) p[modId] = {};
     p[modId].lessonsRead = Math.max(p[modId].lessonsRead || 0, idx + 1);
@@ -13257,24 +13251,15 @@ ${styleTexts}
   // ── Gemensam header för övning/quiz ──
   function _ovnHeader(mod, step, total, showBack) {
     const pct = Math.round((step / total) * 100);
-    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-top:16px;">' +
-      (showBack ? '<button onclick="_ovnGoBack()" style="display:flex;align-items:center;gap:5px;background:#c0392b;border:none;color:#fff;font-size:12px;font-weight:900;padding:8px 16px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 2px 12px rgba(192,57,43,0.5);">← Tillbaka</button>' : '') +
-      '<div style="flex:1;background:rgba(255,255,255,0.07);border-radius:10px;height:4px;overflow:hidden;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.5s ease;box-shadow:0 0 10px ' + mod.color + 'aa;"></div></div>' +
-      '<span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:700;">' + step + '/' + total + '</span>' +
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-top:16px;">' +
+      (showBack ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (mod.lessons.length-1) + ')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:0 4px;">←</button>' : '') +
+      '<div style="flex:1;">' +
+      '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:6px;overflow:hidden;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.5s ease;"></div></div>' +
+      '</div>' +
+      '<span style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;">' + step + '/' + total + '</span>' +
       '</div>';
   }
-
-
-
-
-
-
-
-
-
-
-
 
   // ══════════════════════════════════════
   // QUIZ — Ny proffsig design
@@ -13301,8 +13286,7 @@ ${styleTexts}
       }).join('') +
       '</div>' +
       // Question
-      '<div style="position:relative;background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.02) 100%);border:1px solid ' + mod.color + '33;border-left:3px solid ' + mod.color + ';border-radius:14px;padding:18px 16px;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,0.2);">' +
-      '<div style="position:absolute;top:9px;right:12px;font-size:9px;font-weight:800;letter-spacing:1px;color:' + mod.color + '66;text-transform:uppercase;">Quiz ' + (qIdx+1) + '</div>' +
+      '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 16px;margin-bottom:20px;">' +
       '<div style="font-size:16px;font-weight:800;color:#fff;line-height:1.5;">' + q.q + '</div>' +
       '</div>' +
       // Options
@@ -13367,7 +13351,7 @@ ${styleTexts}
     const currentStep = mod.lessons.length + 1;
 
     let exHtml = _ovnHeader(mod, currentStep, totalSteps, true);
-    exHtml += '<div style="display:inline-flex;align-items:center;gap:6px;background:' + mod.color + '18;border:1px solid ' + mod.color + '44;border-radius:20px;padding:4px 10px;margin-bottom:14px;"><span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';">' + mod.icon + ' ÖVNING</span></div>';
+    exHtml += '<div style="font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:8px;">' + mod.icon + ' ÖVNING</div>';
 
     if (ex.type === 'write') {
       exHtml += _ovnRenderWrite(mod, ex);
@@ -13393,8 +13377,8 @@ ${styleTexts}
 
   // ── Write: Skriv fri text ──
   function _ovnRenderWrite(mod, ex) {
-    let h = '<div style="position:relative;background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.02) 100%);border:1px solid ' + mod.color + '33;border-left:3px solid ' + mod.color + ';border-radius:14px;padding:18px 16px;margin-bottom:16px;box-shadow:0 4px 24px rgba(0,0,0,0.2);">' +
-      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;line-height:1.3;">' + ex.title + '</div>' +
+    let h = '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;margin-bottom:16px;">' +
+      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;">' + ex.title + '</div>' +
       '<div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;">' + ex.description + '</div>' +
       '</div>';
     if (ex.tips) {
@@ -13724,7 +13708,7 @@ ${styleTexts}
       '</div>' +
       '<div style="display:flex;gap:8px;">' +
       (!great ? '<button onclick="ovnOpenModule(\'' + mod.id + '\')" style="flex:1;padding:13px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">🔄 Försök igen</button>' : '') +
-      '<button onclick="_ovnGoBack()" style="flex:1;padding:14px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:900;border-radius:12px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px ' + mod.color + '55;">← Tillbaka till moduler</button>' +
+      '<button onclick="renderModuleGrid()" style="flex:1;padding:13px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">← Tillbaka</button>' +
       '</div>';
   }
 
