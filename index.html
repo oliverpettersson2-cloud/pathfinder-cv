@@ -8232,8 +8232,17 @@ ${styleTexts}
 
       <!-- VY 1: STARTSIDA (4 kort) -->
       <div id="edu-home" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 100px;">
-        <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;">Utbilda dig</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:18px;">Hitta rätt utbildning i Familjen Helsingborg</div>
+        <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:8px;">Utbilda dig</div>
+
+        <!-- Sammanfattning -->
+        <div style="background:rgba(62,180,137,0.07);border:1px solid rgba(62,180,137,0.18);border-radius:14px;padding:14px 16px;margin-bottom:18px;">
+          <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">
+            Här hittar du utbildningar i <strong style="color:#3eb489;">Familjen Helsingborg</strong> — från SFI till högskola.<br><br>
+            🤖 <strong style="color:#fff;">AI-SYV:en</strong> svarar på frågor om utbildningar, löner och framtidsutsikter.<br>
+            ✨ <strong style="color:#fff;">Matchar ditt CV</strong> föreslår utbildningar baserat på din bakgrund.<br>
+            🔖 <strong style="color:#fff;">Spara</strong> utbildningar som intresserar dig — de dyker upp i listan och under din profil.
+          </div>
+        </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <!-- Kort 1 -->
@@ -17564,7 +17573,7 @@ ${styleTexts}
 
   // Bygg AI system-prompt med riktig data
   function buildSystem() {
-    var base = "Du ar en AI-SYV (studie- och yrkesvagledare) for Familjen Helsingborg. Hjalp anvandaren hitta ratt utbildning. Svara pa svenska, kort och tydligt. Inga markdown-symboler (##, **, ---). Vanlig text med radbrytningar. Avsluta ALLTID med 2-3 klickbara alternativ: >>Alternativ ett\n>>Alternativ tva\n>>Tillbaka till start. Nar du namner en specifik utbildning, skriv den pa en egen rad med exakt detta format: KORT:namn|skola|typ|ort|krav|url sa anvandaren kan spara den.";
+    var base = "Du ar en AI-SYV for Familjen Helsingborg. Svara PA SVENSKA. REGLER: 1) Nar du foreslar utbildningar - skriv BARA KORT-kort, ingen fritext om utbildningarna. 2) KORT-format (en per rad): KORT:namn|skola|typ|ort|langd|krav|url 3) En kort mening FORE korten ar ok (t.ex. 'Har ar tre YH-utbildningar:'). 4) Avsluta med 2-3 snabbsvar: >>Alternativ 5) Inga markdown-symboler. Exempel pa svar: 'Har ar YH-utbildningar i Helsingborg:\nKORT:Systemutvecklare .NET|Medieinstitutet|YH|Helsingborg|2 ar|Gymnasieexamen|https://myh.se\nKORT:Logistiker|NTI-skolan|YH|Helsingborg|2 ar|Gymnasieexamen|https://myh.se\n>>Visa fler\n>>Tillbaka till start'";
 
     if (!eduData || !eduData.utbildningar || !eduData.utbildningar.length) return base;
 
@@ -17622,9 +17631,9 @@ ${styleTexts}
       if (t.startsWith('>>')) {
         quickReplies.push(t.slice(2).trim());
       } else if (t.startsWith('KORT:')) {
-        // Format: KORT:namn|skola|typ|ort|krav|url
+        // Format: KORT:namn|skola|typ|ort|langd|krav|url
         var parts = t.slice(5).split('|');
-        cards.push({ namn: parts[0]||'', skola: parts[1]||'', typ: parts[2]||'', ort: parts[3]||'', krav: parts[4]||'', url: parts[5]||'' });
+        cards.push({ namn: parts[0]||'', skola: parts[1]||'', typ: parts[2]||'', ort: parts[3]||'', langd: parts[4]||'', krav: parts[5]||'', url: parts[6]||'' });
       } else if (t.startsWith('LANK:')) {
         var url = t.slice(5).trim();
         mainLines.push('<a href="' + url + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:4px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);border-radius:20px;padding:5px 12px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;">🔗 ' + url.replace(/^https?:\/\//, '').replace(/\/$/, '') + '</a>');
@@ -17645,18 +17654,31 @@ ${styleTexts}
   // Utbildningskort (sparbart)
   function makeEduCard(prog) {
     var saved = getSaved().some(function(s){ return s.namn === prog.namn && s.ort === prog.ort; });
+    var isSav = saved;
     var div = document.createElement('div');
-    div.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(62,180,137,0.2);border-radius:14px;padding:14px;margin-top:8px;';
+    div.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid rgba(62,180,137,0.25);border-radius:16px;padding:14px 14px 12px;margin-top:10px;';
+
+    // Typ-badge färg
+    var typeColors = { 'YH':'#a78bfa','Komvux':'#38bdf8','Yrkesutbildning':'#3eb489','SFI':'#f0c040','Kombi SFI+Yrke':'#f0c040','Högskola':'#f87171','AF-utbildning':'#fb923c' };
+    var tc = typeColors[prog.typ] || '#3eb489';
+
     div.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:3px;">' + (prog.namn||'') + '</div>' +
-          '<div style="font-size:12px;color:rgba(255,255,255,0.45);">' + [prog.typ, prog.ort, prog.skola].filter(Boolean).join(' · ') + '</div>' +
-          (prog.krav ? '<div style="margin-top:5px;"><span style="background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.3);border-radius:10px;padding:2px 8px;font-size:11px;color:#f0c040;font-weight:700;">Krav: ' + prog.krav + '</span></div>' : '') +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
+        '<div style="flex:1;min-width:0;">' +
+          // Typ-badge
+          '<span style="background:' + tc + '22;border:1px solid ' + tc + '55;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:800;color:' + tc + ';letter-spacing:0.5px;">' + (prog.typ||'') + '</span>' +
+          // Namn
+          '<div style="font-size:15px;font-weight:900;color:#fff;margin:5px 0 2px;line-height:1.3;">' + (prog.namn||'') + '</div>' +
+          // Ort + längd
+          '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:6px;">' + [prog.ort, prog.langd].filter(Boolean).join(' · ') + '</div>' +
+          // Krav
+          (prog.krav ? '<span style="background:rgba(240,192,64,0.12);border:1px solid rgba(240,192,64,0.3);border-radius:8px;padding:3px 8px;font-size:11px;color:#f0c040;font-weight:700;">Krav: ' + prog.krav + '</span>' : '') +
         '</div>' +
-        '<button class="edu-save-btn" data-namn="' + (prog.namn||'').replace(/"/g,'') + '" data-ort="' + (prog.ort||'').replace(/"/g,'') + '" data-skola="' + (prog.skola||'').replace(/"/g,'') + '" data-typ="' + (prog.typ||'').replace(/"/g,'') + '" data-krav="' + (prog.krav||'').replace(/"/g,'') + '" data-url="' + (prog.url||'').replace(/"/g,'') + '" style="flex-shrink:0;background:' + (saved?'rgba(240,192,64,0.2)':'rgba(62,180,137,0.1)') + ';border:1px solid ' + (saved?'rgba(240,192,64,0.5)':'rgba(62,180,137,0.3)') + ';border-radius:20px;padding:6px 12px;color:' + (saved?'#f0c040':'#3eb489') + ';font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">' + (saved?'🔖 Sparad':'+ Spara') + '</button>' +
+        // Spara-knapp
+        '<button class="edu-save-btn" data-namn="' + (prog.namn||'').replace(/"/g,'&quot;') + '" data-ort="' + (prog.ort||'').replace(/"/g,'&quot;') + '" data-skola="' + (prog.skola||'').replace(/"/g,'&quot;') + '" data-typ="' + (prog.typ||'').replace(/"/g,'&quot;') + '" data-krav="' + (prog.krav||'').replace(/"/g,'&quot;') + '" data-langd="' + (prog.langd||'').replace(/"/g,'&quot;') + '" data-url="' + (prog.url||'').replace(/"/g,'&quot;') + '" style="flex-shrink:0;align-self:flex-start;background:' + (isSav?'rgba(240,192,64,0.2)':'rgba(62,180,137,0.12)') + ';border:1.5px solid ' + (isSav?'rgba(240,192,64,0.5)':'rgba(62,180,137,0.35)') + ';border-radius:20px;padding:7px 13px;color:' + (isSav?'#f0c040':'#3eb489') + ';font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap;">' + (isSav?'🔖 Sparad':'+ Spara') + '</button>' +
       '</div>' +
-      (prog.url ? '<a href="' + prog.url + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:12px;color:#3eb489;text-decoration:none;">Läs mer →</a>' : '');
+      // Läs mer-länk
+      (prog.url ? '<a href="' + prog.url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:700;">🔗 Läs mer & ansök</a>' : '');
     return div;
   }
 
@@ -17837,7 +17859,14 @@ ${styleTexts}
     saved.forEach(function(prog, i) {
       var card = document.createElement('div');
       card.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;';
-      card.innerHTML = '<div><div style="font-size:14px;font-weight:700;color:#fff;">' + prog.namn + '</div><div style="font-size:12px;color:rgba(255,255,255,0.4);">' + [prog.typ,prog.ort].filter(Boolean).join(' · ') + ' · Sparad ' + (prog.sparad||'') + '</div></div>';
+      card.innerHTML =
+        '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;">' + prog.namn + '</div>' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;">' + [prog.typ,prog.ort,prog.skola].filter(Boolean).join(' · ') + '</div>' +
+          (prog.krav ? '<span style="background:rgba(240,192,64,0.12);border:1px solid rgba(240,192,64,0.25);border-radius:8px;padding:2px 7px;font-size:11px;color:#f0c040;font-weight:600;">Krav: ' + prog.krav + '</span>' : '') +
+          (prog.url ? '<br><a href="' + prog.url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:600;">Läs mer →</a>' : '') +
+          '<div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px;">Sparad ' + (prog.sparad||'') + '</div>' +
+        '</div>';
       var rmBtn = document.createElement('button');
       rmBtn.textContent = '✕';
       rmBtn.style.cssText = 'background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:5px 10px;color:#ef4444;font-size:13px;cursor:pointer;font-family:inherit;flex-shrink:0;';
