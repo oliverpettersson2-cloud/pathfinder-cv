@@ -13055,22 +13055,25 @@ ${styleTexts}
       id: 'v1', label: 'Vecka 1', theme: '#3eb489',
       desc: 'Regler, rättigheter och de viktigaste verktygen',
       modules: (typeof MODULES !== 'undefined' ? MODULES : [])
+        .concat(typeof TISDAG_MODULES !== 'undefined' ? TISDAG_MODULES : [])
+        .concat(typeof ONSDAG_MODULES !== 'undefined' ? ONSDAG_MODULES : [])
+        .concat(typeof TORSDAG_MODULES !== 'undefined' ? TORSDAG_MODULES : [])
+        .concat(typeof FREDAG_MODULES !== 'undefined' ? FREDAG_MODULES : [])
     },
     {
       id: 'v2', label: 'Vecka 2', theme: '#f0c040',
-      desc: 'SKills i djupet, kommunikation och jobbsökning',
-      modules: (typeof TISDAG_MODULES !== 'undefined' ? TISDAG_MODULES : [])
+      desc: 'Under uppbyggnad',
+      modules: []
     },
     {
       id: 'v3', label: 'Vecka 3', theme: '#a78bfa',
-      desc: 'CV-skrivning, intervjuförberedelse och nätverk',
-      modules: (typeof ONSDAG_MODULES !== 'undefined' ? ONSDAG_MODULES : [])
-        .concat(typeof TORSDAG_MODULES !== 'undefined' ? TORSDAG_MODULES : [])
+      desc: 'Under uppbyggnad',
+      modules: []
     },
     {
       id: 'v4', label: 'Vecka 4', theme: '#38bdf8',
-      desc: 'Målsättning, planering och hållbar jobbsökning',
-      modules: (typeof FREDAG_MODULES !== 'undefined' ? FREDAG_MODULES : [])
+      desc: 'Under uppbyggnad',
+      modules: []
     }
   ];
 
