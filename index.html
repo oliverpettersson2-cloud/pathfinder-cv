@@ -9871,6 +9871,8 @@ ${styleTexts}
     if (backBar) backBar.style.display = 'none';
     var areas = document.getElementById('syvAreas');
     if (areas) areas.style.display = 'flex';
+    var step1 = document.getElementById('utbStep1');
+    if (step1) step1.style.display = 'block';
   }
 
   function _syvEnterChat() {
@@ -9878,8 +9880,10 @@ ${styleTexts}
     var areas   = document.getElementById('syvAreas');
     var backBar = document.getElementById('syvBackBar');
     var msgs    = document.getElementById('syvMessages');
+    var step1   = document.getElementById('utbStep1');
     if (splash)  splash.style.display  = 'none';
     if (areas)   areas.style.display   = 'none';
+    if (step1)   step1.style.display   = 'none';
     if (backBar) backBar.style.display = 'block';
     if (msgs) { msgs.style.display = 'flex'; msgs.style.flex = '1'; }
   }
