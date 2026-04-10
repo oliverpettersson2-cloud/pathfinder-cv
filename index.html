@@ -8250,7 +8250,7 @@ ${styleTexts}
     <div class="mob-panel" id="mobPanel-aisyv" style="display:none;flex-direction:column;height:calc(100vh - 120px);padding:0;overflow:hidden;position:relative;">
 
       <!-- Action-bar -->
-      <div style="padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;background:#12172a;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:100;position:relative;">
+      <div style="flex-shrink:0;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.07);background:#12172a;display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;z-index:10;">
         <div style="font-size:12px;color:rgba(255,255,255,0.3);">📍 Familjen Helsingborg · 11 kommuner</div>
         <div style="display:flex;gap:6px;">
           <button id="syvSavedBtn" onclick="syvShowSaved()" style="background:rgba(167,139,250,0.12);border:1.5px solid rgba(167,139,250,0.3);color:#a78bfa;font-size:11px;font-weight:800;cursor:pointer;padding:6px 12px;border-radius:10px;font-family:inherit;">🔖 Sparade</button>
@@ -8258,50 +8258,44 @@ ${styleTexts}
         </div>
       </div>
 
-      <!-- Kategori-chips (döljs i chat-läge) -->
-      <div id="syvAreas" style="padding:8px 16px 6px;flex-shrink:0;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,0.06);position:relative;z-index:2;"></div>
-
-      <!-- Tillbaka-knapp (visas i chat-läge) -->
-      <div id="syvBackBar" style="display:none;padding:8px 16px;flex-shrink:0;background:#12172a;border-bottom:1px solid rgba(255,255,255,0.08);position:relative;z-index:100;">
-        <button id="syvBackBtn" style="display:flex;align-items:center;gap:8px;background:rgba(232,93,38,0.15);border:1.5px solid rgba(232,93,38,0.4);color:#e85d26;font-size:13px;font-weight:800;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:inherit;">
-          ← Tillbaka
-        </button>
+      <!-- Tillbaka-knapp -->
+      <div id="syvBackBar" style="display:none;flex-shrink:0;padding:8px 16px;background:#12172a;border-bottom:1px solid rgba(255,255,255,0.08);position:relative;z-index:10;">
+        <button id="syvBackBtn" style="display:flex;align-items:center;gap:8px;background:rgba(232,93,38,0.15);border:1.5px solid rgba(232,93,38,0.4);color:#e85d26;font-size:13px;font-weight:800;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:inherit;">← Tillbaka</button>
       </div>
 
-      <!-- Splash screen (flex:1 men bara när synlig) -->
-      <div id="syvSplash" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 18px;text-align:center;">
-        <div style="font-size:64px;margin-bottom:8px;filter:drop-shadow(0 4px 16px rgba(124,58,237,0.5));">🤖</div>
-        <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-0.3px;">Hej! Jag är din AI-Vägledare</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:24px;max-width:280px;">Jag hjälper dig hitta rätt utbildning i <strong style="color:#a78bfa;">Familjen Helsingborg</strong> — gratis, enkelt och dygnet runt.</div>
-        <div style="width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-          <button onclick="syvInitWizard()" style="width:100%;padding:16px;background:linear-gradient(135deg,#7c3aed,#a29bfe);border:none;border-radius:16px;color:#fff;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:12px;box-shadow:0 4px 18px rgba(124,58,237,0.4);">
-            <span style="font-size:26px;">🚀</span>
-            <div style="text-align:left;"><div>Starta vägledning</div><div style="font-size:11px;font-weight:400;opacity:0.8;margin-top:2px;">AI guidar dig steg för steg</div></div>
-          </button>
+      <!-- Kategori-chips -->
+      <div id="syvAreas" style="flex-shrink:0;padding:8px 16px 6px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,0.06);"></div>
+
+      <!-- Splash (scrollbar inuti) -->
+      <div id="syvSplash" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 18px 90px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;">
+        <div style="font-size:56px;margin-bottom:8px;filter:drop-shadow(0 4px 16px rgba(124,58,237,0.5));">🤖</div>
+        <div style="font-size:19px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-0.3px;">Hej! Jag är din AI-Vägledare</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:20px;max-width:280px;">Jag hjälper dig hitta rätt utbildning i <strong style="color:#a78bfa;">Familjen Helsingborg</strong> — gratis och dygnet runt.</div>
+        <div style="width:100%;display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <button onclick="syvInitWizard()" style="width:100%;padding:14px;background:linear-gradient(135deg,#7c3aed,#a29bfe);border:none;border-radius:14px;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:10px;box-shadow:0 4px 18px rgba(124,58,237,0.4);"><span style="font-size:22px;">🚀</span><div style="text-align:left;"><div>Starta vägledning</div><div style="font-size:11px;font-weight:400;opacity:0.8;margin-top:1px;">AI guidar dig steg för steg</div></div></button>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button onclick="syvQuick(&#39;Visa utbildningar med bra jobbchanser&#39;)" style="padding:14px 10px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.3);border-radius:14px;color:#3eb489;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:22px;">🎯</span>Jobbchanser</button>
-            <button onclick="syvQuick(&#39;Visa utbildningar nära mig i Familjen Helsingborg&#39;)" style="padding:14px 10px;background:rgba(56,189,248,0.1);border:1.5px solid rgba(56,189,248,0.3);border-radius:14px;color:#38bdf8;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:22px;">📍</span>Nära mig</button>
-            <button onclick="syvQuick(&#39;Vad passar mig? Analysera mitt CV och föreslå utbildningar&#39;)" style="padding:14px 10px;background:rgba(167,139,250,0.1);border:1.5px solid rgba(167,139,250,0.3);border-radius:14px;color:#a78bfa;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:22px;">💡</span>Vad passar mig?</button>
-            <button onclick="syvShowSaved()" style="padding:14px 10px;background:rgba(240,192,64,0.08);border:1.5px solid rgba(240,192,64,0.25);border-radius:14px;color:#f0c040;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:22px;">🔖</span>Sparade</button>
+            <button onclick="syvQuick('Visa utbildningar med bra jobbchanser')" style="padding:12px 8px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.3);border-radius:12px;color:#3eb489;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="font-size:20px;">🎯</span>Jobbchanser</button>
+            <button onclick="syvQuick('Visa utbildningar nära mig i Familjen Helsingborg')" style="padding:12px 8px;background:rgba(56,189,248,0.1);border:1.5px solid rgba(56,189,248,0.3);border-radius:12px;color:#38bdf8;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="font-size:20px;">📍</span>Nära mig</button>
+            <button onclick="syvQuick('Vad passar mig? Analysera mitt CV och föreslå utbildningar')" style="padding:12px 8px;background:rgba(167,139,250,0.1);border:1.5px solid rgba(167,139,250,0.3);border-radius:12px;color:#a78bfa;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="font-size:20px;">💡</span>Vad passar mig?</button>
+            <button onclick="syvShowSaved()" style="padding:12px 8px;background:rgba(240,192,64,0.08);border:1.5px solid rgba(240,192,64,0.25);border-radius:12px;color:#f0c040;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="font-size:20px;">🔖</span>Sparade</button>
           </div>
         </div>
         <div style="font-size:11px;color:rgba(255,255,255,0.2);">Eller skriv direkt i chatten nedan</div>
       </div>
 
-      <!-- Meddelandefeed (dold tills chat-läge) -->
-      <div id="syvMessages" style="display:none;flex:1;overflow-y:auto;padding:14px 16px 12px;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;"></div>
+      <!-- Chatt-meddelanden -->
+      <div id="syvMessages" style="display:none;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 90px;flex-direction:column;gap:12px;"></div>
 
       <!-- Wizard -->
       <div id="syvWizard" style="display:none;"></div>
 
-      <!-- Inmatning — alltid synlig längst ned -->
-      <div id="syvInputBar" style="padding:10px 14px 16px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;display:flex;gap:8px;align-items:flex-end;background:#12172a;position:relative;z-index:100;">
-        <textarea id="syvInput" rows="1" placeholder="Skriv din fråga..." style="flex:1;background:rgba(255,255,255,0.09);border:1.5px solid rgba(124,58,237,0.4);border-radius:14px;padding:11px 15px;color:#fff;font-size:15px;font-family:inherit;resize:none;outline:none;max-height:120px;overflow-y:auto;line-height:1.5;" oninput="syvAutoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();syvSend();}"></textarea>
-        <button id="syvSendBtn" style="width:46px;height:46px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;border-radius:13px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(62,180,137,0.4);">➤</button>
+      <!-- Input — position:absolute så den ALLTID syns längst ned -->
+      <div id="syvInputBar" style="position:absolute;bottom:0;left:0;right:0;z-index:50;padding:10px 14px 16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;gap:8px;align-items:flex-end;background:#12172a;">
+        <textarea id="syvInput" rows="1" placeholder="Skriv din fråga..." style="flex:1;background:rgba(255,255,255,0.09);border:1.5px solid rgba(124,58,237,0.4);border-radius:14px;padding:11px 15px;color:#fff;font-size:15px;font-family:inherit;resize:none;outline:none;max-height:120px;overflow-y:auto;line-height:1.5;" oninput="if(typeof syvAutoResize==='function')syvAutoResize(this)"></textarea>
+        <button id="syvSendBtn" style="width:46px;height:46px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;border-radius:13px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;">➤</button>
       </div>
-    
 
-  </div>
+    </div>
   <!-- SLUT MOBIL UI -->
 
 
