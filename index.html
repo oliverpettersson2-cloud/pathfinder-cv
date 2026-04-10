@@ -7633,7 +7633,7 @@ ${styleTexts}
     <!-- 4. AI-Vägledare -->
     <button class="mob-tab mob-tab--ai" id="tabBtn-aisyv" onclick="mobSwitchTab(&#39;aisyv&#39;)" style="position:relative;">
       <span class="mob-tab__icon" style="font-size:22px;line-height:1;">🎓</span>
-      <span id="edu-tab-badge" style="display:none;position:absolute;top:4px;right:6px;background:#ef4444;color:#fff;font-size:9px;font-weight:900;border-radius:999px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px;"></span>
+      <!-- edu-tab-badge removed, badge is now inside the card -->
       <span style="font-size:8px;font-weight:900;letter-spacing:0.3px;">Utbilda dig</span>
     </button>
     <!-- 5. Övningar -->
@@ -8287,10 +8287,11 @@ ${styleTexts}
           </div>
 
           <!-- Kort 4 -->
-          <div class="edu-card" data-view="saved" style="background:rgba(240,192,64,0.08);border:1.5px solid rgba(240,192,64,0.3);border-radius:18px;padding:18px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;">
+          <div class="edu-card" data-view="saved" style="position:relative;background:rgba(240,192,64,0.08);border:1.5px solid rgba(240,192,64,0.3);border-radius:18px;padding:18px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;">
+            <span class="edu-saved-count-badge" style="display:none;position:absolute;top:8px;right:8px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;border-radius:999px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px;"></span>
             <div style="font-size:32px;margin-bottom:10px;">🔖</div>
             <div style="font-size:14px;font-weight:900;color:#f0c040;margin-bottom:6px;line-height:1.3;">Sparade utbildningar</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;margin-top:auto;"><span class="edu-saved-count" style="color:#f0c040;font-weight:800;"></span> Se och jämför sparade utbildningar.</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;margin-top:auto;">Se och jämför sparade utbildningar.</div>
           </div>
 
           <!-- Kort 5 — Framtidsyrken (full width) -->
@@ -15624,10 +15625,9 @@ ${styleTexts}
       const cats = [
         { id:'saved',   emoji:'\uD83D\uDCC4', label:'Mina CV',             count:saved.length,   max:3,   badge:0,          badgeDays:null },
         { id:'matched', emoji:'\uD83C\uDFAF', label:'Mina Matcher',        count:matched.length, max:null, badge:uncatCount, badgeDays:soonestDays },
-        { id:'diary',   emoji:'\uD83D\uDCBC', label:'Sökta Arbeten',       count:diary.length,   max:null, badge:0,          badgeDays:null },
       ];
 
-      let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">';
+      let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
       cats.forEach(function(c) {
         const a = window._ps === c.id;
         html += '<div onclick="window._pt(\'' + c.id + '\')" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;' +
@@ -15647,6 +15647,39 @@ ${styleTexts}
         }
         html += '</div>';
       });
+      html += '</div>';
+
+      // Rad 2: Övningar + Sparade utbildningar som fyrkanter
+      const aOvn = window._ps === 'ovningar';
+      const aEdu = window._ps === 'edu';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
+      html += '<div onclick="mobSwitchTab(\'ovningar\')" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(240,192,64,0.07);border:2px solid rgba(240,192,64,0.2);transition:all 0.15s;">' +
+        '<div style="font-size:28px;margin-bottom:6px;">🏋️</div>' +
+        '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.65);line-height:1.3;margin-bottom:8px;">Övningar</div>' +
+        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:rgba(255,255,255,0.4);">›</div>' +
+        '</div>';
+      html += '<div onclick="mobSwitchTab(\'aisyv\');setTimeout(function(){if(typeof showChat===\'function\')showChat(\'saved\');},120);" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(62,180,137,0.07);border:2px solid rgba(62,180,137,0.2);transition:all 0.15s;">' +
+        '<div style="font-size:28px;margin-bottom:6px;">🔖</div>' +
+        '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.65);line-height:1.3;margin-bottom:8px;">Sparade<br>utbildningar</div>' +
+        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:rgba(255,255,255,0.4);"><span id="profil-edu-count2" style="color:#3eb489;"></span></div>' +
+        '</div>';
+      html += '</div>';
+
+      // Rad 3: Sökta Arbeten + Intervjuträning som lika stora fyrkanter
+      const aDiary = window._ps === 'diary';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
+      html += '<div onclick="window._pt(\'diary\')" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;' +
+        'background:' + (aDiary ? 'rgba(62,180,137,0.12)' : 'rgba(255,255,255,0.05)') + ';' +
+        'border:2px solid ' + (aDiary ? '#3eb489' : 'rgba(255,255,255,0.08)') + ';transition:all 0.15s;">' +
+        '<div style="font-size:28px;margin-bottom:6px;">💼</div>' +
+        '<div style="font-size:12px;font-weight:700;color:' + (aDiary ? '#fff' : 'rgba(255,255,255,0.65)') + ';line-height:1.3;margin-bottom:8px;">Sökta<br>Arbeten</div>' +
+        '<div style="display:inline-flex;align-items:center;justify-content:center;background:' + (aDiary ? 'rgba(62,180,137,0.25)' : 'rgba(255,255,255,0.08)') + ';border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:' + (aDiary ? '#3eb489' : 'rgba(255,255,255,0.4)') + ';">' + diary.length + '</div>' +
+        '</div>';
+      html += '<div style="position:relative;border-radius:16px;padding:16px 12px;cursor:not-allowed;text-align:center;background:rgba(255,255,255,0.03);border:2px dashed rgba(255,255,255,0.1);transition:all 0.15s;opacity:0.7;">' +
+        '<div style="font-size:28px;margin-bottom:6px;">🎤</div>' +
+        '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);line-height:1.3;margin-bottom:8px;">Intervju-<br>träning</div>' +
+        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.3);">Kommer snart</div>' +
+        '</div>';
       html += '</div>';
 
       const s = window._ps;
@@ -17640,15 +17673,15 @@ ${styleTexts}
   }
   function updateSavedBadge() {
     var n = getSaved().length;
-    // Uppdatera sparade-count i Kort 4
+    // Badge i Kort 4 (röd cirkel i hörnet)
+    document.querySelectorAll('.edu-saved-count-badge').forEach(function(el) {
+      if (n > 0) { el.textContent = n; el.style.display = 'block'; }
+      else { el.style.display = 'none'; }
+    });
+    // Gamla .edu-saved-count (om den finns kvar någonstans)
     document.querySelectorAll('.edu-saved-count').forEach(function(el) {
       el.textContent = n > 0 ? '(' + n + ')' : '';
     });
-    var tabBadge = document.getElementById('edu-tab-badge');
-    if (tabBadge) {
-      if (n > 0) { tabBadge.textContent = n; tabBadge.style.display = 'block'; }
-      else { tabBadge.style.display = 'none'; }
-    }
   }
 
   // Alias för anrop från mobSwitchTab
@@ -18113,11 +18146,11 @@ ${styleTexts}
       });
     }
     // Uppdatera räknaren
+    var n = getSaved().length;
     var count = document.getElementById('profil-edu-count');
-    if (count) {
-      var n = getSaved().length;
-      count.textContent = n > 0 ? '(' + n + ')' : '';
-    }
+    if (count) { count.textContent = n > 0 ? '(' + n + ')' : ''; }
+    var count2 = document.getElementById('profil-edu-count2');
+    if (count2) { count2.textContent = n > 0 ? n : '›'; }
   }
 
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
