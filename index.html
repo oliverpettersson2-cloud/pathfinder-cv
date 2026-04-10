@@ -11432,6 +11432,10 @@ ${styleTexts}
   window.syvReplyOpt     = function(btn) { return syvReplyOpt(btn); };
   window.syvAreaClick    = function(area) { return syvAreaClick(area); };
   window.syvShowSaved    = function() { return syvShowSaved(); };
+  window.syvAnswer       = function(stepId, val) { return syvAnswer(stepId, val); };
+  window.syvToggleSave   = function(btn, n, t, k, i) { return syvToggleSave(btn, n, t, k, i); };
+  window.syvRemoveSaved  = function(btn, n, k) { return syvRemoveSaved(btn, n, k); };
+  window.syvRenderProgramList = function(a, p) { return syvRenderProgramList(a, p); };
   </script>
 
   <!-- CUSTOM DATE PICKER OVERLAY -->
@@ -12029,7 +12033,7 @@ ${styleTexts}
       '</div>' +
 
       // Gå till AI-chatten-knapp
-      '<button onclick="window._utbGotoChat(\'\')" style="width:100%;padding:28px 20px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(162,155,254,0.15));border:2px solid rgba(124,58,237,0.5);color:#fff;font-size:18px;font-weight:900;border-radius:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 20px rgba(124,58,237,0.2);">' +
+      '<button class="_utb-chat-btn" style="width:100%;padding:28px 20px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(162,155,254,0.15));border:2px solid rgba(124,58,237,0.5);color:#fff;font-size:18px;font-weight:900;border-radius:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 20px rgba(124,58,237,0.2);">' +
         '<span style="font-size:44px;line-height:1;">🤖</span>' +
         '<span>Ställ en egen fråga till AI-vägledaren</span>' +
       '</button>';
@@ -12037,12 +12041,22 @@ ${styleTexts}
     panel.style.position = 'relative';
     panel.appendChild(step1);
 
+    // Event delegation på step1 — inga inline onclick behövs
+    step1.addEventListener('click', function(e) {
+      var card = e.target.closest('._utb-card, ._utb-chat-btn');
+      if (!card) return;
+      if (card.dataset.syvSaved) {
+        if (typeof syvShowSaved === 'function') syvShowSaved();
+      } else {
+        var prompt = card.dataset.syvPrompt || '';
+        if (window._utbGotoChat) window._utbGotoChat(prompt);
+      }
+    });
+
     // Hjälpfunktion: skapa en ruta
     function _utbCard(emoji, title, desc, bg, border, color, prompt, isSaved) {
-      const onclick = isSaved
-        ? 'if(typeof syvShowSaved===\'function\') syvShowSaved()'
-        : 'window._utbGotoChat(\'' + (prompt||'').replace(/'/g,"\\'") + '\')';
-      return '<div onclick="' + onclick + '" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;' +
+      const dataAttr = isSaved ? 'data-syv-saved="1"' : 'data-syv-prompt="' + (prompt||'').replace(/"/g,'&quot;') + '"';
+      return '<div ' + dataAttr + ' class="_utb-card" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;' +
         'background:' + bg + ';border:2px solid ' + border + ';transition:all 0.15s;">' +
         '<div style="font-size:28px;margin-bottom:8px;">' + emoji + '</div>' +
         '<div style="font-size:12px;font-weight:800;color:' + color + ';margin-bottom:6px;line-height:1.3;">' + title + '</div>' +
@@ -13182,7 +13196,7 @@ ${styleTexts}
           const pct = Math.round((doneSteps/totalSteps)*100);
           const unlocked = _ovnIsUnlocked(mods, idx, progress);
 
-          html += '<div onclick="' + (unlocked ? 'ovnOpenModule(\'' + mod.id + '\')' : 'ovnLockedToast()') + '" style="' +
+          html += '<div data-modid="' + mod.id + '" data-locked="' + (!unlocked ? '1' : '') + '" class="_ovn-card" style="' +
             'background:' + (unlocked ? mod.bg : 'rgba(255,255,255,0.03)') + ';' +
             'border:1.5px solid ' + (unlocked ? mod.borderColor : 'rgba(255,255,255,0.07)') + ';' +
             'border-radius:12px;padding:13px;margin-bottom:8px;cursor:pointer;' +
@@ -13235,15 +13249,20 @@ ${styleTexts}
     html += '</div>';
 
     grid.innerHTML = html;
+    // Event delegation — hanterar klick på modul-kort
+    grid.onclick = function(e) {
+      var card = e.target.closest('._ovn-card');
+      if (!card) return;
+      if (card.dataset.locked) { window.ovnLockedToast(); return; }
+      if (card.dataset.modid) { window.ovnOpenModule(card.dataset.modid); }
+    };
   }
 
 
 
-  // ── Öppna en modul — söker i alla 4 veckor ──
+  // ── Öppna en modul ──
   window.ovnOpenModule = function(modId) {
-    var allMods = [];
-    WEEKS.forEach(function(w){ allMods = allMods.concat(w.modules); });
-    const mod = allMods.find(function(m){ return m.id === modId; });
+    const mod = _ovnFindMod(modId);
     if (!mod) return;
     const grid = document.getElementById('ovnModuleGrid');
     const view = document.getElementById('ovnModuleView');
@@ -13820,6 +13839,11 @@ ${styleTexts}
     const panel = document.getElementById('mobPanel-ovningar');
     if (panel && panel.classList.contains('mob-panel--active')) renderModuleGrid();
   });
+
+  // Exponera alla interna funktioner som kallas från onclick-attribut
+  window.renderModuleGrid  = renderModuleGrid;
+  window._ovnFindMod       = _ovnFindMod;
+  window.getProgress       = getProgress;
 
 })();
 </script>
