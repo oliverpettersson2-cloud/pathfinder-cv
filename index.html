@@ -17728,14 +17728,15 @@ ${styleTexts}
   // URL-generator baserat på utbildningstyp
   function getEduUrl(prog) {
     var typ = (prog.typ || '').toLowerCase();
-    if (typ === 'yh') return 'https://www.myh.se/';
-    if (typ === 'yrkesvux' || typ === 'yrkesutbildning') return 'https://helsingborg.se/utbildning-och-arbete/vuxenutbildning/';
-    if (typ === 'komvux') return 'https://helsingborg.se/utbildning-och-arbete/vuxenutbildning/';
-    if (typ === 'sfi') return 'https://helsingborg.se/utbildning-och-arbete/vuxenutbildning/svenska-for-invandrare-sfi/';
-    if (typ === 'kombi sfi+yrke') return 'https://helsingborg.se/utbildning-och-arbete/vuxenutbildning/';
+    var q = encodeURIComponent([prog.namn, prog.typ, prog.ort].filter(Boolean).join(' '));
+    // YH — officiell ansökningsportal
+    if (typ === 'yh') return 'https://www.antagning.se/se/search/?q=' + encodeURIComponent(prog.namn || '');
+    // Högskola — antagning.se
+    if (typ === 'hogskola' || typ === 'högskola') return 'https://www.antagning.se/se/search/?q=' + encodeURIComponent(prog.namn || '');
+    // AF-utbildning
     if (typ === 'af-utbildning') return 'https://arbetsformedlingen.se/';
-    if (typ === 'hogskola' || typ === 'högskola') return 'https://www.antagning.se/';
-    return 'https://www.antagning.se/';
+    // Allt annat (Komvux, Yrkesvux, SFI) — Google-sökning på namn+typ+ort
+    return 'https://www.google.com/search?q=' + q;
   }
 
   function makeEduCard(prog) {
