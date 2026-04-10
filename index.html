@@ -4,14 +4,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
 
   <!-- PDF Generation Libraries -->
   <!-- PDF Generation Libraries -->
-  <script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
-  <script src="file:///C:/Users/olive/Downloads/index_files/html2canvas.min.js.ladda%20ned"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   
   <style>
@@ -4255,7 +4255,7 @@
     </div>
   </div>
 
-  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -8328,14 +8328,14 @@ ${styleTexts}
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
 
   <!-- PDF Generation Libraries -->
   <!-- PDF Generation Libraries -->
-  <script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
-  <script src="file:///C:/Users/olive/Downloads/index_files/html2canvas.min.js.ladda%20ned"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   
   <style>
@@ -11267,7 +11267,7 @@ ${styleTexts}
       <div class="cv-document cv-template-10" id="cvDocument">
         <div class="cv-header">
           <div class="cv-header-photo" id="photoContainer" style="display: block;">
-            <img id="profilePhoto" src="file:///C:/Users/olive/Downloads/index_36.html" alt="Foto" style="display: block;">
+            <img id="profilePhoto" src="" alt="Foto" style="display: block;">
           </div>
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
@@ -12982,6 +12982,18 @@ ${styleTexts}
     if (desktopEl) desktopEl.value = value;
     saveData();
     updatePreview();
+  }
+
+  function mobCheckInfoDone() {
+    const btn = document.getElementById('mobFortsattInfo');
+    if (!btn) return;
+    const name  = (document.getElementById('mob-name')  || {}).value || cvData.name  || '';
+    const title = (document.getElementById('mob-title') || {}).value || cvData.title || '';
+    if (name.trim() && title.trim()) {
+      btn.classList.remove('mob-fortsatt-btn--disabled');
+    } else {
+      btn.classList.add('mob-fortsatt-btn--disabled');
+    }
   }
 
   // ── Ladda mobil-fält från cvData ─────────────────────
