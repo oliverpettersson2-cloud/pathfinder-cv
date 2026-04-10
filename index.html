@@ -7774,7 +7774,29 @@ ${styleTexts}
     <div class="mob-panel" id="mobPanel-ovningar" style="padding-bottom:100px;overflow-y:auto;">
       <div style="padding:16px 16px 0;">
         <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:2px;">Övningar</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;">Lär dig regler, verktyg och AI — i din takt</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">Lär dig regler, verktyg och AI — i din takt</div>
+        <!-- Förklaringsbox -->
+        <div id="ovnInfoBox" style="background:linear-gradient(135deg,rgba(62,180,137,0.12),rgba(56,189,248,0.08));border:1px solid rgba(62,180,137,0.35);border-radius:16px;padding:16px;margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:900;color:#3eb489;margin-bottom:10px;letter-spacing:0.3px;">📖 Hur fungerar det?</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+              <div style="font-size:16px;flex-shrink:0;">📚</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff;">Lektioner</strong> — Läs och välj din nivå: enkel eller avancerad.</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+              <div style="font-size:16px;flex-shrink:0;">✏️</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff;">Övning</strong> — Träna det du lärt dig med en praktisk uppgift.</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+              <div style="font-size:16px;flex-shrink:0;">🎯</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff;">Quiz</strong> — Testa dina kunskaper och se hur mycket du lärt dig.</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+              <div style="font-size:16px;flex-shrink:0;">🏆</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.6;"><strong style="color:#fff;">Veckor</strong> — Nytt innehåll varje vecka. Klicka på en vecka för att öppna eller stänga den.</div>
+            </div>
+          </div>
+        </div>
         <div id="ovnModuleGrid"></div>
       </div>
       <!-- Modul-innehåll (injectas dynamiskt) -->
@@ -12915,96 +12937,194 @@ ${styleTexts}
   ];
 
   const DAYS = [
-    { id: 'mandag',  label: 'M\u00e5ndag',  short: 'M\u00e5n', modules: MODULES, theme: '#3eb489' },
-    { id: 'tisdag',  label: 'Tisdag',  short: 'Tis', modules: TISDAG_MODULES, theme: '#f0c040' },
-    { id: 'onsdag',  label: 'Onsdag',  short: 'Ons', modules: ONSDAG_MODULES, theme: '#a78bfa' },
+    { id: 'mandag',  label: 'Måndag',  short: 'Mån', modules: MODULES,         theme: '#3eb489' },
+    { id: 'tisdag',  label: 'Tisdag',  short: 'Tis', modules: TISDAG_MODULES,  theme: '#f0c040' },
+    { id: 'onsdag',  label: 'Onsdag',  short: 'Ons', modules: ONSDAG_MODULES,  theme: '#a78bfa' },
     { id: 'torsdag', label: 'Torsdag', short: 'Tor', modules: TORSDAG_MODULES, theme: '#f87171' },
-    { id: 'fredag',  label: 'Fredag',  short: 'Fre', modules: FREDAG_MODULES, theme: '#38bdf8' }
+    { id: 'fredag',  label: 'Fredag',  short: 'Fre', modules: FREDAG_MODULES,  theme: '#38bdf8' }
   ];
 
-  let _ovnActiveDay = 'mandag';
+  // ── 4 veckor: Vecka 1 har innehåll, 2-4 är under arbete ──
+  const WEEKS = [
+    { id: 'vecka1', label: 'Vecka 1', days: DAYS, theme: '#3eb489', done: false },
+    { id: 'vecka2', label: 'Vecka 2', placeholder: true, theme: '#f0c040' },
+    { id: 'vecka3', label: 'Vecka 3', placeholder: true, theme: '#a78bfa' },
+    { id: 'vecka4', label: 'Vecka 4', placeholder: true, theme: '#38bdf8' }
+  ];
 
-  // ── Rendera veckovy ──
-  window.renderModuleGrid = function() {
-    const grid = document.getElementById('ovnModuleGrid');
-    if (!grid) return;
-    const view = document.getElementById('ovnModuleView');
-    if (view) view.style.display = 'none';
-    grid.style.display = '';
-    const progress = getProgress();
-    const today = new Date().getDay();
-    const dayMap = [null,'mandag','tisdag','onsdag','torsdag','fredag',null];
-    const todayId = dayMap[today] || null;
+  // Vilka veckor är öppna/stängda i accordion
+  var _ovnExpandedWeeks = new Set();
 
-    // Dag-flikar
-    let tabHtml = '<div style="display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;">';
-    DAYS.forEach(function(day) {
-      const isActive = _ovnActiveDay === day.id;
-      const isToday = todayId === day.id;
-      const hasContent = day.modules.length > 0;
-      tabHtml += '<button onclick="ovnSwitchDay(\'' + day.id + '\')" style="flex-shrink:0;padding:7px 14px;border-radius:20px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:800;transition:all 0.15s;' +
-        (isActive ? 'background:' + day.theme + ';color:#fff;' : 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,' + (hasContent ? '0.65' : '0.25') + ');') +
-        '">' + day.short + (isToday ? ' \uD83D\uDCCD' : '') + '</button>';
+  // Räkna hur många moduler i vecka1 är klara
+  function _ovnWeek1Complete(progress) {
+    var allMods = DAYS.reduce(function(acc, d){ return acc.concat(d.modules); }, []);
+    return allMods.every(function(mod) {
+      var p = progress[mod.id] || {};
+      return p.quizDone;
     });
-    tabHtml += '</div>';
+  }
 
-    const activeDay = DAYS.find(function(d){ return d.id === _ovnActiveDay; });
-    let modulesHtml = '';
-
-    if (!activeDay || activeDay.modules.length === 0) {
-      modulesHtml = '<div style="text-align:center;padding:50px 20px;">' +
-        '<div style="font-size:40px;margin-bottom:12px;">\uD83D\uDD12</div>' +
-        '<div style="font-size:15px;font-weight:800;color:rgba(255,255,255,0.4);margin-bottom:6px;">Kommer snart</div>' +
-        '<div style="font-size:12px;color:rgba(255,255,255,0.25);">Inneh\u00e5ll f\u00f6r ' + (activeDay ? activeDay.label : '') + ' \u00e4r under produktion.</div>' +
-        '</div>';
+  // Auto-expandera rätt vecka vid första render
+  function _ovnInitExpanded() {
+    var progress = getProgress();
+    if (!_ovnWeek1Complete(progress)) {
+      _ovnExpandedWeeks.add('vecka1');
     } else {
-      activeDay.modules.forEach(function(mod) {
-        const p = progress[mod.id] || {};
-        const lessonsOk = (p.lessonsRead || 0);
-        const exerciseOk = p.exerciseDone ? 1 : 0;
-        const quizScore = p.quizScore || 0;
-        const totalSteps = mod.lessons.length + 2;
-        const doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
-        const pct = Math.round((doneSteps / totalSteps) * 100);
-        modulesHtml += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="position:relative;background:linear-gradient(135deg,' + mod.bg + ' 0%,rgba(0,0,0,0.2) 100%);border:1.5px solid ' + mod.color + '44;border-left:4px solid ' + mod.color + ';border-radius:18px;padding:18px 16px;margin-bottom:14px;cursor:pointer;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);">' +
-          '<div style="position:absolute;top:0;right:0;width:80px;height:80px;background:radial-gradient(circle at top right,' + mod.color + '18,transparent 70%);pointer-events:none;"></div>' +
-          '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">' +
-          '<div style="font-size:34px;filter:drop-shadow(0 2px 6px ' + mod.color + '66);">' + mod.icon + '</div>' +
-          '<div style="flex:1;">' +
-          '<div style="font-size:17px;font-weight:900;color:#fff;letter-spacing:-0.3px;">' + mod.title + '</div>' +
-          '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">' + mod.subtitle + '</div>' +
-          '</div>' +
-          (pct === 100 ? '<div style="font-size:26px;">\u2705</div>' : '<div style="font-size:20px;font-weight:900;color:' + mod.color + ';text-shadow:0 0 12px ' + mod.color + '88;">' + pct + '%</div>') +
-          '</div>' +
-          '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:6px;overflow:hidden;margin-bottom:12px;">' +
-          '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;box-shadow:0 0 8px ' + mod.color + '88;"></div>' +
-          '</div>' +
-          '<div style="display:flex;gap:6px;">' +
-          '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 10px;text-align:center;">' +
-          '<div style="font-size:13px;font-weight:900;color:#fff;">' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + '</div>' +
-          '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Lektioner</div>' +
-          '</div>' +
-          '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 10px;text-align:center;">' +
-          '<div style="font-size:13px;font-weight:900;color:' + (exerciseOk ? '#3eb489' : 'rgba(255,255,255,0.3)') + ';">' + (exerciseOk ? '\u2713 Klar' : '\u2013') + '</div>' +
-          '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Övning</div>' +
-          '</div>' +
-          '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 10px;text-align:center;">' +
-          '<div style="font-size:13px;font-weight:900;color:' + (p.quizDone ? mod.color : 'rgba(255,255,255,0.3)') + ';">' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '\u2013') + '</div>' +
-          '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Quiz</div>' +
-          '</div>' +
-          '</div>' +
-          '</div>';
-      });
+      _ovnExpandedWeeks.add('vecka2');
     }
+  }
 
-    grid.innerHTML = tabHtml + modulesHtml;
+  window.ovnToggleWeek = function(weekId) {
+    if (_ovnExpandedWeeks.has(weekId)) {
+      _ovnExpandedWeeks.delete(weekId);
+    } else {
+      _ovnExpandedWeeks.add(weekId);
+    }
+    renderModuleGrid();
   };
+
+  // Aktiv dag inom vecka1
+  var _ovnActiveDay = 'mandag';
 
   window.ovnSwitchDay = function(dayId) {
     _ovnActiveDay = dayId;
     renderModuleGrid();
   };
 
+  // ── Rendera veckovy ──
+  window.renderModuleGrid = function() {
+    var grid = document.getElementById('ovnModuleGrid');
+    if (!grid) return;
+    var view = document.getElementById('ovnModuleView');
+    if (view) view.style.display = 'none';
+    grid.style.display = '';
+    // Göm förklaringsboxen när man är i modulvy
+    var infoBox = document.getElementById('ovnInfoBox');
+
+    var progress = getProgress();
+
+    // Om ingen vecka är expanderad ännu — auto-init
+    if (_ovnExpandedWeeks.size === 0) _ovnInitExpanded();
+
+    var html = '';
+
+    WEEKS.forEach(function(week) {
+      var isOpen = _ovnExpandedWeeks.has(week.id);
+
+      // Räkna progress för vecka 1
+      var weekPct = 0;
+      var weekDone = false;
+      if (week.days) {
+        var allMods = week.days.reduce(function(acc, d){ return acc.concat(d.modules); }, []);
+        var doneCount = allMods.filter(function(mod){ return (progress[mod.id] || {}).quizDone; }).length;
+        weekPct = allMods.length > 0 ? Math.round((doneCount / allMods.length) * 100) : 0;
+        weekDone = doneCount === allMods.length;
+      }
+
+      // ── Vecka-header (klickbar) ──
+      html += '<div style="border-radius:16px;margin-bottom:10px;overflow:hidden;border:1.5px solid ' + week.theme + (isOpen ? '88' : '33') + ';">';
+      html += '<div onclick="ovnToggleWeek(\'' + week.id + '\')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:' + (isOpen ? 'linear-gradient(135deg,' + week.theme + '22,rgba(0,0,0,0.2))' : 'rgba(255,255,255,0.04)') + ';cursor:pointer;">';
+      html += '<div style="flex:1;">';
+      html += '<div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:-0.2px;">' + week.label + (weekDone ? ' ✅' : '') + '</div>';
+      if (week.days) {
+        html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + weekPct + '% klart</div>';
+      } else {
+        html += '<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px;">Under arbete</div>';
+      }
+      html += '</div>';
+      // Progress-ring or lock icon
+      if (week.days) {
+        html += '<div style="font-size:15px;font-weight:900;color:' + week.theme + ';min-width:36px;text-align:right;">' + weekPct + '%</div>';
+      } else {
+        html += '<div style="font-size:18px;">🔒</div>';
+      }
+      html += '<div style="font-size:18px;color:rgba(255,255,255,0.5);transition:transform 0.2s;' + (isOpen ? 'transform:rotate(180deg)' : '') + '">▾</div>';
+      html += '</div>';
+
+      // Progress bar under header
+      if (week.days) {
+        html += '<div style="height:3px;background:rgba(255,255,255,0.07);">' +
+          '<div style="height:100%;width:' + weekPct + '%;background:' + week.theme + ';transition:width 0.4s;box-shadow:0 0 8px ' + week.theme + '88;"></div>' +
+          '</div>';
+      }
+
+      // ── Expanderat innehåll ──
+      if (isOpen) {
+        html += '<div style="padding:12px 12px 14px;background:rgba(0,0,0,0.15);">';
+
+        if (week.placeholder) {
+          // Under arbete
+          html += '<div style="text-align:center;padding:30px 16px;">' +
+            '<div style="font-size:36px;margin-bottom:10px;">🚧</div>' +
+            '<div style="font-size:15px;font-weight:800;color:rgba(255,255,255,0.5);margin-bottom:6px;">Under arbete</div>' +
+            '<div style="font-size:12px;color:rgba(255,255,255,0.25);line-height:1.6;">Innehåll för ' + week.label + ' är under produktion.<br>Kom tillbaka snart!</div>' +
+            '</div>';
+        } else {
+          // Dag-flikar
+          html += '<div style="display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;">';
+          week.days.forEach(function(day) {
+            var isActive = _ovnActiveDay === day.id;
+            var dayMods = day.modules;
+            var dayDone = dayMods.length > 0 && dayMods.every(function(m){ return (progress[m.id]||{}).quizDone; });
+            html += '<button onclick="ovnSwitchDay(\'' + day.id + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:20px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:900;' +
+              (isActive ? 'background:' + day.theme + ';color:#fff;box-shadow:0 2px 8px ' + day.theme + '55;' : 'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.55);') + '">' +
+              day.short + (dayDone ? ' ✓' : '') + '</button>';
+          });
+          html += '</div>';
+
+          // Modulkort för aktiv dag
+          var activeDay = week.days.find(function(d){ return d.id === _ovnActiveDay; }) || week.days[0];
+          if (activeDay.modules.length === 0) {
+            html += '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">Inga moduler för ' + activeDay.label + ' ännu.</div>';
+          } else {
+            activeDay.modules.forEach(function(mod) {
+              var p = progress[mod.id] || {};
+              var lessonsOk = p.lessonsRead || 0;
+              var exerciseOk = p.exerciseDone ? 1 : 0;
+              var quizScore = p.quizScore || 0;
+              var totalSteps = mod.lessons.length + 2;
+              var doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
+              var pct = Math.round((doneSteps / totalSteps) * 100);
+
+              html += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="position:relative;background:linear-gradient(135deg,' + mod.bg + ' 0%,rgba(0,0,0,0.2) 100%);border:1.5px solid ' + mod.color + '44;border-left:4px solid ' + mod.color + ';border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);">' +
+                '<div style="position:absolute;top:0;right:0;width:60px;height:60px;background:radial-gradient(circle at top right,' + mod.color + '18,transparent 70%);pointer-events:none;"></div>' +
+                '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
+                '<div style="font-size:28px;filter:drop-shadow(0 2px 4px ' + mod.color + '66);">' + mod.icon + '</div>' +
+                '<div style="flex:1;">' +
+                '<div style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-0.2px;">' + mod.title + '</div>' +
+                '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px;">' + mod.subtitle + '</div>' +
+                '</div>' +
+                (pct === 100 ? '<div style="font-size:22px;">✅</div>' : '<div style="font-size:17px;font-weight:900;color:' + mod.color + ';text-shadow:0 0 10px ' + mod.color + '88;">' + pct + '%</div>') +
+                '</div>' +
+                '<div style="background:rgba(255,255,255,0.08);border-radius:8px;height:5px;overflow:hidden;margin-bottom:10px;">' +
+                '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:8px;transition:width 0.4s;box-shadow:0 0 6px ' + mod.color + '88;"></div>' +
+                '</div>' +
+                '<div style="display:flex;gap:5px;">' +
+                '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:5px 8px;text-align:center;">' +
+                '<div style="font-size:12px;font-weight:900;color:#fff;">' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + '</div>' +
+                '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Lektioner</div>' +
+                '</div>' +
+                '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:5px 8px;text-align:center;">' +
+                '<div style="font-size:12px;font-weight:900;color:' + (exerciseOk ? '#3eb489' : 'rgba(255,255,255,0.3)') + ';">' + (exerciseOk ? '✓ Klar' : '–') + '</div>' +
+                '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Övning</div>' +
+                '</div>' +
+                '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:5px 8px;text-align:center;">' +
+                '<div style="font-size:12px;font-weight:900;color:' + (p.quizDone ? mod.color : 'rgba(255,255,255,0.3)') + ';">' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '–') + '</div>' +
+                '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Quiz</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            });
+          }
+        }
+        html += '</div>'; // expanderat innehåll
+      }
+
+      html += '</div>'; // vecka-block
+    });
+
+    grid.innerHTML = html;
+  };
 
   // ── Öppna en modul ──
   window.ovnOpenModule = function(modId) {
@@ -13012,7 +13132,9 @@ ${styleTexts}
     if (!mod) return;
     const grid = document.getElementById('ovnModuleGrid');
     const view = document.getElementById('ovnModuleView');
+    const info = document.getElementById('ovnInfoBox');
     if (grid) grid.style.display = 'none';
+    if (info) info.style.display = 'none';
     if (view) { view.style.display = ''; view.scrollTop = 0; }
     ovnShowLesson(mod, 0);
   };
@@ -13020,8 +13142,10 @@ ${styleTexts}
   window._ovnGoBack = function() {
     const grid = document.getElementById('ovnModuleGrid');
     const view = document.getElementById('ovnModuleView');
+    const info = document.getElementById('ovnInfoBox');
     if (view) view.style.display = 'none';
     if (grid) grid.style.display = '';
+    if (info) info.style.display = '';
     renderModuleGrid();
   };
 
