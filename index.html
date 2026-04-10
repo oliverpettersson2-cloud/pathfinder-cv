@@ -17640,7 +17640,7 @@ ${styleTexts}
   var FRAMTIDSYRKEN = [
     // Vård & omsorg
     { namn:'Undersköterska', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1 år', krav:'Grundskola', url:'' },
-    { namn:'Barnskötare', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1 år', krav:'Grundskola', url:'' },
+    { namn:'Socionom', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3,5 år (210 hp)', krav:'Grundläggande behörighet', url:'' },
     { namn:'Tandsköterska', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1,5 år', krav:'Grundläggande behörighet', url:'' },
     { namn:'Sjuksköterska', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3 år (180 hp)', krav:'Grundläggande behörighet', url:'' },
     { namn:'Behandlingsassistent', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'' },
@@ -17727,15 +17727,14 @@ ${styleTexts}
   // Utbildningskort (sparbart)
   // URL-generator baserat på utbildningstyp
   function getEduUrl(prog) {
-    var namn = encodeURIComponent(prog.namn || '');
     var typ = (prog.typ || '').toLowerCase();
-    if (typ === 'yh') return 'https://www.myh.se/yh-antagning/?q=' + namn;
+    if (typ === 'yh') return 'https://www.yh-antagning.se/';
     if (typ === 'yrkesvux' || typ === 'yrkesutbildning') return 'https://skanevux.se/utbildningar/';
     if (typ === 'komvux') return 'https://skanevux.se/utbildningar/';
     if (typ === 'sfi' || typ === 'kombi sfi+yrke') return 'https://skanevux.se/utbildningar/';
     if (typ === 'af-utbildning') return 'https://arbetsformedlingen.se/for-arbetssokande/stod-och-ersattning/stod-for-dig-som-behover-rusta-dig/arbetsmarknadsutbildning';
-    if (typ === 'hogskola' || typ === 'högskola') return 'https://www.antagning.se/se/search/?q=' + namn;
-    return 'https://www.antagning.se/se/search/?q=' + namn;
+    if (typ === 'hogskola' || typ === 'högskola') return 'https://www.antagning.se/';
+    return 'https://www.antagning.se/';
   }
 
   function makeEduCard(prog) {
