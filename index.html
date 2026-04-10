@@ -6341,7 +6341,9 @@ Ge bara profiltexten, ingen förklaringtext.`;
 body { margin: 0; padding: 0; background: white; }
 ${styleTexts}
 </style>
-</head><body>${cvEl.outerHTML}</body></html>`;
+</head><body>${cvEl.outerHTML}
+
+</body></html>`;
 
       const fileName = (cvData.name || 'CV').replace(/\s+/g, '_') + '_' + new Date().getFullYear() + '.pdf';
 
@@ -6904,7 +6906,7 @@ ${styleTexts}
         const currentTitle = document.getElementById('title').value.trim() || '';
         const eduDetails = (cvData.education || []).map(e => {
           const parts = [e.degree, e.school ? 'pa ' + e.school : ''].filter(Boolean);
-          return parts.length ? '- ' + parts.join(' ') : '';
+                return parts.length ? '\nAnvandarens CV:\n' + parts.join('\n') : '';
         }).filter(Boolean).join('\n');
 
         // Bygg en karriarberattelse med de nya unika uppgifterna
@@ -8214,9 +8216,63 @@ ${styleTexts}
     </div><!-- /mobPanel-matcha -->
 
     <!-- FLIK: AI-SYV -->
-    <div class="mob-panel" id="mobPanel-aisyv" style="padding:40px 20px;text-align:center;">
-      <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.5);">Utbilda dig</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:8px;">Kommer snart</div>
+    <div class="mob-panel" id="mobPanel-aisyv" style="padding:0;overflow:hidden;height:calc(100vh - 120px);display:none;flex-direction:column;">
+
+      <!-- VY 1: STARTSIDA (4 kort) -->
+      <div id="edu-home" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 100px;">
+        <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;">Utbilda dig</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:20px;">Hitta rätt utbildning i Familjen Helsingborg</div>
+
+        <!-- Kort 1 -->
+        <div class="edu-card" data-view="region" style="background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);border-radius:16px;padding:18px;margin-bottom:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+          <div style="font-size:28px;margin-bottom:8px;">🗺️</div>
+          <div style="font-size:16px;font-weight:900;color:#3eb489;margin-bottom:6px;">Familjen Helsingborg</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5;">Utforska alla utbildningar i regionen — SFI, Komvux, YH, Yrkesutbildning och Högskola.</div>
+        </div>
+
+        <!-- Kort 2 -->
+        <div class="edu-card" data-view="cv-match" style="background:rgba(124,58,237,0.1);border:1.5px solid rgba(124,58,237,0.35);border-radius:16px;padding:18px;margin-bottom:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+          <div style="font-size:28px;margin-bottom:8px;">✨</div>
+          <div style="font-size:16px;font-weight:900;color:#a78bfa;margin-bottom:6px;">Matchar ditt CV</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5;">AI analyserar ditt CV och föreslår utbildningar som passar din bakgrund och dina mål.</div>
+        </div>
+
+        <!-- Kort 3 -->
+        <div class="edu-card" data-view="search" style="background:rgba(56,189,248,0.1);border:1.5px solid rgba(56,189,248,0.35);border-radius:16px;padding:18px;margin-bottom:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+          <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+          <div style="font-size:16px;font-weight:900;color:#38bdf8;margin-bottom:6px;">Sök fritt</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5;">Sök på yrke, utbildning, skola eller ort. AI hjälper dig tolka vad du letar efter.</div>
+        </div>
+
+        <!-- Kort 4 -->
+        <div class="edu-card" data-view="saved" style="background:rgba(240,192,64,0.08);border:1.5px solid rgba(240,192,64,0.3);border-radius:16px;padding:18px;margin-bottom:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+          <div style="font-size:28px;margin-bottom:8px;">🔖</div>
+          <div style="font-size:16px;font-weight:900;color:#f0c040;margin-bottom:6px;">Sparade utbildningar</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5;">Se utbildningar du sparat och jämför dem sida vid sida.</div>
+        </div>
+      </div>
+
+      <!-- VY 2: CHATT MED AI -->
+      <div id="edu-chat" style="display:none;flex:1;flex-direction:column;height:100%;">
+        <!-- Header -->
+        <div style="flex-shrink:0;padding:10px 16px;background:#12172a;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;">
+          <button id="edu-back" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;padding:0;line-height:1;-webkit-tap-highlight-color:transparent;">←</button>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:#fff;" id="edu-chat-title">Utbildningar</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);">AI-vägledare · Familjen Helsingborg</div>
+          </div>
+        </div>
+
+        <!-- Meddelanden -->
+        <div id="edu-messages" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 100px;display:flex;flex-direction:column;gap:12px;"></div>
+
+        <!-- Input (position absolute = alltid synlig) -->
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 14px 16px;background:#12172a;border-top:1px solid rgba(255,255,255,0.08);display:flex;gap:8px;align-items:flex-end;z-index:10;">
+          <textarea id="edu-input" rows="1" placeholder="Skriv din fråga..." style="flex:1;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:14px;padding:11px 14px;color:#fff;font-size:15px;font-family:inherit;resize:none;outline:none;max-height:100px;overflow-y:auto;line-height:1.5;"></textarea>
+          <button id="edu-send" style="width:46px;height:46px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;border-radius:13px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;">➤</button>
+        </div>
+      </div>
+
     </div>E html>
 <!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_34.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -17468,4 +17524,282 @@ ${styleTexts}
 })();
 </script>
 
+
+<script>
+// ══════════════════════════════════════
+// UTBILDA DIG — isolerad modul
+// Inga onclick-attribut, allt via addEventListener
+// ══════════════════════════════════════
+(function() {
+
+  var eduHistory = [];
+  var eduCurrentView = null;
+
+  var SYSTEM_PROMPT = "Du ar en utbildningsvagledare for Familjen Helsingborg. Du hjalper anvandare hitta ratt utbildning: SFI, Komvux, Yrkesutbildning, Yrkeshogskola (YH) och Hogskola. Svara ALLTID pa svenska. Hall meningarna korta. Strukturera svaren med emojis och radbrytningar. Avsluta ALLTID med 2-3 snabbsvar pa detta format (en per rad): >>Alternativ ett >>Alternativ tva >>Tillbaka till start. Utbildningar: SFI A/B/C/D, Komvux, Yrkesutbildning (1-2 ar), YH (1-3 ar krav gymnasieexamen), Hogskola (3+ ar). Kombinationsutbildningar SFI+yrke ar viktiga. Om du inte vet - ge generella rad.";
+
+  var VIEW_TITLES = {
+    'region':   '🗺️ Familjen Helsingborg',
+    'cv-match': '✨ Matchar ditt CV',
+    'search':   '🔍 Sök fritt',
+    'saved':    '🔖 Sparade utbildningar'
+  };
+
+  var VIEW_OPENERS = {
+    'region':   'Hej!\n\nJag hjalper dig hitta utbildningar i Familjen Helsingborg.\n\nVilken typ av utbildning letar du efter?\n\n>>SFI (svenska for invandrare)\n>>Komvux\n>>Yrkesutbildning\n>>Yrkeshogskola (YH)\n>>Hogskola/Universitet\n>>Jag vet inte - hjalp mig!',
+    'cv-match': 'Analyserar din bakgrund...',
+    'search':   'Vad letar du efter?\n\nSkriv ett yrke, en utbildning eller ett amne - jag hjalper dig!\n\n>>Vard och omsorg\n>>IT och teknik\n>>Barn och pedagogik\n>>Bygg och hantverk',
+    'saved':    'Har visas dina sparade utbildningar.\n\nDu har inga sparade utbildningar an. Utforska och tryck pa bokmarke for att spara!\n\n>>Utforska Familjen Helsingborg\n>>Sok fritt'
+  };
+
+  // Hämta CV-data från appen
+  function getCVContext() {
+    try {
+      var cvData = null;
+      if (typeof safeStorage !== 'undefined') {
+        var raw = safeStorage.getItem('cvData') || safeStorage.getItem('SAVED_CVS_KEY');
+        if (raw) cvData = JSON.parse(raw);
+      }
+      if (!cvData) return '';
+      var parts = [];
+      if (cvData.name) parts.push('Namn: ' + cvData.name);
+      if (cvData.title) parts.push('Yrkestitel: ' + cvData.title);
+      if (cvData.summary) parts.push('Sammanfattning: ' + cvData.summary);
+      if (cvData.jobs && cvData.jobs.length) {
+        parts.push('Erfarenhet: ' + cvData.jobs.map(function(j){ return j.title + (j.company ? ' på ' + j.company : ''); }).join(', '));
+      }
+      if (cvData.education && cvData.education.length) {
+        parts.push('Utbildning: ' + cvData.education.map(function(e){ return e.degree || e.school || ''; }).join(', '));
+      }
+      if (cvData.skills && cvData.skills.length) {
+        parts.push('Kompetenser: ' + cvData.skills.join(', '));
+      }
+      return parts.length ? 'Anvandarens CV: ' + parts.join('. ') : '';
+    } catch(e) { return ''; }
+  }
+
+  // Lägg till bot-bubbla
+  function addBot(text) {
+    var msgs = document.getElementById('edu-messages');
+    if (!msgs) return;
+
+    // Dela upp text och snabbsvar (>>)
+    var lines = text.split('\n');
+    var mainLines = [];
+    var quickReplies = [];
+    lines.forEach(function(l) {
+      if (l.trim().startsWith('>>')) {
+        quickReplies.push(l.trim().slice(2));
+      } else {
+        mainLines.push(l);
+      }
+    });
+
+    var div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
+
+    var avatar = document.createElement('div');
+    avatar.style.cssText = 'width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:2px;';
+    avatar.textContent = '🎓';
+
+    var bubble = document.createElement('div');
+    bubble.style.cssText = 'background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;max-width:82%;';
+
+    var mainText = document.createElement('div');
+    mainText.style.cssText = 'font-size:15px;color:rgba(255,255,255,0.92);line-height:1.6;white-space:pre-wrap;';
+    mainText.textContent = mainLines.join('\n').trim();
+    bubble.appendChild(mainText);
+
+    if (quickReplies.length) {
+      var qDiv = document.createElement('div');
+      qDiv.style.cssText = 'margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;';
+      quickReplies.forEach(function(qr) {
+        var btn = document.createElement('button');
+        btn.textContent = qr;
+        btn.style.cssText = 'background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);border-radius:20px;padding:6px 12px;color:#3eb489;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;';
+        btn.addEventListener('click', function() {
+          if (qr === 'Tillbaka till start') {
+            showHome();
+          } else {
+            sendMessage(qr);
+          }
+        });
+        qDiv.appendChild(btn);
+      });
+      bubble.appendChild(qDiv);
+    }
+
+    div.appendChild(avatar);
+    div.appendChild(bubble);
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    eduHistory.push({ role: 'assistant', content: text });
+  }
+
+  // Lägg till user-bubbla
+  function addUser(text) {
+    var msgs = document.getElementById('edu-messages');
+    if (!msgs) return;
+    var div = document.createElement('div');
+    div.style.cssText = 'display:flex;justify-content:flex-end;';
+    var bubble = document.createElement('div');
+    bubble.style.cssText = 'background:linear-gradient(135deg,#3eb489,#10b981);border-radius:18px;border-bottom-right-radius:4px;padding:12px 16px;max-width:78%;font-size:15px;color:#fff;line-height:1.5;';
+    bubble.textContent = text;
+    div.appendChild(bubble);
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    eduHistory.push({ role: 'user', content: text });
+  }
+
+  // Typing indicator
+  function showTyping() {
+    var msgs = document.getElementById('edu-messages');
+    if (!msgs) return;
+    var div = document.createElement('div');
+    div.id = 'edu-typing';
+    div.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
+    div.innerHTML = '<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎓</div><div style="background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;"><span style="color:rgba(255,255,255,0.4);font-size:13px;">Tänker...</span></div>';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function hideTyping() {
+    var t = document.getElementById('edu-typing');
+    if (t) t.remove();
+  }
+
+  // Skicka meddelande till Claude
+  async function sendMessage(text) {
+    if (!text.trim()) return;
+
+    var input = document.getElementById('edu-input');
+    if (input) { input.value = ''; input.style.height = 'auto'; }
+
+    var sendBtn = document.getElementById('edu-send');
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.style.opacity = '0.5'; }
+
+    addUser(text);
+    showTyping();
+
+    var cvCtx = (eduCurrentView === 'cv-match') ? getCVContext() : '';
+    var system = SYSTEM_PROMPT + cvCtx;
+
+    try {
+      var resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 600,
+          system: system,
+          messages: eduHistory.filter(function(m){ return m.role === 'user' || m.role === 'assistant'; })
+        })
+      });
+      var data = await resp.json();
+      var reply = (data.content || []).filter(function(b){ return b.type==='text'; }).map(function(b){ return b.text; }).join('').trim() || 'Något gick fel. Försök igen!';
+      hideTyping();
+      addBot(reply);
+    } catch(e) {
+      hideTyping();
+      addBot('Kunde inte ansluta just nu. Försök igen!\n\n>>Försök igen\n>>Tillbaka till start');
+    }
+
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.style.opacity = '1'; }
+  }
+
+  // Visa chatt-vy
+  function showChat(viewKey) {
+    eduCurrentView = viewKey;
+    eduHistory = [];
+
+    var home = document.getElementById('edu-home');
+    var chat = document.getElementById('edu-chat');
+    var title = document.getElementById('edu-chat-title');
+    var msgs = document.getElementById('edu-messages');
+
+    if (home) home.style.display = 'none';
+    if (chat) { chat.style.display = 'flex'; chat.style.flexDirection = 'column'; }
+    if (title) title.textContent = VIEW_TITLES[viewKey] || 'Utbildningar';
+    if (msgs) msgs.innerHTML = '';
+
+    var opener = VIEW_OPENERS[viewKey];
+    if (opener) {
+      if (viewKey === 'cv-match') {
+        // Läs CV och skicka direkt till AI
+        setTimeout(function() {
+          var cvCtx = getCVContext();
+          var prompt = cvCtx
+            ? 'Baserat på mitt CV, vilka utbildningar i Familjen Helsingborg passar mig? Ge 2-3 konkreta förslag med nivå och krav.' + cvCtx
+            : 'Jag vill hitta utbildningar som matchar min bakgrund. Ställ mig 2-3 frågor om mina erfarenheter och mål så jag kan hjälpa dig bättre.';
+          addBot('Jag analyserar nu din bakgrund...');
+          setTimeout(function() {
+            sendMessage(prompt);
+          }, 500);
+        }, 300);
+      } else {
+        setTimeout(function() { addBot(opener); }, 300);
+      }
+    }
+  }
+
+  // Visa startsidan
+  function showHome() {
+    var home = document.getElementById('edu-home');
+    var chat = document.getElementById('edu-chat');
+    if (home) home.style.display = '';
+    if (chat) chat.style.display = 'none';
+    eduCurrentView = null;
+    eduHistory = [];
+  }
+
+  // Init — körs när panelen laddas
+  function init() {
+    // Kort-klick
+    document.querySelectorAll('.edu-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        var view = card.getAttribute('data-view');
+        if (view) showChat(view);
+      });
+    });
+
+    // Tillbaka-knapp
+    var backBtn = document.getElementById('edu-back');
+    if (backBtn) {
+      backBtn.addEventListener('click', showHome);
+    }
+
+    // Send-knapp
+    var sendBtn = document.getElementById('edu-send');
+    if (sendBtn) {
+      sendBtn.addEventListener('click', function() {
+        var input = document.getElementById('edu-input');
+        if (input) sendMessage(input.value.trim());
+      });
+    }
+
+    // Enter-tangent
+    var input = document.getElementById('edu-input');
+    if (input) {
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage(input.value.trim());
+        }
+      });
+      input.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+      });
+    }
+  }
+
+  // Kör init när DOM är redo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
 </body></html>
