@@ -8264,7 +8264,7 @@ ${styleTexts}
         </div>
 
         <!-- Meddelanden -->
-        <div id="edu-messages" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 100px;display:flex;flex-direction:column;gap:12px;"></div>
+        <div id="edu-messages" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 140px;display:flex;flex-direction:column;gap:12px;"></div>
 
         <!-- Input (position absolute = alltid synlig) -->
         <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 14px 16px;background:#12172a;border-top:1px solid rgba(255,255,255,0.08);display:flex;gap:8px;align-items:flex-end;z-index:10;">
@@ -17660,10 +17660,20 @@ ${styleTexts}
     wrapper.appendChild(bubble);
     msgs.appendChild(wrapper);
 
-    // Scrolla till TOPPEN av det nya meddelandet
+    // Scrolla: visa toppen av AI-svaret, men låt padding-bottom hantera knappar
     setTimeout(function() {
-      wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 50);
+      var msgs2 = document.getElementById('edu-messages');
+      if (!msgs2) return;
+      // Om meddelandet är kort nog att rymmas → scrolla till botten (visar allt)
+      // Om långt → scrolla till toppen av meddelandet (visa från start)
+      var msgH = wrapper.offsetHeight;
+      var containerH = msgs2.clientHeight;
+      if (msgH < containerH * 0.6) {
+        msgs2.scrollTop = msgs2.scrollHeight;
+      } else {
+        wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 80);
 
     eduHistory.push({ role: 'assistant', content: text });
   }
