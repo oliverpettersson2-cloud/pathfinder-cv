@@ -8113,7 +8113,7 @@ ${styleTexts}
         <textarea id="syvInput" rows="1" placeholder="Skriv din fråga..." style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;color:#fff;font-size:14px;font-family:inherit;resize:none;outline:none;max-height:100px;overflow-y:auto;line-height:1.4;" oninput="syvAutoResize(this)" onkeydown="if(event.key===&#39;Enter&#39;&amp;&amp;!event.shiftKey){event.preventDefault();syvSend();}"></textarea>
         <button id="syvSendBtn" onclick="syvSend()" style="width:42px;height:42px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
       </div>
-    <div id="utbStep1" style="position: absolute; inset: 0px; z-index: 50; background: rgb(18, 23, 42); overflow-y: auto; padding: 20px 16px 40px;"><div style="text-align:center;padding:16px 0 24px;"><div style="font-size:40px;margin-bottom:10px;">🎓</div><div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;">Utbildning</div><div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">Hitta rätt utbildning och ta nästa steg mot jobbet du vill ha.</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;"><div onclick="window._utbGotoChat(&#39;Visa utbildningar med goda jobbchanser i Familjen Helsingborg-regionen&#39;)" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(62,180,137,0.12);border:2px solid rgba(62,180,137,0.3);transition:all 0.15s;"><div style="font-size:28px;margin-bottom:8px;">🎯</div><div style="font-size:12px;font-weight:800;color:#3eb489;margin-bottom:6px;line-height:1.3;">Utbildningar med jobbchanser</div><div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Se utbildningar i regionen som faktiskt leder till jobb.</div></div><div onclick="window._utbGotoChat(&#39;Vilka utbildningar finns nära mig i Familjen Helsingborg?&#39;)" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(240,192,64,0.1);border:2px solid rgba(240,192,64,0.3);transition:all 0.15s;"><div style="font-size:28px;margin-bottom:8px;">🗺️</div><div style="font-size:12px;font-weight:800;color:#f0c040;margin-bottom:6px;line-height:1.3;">Utbildningar nära dig</div><div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Utbildningar i Helsingborg och Familjen Helsingborgs 11 kommuner.</div></div><div onclick="window._utbGotoChat(&#39;Analysera mitt CV och föreslå utbildningar som passar mig&#39;)" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(56,189,248,0.1);border:2px solid rgba(56,189,248,0.4);transition:all 0.15s;"><div style="font-size:28px;margin-bottom:8px;">💡</div><div style="font-size:12px;font-weight:800;color:#38bdf8;margin-bottom:6px;line-height:1.3;">Vad passar mig?</div><div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">AI analyserar ditt CV och föreslår utbildningar som passar dig.</div></div><div onclick="if(typeof syvShowSaved===&#39;function&#39;) syvShowSaved()" style="border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(232,93,38,0.1);border:2px solid rgba(232,93,38,0.3);transition:all 0.15s;"><div style="font-size:28px;margin-bottom:8px;">🔖</div><div style="font-size:12px;font-weight:800;color:#e85d26;margin-bottom:6px;line-height:1.3;">Mina sparade utbildningar</div><div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.5;">Se utbildningar du sparat tidigare.</div></div></div><button onclick="window._utbGotoChat(&#39;&#39;)" style="width:100%;padding:28px 20px;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(162,155,254,0.15));border:2px solid rgba(124,58,237,0.5);color:#fff;font-size:18px;font-weight:900;border-radius:18px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 20px rgba(124,58,237,0.2);"><span style="font-size:44px;line-height:1;">🤖</span><span>Ställ en egen fråga till AI-vägledaren</span></button></div></div>
+    </div></div>
 
   </div>
   <!-- SLUT MOBIL UI -->
@@ -11861,8 +11861,7 @@ ${styleTexts}
 
     // Gå till steg 2 (chatten) och skriv in prompt
     window._utbGotoChat = function(prompt) {
-      const s1 = document.getElementById('utbStep1');
-      if (s1) s1.style.display = 'none';
+      document.querySelectorAll('#utbStep1').forEach(function(s){ s.style.display = 'none'; });
       // Skriv in prompten i chatfältet och skicka
       if (prompt) {
         setTimeout(function() {
@@ -12926,7 +12925,7 @@ ${styleTexts}
   let _ovnActiveDay = 'mandag';
 
   // ── Rendera veckovy ──
-  function renderModuleGrid() {
+  window.renderModuleGrid = function() {
     const grid = document.getElementById('ovnModuleGrid');
     if (!grid) return;
     const view = document.getElementById('ovnModuleView');
@@ -12999,7 +12998,7 @@ ${styleTexts}
     }
 
     grid.innerHTML = tabHtml + modulesHtml;
-  }
+  };
 
   window.ovnSwitchDay = function(dayId) {
     _ovnActiveDay = dayId;
