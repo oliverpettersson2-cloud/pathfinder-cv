@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_36.html -->
+
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -4965,6 +4965,29 @@
       showToast('🗑️ Alla språk borttagna', 'success');
     }
 
+    function saveLanguage() {
+      const nameEl  = document.getElementById('languageName');
+      const levelEl = document.getElementById('languageLevel');
+      if (!nameEl || !levelEl) return;
+      const name  = nameEl.value.trim();
+      const level = levelEl.value;
+      if (!name) { showToast('⚠️ Ange ett språk', 'error'); return; }
+      if (!level) { showToast('⚠️ Välj en nivå', 'error'); return; }
+      const existing = cvData.languages.findIndex(l => l.name === name);
+      if (existing >= 0) {
+        cvData.languages[existing].level = level;
+      } else {
+        cvData.languages.push({ name, level });
+      }
+      nameEl.value = '';
+      levelEl.value = '';
+      closeModal('languageModal');
+      saveData();
+      renderLanguages();
+      updatePreview();
+      showToast('✅ Språk sparat', 'success');
+    }
+
     function openLicensesModal() {
       const selector = document.getElementById('licensesSelector');
       selector.innerHTML = ALL_LICENSES.map((license, idx) => `
@@ -7997,6 +8020,18 @@ ${styleTexts}
             </div>
           </div>
 
+          <!-- Övningar -->
+          <div onclick="mobSwitchTab('ovningar')" style="background:rgba(240,192,64,0.07);border:1.5px solid rgba(240,192,64,0.2);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(240,192,64,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🏋️</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <div style="font-size:15px;font-weight:800;color:#f0c040;">Övningar</div>
+                <span style="font-size:16px;color:rgba(240,192,64,0.3);">›</span>
+              </div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Träna jobbsökning, CV-skrivning och presentationsteknik med interaktiva lektioner och quiz.</div>
+            </div>
+          </div>
+
           <!-- Profil -->
           <div onclick="mobSwitchTab(&#39;export&#39;)" style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
             <div style="width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">👤</div>
@@ -8323,7 +8358,7 @@ ${styleTexts}
       </div>
 
     </div>E html&gt;
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_34.html -->
+
 
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -17699,6 +17734,8 @@ ${styleTexts}
   window.syvUpdateSavedBtn = updateSavedBadge;
   window.syvFetchUtbildningar = function() { loadEduData(); };
   window.showEduModal = showEduModal;
+  window.showChat = showChat;
+  window.showHome = showHome;
 
   // Global delegation for edu-link-btn (data-attribute approach, no inline onclick)
   document.addEventListener('click', function(e) {
