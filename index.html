@@ -2539,25 +2539,20 @@
   </div>
 
   <nav id="mainNav">
-    <!-- Rad 1: Profil-badge | Logga | Logga ut -->
-    <div class="mob-nav-row1" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 4px 0 0;">
-      <!-- Logo: långt till vänster -->
-      <div class="nav-logo" style="display:flex;align-items:center;flex-shrink:0;">
-        <div>
-          <div style="font-family:Georgia,serif;font-size:19px;font-weight:800;color:#f0c040;line-height:1.1;letter-spacing:-0.5px;">CV<span style="color:#fff;">matchen</span></div>
-          <div style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.25);font-family:-apple-system,sans-serif;text-transform:uppercase;">av PathfinderAI</div>
-        </div>
+    <!-- Rad 1: Logo centrerad | Logga ut höger -->
+    <div class="mob-nav-row1" style="display:flex;align-items:center;justify-content:center;width:100%;position:relative;padding:0 4px;">
+      <!-- Logo: centrerad -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div style="font-family:Georgia,serif;font-size:19px;font-weight:800;color:#f0c040;line-height:1.1;letter-spacing:-0.5px;">CV<span style="color:#fff;">matchen</span></div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.25);font-family:-apple-system,sans-serif;">av PathfinderAI</div>
       </div>
-      <!-- Höger: Profil-badge + Logga ut — tryckt mot kanten -->
-      <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-        <div id="authUserBadge" class="auth-user-badge nav-auth-badge" onclick="authShowUserMenu()" style="display:flex;cursor:pointer;" aria-label="Inloggad anvandare">
+      <!-- Logga ut: absolut höger -->
+      <div style="position:absolute;right:4px;display:flex;align-items:center;gap:8px;">
+        <div id="authUserBadge" class="auth-user-badge nav-auth-badge" style="display:flex;" aria-label="Inloggad anvandare">
           <svg class="mob-hide" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">oliver.pettersson2@gmail.com</span>
-          <span class="mob-profil" style="display:none;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#3eb489;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.25);padding:5px 12px;border-radius:20px;">
-            <span style="width:7px;height:7px;border-radius:50%;background:#3eb489;flex-shrink:0;"></span>Profil
-          </span>
+          <span id="authUserEmail" class="mob-hide" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
         </div>
-        <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:rgba(220,50,50,0.15);border:1px solid rgba(220,50,50,0.5);color:rgba(255,100,100,0.9);font-size:11px;cursor:pointer;padding:5px 12px;border-radius:20px;white-space:nowrap;transition:all 0.2s;font-weight:600;" onmouseover="this.style.background=&#39;rgba(220,50,50,0.3)&#39;" onmouseout="this.style.background=&#39;rgba(220,50,50,0.15)&#39;" aria-label="Logga ut">Logga ut</button>
+        <button onclick="authShowUserMenu()" class="nav-logout-btn" style="background:rgba(220,50,50,0.15);border:1px solid rgba(220,50,50,0.5);color:rgba(255,100,100,0.9);font-size:11px;cursor:pointer;padding:5px 12px;border-radius:20px;white-space:nowrap;transition:all 0.2s;font-weight:600;" onmouseover="this.style.background='rgba(220,50,50,0.3)'" onmouseout="this.style.background='rgba(220,50,50,0.15)'" aria-label="Logga ut">Logga ut</button>
       </div>
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
