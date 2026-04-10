@@ -7631,8 +7631,9 @@ ${styleTexts}
       <span>Matcha</span>
     </button>
     <!-- 4. AI-Vägledare -->
-    <button class="mob-tab mob-tab--ai" id="tabBtn-aisyv" onclick="mobSwitchTab(&#39;aisyv&#39;)">
+    <button class="mob-tab mob-tab--ai" id="tabBtn-aisyv" onclick="mobSwitchTab(&#39;aisyv&#39;)" style="position:relative;">
       <span class="mob-tab__icon" style="font-size:22px;line-height:1;">🎓</span>
+      <span id="edu-tab-badge" style="display:none;position:absolute;top:4px;right:6px;background:#ef4444;color:#fff;font-size:9px;font-weight:900;border-radius:999px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px;"></span>
       <span style="font-size:8px;font-weight:900;letter-spacing:0.3px;">Utbilda dig</span>
     </button>
     <!-- 5. Övningar -->
@@ -8270,9 +8271,30 @@ ${styleTexts}
           <div class="edu-card" data-view="saved" style="background:rgba(240,192,64,0.08);border:1.5px solid rgba(240,192,64,0.3);border-radius:18px;padding:18px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;">
             <div style="font-size:32px;margin-bottom:10px;">🔖</div>
             <div style="font-size:14px;font-weight:900;color:#f0c040;margin-bottom:6px;line-height:1.3;">Sparade utbildningar</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;margin-top:auto;">Se och jämför sparade utbildningar.</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;margin-top:auto;"><span class="edu-saved-count" style="color:#f0c040;font-weight:800;"></span> Se och jämför sparade utbildningar.</div>
+          </div>
+
+          <!-- Kort 5 — Framtidsyrken (full width) -->
+          <div class="edu-card" data-view="framtidsyrken" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(232,93,38,0.12),rgba(240,192,64,0.08));border:1.5px solid rgba(232,93,38,0.4);border-radius:18px;padding:16px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:14px;">
+            <div style="font-size:36px;flex-shrink:0;">🚀</div>
+            <div>
+              <div style="font-size:14px;font-weight:900;color:#fb923c;margin-bottom:4px;line-height:1.3;">Framtidsyrken</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">30 yrken med stor efterfrågan — vård, IT, teknik, transport och mer.</div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- VY 3: FRAMTIDSYRKEN -->
+      <div id="edu-framtidsyrken" style="display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 100px;">
+        <div style="flex-shrink:0;padding:10px 16px;background:#12172a;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;">
+          <button id="edu-back-framtid" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;padding:0;line-height:1;-webkit-tap-highlight-color:transparent;">←</button>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:#fb923c;">🚀 Framtidsyrken</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);">30 yrken med stor efterfrågan i Sverige</div>
+          </div>
+        </div>
+        <div id="edu-framtidsyrken-list" style="padding:16px;display:flex;flex-direction:column;gap:10px;"></div>
       </div>
 
       <!-- VY 2: CHATT MED AI -->
@@ -17600,9 +17622,61 @@ ${styleTexts}
   }
   function updateSavedBadge() {
     var n = getSaved().length;
-    var kort4 = document.querySelector('.edu-card[data-view="saved"] .edu-saved-count');
-    if (kort4) kort4.textContent = n > 0 ? ' (' + n + ')' : '';
+    // Uppdatera sparade-count i Kort 4
+    document.querySelectorAll('.edu-saved-count').forEach(function(el) {
+      el.textContent = n > 0 ? '(' + n + ')' : '';
+    });
+    var tabBadge = document.getElementById('edu-tab-badge');
+    if (tabBadge) {
+      if (n > 0) { tabBadge.textContent = n; tabBadge.style.display = 'block'; }
+      else { tabBadge.style.display = 'none'; }
+    }
   }
+
+  // Alias för anrop från mobSwitchTab
+  window.syvUpdateSavedBtn = updateSavedBadge;
+  window.syvFetchUtbildningar = function() { loadEduData(); };
+
+  // 30 Framtidsyrken
+  var FRAMTIDSYRKEN = [
+    // Vård & omsorg
+    { namn:'Undersköterska', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1 år', krav:'Grundskola', url:'https://skanevux.se' },
+    { namn:'Barnskötare', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1 år', krav:'Grundskola', url:'https://helsingborg.se/utbildning-och-arbete/' },
+    { namn:'Tandsköterska', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1,5 år', krav:'Grundläggande behörighet', url:'https://helsingborg.se/utbildning-och-arbete/' },
+    { namn:'Sjuksköterska', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3 år (180 hp)', krav:'Grundläggande behörighet', url:'https://mau.se' },
+    { namn:'Behandlingsassistent', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'https://myh.se' },
+    { namn:'Stödpedagog / Personlig assistent', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1 år', krav:'Grundläggande behörighet', url:'https://helsingborg.se/utbildning-och-arbete/' },
+    // IT & teknik
+    { namn:'Systemutvecklare .NET', skola:'Medieinstitutet', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://medieinstitutet.se' },
+    { namn:'Webbutvecklare', skola:'NTI-skolan', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://nti.se' },
+    { namn:'IT-tekniker / Support', skola:'Lernia', typ:'YH', ort:'Helsingborg', langd:'1,5 år', krav:'Gymnasieexamen', url:'https://myh.se' },
+    { namn:'Cybersäkerhetsanalytiker', skola:'Yrgo', typ:'YH', ort:'Göteborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://yrgo.se' },
+    { namn:'Data scientist / AI', skola:'Hyper Island', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'https://hyperisland.com' },
+    { namn:'Molnarkitekt / DevOps', skola:'EC Utbildning', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'https://ecutbildning.se' },
+    // Transport & logistik
+    { namn:'Lokförare', skola:'Antagning.se', typ:'YH', ort:'Malmö', langd:'1,5 år', krav:'Gymnasieexamen + körkort B', url:'https://antagning.se' },
+    { namn:'Logistiker / Inköpare', skola:'Skanevux', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://skanevux.se' },
+    { namn:'Yrkesförare (buss / lastbil)', skola:'Trafikverkets förarutbildning', typ:'Yrkesutbildning', ort:'Helsingborg', langd:'3 månader', krav:'18 år + körkort B', url:'https://antagning.se' },
+    { namn:'Hamnarbetare / Godshanterare', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'6 månader', krav:'Grundläggande behörighet', url:'https://skanevux.se' },
+    // Bygg, industri & el
+    { namn:'Elektriker', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen el/elprogrammet', url:'https://skanevux.se' },
+    { namn:'VVS-montör', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'2 år', krav:'Grundläggande behörighet', url:'https://skanevux.se' },
+    { namn:'Svetsare', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1 år', krav:'Grundläggande behörighet', url:'https://skanevux.se' },
+    { namn:'Fastighetsskötare', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://myh.se' },
+    // Ekonomi & administration
+    { namn:'Redovisningsekonom', skola:'EC Utbildning', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://ecutbildning.se' },
+    { namn:'HR-administratör', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'https://myh.se' },
+    { namn:'Marknadsförare / Digital kommunikation', skola:'Skanevux', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://skanevux.se' },
+    { namn:'Jurist', skola:'Lunds Universitet', typ:'Högskola', ort:'Lund', langd:'4,5 år (270 hp)', krav:'Grundläggande behörighet', url:'https://lu.se' },
+    // Utbildning & socialt
+    { namn:'Förskollärare', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3,5 år (210 hp)', krav:'Grundläggande behörighet', url:'https://mau.se' },
+    { namn:'Lärare (grundskola)', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'4,5 år (270 hp)', krav:'Grundläggande behörighet', url:'https://mau.se' },
+    { namn:'Socialsekreterare', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3,5 år (210 hp)', krav:'Grundläggande behörighet', url:'https://mau.se' },
+    { namn:'Studie- och yrkesvägledare (SYV)', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3 år (180 hp)', krav:'Grundläggande behörighet', url:'https://mau.se/utbildning/program/studie--och-yrkesvagledarprogrammet/' },
+    // Mat, service & hotell
+    { namn:'Kock / Restaurangchef', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1,5 år', krav:'Grundläggande behörighet', url:'https://skanevux.se' },
+    { namn:'Hotell, turism & event', skola:'EC Utbildning', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://ecutbildning.se' }
+  ];
 
   // CV-kontext
   function getCVContext() {
@@ -17882,11 +17956,29 @@ ${styleTexts}
     msgs.scrollTop = msgs.scrollHeight;
   }
 
+  function showFramtidsyrken() {
+    var home = document.getElementById('edu-home');
+    var chat = document.getElementById('edu-chat');
+    var framtid = document.getElementById('edu-framtidsyrken');
+    if (home) home.style.display = 'none';
+    if (chat) chat.style.display = 'none';
+    if (framtid) { framtid.style.display = 'flex'; framtid.style.flexDirection = 'column'; }
+    // Rendera kort om inte redan gjort
+    var list = document.getElementById('edu-framtidsyrken-list');
+    if (list && list.children.length === 0) {
+      FRAMTIDSYRKEN.forEach(function(prog) {
+        list.appendChild(makeEduCard(prog));
+      });
+    }
+  }
+
   function showHome() {
     var home = document.getElementById('edu-home');
     var chat = document.getElementById('edu-chat');
+    var framtid = document.getElementById('edu-framtidsyrken');
     if (home) home.style.display = '';
     if (chat) chat.style.display = 'none';
+    if (framtid) framtid.style.display = 'none';
     eduCurrentView = null; eduHistory = [];
     updateSavedBadge();
   }
@@ -17897,11 +17989,18 @@ ${styleTexts}
     updateSavedBadge();
 
     document.querySelectorAll('.edu-card').forEach(function(card) {
-      card.addEventListener('click', function() { var v = card.getAttribute('data-view'); if(v) showChat(v); });
+      card.addEventListener('click', function() {
+        var v = card.getAttribute('data-view');
+        if (v === 'framtidsyrken') showFramtidsyrken();
+        else if (v) showChat(v);
+      });
     });
 
     var backBtn = document.getElementById('edu-back');
     if (backBtn) backBtn.addEventListener('click', showHome);
+
+    var backFramtid = document.getElementById('edu-back-framtid');
+    if (backFramtid) backFramtid.addEventListener('click', showHome);
 
     var backBtmBtn = document.getElementById('edu-back-bottom');
     if (backBtmBtn) backBtmBtn.addEventListener('click', showHome);
@@ -17923,13 +18022,13 @@ ${styleTexts}
       });
     }
 
-    // Spara via event delegation
-    var msgs = document.getElementById('edu-messages');
-    if (msgs) {
-      msgs.addEventListener('click', function(e) {
+    // Spara via event delegation — chatt + framtidsyrken
+    function wireSaveDelegate(container) {
+      if (!container) return;
+      container.addEventListener('click', function(e) {
         var btn = e.target.closest('.edu-save-btn');
         if (!btn) return;
-        var prog = { namn: btn.dataset.namn, skola: btn.dataset.skola, typ: btn.dataset.typ, ort: btn.dataset.ort, krav: btn.dataset.krav, url: btn.dataset.url };
+        var prog = { namn: btn.dataset.namn, skola: btn.dataset.skola, typ: btn.dataset.typ, ort: btn.dataset.ort, krav: btn.dataset.krav, langd: btn.dataset.langd, url: btn.dataset.url };
         var isSaved = toggleSaved(prog);
         btn.textContent = isSaved ? '🔖 Sparad' : '+ Spara';
         btn.style.background = isSaved ? 'rgba(240,192,64,0.2)' : 'rgba(62,180,137,0.1)';
@@ -17937,6 +18036,8 @@ ${styleTexts}
         btn.style.color = isSaved ? '#f0c040' : '#3eb489';
       });
     }
+    wireSaveDelegate(document.getElementById('edu-messages'));
+    wireSaveDelegate(document.getElementById('edu-framtidsyrken-list'));
   }
 
   // Koppla profil-länken (körs efter init)
