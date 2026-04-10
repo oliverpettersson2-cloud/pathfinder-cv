@@ -17527,54 +17527,82 @@ ${styleTexts}
 
 <script>
 // ══════════════════════════════════════
-// UTBILDA DIG — isolerad modul
-// Inga onclick-attribut, allt via addEventListener
+// UTBILDA DIG — v2
 // ══════════════════════════════════════
 (function() {
 
   var eduHistory = [];
   var eduCurrentView = null;
+  var EDU_SAVED_KEY = 'cvmatchen_edu_saved';
 
-  var SYSTEM_PROMPT = "Du ar en utbildningsvagledare for Familjen Helsingborg. Du hjalper anvandare hitta ratt utbildning: SFI, Komvux, Yrkesutbildning, Yrkeshogskola (YH) och Hogskola. Svara ALLTID pa svenska. Hall meningarna korta. Strukturera svaren med emojis och radbrytningar. Avsluta ALLTID med 2-3 snabbsvar pa detta format (en per rad): >>Alternativ ett >>Alternativ tva >>Tillbaka till start. Utbildningar: SFI A/B/C/D, Komvux, Yrkesutbildning (1-2 ar), YH (1-3 ar krav gymnasieexamen), Hogskola (3+ ar). Kombinationsutbildningar SFI+yrke ar viktiga. Om du inte vet - ge generella rad.";
+  var SYSTEM_PROMPT = "Du ar en utbildningsvagledare for Familjen Helsingborg (Helsingborg + 10 kranskommuner). Du hjalper anvandare hitta ratt utbildning: SFI, Komvux, Yrkesutbildning, Yrkeshogskola (YH) och Hogskola. Svara ALLTID pa svenska. Hall meningarna korta och tydliga. Inga markdown-symboler som ##, ** eller ---. Skriv vanlig text med radbrytningar. Avsluta ALLTID med 2-3 klickbara alternativ pa detta exakta format (>>text): >>Alternativ ett\n>>Alternativ tva\n>>Tillbaka till start. Utbildningar: SFI A/B/C/D, Komvux, Yrkesutbildning 1-2 ar, YH 1-3 ar krav gymnasieexamen, Hogskola 3+ ar. Kombinationsutbildningar SFI+yrke ar viktiga. Om du inte vet - ge generella rad. Nar du namner en webbsida eller URL, skriv den pa en egen rad med prefixet LANK: t.ex. LANK:https://helsingborg.se";
 
   var VIEW_TITLES = {
     'region':   '🗺️ Familjen Helsingborg',
-    'cv-match': '✨ Matchar ditt CV',
+    'cv-match': '🤖 Matchar ditt CV',
     'search':   '🔍 Sök fritt',
     'saved':    '🔖 Sparade utbildningar'
   };
 
-  var VIEW_OPENERS = {
-    'region':   'Hej!\n\nJag hjalper dig hitta utbildningar i Familjen Helsingborg.\n\nVilken typ av utbildning letar du efter?\n\n>>SFI (svenska for invandrare)\n>>Komvux\n>>Yrkesutbildning\n>>Yrkeshogskola (YH)\n>>Hogskola/Universitet\n>>Jag vet inte - hjalp mig!',
-    'cv-match': 'Analyserar din bakgrund...',
-    'search':   'Vad letar du efter?\n\nSkriv ett yrke, en utbildning eller ett amne - jag hjalper dig!\n\n>>Vard och omsorg\n>>IT och teknik\n>>Barn och pedagogik\n>>Bygg och hantverk',
-    'saved':    'Har visas dina sparade utbildningar.\n\nDu har inga sparade utbildningar an. Utforska och tryck pa bokmarke for att spara!\n\n>>Utforska Familjen Helsingborg\n>>Sok fritt'
-  };
+  // Sparade utbildningar
+  function getSaved() {
+    try { return JSON.parse(localStorage.getItem(EDU_SAVED_KEY) || '[]'); } catch(e) { return []; }
+  }
+  function setSaved(arr) {
+    try { localStorage.setItem(EDU_SAVED_KEY, JSON.stringify(arr)); } catch(e) {}
+  }
+  function isSaved(title) {
+    return getSaved().some(function(s){ return s.title === title; });
+  }
+  function toggleSaved(title, context) {
+    var saved = getSaved();
+    var idx = saved.findIndex(function(s){ return s.title === title; });
+    if (idx >= 0) { saved.splice(idx, 1); } else { saved.push({ title: title, context: context, date: new Date().toLocaleDateString('sv-SE') }); }
+    setSaved(saved);
+    return idx < 0; // true = nu sparad
+  }
 
-  // Hämta CV-data från appen
+  // Hämta CV-data
   function getCVContext() {
     try {
       var cvData = null;
-      if (typeof safeStorage !== 'undefined') {
-        var raw = safeStorage.getItem('cvData') || safeStorage.getItem('SAVED_CVS_KEY');
-        if (raw) cvData = JSON.parse(raw);
+      var keys = ['cvData', 'PATHFINDER_CV', 'cvmatchen_cv'];
+      for (var k of keys) {
+        var raw = localStorage.getItem(k);
+        if (raw) { cvData = JSON.parse(raw); break; }
       }
       if (!cvData) return '';
       var parts = [];
       if (cvData.name) parts.push('Namn: ' + cvData.name);
-      if (cvData.title) parts.push('Yrkestitel: ' + cvData.title);
-      if (cvData.summary) parts.push('Sammanfattning: ' + cvData.summary);
-      if (cvData.jobs && cvData.jobs.length) {
-        parts.push('Erfarenhet: ' + cvData.jobs.map(function(j){ return j.title + (j.company ? ' på ' + j.company : ''); }).join(', '));
-      }
-      if (cvData.education && cvData.education.length) {
-        parts.push('Utbildning: ' + cvData.education.map(function(e){ return e.degree || e.school || ''; }).join(', '));
-      }
-      if (cvData.skills && cvData.skills.length) {
-        parts.push('Kompetenser: ' + cvData.skills.join(', '));
-      }
-      return parts.length ? 'Anvandarens CV: ' + parts.join('. ') : '';
+      if (cvData.title) parts.push('Yrke: ' + cvData.title);
+      if (cvData.summary) parts.push('Om: ' + cvData.summary.slice(0, 200));
+      if (cvData.jobs && cvData.jobs.length) parts.push('Erfarenhet: ' + cvData.jobs.slice(0,3).map(function(j){ return j.title || ''; }).join(', '));
+      if (cvData.education && cvData.education.length) parts.push('Utbildning: ' + cvData.education.slice(0,2).map(function(e){ return e.degree || e.school || ''; }).join(', '));
+      if (cvData.skills && cvData.skills.length) parts.push('Kompetenser: ' + cvData.skills.slice(0,6).join(', '));
+      return parts.length ? ' Anvandarens CV: ' + parts.join('. ') : '';
     } catch(e) { return ''; }
+  }
+
+  // Rendera text: markdown-liknande → HTML
+  function renderText(text) {
+    // Ta bort markdown-symboler
+    text = text.replace(/^#{1,3}\s*/gm, '');
+    text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    text = text.replace(/^---+$/gm, '');
+
+    // Hantera LANK:-rader → klickbara knappar
+    var lines = text.split('\n');
+    var htmlLines = lines.map(function(line) {
+      var trimmed = line.trim();
+      if (trimmed.startsWith('LANK:')) {
+        var url = trimmed.slice(5).trim();
+        var display = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+        return '<a href="' + url + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;background:rgba(62,180,137,0.15);border:1px solid rgba(62,180,137,0.4);border-radius:20px;padding:6px 14px;color:#3eb489;font-size:13px;font-weight:700;text-decoration:none;">🔗 ' + display + '</a>';
+      }
+      return line;
+    });
+    return htmlLines.join('\n');
   }
 
   // Lägg till bot-bubbla
@@ -17582,56 +17610,60 @@ ${styleTexts}
     var msgs = document.getElementById('edu-messages');
     if (!msgs) return;
 
-    // Dela upp text och snabbsvar (>>)
+    // Dela text och snabbsvar
     var lines = text.split('\n');
-    var mainLines = [];
-    var quickReplies = [];
+    var mainLines = [], quickReplies = [], links = [];
     lines.forEach(function(l) {
-      if (l.trim().startsWith('>>')) {
-        quickReplies.push(l.trim().slice(2));
-      } else {
-        mainLines.push(l);
-      }
+      var t = l.trim();
+      if (t.startsWith('>>')) { quickReplies.push(t.slice(2)); }
+      else { mainLines.push(l); }
     });
+    var mainText = mainLines.join('\n').trim();
+    var rendered = renderText(mainText);
 
-    var div = document.createElement('div');
-    div.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;align-items:flex-start;gap:10px;';
 
-    var avatar = document.createElement('div');
-    avatar.style.cssText = 'width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:2px;';
-    avatar.textContent = '🎓';
+    // Avatar
+    var av = document.createElement('div');
+    av.style.cssText = 'width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin-top:2px;';
+    av.textContent = '🤖';
 
+    // Bubbla
     var bubble = document.createElement('div');
-    bubble.style.cssText = 'background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;max-width:82%;';
+    bubble.style.cssText = 'background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:13px 16px;max-width:85%;min-width:60px;';
 
-    var mainText = document.createElement('div');
-    mainText.style.cssText = 'font-size:15px;color:rgba(255,255,255,0.92);line-height:1.6;white-space:pre-wrap;';
-    mainText.textContent = mainLines.join('\n').trim();
-    bubble.appendChild(mainText);
+    // Text
+    var textEl = document.createElement('div');
+    textEl.style.cssText = 'font-size:16px;color:rgba(255,255,255,0.92);line-height:1.65;white-space:pre-wrap;';
+    textEl.innerHTML = rendered;
+    bubble.appendChild(textEl);
 
+    // Snabbsvar-knappar
     if (quickReplies.length) {
       var qDiv = document.createElement('div');
-      qDiv.style.cssText = 'margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;';
+      qDiv.style.cssText = 'margin-top:12px;display:flex;flex-wrap:wrap;gap:7px;';
       quickReplies.forEach(function(qr) {
         var btn = document.createElement('button');
         btn.textContent = qr;
-        btn.style.cssText = 'background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);border-radius:20px;padding:6px 12px;color:#3eb489;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;';
+        btn.style.cssText = 'background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);border-radius:20px;padding:7px 14px;color:#3eb489;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;text-align:left;';
         btn.addEventListener('click', function() {
-          if (qr === 'Tillbaka till start') {
-            showHome();
-          } else {
-            sendMessage(qr);
-          }
+          if (qr === 'Tillbaka till start') showHome();
+          else sendMessage(qr);
         });
         qDiv.appendChild(btn);
       });
       bubble.appendChild(qDiv);
     }
 
-    div.appendChild(avatar);
-    div.appendChild(bubble);
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
+    wrapper.appendChild(av);
+    wrapper.appendChild(bubble);
+    msgs.appendChild(wrapper);
+
+    // Scrolla till TOPPEN av det nya meddelandet
+    setTimeout(function() {
+      wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
 
     eduHistory.push({ role: 'assistant', content: text });
   }
@@ -17643,7 +17675,7 @@ ${styleTexts}
     var div = document.createElement('div');
     div.style.cssText = 'display:flex;justify-content:flex-end;';
     var bubble = document.createElement('div');
-    bubble.style.cssText = 'background:linear-gradient(135deg,#3eb489,#10b981);border-radius:18px;border-bottom-right-radius:4px;padding:12px 16px;max-width:78%;font-size:15px;color:#fff;line-height:1.5;';
+    bubble.style.cssText = 'background:linear-gradient(135deg,#3eb489,#10b981);border-radius:18px;border-bottom-right-radius:4px;padding:12px 16px;max-width:80%;font-size:16px;color:#fff;line-height:1.5;word-break:break-word;';
     bubble.textContent = text;
     div.appendChild(bubble);
     msgs.appendChild(div);
@@ -17651,14 +17683,13 @@ ${styleTexts}
     eduHistory.push({ role: 'user', content: text });
   }
 
-  // Typing indicator
   function showTyping() {
     var msgs = document.getElementById('edu-messages');
     if (!msgs) return;
     var div = document.createElement('div');
     div.id = 'edu-typing';
-    div.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
-    div.innerHTML = '<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎓</div><div style="background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;"><span style="color:rgba(255,255,255,0.4);font-size:13px;">Tänker...</span></div>';
+    div.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    div.innerHTML = '<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🤖</div><div style="background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:12px 16px;"><span style="color:rgba(255,255,255,0.4);font-size:15px;">Tänker...</span></div>';
     msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
   }
@@ -17668,91 +17699,118 @@ ${styleTexts}
     if (t) t.remove();
   }
 
-  // Skicka meddelande till Claude
   async function sendMessage(text) {
-    if (!text.trim()) return;
-
+    if (!text || !text.trim()) return;
     var input = document.getElementById('edu-input');
-    if (input) { input.value = ''; input.style.height = 'auto'; }
-
     var sendBtn = document.getElementById('edu-send');
+    if (input) { input.value = ''; input.style.height = 'auto'; }
     if (sendBtn) { sendBtn.disabled = true; sendBtn.style.opacity = '0.5'; }
 
     addUser(text);
     showTyping();
 
     var cvCtx = (eduCurrentView === 'cv-match') ? getCVContext() : '';
-    var system = SYSTEM_PROMPT + cvCtx;
+    var system = SYSTEM_PROMPT + (cvCtx ? ' ' + cvCtx : '');
+    var messages = eduHistory.filter(function(m){ return m.role === 'user' || m.role === 'assistant'; });
 
     try {
       var resp = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 600,
-          system: system,
-          messages: eduHistory.filter(function(m){ return m.role === 'user' || m.role === 'assistant'; })
-        })
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, system: system, messages: messages })
       });
       var data = await resp.json();
-      var reply = (data.content || []).filter(function(b){ return b.type==='text'; }).map(function(b){ return b.text; }).join('').trim() || 'Något gick fel. Försök igen!';
+      var reply = (data.content || []).filter(function(b){ return b.type==='text'; }).map(function(b){ return b.text; }).join('').trim() || 'Nagot gick fel. Forsok igen!';
       hideTyping();
       addBot(reply);
     } catch(e) {
       hideTyping();
-      addBot('Kunde inte ansluta just nu. Försök igen!\n\n>>Försök igen\n>>Tillbaka till start');
+      addBot('Kunde inte ansluta just nu. Forsok igen!\n\n>>Forsok igen\n>>Tillbaka till start');
     }
-
     if (sendBtn) { sendBtn.disabled = false; sendBtn.style.opacity = '1'; }
   }
 
-  // Visa chatt-vy
   function showChat(viewKey) {
     eduCurrentView = viewKey;
     eduHistory = [];
-
     var home = document.getElementById('edu-home');
     var chat = document.getElementById('edu-chat');
     var title = document.getElementById('edu-chat-title');
     var msgs = document.getElementById('edu-messages');
-
     if (home) home.style.display = 'none';
     if (chat) { chat.style.display = 'flex'; chat.style.flexDirection = 'column'; }
     if (title) title.textContent = VIEW_TITLES[viewKey] || 'Utbildningar';
     if (msgs) msgs.innerHTML = '';
 
-    var opener = VIEW_OPENERS[viewKey];
-    if (opener) {
-      if (viewKey === 'cv-match') {
-        // Läs CV och skicka direkt till AI
-        setTimeout(function() {
-          var cvCtx = getCVContext();
-          var prompt = cvCtx
-            ? 'Baserat på mitt CV, vilka utbildningar i Familjen Helsingborg passar mig? Ge 2-3 konkreta förslag med nivå och krav.' + cvCtx
-            : 'Jag vill hitta utbildningar som matchar min bakgrund. Ställ mig 2-3 frågor om mina erfarenheter och mål så jag kan hjälpa dig bättre.';
-          addBot('Jag analyserar nu din bakgrund...');
-          setTimeout(function() {
-            sendMessage(prompt);
-          }, 500);
-        }, 300);
-      } else {
-        setTimeout(function() { addBot(opener); }, 300);
-      }
+    if (viewKey === 'saved') {
+      showSavedList();
+      return;
     }
+    if (viewKey === 'cv-match') {
+      setTimeout(function() {
+        var cvCtx = getCVContext();
+        var prompt = cvCtx
+          ? 'Baserat pa mitt CV, vilka utbildningar i Familjen Helsingborg passar mig bast? Ge 2-3 konkreta forslag med nivå och krav.' + cvCtx
+          : 'Jag vill hitta utbildningar som matchar min bakgrund. Stall mig 2-3 fragor om mina erfarenheter.';
+        addBot('Jag analyserar din bakgrund...');
+        setTimeout(function() { sendMessage(prompt); }, 400);
+      }, 200);
+      return;
+    }
+    var openers = {
+      'region': 'Hej!\n\nJag hjalper dig hitta utbildningar i Familjen Helsingborg.\n\nVilken typ av utbildning letar du efter?\n\n>>SFI (svenska for invandrare)\n>>Komvux\n>>Yrkesutbildning\n>>Yrkeshogskola (YH)\n>>Hogskola/Universitet\n>>Jag vet inte - hjalp mig!',
+      'search': 'Vad letar du efter?\n\nSkriv ett yrke, en utbildning eller ett amne - jag hjalper dig!\n\n>>Vard och omsorg\n>>IT och teknik\n>>Barn och pedagogik\n>>Bygg och hantverk'
+    };
+    setTimeout(function() { addBot(openers[viewKey] || 'Hjalp mig!'); }, 200);
   }
 
-  // Visa startsidan
+  function showSavedList() {
+    var msgs = document.getElementById('edu-messages');
+    if (!msgs) return;
+    var saved = getSaved();
+    if (!saved.length) {
+      addBot('Du har inga sparade utbildningar an.\n\nNar AI namner en utbildning visas en Spara-knapp. Tryck pa den for att spara!\n\n>>Utforska Familjen Helsingborg\n>>Sok fritt');
+      return;
+    }
+    var html = '<div style="font-size:16px;color:rgba(255,255,255,0.9);font-weight:700;margin-bottom:12px;">Dina sparade utbildningar:</div>';
+    saved.forEach(function(s, i) {
+      html += '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
+        '<div><div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;">' + s.title + '</div><div style="font-size:12px;color:rgba(255,255,255,0.35);">Sparad ' + s.date + '</div></div>' +
+        '<button data-idx="' + i + '" class="edu-remove-saved" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:4px 10px;color:#ef4444;font-size:12px;cursor:pointer;font-family:inherit;flex-shrink:0;">Ta bort</button>' +
+        '</div>';
+    });
+
+    var msgs2 = document.getElementById('edu-messages');
+    var div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:flex-start;gap:10px;';
+    var av = document.createElement('div');
+    av.style.cssText = 'width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3eb489,#10b981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin-top:2px;';
+    av.textContent = '🤖';
+    var bubble = document.createElement('div');
+    bubble.style.cssText = 'background:#1e2545;border:1px solid rgba(62,180,137,0.2);border-radius:18px;border-bottom-left-radius:4px;padding:13px 16px;max-width:90%;';
+    bubble.innerHTML = html;
+    // Ta bort-knappar
+    bubble.querySelectorAll('.edu-remove-saved').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(btn.getAttribute('data-idx'));
+        var arr = getSaved(); arr.splice(idx, 1); setSaved(arr);
+        msgs2.innerHTML = '';
+        showSavedList();
+      });
+    });
+    div.appendChild(av); div.appendChild(bubble);
+    msgs2.appendChild(div);
+  }
+
   function showHome() {
     var home = document.getElementById('edu-home');
     var chat = document.getElementById('edu-chat');
     if (home) home.style.display = '';
     if (chat) chat.style.display = 'none';
-    eduCurrentView = null;
-    eduHistory = [];
+    eduCurrentView = null; eduHistory = [];
   }
 
-  // Init — körs när panelen laddas
+  // Init
   function init() {
     // Kort-klick
     document.querySelectorAll('.edu-card').forEach(function(card) {
@@ -17762,43 +17820,56 @@ ${styleTexts}
       });
     });
 
-    // Tillbaka-knapp
+    // Tillbaka
     var backBtn = document.getElementById('edu-back');
-    if (backBtn) {
-      backBtn.addEventListener('click', showHome);
-    }
+    if (backBtn) backBtn.addEventListener('click', showHome);
 
-    // Send-knapp
+    // Send
     var sendBtn = document.getElementById('edu-send');
     if (sendBtn) {
       sendBtn.addEventListener('click', function() {
-        var input = document.getElementById('edu-input');
-        if (input) sendMessage(input.value.trim());
+        var inp = document.getElementById('edu-input');
+        if (inp) sendMessage(inp.value.trim());
       });
     }
 
-    // Enter-tangent
-    var input = document.getElementById('edu-input');
-    if (input) {
-      input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage(input.value.trim());
-        }
+    // Enter
+    var inp = document.getElementById('edu-input');
+    if (inp) {
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(inp.value.trim()); }
       });
-      input.addEventListener('input', function() {
+      inp.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 100) + 'px';
       });
     }
+
+    // Spara-knapp via event delegation på messages (AI namnger utbildning → spara)
+    var msgs = document.getElementById('edu-messages');
+    if (msgs) {
+      msgs.addEventListener('click', function(e) {
+        var btn = e.target.closest('.edu-save-btn');
+        if (!btn) return;
+        var title = btn.getAttribute('data-title');
+        var ctx = btn.getAttribute('data-ctx') || '';
+        var saved = toggleSaved(title, ctx);
+        btn.textContent = saved ? '🔖 Sparad!' : '+ Spara';
+        btn.style.background = saved ? 'rgba(240,192,64,0.2)' : 'rgba(62,180,137,0.1)';
+        btn.style.borderColor = saved ? 'rgba(240,192,64,0.5)' : 'rgba(62,180,137,0.3)';
+        btn.style.color = saved ? '#f0c040' : '#3eb489';
+      });
+    }
   }
 
-  // Kör init när DOM är redo
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
+
+  // Exponera globalt om det behövs
+  window._eduShowHome = showHome;
 
 })();
 </script>
