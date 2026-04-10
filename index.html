@@ -2452,9 +2452,7 @@
       #mobileTabBar { display: none !important; }
       #mobileContent { display: none !important; }
     }
-    #profilMenuModal.active { display: flex !important; }
-    #gdprPolicyModal.active { display: flex !important; }
-  </style>
+</style>
   <style>
     .cpicker-item {
       padding: 14px 20px;
@@ -7360,29 +7358,18 @@ ${styleTexts}
     function authShowUserMenu() {
       const saved = pfRead(AUTH_STORAGE_KEY);
       const email = saved ? JSON.parse(saved).email : '';
-      document.getElementById('profilMenuEmail').textContent = email || '–';
-      document.getElementById('profilMenuModal').classList.add('active');
-    }
-    function authDoSignOut() {
-      document.getElementById('profilMenuModal').classList.remove('active');
-      pfRemove(AUTH_STORAGE_KEY);
-      window.authUserId = null;
-      window.authAccessToken = null;
-      document.getElementById('authUserBadge').style.display = 'none';
-      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-      document.getElementById('authStep1').classList.add('active');
-      document.getElementById('authEmail').value = '';
-      authCurrentEmail = '';
-      setNavStep(1);
-      document.getElementById('authOverlay').classList.remove('hidden');
-    }
-    function authDoDeleteAccount() {
-      const el = document.getElementById('profilDeleteConfirm');
-      el.style.display = el.style.display === 'none' ? '' : 'none';
-    }
-    function authConfirmDeleteAccount() {
-      try { localStorage.clear(); } catch(e) {}
-      authDoSignOut();
+      if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
+        pfRemove(AUTH_STORAGE_KEY);
+        window.authUserId = null;
+        window.authAccessToken = null;
+        document.getElementById('authUserBadge').style.display = 'none';
+        document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+        document.getElementById('authStep1').classList.add('active');
+        document.getElementById('authEmail').value = '';
+        authCurrentEmail = '';
+        setNavStep(1);
+        document.getElementById('authOverlay').classList.remove('hidden');
+      }
     }
     // ===== SLUT AUTENTISERING =====
 
@@ -12972,7 +12959,7 @@ ${styleTexts}
         '<div style="font-size:12px;color:rgba(255,255,255,0.25);">Inneh\u00e5ll f\u00f6r ' + (activeDay ? activeDay.label : '') + ' \u00e4r under produktion.</div>' +
         '</div>';
     } else {
-      activeDay.modules.forEach(function(mod, modIdx) {
+      activeDay.modules.forEach(function(mod) {
         const p = progress[mod.id] || {};
         const lessonsOk = (p.lessonsRead || 0);
         const exerciseOk = p.exerciseDone ? 1 : 0;
@@ -12980,46 +12967,24 @@ ${styleTexts}
         const totalSteps = mod.lessons.length + 2;
         const doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
         const pct = Math.round((doneSteps / totalSteps) * 100);
-        const modNum = modIdx + 1;
-        var isLocked = false;
-        if (modIdx > 0) {
-          var prevMod = activeDay.modules[modIdx - 1];
-          var pp = progress[prevMod.id] || {};
-          var prevDone = Math.min(pp.lessonsRead || 0, prevMod.lessons.length) + (pp.exerciseDone ? 1 : 0) + (pp.quizDone ? 1 : 0);
-          isLocked = prevDone < (prevMod.lessons.length + 2);
-        }
-        if (isLocked) {
-          modulesHtml += '<div style="background:rgba(255,255,255,0.03);border:1.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin-bottom:12px;">' +
-            '<div style="display:flex;align-items:center;gap:12px;">' +
-            '<div style="font-size:26px;opacity:0.35;">🔒</div>' +
-            '<div style="flex:1;">' +
-            '<div style="font-size:10px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:3px;">Modul ' + modNum + '</div>' +
-            '<div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.3);">' + mod.title + '</div>' +
-            '<div style="font-size:11px;color:rgba(255,255,255,0.18);">Klar Modul ' + modIdx + ' f\u00f6r att l\u00e5sa upp</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>';
-        } else {
-          modulesHtml += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="background:' + mod.bg + ';border:1.5px solid ' + mod.borderColor + ';border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.15s;">' +
-            '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
-            '<div style="font-size:28px;">' + mod.icon + '</div>' +
-            '<div style="flex:1;">' +
-            '<div style="font-size:10px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:' + mod.color + ';opacity:0.8;margin-bottom:2px;">Modul ' + modNum + '</div>' +
-            '<div style="font-size:14px;font-weight:800;color:#fff;">' + mod.title + '</div>' +
-            '<div style="font-size:11px;color:rgba(255,255,255,0.45);">' + mod.subtitle + '</div>' +
-            '</div>' +
-            (pct === 100 ? '<div style="font-size:20px;">\u2705</div>' : '<div style="font-size:12px;font-weight:700;color:' + mod.color + ';">' + pct + '%</div>') +
-            '</div>' +
-            '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:5px;overflow:hidden;">' +
-            '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div>' +
-            '</div>' +
-            '<div style="display:flex;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35);">' +
-            '<span>' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + ' lektioner</span>' +
-            '<span>\u00b7</span><span>\u00d6vning ' + (exerciseOk ? '\u2713' : '\u2013') + '</span>' +
-            '<span>\u00b7</span><span>Quiz ' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '\u2013') + '</span>' +
-            '</div>' +
-            '</div>';
-        }
+        modulesHtml += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="background:' + mod.bg + ';border:1.5px solid ' + mod.borderColor + ';border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.15s;">' +
+          '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
+          '<div style="font-size:28px;">' + mod.icon + '</div>' +
+          '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:800;color:#fff;">' + mod.title + '</div>' +
+          '<div style="font-size:11px;color:rgba(255,255,255,0.45);">' + mod.subtitle + '</div>' +
+          '</div>' +
+          (pct === 100 ? '<div style="font-size:20px;">\u2705</div>' : '<div style="font-size:12px;font-weight:700;color:' + mod.color + ';">' + pct + '%</div>') +
+          '</div>' +
+          '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:5px;overflow:hidden;">' +
+          '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35);">' +
+          '<span>' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + ' lektioner</span>' +
+          '<span>\u00b7</span><span>\u00d6vning ' + (exerciseOk ? '\u2713' : '\u2013') + '</span>' +
+          '<span>\u00b7</span><span>Quiz ' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '\u2013') + '</span>' +
+          '</div>' +
+          '</div>';
       });
     }
 
@@ -13034,7 +12999,7 @@ ${styleTexts}
 
   // ── Öppna en modul ──
   window.ovnOpenModule = function(modId) {
-    const mod = _ovnFindMod(modId);
+    const mod = MODULES.find(function(m){ return m.id === modId; });
     if (!mod) return;
     const grid = document.getElementById('ovnModuleGrid');
     const view = document.getElementById('ovnModuleView');
@@ -13056,28 +13021,33 @@ ${styleTexts}
     const pct = Math.round((currentStep / totalSteps) * 100);
 
     view.innerHTML =
-      // Back + progress
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-top:16px;">' +
-      '<button onclick="renderModuleGrid()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;padding:0;">←</button>' +
-      '<div style="flex:1;background:rgba(255,255,255,0.08);border-radius:10px;height:5px;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div></div>' +
-      '<span style="font-size:10px;color:rgba(255,255,255,0.35);">' + currentStep + '/' + totalSteps + '</span>' +
+      // Top row: red back button + progress
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-top:16px;">' +
+      '<button onclick="renderModuleGrid()" style="display:flex;align-items:center;gap:5px;background:#c0392b;border:none;color:#fff;font-size:11px;font-weight:800;padding:7px 13px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;letter-spacing:0.3px;">← Tillbaka</button>' +
+      '<div style="flex:1;background:rgba(255,255,255,0.07);border-radius:10px;height:4px;overflow:hidden;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;box-shadow:0 0 8px ' + mod.color + '88;"></div></div>' +
+      '<span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:700;">' + currentStep + '/' + totalSteps + '</span>' +
       '</div>' +
       // Module label
-      '<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:6px;">' + mod.icon + ' ' + mod.title + '</div>' +
-      // Lesson title
-      '<div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:14px;">' + lesson.title + '</div>' +
-      // Level toggle
-      '<div style="display:flex;gap:6px;margin-bottom:14px;">' +
-      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'simple\')" style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:none;' + (level==='simple'?'background:'+mod.color+';color:#fff;':'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);') + '">Enkel nivå</button>' +
-      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'advanced\')" style="flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;border:none;' + (level==='advanced'?'background:'+mod.color+';color:#fff;':'background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);') + '">Avancerad nivå</button>' +
+      '<div style="display:inline-flex;align-items:center;gap:6px;background:' + mod.color + '18;border:1px solid ' + mod.color + '44;border-radius:20px;padding:4px 10px;margin-bottom:12px;">' +
+      '<span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';">' + mod.icon + ' ' + mod.title + '</span>' +
       '</div>' +
-      // Lesson text
-      '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.7;margin-bottom:20px;white-space:pre-line;">' + (level === 'advanced' ? lesson.advanced : lesson.simple) + '</div>' +
+      // Lesson title
+      '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:16px;line-height:1.25;letter-spacing:-0.3px;">' + lesson.title + '</div>' +
+      // Level toggle
+      '<div style="display:flex;gap:6px;margin-bottom:16px;background:rgba(255,255,255,0.04);border-radius:10px;padding:4px;">' +
+      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'simple\')" style="flex:1;padding:8px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;border:none;transition:all 0.2s;' + (level==='simple'?'background:'+mod.color+';color:#fff;box-shadow:0 2px 8px '+mod.color+'44;':'background:transparent;color:rgba(255,255,255,0.35);') + '">Enkel nivå</button>' +
+      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'advanced\')" style="flex:1;padding:8px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;border:none;transition:all 0.2s;' + (level==='advanced'?'background:'+mod.color+';color:#fff;box-shadow:0 2px 8px '+mod.color+'44;':'background:transparent;color:rgba(255,255,255,0.35);') + '">Avancerad nivå</button>' +
+      '</div>' +
+      // Lesson text card — tech look
+      '<div style="position:relative;background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.02) 100%);border:1px solid ' + mod.color + '33;border-left:3px solid ' + mod.color + ';border-radius:12px;padding:18px 16px;font-size:14px;color:rgba(255,255,255,0.88);line-height:1.75;margin-bottom:22px;white-space:pre-line;box-shadow:0 4px 24px rgba(0,0,0,0.25),inset 0 0 40px rgba(255,255,255,0.01);">' +
+      '<div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:800;letter-spacing:1px;color:' + mod.color + '66;text-transform:uppercase;">Lektion ' + currentStep + '</div>' +
+      (level === 'advanced' ? lesson.advanced : lesson.simple) +
+      '</div>' +
       // Nav buttons
       '<div style="display:flex;gap:8px;">' +
-      (idx > 0 ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (idx-1) + ')" style="flex:1;padding:12px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">← Föregående</button>' : '') +
-      '<button onclick="ovnLessonNext(\'' + mod.id + '\',' + idx + ')" style="flex:1;padding:12px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">' + (idx < mod.lessons.length - 1 ? 'Nästa lektion →' : 'Gå till övning →') + '</button>' +
+      (idx > 0 ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (idx-1) + ')" style="padding:13px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);font-size:13px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">← Föregående</button>' : '') +
+      '<button onclick="ovnLessonNext(\'' + mod.id + '\',' + idx + ')" style="flex:1;padding:13px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px ' + mod.color + '55;letter-spacing:0.2px;">' + (idx < mod.lessons.length - 1 ? 'Nästa lektion →' : 'Gå till övning →') + '</button>' +
       '</div>';
   }
 
@@ -13086,12 +13056,12 @@ ${styleTexts}
     if (!p[modId]) p[modId] = {};
     p[modId].level = level;
     saveProgress(p);
-    const mod = _ovnFindMod(modId);
+    const mod = MODULES.find(function(m){ return m.id === modId; });
     ovnShowLesson(mod, parseInt(idx));
   };
 
   window.ovnLessonNext = function(modId, idx) {
-    const mod = _ovnFindMod(modId);
+    const mod = MODULES.find(function(m){ return m.id === modId; });
     const p = getProgress();
     if (!p[modId]) p[modId] = {};
     p[modId].lessonsRead = Math.max(p[modId].lessonsRead || 0, idx + 1);
@@ -13124,14 +13094,23 @@ ${styleTexts}
   function _ovnHeader(mod, step, total, showBack) {
     const pct = Math.round((step / total) * 100);
     return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-top:16px;">' +
-      (showBack ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (mod.lessons.length-1) + ')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:0 4px;">←</button>' : '') +
-      '<div style="flex:1;">' +
-      '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:6px;overflow:hidden;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.5s ease;"></div></div>' +
-      '</div>' +
-      '<span style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;">' + step + '/' + total + '</span>' +
+      (showBack ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (mod.lessons.length-1) + ')" style="display:flex;align-items:center;gap:5px;background:#c0392b;border:none;color:#fff;font-size:11px;font-weight:800;padding:7px 13px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;letter-spacing:0.3px;">← Tillbaka</button>' : '') +
+      '<div style="flex:1;background:rgba(255,255,255,0.07);border-radius:10px;height:4px;overflow:hidden;">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.5s ease;box-shadow:0 0 8px ' + mod.color + '88;"></div></div>' +
+      '<span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:700;">' + step + '/' + total + '</span>' +
       '</div>';
   }
+
+
+
+
+
+
+
+
+
+
+
 
   // ══════════════════════════════════════
   // QUIZ — Ny proffsig design
@@ -13158,7 +13137,8 @@ ${styleTexts}
       }).join('') +
       '</div>' +
       // Question
-      '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 16px;margin-bottom:20px;">' +
+      '<div style="position:relative;background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.02) 100%);border:1px solid ' + mod.color + '33;border-left:3px solid ' + mod.color + ';border-radius:14px;padding:18px 16px;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,0.2);">' +
+      '<div style="position:absolute;top:9px;right:12px;font-size:9px;font-weight:800;letter-spacing:1px;color:' + mod.color + '66;text-transform:uppercase;">Quiz ' + (qIdx+1) + '</div>' +
       '<div style="font-size:16px;font-weight:800;color:#fff;line-height:1.5;">' + q.q + '</div>' +
       '</div>' +
       // Options
@@ -13223,7 +13203,7 @@ ${styleTexts}
     const currentStep = mod.lessons.length + 1;
 
     let exHtml = _ovnHeader(mod, currentStep, totalSteps, true);
-    exHtml += '<div style="font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:' + mod.color + ';margin-bottom:8px;">' + mod.icon + ' ÖVNING</div>';
+    exHtml += '<div style="display:inline-flex;align-items:center;gap:6px;background:' + mod.color + '18;border:1px solid ' + mod.color + '44;border-radius:20px;padding:4px 10px;margin-bottom:14px;"><span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';">' + mod.icon + ' ÖVNING</span></div>';
 
     if (ex.type === 'write') {
       exHtml += _ovnRenderWrite(mod, ex);
@@ -13249,8 +13229,8 @@ ${styleTexts}
 
   // ── Write: Skriv fri text ──
   function _ovnRenderWrite(mod, ex) {
-    let h = '<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;margin-bottom:16px;">' +
-      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;">' + ex.title + '</div>' +
+    let h = '<div style="position:relative;background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.02) 100%);border:1px solid ' + mod.color + '33;border-left:3px solid ' + mod.color + ';border-radius:14px;padding:18px 16px;margin-bottom:16px;box-shadow:0 4px 24px rgba(0,0,0,0.2);">' +
+      '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:8px;line-height:1.3;">' + ex.title + '</div>' +
       '<div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;">' + ex.description + '</div>' +
       '</div>';
     if (ex.tips) {
@@ -13615,87 +13595,4 @@ ${styleTexts}
 })();
 </script>
 
-
-  <div id="profilMenuModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);align-items:flex-end;justify-content:center;">
-    <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 20px 36px;box-sizing:border-box;">
-      <div style="width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:4px;margin:0 auto 20px;"></div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.08);">
-        <div style="width:38px;height:38px;border-radius:50%;background:rgba(62,180,137,0.15);border:1.5px solid rgba(62,180,137,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">👤</div>
-        <div>
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Inloggad som</div>
-          <div id="profilMenuEmail" style="font-size:13px;font-weight:700;color:#fff;"></div>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <button onclick="document.getElementById('profilMenuModal').classList.remove('active');document.getElementById('gdprPolicyModal').classList.add('active');" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;">
-          <span style="font-size:20px;">📄</span><span style="flex:1;">Integritetspolicy</span><span style="color:rgba(255,255,255,0.25);font-size:16px;">›</span>
-        </button>
-        <button onclick="authDoDeleteAccount()" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:rgba(220,50,50,0.06);border:1px solid rgba(220,50,50,0.2);border-radius:14px;color:rgba(255,100,100,0.85);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;">
-          <span style="font-size:20px;">🗑️</span><span style="flex:1;">Radera mitt konto</span><span style="color:rgba(255,100,100,0.35);font-size:16px;">›</span>
-        </button>
-        <div id="profilDeleteConfirm" style="display:none;background:rgba(220,50,50,0.1);border:1px solid rgba(220,50,50,0.3);border-radius:12px;padding:14px 16px;">
-          <div style="font-size:12px;color:rgba(255,150,150,0.9);margin-bottom:12px;line-height:1.5;">⚠️ Ditt konto och all lokal data raderas permanent. Det går inte att ångra.</div>
-          <div style="display:flex;gap:8px;">
-            <button onclick="authDoDeleteAccount()" style="flex:1;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Avbryt</button>
-            <button onclick="authConfirmDeleteAccount()" style="flex:1;padding:10px;background:rgba(220,50,50,0.4);border:1px solid rgba(220,50,50,0.6);border-radius:10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Ja, radera allt</button>
-          </div>
-        </div>
-        <button onclick="authDoSignOut()" style="display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;">
-          <span style="font-size:20px;">🚪</span><span style="flex:1;">Logga ut</span>
-        </button>
-      </div>
-      <button onclick="document.getElementById('profilMenuModal').classList.remove('active')" style="margin-top:18px;width:100%;padding:13px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:rgba(255,255,255,0.4);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Stäng</button>
-    </div>
-  </div>
-
-  <div id="gdprPolicyModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;box-sizing:border-box;">
-    <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;">
-      <div style="padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <span style="font-size:20px;">📄</span>
-        <div style="flex:1;"><div style="font-size:15px;font-weight:900;color:#fff;">Integritetspolicy</div><div style="font-size:11px;color:rgba(255,255,255,0.35);">CVmatchen · Senast uppdaterad april 2025</div></div>
-        <button onclick="document.getElementById('gdprPolicyModal').classList.remove('active')" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;padding:0;line-height:1;">×</button>
-      </div>
-      <div style="overflow-y:auto;padding:20px;font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">
-        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">1. Personuppgiftsansvarig</div>
-        <p style="margin:0 0 16px;">PathfinderAI, hej@pathfinderai.se, är personuppgiftsansvarig för behandlingen av dina personuppgifter i CVmatchen.</p>
-        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">2. Vilka uppgifter samlar vi in?</div>
-        <ul style="margin:0 0 16px;padding-left:18px;">
-          <li style="margin-bottom:4px;"><b>E-postadress</b> — för inloggning via engångskod (OTP)</li>
-          <li style="margin-bottom:4px;"><b>CV-information</b> — namn, arbetslivserfarenhet, utbildning, kompetenser m.m. som du själv fyller i</li>
-          <li style="margin-bottom:4px;"><b>Tekniska loggar</b> — anonyma felloggar för att förbättra tjänsten</li>
-        </ul>
-        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">3. Varför behandlar vi dina uppgifter?</div>
-        <ul style="margin:0 0 16px;padding-left:18px;">
-          <li style="margin-bottom:4px;">Tillhandahålla tjänsten (avtal, GDPR art. 6.1.b)</li>
-          <li style="margin-bottom:4px;">Skicka inloggningskod (berättigat intresse, art. 6.1.f)</li>
-          <li style="margin-bottom:4px;">Uppfylla rättsliga skyldigheter (art. 6.1.c)</li>
-        </ul>
-        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">4. Var lagras dina uppgifter?</div>
-        <ul style="margin:0 0 16px;padding-left:18px;">
-          <li style="margin-bottom:4px;"><b>Supabase</b> (EU/USA) — autentisering och e-postadress</li>
-          <li style="margin-bottom:4px;"><b>Anthropic</b> (USA) — AI-bearbetning av CV-text (ej sparad)</li>
-          <li style="margin-bottom:4px;"><b>Resend</b> (USA) — e-postutskick av inloggningskod</li>
-          <li style="margin-bottom:4px;"><b>Din enhet</b> — CV-data lagras lokalt i webbläsaren (localStorage)</li>
-        </ul>
-        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">5. Hur länge sparas uppgifterna?</div>
-        <p style="margin:0 0 16px;">Din e-postadress sparas så länge ditt konto är aktivt. CV-data lagras lokalt och raderas när du rensar webbläsaren eller raderar ditt konto. Anthropic sparar inte din text efter varje AI-förfrågan.</p>
-        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">6. Dina rättigheter</div>
-        <ul style="margin:0 0 16px;padding-left:18px;">
-          <li style="margin-bottom:4px;"><b>Tillgång</b> — begära utdrag av dina uppgifter</li>
-          <li style="margin-bottom:4px;"><b>Rättelse</b> — korrigera felaktiga uppgifter</li>
-          <li style="margin-bottom:4px;"><b>Radering</b> — "rätten att bli bortglömd"</li>
-          <li style="margin-bottom:4px;"><b>Dataportabilitet</b> — få ut dina uppgifter maskinläsbart</li>
-          <li style="margin-bottom:4px;"><b>Invändning</b> — invända mot viss behandling</li>
-        </ul>
-        <p style="margin:0 0 16px;">Kontakta oss på <b>hej@pathfinderai.se</b>. Du kan också klaga till <b>IMY</b> på imy.se.</p>
-        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">7. Cookies &amp; lokal lagring</div>
-        <p style="margin:0 0 16px;">CVmatchen använder localStorage för att spara ditt CV lokalt. Vi använder inga tracking-cookies eller reklamkakor.</p>
-        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">8. Kontakt</div>
-        <p style="margin:0;">PathfinderAI · hej@pathfinderai.se</p>
-      </div>
-      <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
-        <button onclick="document.getElementById('gdprPolicyModal').classList.remove('active')" style="width:100%;padding:13px;background:#3eb489;border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">Stäng</button>
-      </div>
-    </div>
-  </div>
 </body></html>
