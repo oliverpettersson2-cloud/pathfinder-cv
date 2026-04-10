@@ -9733,9 +9733,7 @@ ${styleTexts}
     var splash = document.getElementById('syvSplash');
     var msgs = document.getElementById('syvMessages');
     if (splash && splash.style.display !== 'none') {
-      splash.style.display = 'none';
-      const _bb1 = document.getElementById('syvBackBar'); if (_bb1) _bb1.style.display = 'block';
-      if (msgs) msgs.style.display = 'flex';
+      _syvEnterChat();
     }
     if (saved.length === 0) {
       syvAddBotBubble(
@@ -9790,9 +9788,7 @@ ${styleTexts}
     const splash = document.getElementById('syvSplash');
     const msgs = document.getElementById('syvMessages');
     if (splash && splash.style.display !== 'none') {
-      splash.style.display = 'none';
-      const _bb2 = document.getElementById('syvBackBar'); if (_bb2) _bb2.style.display = 'block';
-      if (msgs) msgs.style.display = 'flex';
+      _syvEnterChat();
     }
 
     // Filtrera utbildningar för detta område
@@ -9873,15 +9869,26 @@ ${styleTexts}
     if (msgs) { msgs.innerHTML = ''; msgs.style.display = 'none'; }
     if (splash) splash.style.display = 'flex';
     if (backBar) backBar.style.display = 'none';
+    var areas = document.getElementById('syvAreas');
+    if (areas) areas.style.display = 'flex';
+  }
+
+  function _syvEnterChat() {
+    var splash  = document.getElementById('syvSplash');
+    var areas   = document.getElementById('syvAreas');
+    var backBar = document.getElementById('syvBackBar');
+    var msgs    = document.getElementById('syvMessages');
+    if (splash)  splash.style.display  = 'none';
+    if (areas)   areas.style.display   = 'none';
+    if (backBar) backBar.style.display = 'block';
+    if (msgs) { msgs.style.display = 'flex'; msgs.style.flex = '1'; }
   }
 
   function syvInitWizard() {
     const msgs = document.getElementById('syvMessages');
     const splash = document.getElementById('syvSplash');
     if (!msgs) return;
-    // Dölj splash, visa chatt
-    if (splash) splash.style.display = 'none';
-    const _bb3 = document.getElementById('syvBackBar'); if (_bb3) _bb3.style.display = 'block';
+    _syvEnterChat();
     msgs.style.display = 'flex';
     msgs.innerHTML = '';
     syvWizardStep = 0;
@@ -9969,9 +9976,7 @@ ${styleTexts}
     const _splash = document.getElementById('syvSplash');
     const _msgs = document.getElementById('syvMessages');
     if (_splash && _splash.style.display !== 'none') {
-      _splash.style.display = 'none';
-      const _bb4 = document.getElementById('syvBackBar'); if (_bb4) _bb4.style.display = 'block';
-      if (_msgs) _msgs.style.display = 'flex';
+      _syvEnterChat();
     }
     await syvSendMessage(text);
   }
@@ -12102,6 +12107,7 @@ ${styleTexts}
     window._utbGotoChat = function(prompt) {
       const s1 = document.getElementById('utbStep1');
       if (s1) s1.style.display = 'none';
+      _syvEnterChat();
       // Skriv in prompten i chatfältet och skicka
       if (prompt) {
         setTimeout(function() {
