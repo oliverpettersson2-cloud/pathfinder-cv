@@ -8228,6 +8228,23 @@ ${styleTexts}
       </div><!-- /matchaStep3 -->
     </div><!-- /mobPanel-matcha -->
 
+
+    <!-- UTBILDNINGS-MODAL -->
+    <div id="edu-link-modal" onclick="if(event.target===this)this.style.display='none';" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:24px;">
+      <div style="background:#1e2545;border:1.5px solid rgba(62,180,137,0.3);border-radius:20px;padding:24px 20px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+        <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px;">Du lämnar appen</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:18px;" id="edu-modal-site"></div>
+        <div style="background:rgba(62,180,137,0.08);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:12px 14px;margin-bottom:20px;">
+          <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.7);margin-bottom:4px;">Skriv in på sidan</div>
+          <div style="font-size:15px;font-weight:900;color:#3eb489;" id="edu-modal-namn"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button onclick="document.getElementById('edu-link-modal').style.display='none';" style="padding:13px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Stanna kvar</button>
+          <button id="edu-modal-go" style="padding:13px;background:#3eb489;border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Gå till sidan →</button>
+        </div>
+      </div>
+    </div>
+
     <!-- FLIK: AI-SYV -->
     <div class="mob-panel" id="mobPanel-aisyv" style="padding:0;overflow:hidden;height:calc(100vh - 120px);display:none;flex-direction:column;">
 
@@ -17725,6 +17742,26 @@ ${styleTexts}
   }
 
   // Utbildningskort (sparbart)
+  function getSiteName(url) {
+    if (url.includes('google.com')) return 'Google — sök efter utbildningen på kommunens webbplats';
+    if (url.includes('antagning.se')) return 'antagning.se — nationell ansökningsportal';
+    if (url.includes('myh.se')) return 'myh.se — Myndigheten för yrkeshögskolan';
+    if (url.includes('arbetsformedlingen.se')) return 'arbetsformedlingen.se';
+    return url.replace(/^https?:\/\//, '').split('/')[0];
+  }
+
+  function showEduModal(namn, url) {
+    var modal = document.getElementById('edu-link-modal');
+    var siteEl = document.getElementById('edu-modal-site');
+    var namnEl = document.getElementById('edu-modal-namn');
+    var goBtn  = document.getElementById('edu-modal-go');
+    if (!modal) { window.open(url, '_blank'); return; }
+    siteEl.textContent = getSiteName(url);
+    namnEl.textContent = namn;
+    goBtn.onclick = function() { window.open(url, '_blank'); modal.style.display = 'none'; };
+    modal.style.display = 'flex';
+  }
+
   // URL-generator baserat på utbildningstyp
   function getEduUrl(prog) {
     var typ = (prog.typ || '').toLowerCase();
@@ -17766,7 +17803,7 @@ ${styleTexts}
         '<button class="edu-save-btn" data-namn="' + (prog.namn||'').replace(/"/g,'&quot;') + '" data-ort="' + (prog.ort||'').replace(/"/g,'&quot;') + '" data-skola="' + (prog.skola||'').replace(/"/g,'&quot;') + '" data-typ="' + (prog.typ||'').replace(/"/g,'&quot;') + '" data-krav="' + (prog.krav||'').replace(/"/g,'&quot;') + '" data-langd="' + (prog.langd||'').replace(/"/g,'&quot;') + '" data-url="' + linkUrl.replace(/"/g,'&quot;') + '" style="flex-shrink:0;align-self:flex-start;background:' + (isSav?'rgba(240,192,64,0.2)':'rgba(62,180,137,0.12)') + ';border:1.5px solid ' + (isSav?'rgba(240,192,64,0.5)':'rgba(62,180,137,0.35)') + ';border-radius:20px;padding:7px 13px;color:' + (isSav?'#f0c040':'#3eb489') + ';font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap;">' + (isSav?'🔖 Sparad':'+ Spara') + '</button>' +
       '</div>' +
       // Läs mer-länk
-      '<a href="' + linkUrl + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:700;">🔗 Sök utbildningen</a>';
+      '<button onclick="showEduModal(' + JSON.stringify(prog.namn||'').replace(/"/g,\'&quot;\') + ',' + JSON.stringify(linkUrl).replace(/"/g,\'&quot;\') + ')" style="background:none;border:none;display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:700;cursor:pointer;font-family:inherit;padding:0;">🔗 Sök utbildningen</button>';
     return div;
   }
 
@@ -17952,7 +17989,7 @@ ${styleTexts}
           '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;">' + prog.namn + '</div>' +
           '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;">' + [prog.typ,prog.ort,prog.skola].filter(Boolean).join(' · ') + '</div>' +
           (prog.krav ? '<span style="background:rgba(240,192,64,0.12);border:1px solid rgba(240,192,64,0.25);border-radius:8px;padding:2px 7px;font-size:11px;color:#f0c040;font-weight:600;">Krav: ' + prog.krav + '</span>' : '') +
-          '<br><a href="' + getEduUrl(prog) + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:600;">🔗 Sök utbildningen</a>' +
+          '<br><button onclick="showEduModal(' + JSON.stringify(prog.namn||'').replace(/"/g,\'&quot;\') + ',' + JSON.stringify(getEduUrl(prog)).replace(/"/g,\'&quot;\') + ')" style="background:none;border:none;display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:#3eb489;font-weight:600;cursor:pointer;font-family:inherit;padding:0;">🔗 Sök utbildningen</button>' +
           '<div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px;">Sparad ' + (prog.sparad||'') + '</div>' +
         '</div>';
       var rmBtn = document.createElement('button');
