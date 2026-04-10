@@ -17594,7 +17594,7 @@ ${styleTexts}
 
   // Bygg AI system-prompt med riktig data
   function buildSystem() {
-    var base = "Du ar en AI-SYV for Familjen Helsingborg. Svara PA SVENSKA. REGLER: 1) Nar du foreslar utbildningar - skriv BARA KORT-kort, ingen fritext om utbildningarna. 2) KORT-format (en per rad): KORT:namn|skola|typ|ort|langd|krav|url 3) En kort mening FORE korten ar ok (t.ex. 'Har ar tre YH-utbildningar:'). 4) Avsluta med 2-3 snabbsvar: >>Alternativ 5) Inga markdown-symboler. Exempel pa svar: 'Har ar YH-utbildningar i Helsingborg:\nKORT:Systemutvecklare .NET|Medieinstitutet|YH|Helsingborg|2 ar|Gymnasieexamen|https://myh.se\nKORT:Logistiker|NTI-skolan|YH|Helsingborg|2 ar|Gymnasieexamen|https://myh.se\n>>Visa fler\n>>Tillbaka till start'. 6) VIKTIGT: Om utbildningen INTE finns i Familjen Helsingborg (t.ex. universitetsprogram som lakarprogram, SYV, psykolog, jurist) - visa ALLTID bade: (a) det nationella programmet med orten tydligt namngiven, OCH (b) 1-2 lokala alternativ fran Familjen Helsingborg som bygger liknande kompetenser (t.ex. for SYV: Service Management, Strategisk kommunikation, Pedagogik). Skriv en kort mening som forklarar att de lokala alternativen ar relaterade men inte samma yrke. Hitta ALDRIG pa utbildningar - om du ar osaker pa en specifik skola/url, anvand antagning.se som url. KANDA NATIONELLA PROGRAM (anvand dessa nar relevant): KORT:Studie- och yrkesvagledarprogrammet|Malmo Universitet|Hogskola|Malmo|3 ar (180 hp)|Grundlaggande behorighet|https://www.mau.se/utbildning/program/studie--och-yrkesvagledarprogrammet/; KORT:Studie- och yrkesvagledare|Stockholms Universitet|Hogskola|Stockholm|3 ar (180 hp)|Grundlaggande behorighet|https://www.su.se; KORT:Studie- och yrkesvagledare|Umea Universitet|Hogskola|Umea|3 ar (180 hp)|Grundlaggande behorighet|https://www.umu.se";
+    var base = "Du ar en AI-SYV for Familjen Helsingborg. Svara PA SVENSKA. REGLER: 1) Nar du foreslar utbildningar - skriv BARA KORT-kort, ingen fritext om utbildningarna. 2) KORT-format (en per rad): KORT:namn|skola|typ|ort|langd|krav| (lamna url-faltet ALLTID tomt - appen genererar ratt lankar automatiskt baserat pa typ). 3) En kort mening FORE korten ar ok (t.ex. 'Har ar tre YH-utbildningar:'). 4) Avsluta med 2-3 snabbsvar: >>Alternativ 5) Inga markdown-symboler. Exempel pa svar: 'Har ar YH-utbildningar i Helsingborg:\nKORT:Systemutvecklare .NET|Medieinstitutet|YH|Helsingborg|2 ar|Gymnasieexamen|\nKORT:Logistiker|NTI-skolan|YH|Helsingborg|2 ar|Gymnasieexamen|\n>>Visa fler\n>>Tillbaka till start'. 6) VIKTIGT: Om utbildningen INTE finns i Familjen Helsingborg (t.ex. universitetsprogram som lakarprogram, SYV, psykolog, jurist) - visa ALLTID bade: (a) det nationella programmet med orten tydligt namngiven, OCH (b) 1-2 lokala alternativ fran Familjen Helsingborg som bygger liknande kompetenser (t.ex. for SYV: Service Management, Strategisk kommunikation, Pedagogik). Skriv en kort mening som forklarar att de lokala alternativen ar relaterade men inte samma yrke. Hitta ALDRIG pa utbildningar - om du ar osaker pa en specifik skola/url, anvand antagning.se som url. KANDA NATIONELLA PROGRAM (anvand dessa nar relevant): KORT:Studie- och yrkesvagledarprogrammet|Malmo Universitet|Hogskola|Malmo|3 ar (180 hp)|Grundlaggande behorighet|https://www.mau.se/utbildning/program/studie--och-yrkesvagledarprogrammet/; KORT:Studie- och yrkesvagledare|Stockholms Universitet|Hogskola|Stockholm|3 ar (180 hp)|Grundlaggande behorighet|https://www.su.se; KORT:Studie- och yrkesvagledare|Umea Universitet|Hogskola|Umea|3 ar (180 hp)|Grundlaggande behorighet|https://www.umu.se";
 
     if (!eduData || !eduData.utbildningar || !eduData.utbildningar.length) return base;
 
@@ -17639,42 +17639,42 @@ ${styleTexts}
   // 30 Framtidsyrken
   var FRAMTIDSYRKEN = [
     // Vård & omsorg
-    { namn:'Undersköterska', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1 år', krav:'Grundskola', url:'https://skanevux.se' },
-    { namn:'Barnskötare', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1 år', krav:'Grundskola', url:'https://helsingborg.se/utbildning-och-arbete/' },
-    { namn:'Tandsköterska', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1,5 år', krav:'Grundläggande behörighet', url:'https://helsingborg.se/utbildning-och-arbete/' },
-    { namn:'Sjuksköterska', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3 år (180 hp)', krav:'Grundläggande behörighet', url:'https://mau.se' },
-    { namn:'Behandlingsassistent', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'https://myh.se' },
-    { namn:'Stödpedagog / Personlig assistent', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1 år', krav:'Grundläggande behörighet', url:'https://helsingborg.se/utbildning-och-arbete/' },
+    { namn:'Undersköterska', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1 år', krav:'Grundskola', url:'' },
+    { namn:'Barnskötare', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1 år', krav:'Grundskola', url:'' },
+    { namn:'Tandsköterska', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1,5 år', krav:'Grundläggande behörighet', url:'' },
+    { namn:'Sjuksköterska', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3 år (180 hp)', krav:'Grundläggande behörighet', url:'' },
+    { namn:'Behandlingsassistent', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'Stödpedagog / Personlig assistent', skola:'Komvux Helsingborg', typ:'Komvux', ort:'Helsingborg', langd:'1 år', krav:'Grundläggande behörighet', url:'' },
     // IT & teknik
-    { namn:'Systemutvecklare .NET', skola:'Medieinstitutet', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://medieinstitutet.se' },
-    { namn:'Webbutvecklare', skola:'NTI-skolan', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://nti.se' },
-    { namn:'IT-tekniker / Support', skola:'Lernia', typ:'YH', ort:'Helsingborg', langd:'1,5 år', krav:'Gymnasieexamen', url:'https://myh.se' },
-    { namn:'Cybersäkerhetsanalytiker', skola:'Yrgo', typ:'YH', ort:'Göteborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://yrgo.se' },
-    { namn:'Data scientist / AI', skola:'Hyper Island', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'https://hyperisland.com' },
-    { namn:'Molnarkitekt / DevOps', skola:'EC Utbildning', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'https://ecutbildning.se' },
+    { namn:'Systemutvecklare .NET', skola:'Medieinstitutet', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'Webbutvecklare', skola:'NTI-skolan', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'IT-tekniker / Support', skola:'Lernia', typ:'YH', ort:'Helsingborg', langd:'1,5 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'Cybersäkerhetsanalytiker', skola:'Yrgo', typ:'YH', ort:'Göteborg', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'Data scientist / AI', skola:'Hyper Island', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'Molnarkitekt / DevOps', skola:'EC Utbildning', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'' },
     // Transport & logistik
-    { namn:'Lokförare', skola:'Antagning.se', typ:'YH', ort:'Malmö', langd:'1,5 år', krav:'Gymnasieexamen + körkort B', url:'https://antagning.se' },
-    { namn:'Logistiker / Inköpare', skola:'Skanevux', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://skanevux.se' },
-    { namn:'Yrkesförare (buss / lastbil)', skola:'Trafikverkets förarutbildning', typ:'Yrkesutbildning', ort:'Helsingborg', langd:'3 månader', krav:'18 år + körkort B', url:'https://antagning.se' },
-    { namn:'Hamnarbetare / Godshanterare', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'6 månader', krav:'Grundläggande behörighet', url:'https://skanevux.se' },
+    { namn:'Lokförare', skola:'Antagning.se', typ:'YH', ort:'Malmö', langd:'1,5 år', krav:'Gymnasieexamen + körkort B', url:'' },
+    { namn:'Logistiker / Inköpare', skola:'Skanevux', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'Yrkesförare (buss / lastbil)', skola:'Trafikverkets förarutbildning', typ:'Yrkesutbildning', ort:'Helsingborg', langd:'3 månader', krav:'18 år + körkort B', url:'' },
+    { namn:'Hamnarbetare / Godshanterare', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'6 månader', krav:'Grundläggande behörighet', url:'' },
     // Bygg, industri & el
-    { namn:'Elektriker', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen el/elprogrammet', url:'https://skanevux.se' },
-    { namn:'VVS-montör', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'2 år', krav:'Grundläggande behörighet', url:'https://skanevux.se' },
-    { namn:'Svetsare', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1 år', krav:'Grundläggande behörighet', url:'https://skanevux.se' },
-    { namn:'Fastighetsskötare', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://myh.se' },
+    { namn:'Elektriker', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen el/elprogrammet', url:'' },
+    { namn:'VVS-montör', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'2 år', krav:'Grundläggande behörighet', url:'' },
+    { namn:'Svetsare', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1 år', krav:'Grundläggande behörighet', url:'' },
+    { namn:'Fastighetsskötare', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'' },
     // Ekonomi & administration
-    { namn:'Redovisningsekonom', skola:'EC Utbildning', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://ecutbildning.se' },
-    { namn:'HR-administratör', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'https://myh.se' },
-    { namn:'Marknadsförare / Digital kommunikation', skola:'Skanevux', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://skanevux.se' },
-    { namn:'Jurist', skola:'Lunds Universitet', typ:'Högskola', ort:'Lund', langd:'4,5 år (270 hp)', krav:'Grundläggande behörighet', url:'https://lu.se' },
+    { namn:'Redovisningsekonom', skola:'EC Utbildning', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'HR-administratör', skola:'Yrkeshögskolan Syd', typ:'YH', ort:'Malmö', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'Marknadsförare / Digital kommunikation', skola:'Skanevux', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'' },
+    { namn:'Jurist', skola:'Lunds Universitet', typ:'Högskola', ort:'Lund', langd:'4,5 år (270 hp)', krav:'Grundläggande behörighet', url:'' },
     // Utbildning & socialt
-    { namn:'Förskollärare', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3,5 år (210 hp)', krav:'Grundläggande behörighet', url:'https://mau.se' },
-    { namn:'Lärare (grundskola)', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'4,5 år (270 hp)', krav:'Grundläggande behörighet', url:'https://mau.se' },
-    { namn:'Socialsekreterare', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3,5 år (210 hp)', krav:'Grundläggande behörighet', url:'https://mau.se' },
+    { namn:'Förskollärare', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3,5 år (210 hp)', krav:'Grundläggande behörighet', url:'' },
+    { namn:'Lärare (grundskola)', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'4,5 år (270 hp)', krav:'Grundläggande behörighet', url:'' },
+    { namn:'Socialsekreterare', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3,5 år (210 hp)', krav:'Grundläggande behörighet', url:'' },
     { namn:'Studie- och yrkesvägledare (SYV)', skola:'Malmö Universitet', typ:'Högskola', ort:'Malmö', langd:'3 år (180 hp)', krav:'Grundläggande behörighet', url:'https://mau.se/utbildning/program/studie--och-yrkesvagledarprogrammet/' },
     // Mat, service & hotell
-    { namn:'Kock / Restaurangchef', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1,5 år', krav:'Grundläggande behörighet', url:'https://skanevux.se' },
-    { namn:'Hotell, turism & event', skola:'EC Utbildning', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'https://ecutbildning.se' }
+    { namn:'Kock / Restaurangchef', skola:'Skanevux', typ:'Yrkesvux', ort:'Helsingborg', langd:'1,5 år', krav:'Grundläggande behörighet', url:'' },
+    { namn:'Hotell, turism & event', skola:'EC Utbildning', typ:'YH', ort:'Helsingborg', langd:'2 år', krav:'Gymnasieexamen', url:'' }
   ];
 
   // CV-kontext
@@ -17725,14 +17725,28 @@ ${styleTexts}
   }
 
   // Utbildningskort (sparbart)
+  // URL-generator baserat på utbildningstyp
+  function getEduUrl(prog) {
+    var namn = encodeURIComponent(prog.namn || '');
+    var typ = (prog.typ || '').toLowerCase();
+    if (typ === 'yh') return 'https://www.myh.se/yh-antagning/?q=' + namn;
+    if (typ === 'yrkesvux' || typ === 'yrkesutbildning') return 'https://skanevux.se/utbildningar/';
+    if (typ === 'komvux') return 'https://skanevux.se/utbildningar/';
+    if (typ === 'sfi' || typ === 'kombi sfi+yrke') return 'https://skanevux.se/utbildningar/';
+    if (typ === 'af-utbildning') return 'https://arbetsformedlingen.se/for-arbetssokande/stod-och-ersattning/stod-for-dig-som-behover-rusta-dig/arbetsmarknadsutbildning';
+    if (typ === 'hogskola' || typ === 'högskola') return 'https://www.antagning.se/se/search/?q=' + namn;
+    return 'https://www.antagning.se/se/search/?q=' + namn;
+  }
+
   function makeEduCard(prog) {
     var saved = getSaved().some(function(s){ return s.namn === prog.namn && s.ort === prog.ort; });
     var isSav = saved;
     var div = document.createElement('div');
     div.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid rgba(62,180,137,0.25);border-radius:16px;padding:14px 14px 12px;margin-top:10px;';
+    var linkUrl = getEduUrl(prog);
 
     // Typ-badge färg
-    var typeColors = { 'YH':'#a78bfa','Komvux':'#38bdf8','Yrkesutbildning':'#3eb489','SFI':'#f0c040','Kombi SFI+Yrke':'#f0c040','Högskola':'#f87171','AF-utbildning':'#fb923c' };
+    var typeColors = { 'YH':'#a78bfa','Komvux':'#38bdf8','Yrkesvux':'#3eb489','Yrkesutbildning':'#3eb489','SFI':'#f0c040','Kombi SFI+Yrke':'#f0c040','Högskola':'#f87171','AF-utbildning':'#fb923c' };
     var tc = typeColors[prog.typ] || '#3eb489';
 
     div.innerHTML =
@@ -17748,10 +17762,10 @@ ${styleTexts}
           (prog.krav ? '<span style="background:rgba(240,192,64,0.12);border:1px solid rgba(240,192,64,0.3);border-radius:8px;padding:3px 8px;font-size:11px;color:#f0c040;font-weight:700;">Krav: ' + prog.krav + '</span>' : '') +
         '</div>' +
         // Spara-knapp
-        '<button class="edu-save-btn" data-namn="' + (prog.namn||'').replace(/"/g,'&quot;') + '" data-ort="' + (prog.ort||'').replace(/"/g,'&quot;') + '" data-skola="' + (prog.skola||'').replace(/"/g,'&quot;') + '" data-typ="' + (prog.typ||'').replace(/"/g,'&quot;') + '" data-krav="' + (prog.krav||'').replace(/"/g,'&quot;') + '" data-langd="' + (prog.langd||'').replace(/"/g,'&quot;') + '" data-url="' + (prog.url||'').replace(/"/g,'&quot;') + '" style="flex-shrink:0;align-self:flex-start;background:' + (isSav?'rgba(240,192,64,0.2)':'rgba(62,180,137,0.12)') + ';border:1.5px solid ' + (isSav?'rgba(240,192,64,0.5)':'rgba(62,180,137,0.35)') + ';border-radius:20px;padding:7px 13px;color:' + (isSav?'#f0c040':'#3eb489') + ';font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap;">' + (isSav?'🔖 Sparad':'+ Spara') + '</button>' +
+        '<button class="edu-save-btn" data-namn="' + (prog.namn||'').replace(/"/g,'&quot;') + '" data-ort="' + (prog.ort||'').replace(/"/g,'&quot;') + '" data-skola="' + (prog.skola||'').replace(/"/g,'&quot;') + '" data-typ="' + (prog.typ||'').replace(/"/g,'&quot;') + '" data-krav="' + (prog.krav||'').replace(/"/g,'&quot;') + '" data-langd="' + (prog.langd||'').replace(/"/g,'&quot;') + '" data-url="' + linkUrl.replace(/"/g,'&quot;') + '" style="flex-shrink:0;align-self:flex-start;background:' + (isSav?'rgba(240,192,64,0.2)':'rgba(62,180,137,0.12)') + ';border:1.5px solid ' + (isSav?'rgba(240,192,64,0.5)':'rgba(62,180,137,0.35)') + ';border-radius:20px;padding:7px 13px;color:' + (isSav?'#f0c040':'#3eb489') + ';font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap;">' + (isSav?'🔖 Sparad':'+ Spara') + '</button>' +
       '</div>' +
       // Läs mer-länk
-      (prog.url ? '<a href="' + prog.url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:700;">🔗 Läs mer & ansök</a>' : '');
+      '<a href="' + linkUrl + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:10px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:700;">🔗 Sök utbildningen</a>';
     return div;
   }
 
@@ -17937,7 +17951,7 @@ ${styleTexts}
           '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;">' + prog.namn + '</div>' +
           '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px;">' + [prog.typ,prog.ort,prog.skola].filter(Boolean).join(' · ') + '</div>' +
           (prog.krav ? '<span style="background:rgba(240,192,64,0.12);border:1px solid rgba(240,192,64,0.25);border-radius:8px;padding:2px 7px;font-size:11px;color:#f0c040;font-weight:600;">Krav: ' + prog.krav + '</span>' : '') +
-          (prog.url ? '<br><a href="' + prog.url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:600;">Läs mer →</a>' : '') +
+          '<br><a href="' + getEduUrl(prog) + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:#3eb489;text-decoration:none;font-weight:600;">🔗 Sök utbildningen</a>' +
           '<div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px;">Sparad ' + (prog.sparad||'') + '</div>' +
         '</div>';
       var rmBtn = document.createElement('button');
