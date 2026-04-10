@@ -12967,22 +12967,32 @@ ${styleTexts}
         const totalSteps = mod.lessons.length + 2;
         const doneSteps = Math.min(lessonsOk, mod.lessons.length) + exerciseOk + (p.quizDone ? 1 : 0);
         const pct = Math.round((doneSteps / totalSteps) * 100);
-        modulesHtml += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="background:' + mod.bg + ';border:1.5px solid ' + mod.borderColor + ';border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.15s;">' +
-          '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">' +
-          '<div style="font-size:28px;">' + mod.icon + '</div>' +
+        modulesHtml += '<div onclick="ovnOpenModule(\'' + mod.id + '\')" style="position:relative;background:linear-gradient(135deg,' + mod.bg + ' 0%,rgba(0,0,0,0.2) 100%);border:1.5px solid ' + mod.color + '44;border-left:4px solid ' + mod.color + ';border-radius:18px;padding:18px 16px;margin-bottom:14px;cursor:pointer;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.25);">' +
+          '<div style="position:absolute;top:0;right:0;width:80px;height:80px;background:radial-gradient(circle at top right,' + mod.color + '18,transparent 70%);pointer-events:none;"></div>' +
+          '<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">' +
+          '<div style="font-size:34px;filter:drop-shadow(0 2px 6px ' + mod.color + '66);">' + mod.icon + '</div>' +
           '<div style="flex:1;">' +
-          '<div style="font-size:14px;font-weight:800;color:#fff;">' + mod.title + '</div>' +
-          '<div style="font-size:11px;color:rgba(255,255,255,0.45);">' + mod.subtitle + '</div>' +
+          '<div style="font-size:17px;font-weight:900;color:#fff;letter-spacing:-0.3px;">' + mod.title + '</div>' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px;">' + mod.subtitle + '</div>' +
           '</div>' +
-          (pct === 100 ? '<div style="font-size:20px;">\u2705</div>' : '<div style="font-size:12px;font-weight:700;color:' + mod.color + ';">' + pct + '%</div>') +
+          (pct === 100 ? '<div style="font-size:26px;">\u2705</div>' : '<div style="font-size:20px;font-weight:900;color:' + mod.color + ';text-shadow:0 0 12px ' + mod.color + '88;">' + pct + '%</div>') +
           '</div>' +
-          '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:5px;overflow:hidden;">' +
-          '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;"></div>' +
+          '<div style="background:rgba(255,255,255,0.08);border-radius:10px;height:6px;overflow:hidden;margin-bottom:12px;">' +
+          '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;box-shadow:0 0 8px ' + mod.color + '88;"></div>' +
           '</div>' +
-          '<div style="display:flex;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.35);">' +
-          '<span>' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + ' lektioner</span>' +
-          '<span>\u00b7</span><span>\u00d6vning ' + (exerciseOk ? '\u2713' : '\u2013') + '</span>' +
-          '<span>\u00b7</span><span>Quiz ' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '\u2013') + '</span>' +
+          '<div style="display:flex;gap:6px;">' +
+          '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 10px;text-align:center;">' +
+          '<div style="font-size:13px;font-weight:900;color:#fff;">' + Math.min(lessonsOk, mod.lessons.length) + '/' + mod.lessons.length + '</div>' +
+          '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Lektioner</div>' +
+          '</div>' +
+          '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 10px;text-align:center;">' +
+          '<div style="font-size:13px;font-weight:900;color:' + (exerciseOk ? '#3eb489' : 'rgba(255,255,255,0.3)') + ';">' + (exerciseOk ? '\u2713 Klar' : '\u2013') + '</div>' +
+          '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Övning</div>' +
+          '</div>' +
+          '<div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:7px 10px;text-align:center;">' +
+          '<div style="font-size:13px;font-weight:900;color:' + (p.quizDone ? mod.color : 'rgba(255,255,255,0.3)') + ';">' + (p.quizDone ? quizScore + '/' + mod.quiz.length : '\u2013') + '</div>' +
+          '<div style="font-size:9px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;">Quiz</div>' +
+          '</div>' +
           '</div>' +
           '</div>';
       });
@@ -12999,13 +13009,21 @@ ${styleTexts}
 
   // ── Öppna en modul ──
   window.ovnOpenModule = function(modId) {
-    const mod = MODULES.find(function(m){ return m.id === modId; });
+    const mod = _ovnFindMod(modId);
     if (!mod) return;
     const grid = document.getElementById('ovnModuleGrid');
     const view = document.getElementById('ovnModuleView');
     if (grid) grid.style.display = 'none';
-    if (view) { view.style.display = ''; }
+    if (view) { view.style.display = ''; view.scrollTop = 0; }
     ovnShowLesson(mod, 0);
+  };
+
+  window._ovnGoBack = function() {
+    const grid = document.getElementById('ovnModuleGrid');
+    const view = document.getElementById('ovnModuleView');
+    if (view) view.style.display = 'none';
+    if (grid) grid.style.display = '';
+    renderModuleGrid();
   };
 
   // ── Visa lektion ──
@@ -13022,32 +13040,32 @@ ${styleTexts}
 
     view.innerHTML =
       // Top row: red back button + progress
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-top:16px;">' +
-      '<button onclick="renderModuleGrid()" style="display:flex;align-items:center;gap:5px;background:#c0392b;border:none;color:#fff;font-size:11px;font-weight:800;padding:7px 13px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;letter-spacing:0.3px;">← Tillbaka</button>' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-top:16px;">' +
+      '<button onclick="_ovnGoBack()" style="display:flex;align-items:center;gap:6px;background:#c0392b;border:none;color:#fff;font-size:12px;font-weight:900;padding:9px 18px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 2px 14px rgba(192,57,43,0.55);">← Tillbaka</button>' +
       '<div style="flex:1;background:rgba(255,255,255,0.07);border-radius:10px;height:4px;overflow:hidden;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;box-shadow:0 0 8px ' + mod.color + '88;"></div></div>' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.4s;box-shadow:0 0 10px ' + mod.color + 'aa;"></div></div>' +
       '<span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:700;">' + currentStep + '/' + totalSteps + '</span>' +
       '</div>' +
-      // Module label
-      '<div style="display:inline-flex;align-items:center;gap:6px;background:' + mod.color + '18;border:1px solid ' + mod.color + '44;border-radius:20px;padding:4px 10px;margin-bottom:12px;">' +
-      '<span style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';">' + mod.icon + ' ' + mod.title + '</span>' +
+      // Module label pill
+      '<div style="display:inline-flex;align-items:center;gap:6px;background:' + mod.color + '22;border:1px solid ' + mod.color + '55;border-radius:20px;padding:5px 12px;margin-bottom:14px;">' +
+      '<span style="font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:' + mod.color + ';">' + mod.icon + ' ' + mod.title + '</span>' +
       '</div>' +
-      // Lesson title
-      '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:16px;line-height:1.25;letter-spacing:-0.3px;">' + lesson.title + '</div>' +
+      // Lesson title — BIG
+      '<div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:18px;line-height:1.2;letter-spacing:-0.5px;">' + lesson.title + '</div>' +
       // Level toggle
-      '<div style="display:flex;gap:6px;margin-bottom:16px;background:rgba(255,255,255,0.04);border-radius:10px;padding:4px;">' +
-      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'simple\')" style="flex:1;padding:8px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;border:none;transition:all 0.2s;' + (level==='simple'?'background:'+mod.color+';color:#fff;box-shadow:0 2px 8px '+mod.color+'44;':'background:transparent;color:rgba(255,255,255,0.35);') + '">Enkel nivå</button>' +
-      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'advanced\')" style="flex:1;padding:8px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;border:none;transition:all 0.2s;' + (level==='advanced'?'background:'+mod.color+';color:#fff;box-shadow:0 2px 8px '+mod.color+'44;':'background:transparent;color:rgba(255,255,255,0.35);') + '">Avancerad nivå</button>' +
+      '<div style="display:flex;gap:5px;margin-bottom:18px;background:rgba(255,255,255,0.05);border-radius:12px;padding:4px;">' +
+      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'simple\')" style="flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;border:none;transition:all 0.2s;' + (level==='simple'?'background:'+mod.color+';color:#fff;box-shadow:0 2px 10px '+mod.color+'55;':'background:transparent;color:rgba(255,255,255,0.3);') + '">Enkel nivå</button>' +
+      '<button onclick="ovnSetLevel(\'' + mod.id + '\',\'' + idx + '\',\'advanced\')" style="flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;border:none;transition:all 0.2s;' + (level==='advanced'?'background:'+mod.color+';color:#fff;box-shadow:0 2px 10px '+mod.color+'55;':'background:transparent;color:rgba(255,255,255,0.3);') + '">Avancerad nivå</button>' +
       '</div>' +
-      // Lesson text card — tech look
-      '<div style="position:relative;background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.02) 100%);border:1px solid ' + mod.color + '33;border-left:3px solid ' + mod.color + ';border-radius:12px;padding:18px 16px;font-size:14px;color:rgba(255,255,255,0.88);line-height:1.75;margin-bottom:22px;white-space:pre-line;box-shadow:0 4px 24px rgba(0,0,0,0.25),inset 0 0 40px rgba(255,255,255,0.01);">' +
-      '<div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:800;letter-spacing:1px;color:' + mod.color + '66;text-transform:uppercase;">Lektion ' + currentStep + '</div>' +
+      // Lesson text card — BOLD TECH
+      '<div style="position:relative;background:linear-gradient(145deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.02) 100%);border:1px solid ' + mod.color + '44;border-left:4px solid ' + mod.color + ';border-radius:16px;padding:22px 18px;font-size:16px;color:#fff;line-height:1.8;margin-bottom:24px;white-space:pre-line;box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.06);">' +
+      '<div style="position:absolute;top:-1px;right:16px;background:' + mod.color + ';color:#000;font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:0 0 8px 8px;">Lektion ' + currentStep + '</div>' +
       (level === 'advanced' ? lesson.advanced : lesson.simple) +
       '</div>' +
       // Nav buttons
       '<div style="display:flex;gap:8px;">' +
-      (idx > 0 ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (idx-1) + ')" style="padding:13px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);font-size:13px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">← Föregående</button>' : '') +
-      '<button onclick="ovnLessonNext(\'' + mod.id + '\',' + idx + ')" style="flex:1;padding:13px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px ' + mod.color + '55;letter-spacing:0.2px;">' + (idx < mod.lessons.length - 1 ? 'Nästa lektion →' : 'Gå till övning →') + '</button>' +
+      (idx > 0 ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (idx-1) + ')" style="padding:14px 18px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);font-size:14px;font-weight:800;border-radius:14px;cursor:pointer;font-family:inherit;">← Föregående</button>' : '') +
+      '<button onclick="ovnLessonNext(\'' + mod.id + '\',' + idx + ')" style="flex:1;padding:15px;background:' + mod.color + ';border:none;color:#fff;font-size:15px;font-weight:900;border-radius:14px;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px ' + mod.color + '66;letter-spacing:0.2px;">' + (idx < mod.lessons.length - 1 ? 'Nästa lektion →' : 'Gå till övning →') + '</button>' +
       '</div>';
   }
 
@@ -13093,10 +13111,10 @@ ${styleTexts}
   // ── Gemensam header för övning/quiz ──
   function _ovnHeader(mod, step, total, showBack) {
     const pct = Math.round((step / total) * 100);
-    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-top:16px;">' +
-      (showBack ? '<button onclick="ovnShowLesson(_ovnFindMod(\'' + mod.id + '\'),' + (mod.lessons.length-1) + ')" style="display:flex;align-items:center;gap:5px;background:#c0392b;border:none;color:#fff;font-size:11px;font-weight:800;padding:7px 13px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;letter-spacing:0.3px;">← Tillbaka</button>' : '') +
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;padding-top:16px;">' +
+      (showBack ? '<button onclick="_ovnGoBack()" style="display:flex;align-items:center;gap:5px;background:#c0392b;border:none;color:#fff;font-size:12px;font-weight:900;padding:8px 16px;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 2px 12px rgba(192,57,43,0.5);">← Tillbaka</button>' : '') +
       '<div style="flex:1;background:rgba(255,255,255,0.07);border-radius:10px;height:4px;overflow:hidden;">' +
-      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.5s ease;box-shadow:0 0 8px ' + mod.color + '88;"></div></div>' +
+      '<div style="height:100%;width:' + pct + '%;background:' + mod.color + ';border-radius:10px;transition:width 0.5s ease;box-shadow:0 0 10px ' + mod.color + 'aa;"></div></div>' +
       '<span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:700;">' + step + '/' + total + '</span>' +
       '</div>';
   }
@@ -13560,7 +13578,7 @@ ${styleTexts}
       '</div>' +
       '<div style="display:flex;gap:8px;">' +
       (!great ? '<button onclick="ovnOpenModule(\'' + mod.id + '\')" style="flex:1;padding:13px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">🔄 Försök igen</button>' : '') +
-      '<button onclick="renderModuleGrid()" style="flex:1;padding:13px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">← Tillbaka</button>' +
+      '<button onclick="_ovnGoBack()" style="flex:1;padding:14px;background:' + mod.color + ';border:none;color:#fff;font-size:13px;font-weight:900;border-radius:12px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px ' + mod.color + '55;">← Tillbaka till moduler</button>' +
       '</div>';
   }
 
