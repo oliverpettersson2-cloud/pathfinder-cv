@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing env vars' });
   }
 
-  const { action, email, token, accessToken, userId, cvData } = req.body || {};
+  const { action, email, token, accessToken, userId, cvData, table, data } = req.body || {};
 
   function makeRequest(url, options, body) {
     return new Promise((resolve, reject) => {
@@ -48,11 +48,14 @@ export default async function handler(req, res) {
     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
   };
 
+  function authHeaders(token) {
+    return { ...baseHeaders, 'Authorization': `Bearer ${token}` };
+  }
+
   try {
 
     // ── Skicka OTP-kod via mail ──────────────────────────
     if (action === 'send_otp') {
-      const origin = req.headers.origin || 'https://pathfinder-cv.vercel.app';
       const result = await makeRequest(
         `${SUPABASE_URL}/auth/v1/otp`,
         { method: 'POST', headers: baseHeaders },
@@ -80,7 +83,6 @@ export default async function handler(req, res) {
           error: result.data.error_description || result.data.msg || result.data.message || 'Felaktig eller utgången kod'
         });
       }
-      // Returnera access_token och user
       return res.status(200).json({
         access_token: result.data.access_token,
         user: result.data.user
@@ -91,45 +93,121 @@ export default async function handler(req, res) {
     if (action === 'get_user') {
       const result = await makeRequest(
         `${SUPABASE_URL}/auth/v1/user`,
-        { method: 'GET', headers: { ...baseHeaders, 'Authorization': `Bearer ${accessToken}` } }
+        { method: 'GET', headers: authHeaders(accessToken) }
       );
       return res.status(200).json(result.data);
     }
 
-    // ── Spara CV ─────────────────────────────────────────
+    // ── Spara CV (huvud-CV) ───────────────────────────────
     if (action === 'save_cv') {
-      const result = await makeRequest(
-        `${SUPABASE_URL}/rest/v1/cv_data`,
+      await makeRequest(
+        `${SUPABASE_URL}/rest/v1/cvs`,
         {
           method: 'POST',
-          headers: {
-            ...baseHeaders,
-            'Authorization': `Bearer ${accessToken}`,
-            'Prefer': 'resolution=merge-duplicates'
-          }
+          headers: { ...authHeaders(accessToken), 'Prefer': 'resolution=merge-duplicates' }
         },
-        { user_id: userId, cv_json: cvData, updated_at: new Date().toISOString() }
+        { user_id: userId, data: cvData, updated_at: new Date().toISOString() }
       );
       return res.status(200).json({ success: true });
     }
 
-    // ── Ladda CV ─────────────────────────────────────────
+    // ── Ladda CV (huvud-CV) ───────────────────────────────
     if (action === 'load_cv') {
       const result = await makeRequest(
-        `${SUPABASE_URL}/rest/v1/cv_data?user_id=eq.${userId}&select=cv_json&limit=1`,
+        `${SUPABASE_URL}/rest/v1/cvs?user_id=eq.${userId}&select=data&limit=1`,
+        { method: 'GET', headers: authHeaders(accessToken) }
+      );
+      const rows = Array.isArray(result.data) ? result.data : [];
+      return res.status(200).json({ cv: rows[0]?.data || null });
+    }
+
+    // ── Spara valfri tabell (array som JSONB per användare) ──
+    // Tabeller: saved_cvs, matched_cvs, saved_edu, job_diary
+    // Kolumner: user_id, data (JSONB), saved_at / updated_at
+    if (action === 'save_table') {
+      const ALLOWED = ['saved_cvs', 'matched_cvs', 'saved_edu', 'job_diary'];
+      if (!ALLOWED.includes(table)) {
+        return res.status(400).json({ error: 'Invalid table: ' + table });
+      }
+      await makeRequest(
+        `${SUPABASE_URL}/rest/v1/${table}?user_id=eq.${userId}`,
         {
-          method: 'GET',
-          headers: { ...baseHeaders, 'Authorization': `Bearer ${accessToken}` }
+          method: 'DELETE',
+          headers: authHeaders(accessToken)
         }
       );
-      const data = Array.isArray(result.data) ? result.data : [];
-      return res.status(200).json({ cv: data[0]?.cv_json || null });
+      await makeRequest(
+        `${SUPABASE_URL}/rest/v1/${table}`,
+        {
+          method: 'POST',
+          headers: { ...authHeaders(accessToken), 'Prefer': 'return=minimal' }
+        },
+        { user_id: userId, data: data, saved_at: new Date().toISOString() }
+      );
+      return res.status(200).json({ success: true });
+    }
+
+    // ── Spara övningsprogress ────────────────────────────
+    if (action === 'save_progress') {
+      await makeRequest(
+        `${SUPABASE_URL}/rest/v1/ovning_progress`,
+        {
+          method: 'POST',
+          headers: { ...authHeaders(accessToken), 'Prefer': 'resolution=merge-duplicates' }
+        },
+        { user_id: userId, progress: data, updated_at: new Date().toISOString() }
+      );
+      return res.status(200).json({ success: true });
+    }
+
+    // ── Ladda all data (anropas vid inloggning) ──────────
+    if (action === 'load_all') {
+      const [cvRes, savedRes, matchedRes, progressRes, eduRes, diaryRes] = await Promise.all([
+        makeRequest(
+          `${SUPABASE_URL}/rest/v1/cvs?user_id=eq.${userId}&select=data&limit=1`,
+          { method: 'GET', headers: authHeaders(accessToken) }
+        ),
+        makeRequest(
+          `${SUPABASE_URL}/rest/v1/saved_cvs?user_id=eq.${userId}&select=data&limit=1`,
+          { method: 'GET', headers: authHeaders(accessToken) }
+        ),
+        makeRequest(
+          `${SUPABASE_URL}/rest/v1/matched_cvs?user_id=eq.${userId}&select=data&limit=1`,
+          { method: 'GET', headers: authHeaders(accessToken) }
+        ),
+        makeRequest(
+          `${SUPABASE_URL}/rest/v1/ovning_progress?user_id=eq.${userId}&select=progress&limit=1`,
+          { method: 'GET', headers: authHeaders(accessToken) }
+        ),
+        makeRequest(
+          `${SUPABASE_URL}/rest/v1/saved_edu?user_id=eq.${userId}&select=data&limit=1`,
+          { method: 'GET', headers: authHeaders(accessToken) }
+        ),
+        makeRequest(
+          `${SUPABASE_URL}/rest/v1/job_diary?user_id=eq.${userId}&select=data&limit=1`,
+          { method: 'GET', headers: authHeaders(accessToken) }
+        )
+      ]);
+
+      const pick = (res, key) => {
+        const rows = Array.isArray(res.data) ? res.data : [];
+        return rows[0]?.[key] || null;
+      };
+
+      return res.status(200).json({
+        cv:         pick(cvRes,       'data'),
+        savedCvs:   pick(savedRes,    'data'),
+        matchedCvs: pick(matchedRes,  'data'),
+        progress:   pick(progressRes, 'progress'),
+        savedEdu:   pick(eduRes,      'data'),
+        jobDiary:   pick(diaryRes,    'data')
+      });
     }
 
     return res.status(400).json({ error: 'Unknown action: ' + action });
 
   } catch (err) {
-    console.error('Error:', err.message);
+    console.error('Supabase API error:', err.message);
     return res.status(500).json({ error: err.message });
   }
 }
