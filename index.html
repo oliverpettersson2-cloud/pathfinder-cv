@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="sv"><head><meta charset="UTF-8">
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_40.html -->
+<html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
 
   <!-- PDF Generation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
+  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
   
   
   <style>
@@ -2543,7 +2544,7 @@
       </div>
       <!-- Osynlig placeholder — JS-refs kräver detta element -->
       <div id="authUserBadge" style="display: flex; position: absolute; right: 4px;">
-        <span id="authUserEmail" style="display:none;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7a1516130c1f08540a1f0e0e1f0809091514483a1d171b131654191517">[email&#160;protected]</a></span>
+        <span id="authUserEmail" style="display:none;">oliver.pettersson2@gmail.com</span>
       </div>
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
@@ -2916,7 +2917,7 @@
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
             <div class="cv-title" id="previewTitle">Studie &amp; Yrkesvägledare</div>
-            <div class="cv-contact" id="previewContact"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="701f1c190615025e00150404150203031f1e4230171d11191c5e131f1d">[email&#160;protected]</a> · 0766071757</div>
+            <div class="cv-contact" id="previewContact">oliver.pettersson2@gmail.com · 0766071757</div>
           </div>
         </div>
         <div class="cv-body">
@@ -3196,6 +3197,7 @@
   <!-- MODALER -->
   <div class="modal" id="jobModal" data-edit-idx="0">
     <div class="modal-content">
+      <div id="jobModalRef"></div>
       <div class="modal-title">Lägg till arbetsupplevelse</div>
       <input type="text" class="modal-input" id="jobTitle" placeholder="Jobbtitel">
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
@@ -3256,6 +3258,7 @@
 
   <div class="modal" id="eduModal" data-edit-idx="-1">
     <div class="modal-content">
+      <div id="eduModalRef"></div>
       <div class="modal-title">Lägg till utbildning</div>
       <input type="text" class="modal-input" id="eduDegree" placeholder="Examen/Utbildning">
       <input type="text" class="modal-input" id="eduSchoolName" placeholder="Namn på skola/Universitet">
@@ -4253,7 +4256,7 @@
     </div>
   </div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -4674,6 +4677,7 @@
 
     // ===== CUSTOM DATE PICKER =====
     let _cpickerField = null;
+    let _cpickerEditMode = false; // true = redigeringsläge → ingen auto-advance
 
     function cpickerOpen(field, title, color) {
       _cpickerField = field;
@@ -4721,9 +4725,9 @@
         eduEndMonth:   'eduEndYear'
       };
       const next = nextMap[prevField];
-      // Hoppa inte till jobEndYear automatiskt (brukar vara Pågående eller väljs manuellt)
-      // Men för utbildning: vi auto-advancear hela vägen inkl. eduEndYear
-      if (next) {
+      // I redigeringsläge: ingen auto-advance — användaren väljer bara det fält de klickade på
+      // I nytt-jobb-läge: auto-advance hela kedjan så det går snabbt
+      if (next && !_cpickerEditMode) {
         const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
         const label = labelMap[next] || 'TILL - Ar';
         const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
@@ -5006,10 +5010,10 @@
       const title = titleRaw.toLowerCase();
 
       if (!title) {
-        showToast('⚠️ Skriv in en jobbtitel först!', 'error');
+        showToast('⚠️ Skriv in en yrkestitel först!', 'error');
         return;
       }
-      showAiLoader('Matchar kompetenser...', 'AI söker rätt kompetenser för din titel');
+      showAiLoader('Matchar kompetenser...', 'AI söker rätt kompetenser för din profil');
 
       // Snabb lokal matchning först
       for (let [jobKey, skills] of Object.entries(SKILL_MATCHER)) {
@@ -5021,18 +5025,34 @@
           cvData.skills = skills;
           saveData(); renderSkills(); updatePreview();
           hideAiLoader();
-          showToast(`✨ ${skills.length} kompetenser matchade!`, 'success');
+          showToast(`✨ ${skills.length} kompetenser matchade för "${titleRaw}"!`, 'success');
           return;
         }
       }
 
-      // Inget lokalt — fråga AI
+      // Inget lokalt — bygg CV-kontext och fråga AI
+      // Samla jobbeskrivningar från CV → hjälper AI förstå bransch/kontext för vaga titlar
+      const jobContext = (cvData.jobs || [])
+        .filter(j => j.title || j.desc1)
+        .map(j => {
+          const descs = [j.desc1, j.desc2, j.desc3].filter(Boolean).join('. ');
+          return `${j.title || ''}${j.company ? ' hos ' + j.company : ''}: ${descs}`;
+        })
+        .join('\n');
+
+      const hasJobContext = jobContext.trim().length > 0;
+
       try {
         const prompt = [
-          'Generera 4 konkreta yrkeskompetenser på svenska för yrket: ' + titleRaw,
-          'Kompetenserna ska vara korta (1-3 ord), konkreta och relevanta för svensk arbetsmarknad.',
+          `Yrkestitel: ${titleRaw}`,
+          hasJobContext
+            ? `\nPersonens arbetslivserfarenhet (använd detta för att förstå bransch och specialisering):\n${jobContext}`
+            : '',
+          '\nGenerera 6 konkreta yrkeskompetenser på svenska som passar EXAKT denna persons bakgrund.',
+          'Kompetenserna ska vara korta (1–3 ord), branschspecifika och relevanta för svensk arbetsmarknad.',
+          'Undvik generiska ord som "Teamarbete" om det finns mer specifika alternativ från erfarenheten.',
           'Svara ENBART med JSON: {"kompetenser": ["k1", "k2", "k3", "k4", "k5", "k6"]}'
-        ].join('\n');
+        ].filter(Boolean).join('\n');
 
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -5050,13 +5070,14 @@
         const raw = data.content[0].text.trim().replace(/```json|```/g, '').trim();
         let parsed;
         try { parsed = JSON.parse(raw); } catch(e) { parsed = { kompetenser: [] }; }
-        const skills = (parsed.kompetenser || []).slice(0, 4);
+        const skills = (parsed.kompetenser || []).slice(0, 6);
         if (skills.length < 1) throw new Error('Inga kompetenser returnerades');
 
         cvData.skills = skills;
         saveData(); renderSkills(); updatePreview();
         hideAiLoader();
-        showToast(`✨ ${skills.length} AI-kompetenser för ${titleRaw}!`, 'success');
+        const source = hasJobContext ? 'din erfarenhet + titel' : 'yrkestitel';
+        showToast(`✨ ${skills.length} kompetenser baserade på ${source}!`, 'success');
       } catch(err) {
         hideAiLoader();
         showToast('⚠️ Kunde inte hämta kompetenser: ' + err.message, 'error');
@@ -5320,6 +5341,48 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     // Job-funktioner
+    function renderModalRef(refIds, items, currentIdx, type) {
+      const MAX_VISIBLE = 3;
+      const others = items.filter((_, i) => i !== currentIdx);
+      if (!others.length) {
+        refIds.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+        return;
+      }
+      const visible = others.slice(0, MAX_VISIBLE);
+      const hidden  = others.length - MAX_VISIBLE;
+
+      const rows = visible.map(item => {
+        let label, dates;
+        if (type === 'job') {
+          label = [item.title, item.company].filter(Boolean).join(' · ');
+          const from = [item.startMonth, item.startYear].filter(Boolean).join(' ');
+          const to   = item.endYear === 'Pågående' ? 'Pågående' : [item.endMonth, item.endYear].filter(Boolean).join(' ');
+          dates = [from, to].filter(Boolean).join(' – ');
+        } else {
+          label = [item.degree, item.school].filter(Boolean).join(' · ');
+          const from = [item.startMonth, item.startYear].filter(Boolean).join(' ');
+          const to   = item.endYear === 'Pågående' ? 'Pågående' : [item.endMonth, item.endYear].filter(Boolean).join(' ');
+          dates = [from, to].filter(Boolean).join(' – ');
+        }
+        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%;">${label || '—'}</span>
+          <span style="font-size:11px;color:rgba(62,180,137,0.85);white-space:nowrap;flex-shrink:0;">${dates || '—'}</span>
+        </div>`;
+      }).join('');
+
+      const extra = hidden > 0
+        ? `<div style="font-size:11px;color:rgba(255,255,255,0.3);padding-top:4px;">+${hidden} till</div>`
+        : '';
+
+      const label = type === 'job' ? '📋 Dina andra jobb' : '📋 Dina andra utbildningar';
+      const html = `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;margin-bottom:12px;">
+        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">${label}</div>
+        ${rows}${extra}
+      </div>`;
+
+      refIds.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = html; });
+    }
+
     function openJobModal(idx = null) {
       document.getElementById('jobTitle').value = '';
       document.getElementById('jobCompany').value = '';
@@ -5369,6 +5432,8 @@ Ge bara profiltexten, ingen förklaringtext.`;
       
       const modal = document.getElementById('jobModal');
       modal.dataset.editIdx = idx ?? -1;
+      _cpickerEditMode = (idx !== null && idx >= 0); // redigeringsläge = ingen auto-advance
+      renderModalRef(['jobModalRef','jobModalRef2'], cvData.jobs || [], idx ?? -1, 'job');
       modal.classList.add('active');
     }
 
@@ -5489,6 +5554,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
       
       const modal = document.getElementById('eduModal');
       modal.dataset.editIdx = idx ?? -1;
+      renderModalRef(['eduModalRef','eduModalRef2'], cvData.education || [], idx ?? -1, 'edu');
       modal.classList.add('active');
     }
 
@@ -7975,7 +8041,7 @@ ${styleTexts}
       <!-- Footer -->
       <div style="padding:28px 4px 8px;text-align:center;">
         <div style="font-size:10px;color:rgba(255,255,255,0.18);line-height:2;">CVmatchen av PathfinderAI</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.12);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c5ada0af85b5a4b1ada3acaba1a0b7a4acebb6a0">[email&#160;protected]</a></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.12);"><a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c5ada0af85b5a4b1ada3acaba1a0b7a4acebb6a0">[email&nbsp;protected]</a></div>
       </div>
     </div>
 
@@ -7992,7 +8058,7 @@ ${styleTexts}
         <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Personuppgiftsansvarig</div>
-          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b3dbd6d9f3c3d2c7dbd5daddd7d6c1d2da9dc0d6">[email&#160;protected]</a></p>
+          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b3dbd6d9f3c3d2c7dbd5daddd7d6c1d2da9dc0d6">[email&nbsp;protected]</a></p>
           <p style="margin:0 0 20px;">PathfinderAI är personuppgiftsansvarig för CVmatchen — appen du använder för att bygga CV, matcha mot jobb och söka utbildningar.</p>
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Vilka uppgifter samlar vi in?</div>
@@ -8035,7 +8101,7 @@ ${styleTexts}
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Kontakt</div>
           <p style="margin:0 0 4px;">För frågor om dataskydd, kontakta oss på:</p>
-          <p style="margin:0;"><a href="/cdn-cgi/l/email-protection#49212c230939283d212f20272d2c3b2820673a2c" style="color:#3eb489;"><span class="__cf_email__" data-cfemail="335b5659734352475b555a5d575641525a1d4056">[email&#160;protected]</span></a></p>
+          <p style="margin:0;"><a href="file:///C:/cdn-cgi/l/email-protection#49212c230939283d212f20272d2c3b2820673a2c" style="color:#3eb489;"><span class="__cf_email__" data-cfemail="335b5659734352475b555a5d575641525a1d4056">[email&nbsp;protected]</span></a></p>
 
         </div>
 
@@ -8437,12 +8503,12 @@ ${styleTexts}
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
+  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
   
   
   <style>
@@ -11374,12 +11440,12 @@ ${styleTexts}
       <div class="cv-document cv-template-10" id="cvDocument">
         <div class="cv-header">
           <div class="cv-header-photo" id="photoContainer" style="display: block;">
-            <img id="profilePhoto" src="file:///C:/Users/olive/Downloads/index_39.html" alt="Foto" style="display: block;">
+            <img id="profilePhoto" src="./index_files/index_39.html" alt="Foto" style="display: block;">
           </div>
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
             <div class="cv-title" id="previewTitle">Studie &amp; Yrkesvägledare</div>
-            <div class="cv-contact" id="previewContact"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f59a999c839087db85908181908786869a9bc7b59298949c99db969a98">[email&#160;protected]</a> · 0766071757</div>
+            <div class="cv-contact" id="previewContact"><a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f59a999c839087db85908181908786869a9bc7b59298949c99db969a98">[email&nbsp;protected]</a> · 0766071757</div>
           </div>
         </div>
         <div class="cv-body">
@@ -11659,6 +11725,7 @@ ${styleTexts}
   <!-- MODALER -->
   <div class="modal" id="jobModal" data-edit-idx="0">
     <div class="modal-content">
+      <div id="jobModalRef2"></div>
       <div class="modal-title">Lägg till arbetsupplevelse</div>
       <input type="text" class="modal-input" id="jobTitle" placeholder="Jobbtitel">
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
@@ -11719,6 +11786,7 @@ ${styleTexts}
 
   <div class="modal" id="eduModal" data-edit-idx="-1">
     <div class="modal-content">
+      <div id="eduModalRef2"></div>
       <div class="modal-title">Lägg till utbildning</div>
       <input type="text" class="modal-input" id="eduDegree" placeholder="Examen/Utbildning">
       <input type="text" class="modal-input" id="eduSchoolName" placeholder="Namn på skola/Universitet">
@@ -12838,7 +12906,7 @@ ${styleTexts}
   <!-- SLUT MOBIL UI -->
 
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // =====================================================
   // MOBIL JS — flik-navigation + synkronisering
   // =====================================================
@@ -18347,4 +18415,14 @@ ${styleTexts}
   function initProfilLink() {
     var link = document.getElementById('profil-edu-link');
     if (link && !link._wired) {
-      link._wired = tr
+      link._wired = true;
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (typeof mobSwitchTab === 'function') mobSwitchTab('aisyv');
+      });
+    }
+  }
+
+})(); // Stänger edu-modulens IIFE
+
+</script></div></body></html>
