@@ -2543,7 +2543,7 @@
       </div>
       <!-- Osynlig placeholder — JS-refs kräver detta element -->
       <div id="authUserBadge" style="display: flex; position: absolute; right: 4px;">
-        <span id="authUserEmail" style="display:none;">oliver.pettersson2@gmail.com</span>
+        <span id="authUserEmail" style="display:none;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7a1516130c1f08540a1f0e0e1f0809091514483a1d171b131654191517">[email&#160;protected]</a></span>
       </div>
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
@@ -2916,7 +2916,7 @@
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
             <div class="cv-title" id="previewTitle">Studie &amp; Yrkesvägledare</div>
-            <div class="cv-contact" id="previewContact">oliver.pettersson2@gmail.com · 0766071757</div>
+            <div class="cv-contact" id="previewContact"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="701f1c190615025e00150404150203031f1e4230171d11191c5e131f1d">[email&#160;protected]</a> · 0766071757</div>
           </div>
         </div>
         <div class="cv-body">
@@ -4253,7 +4253,7 @@
     </div>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -7291,7 +7291,7 @@ ${styleTexts}
 
       // Ladda CV från Supabase om inloggad
       if (userId && accessToken) {
-        loadCVFromSupabase(userId, accessToken);
+        loadAllFromSupabase(userId, accessToken);
       }
     }
 
@@ -7332,6 +7332,82 @@ ${styleTexts}
       }
     }
 
+    // ── Supabase-synk: sparar valfri tabell med debounce ──────────────────
+    const _sbDebounces = {};
+    function _sbSync(table, data) {
+      const userId = window.authUserId;
+      const accessToken = window.authAccessToken;
+      if (!userId || !accessToken) return;
+      clearTimeout(_sbDebounces[table]);
+      _sbDebounces[table] = setTimeout(async function() {
+        try {
+          const action = table === 'ovning_progress' ? 'save_progress' : 'save_table';
+          await fetch('/api/supabase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, accessToken, userId, table, data })
+          });
+        } catch(e) {
+          console.log('Supabase sync fel (' + table + '):', e.message);
+        }
+      }, 2000);
+    }
+
+    // ── Ladda all data från Supabase vid inloggning ───────────────────────
+    async function loadAllFromSupabase(userId, accessToken) {
+      try {
+        const resp = await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'load_all', accessToken, userId })
+        });
+        const result = await resp.json();
+        if (!result || result.error) return;
+
+        // CV-huvuddata
+        if (result.cv && typeof result.cv === 'object') {
+          cvData = { ...cvData, ...result.cv };
+          try { localStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
+          if (typeof updateFormFields === 'function') updateFormFields();
+          if (typeof renderJobs === 'function') { renderJobs(); renderEducation(); renderSkills(); renderLanguages(); renderLicenses(); renderCerts(); renderRefs(); }
+          if (typeof updatePreview === 'function') updatePreview();
+        }
+
+        // Sparade CV:n
+        if (Array.isArray(result.savedCvs)) {
+          try { localStorage.setItem('pathfinder_saved_cvs', JSON.stringify(result.savedCvs)); } catch(e) {}
+        }
+
+        // Matchade CV:n
+        if (Array.isArray(result.matchedCvs)) {
+          try { localStorage.setItem('pathfinder_matched_cvs', JSON.stringify(result.matchedCvs)); } catch(e) {}
+        }
+
+        // Övningsprogress
+        if (result.progress && typeof result.progress === 'object') {
+          try { localStorage.setItem('cvmatchen_ovningar_progress', JSON.stringify(result.progress)); } catch(e) {}
+        }
+
+        // Sparade utbildningar
+        if (Array.isArray(result.savedEdu)) {
+          try {
+            localStorage.setItem('pf_saved_edu', JSON.stringify(result.savedEdu));
+            localStorage.setItem('cvmatchen_edu_saved', JSON.stringify(result.savedEdu));
+          } catch(e) {}
+        }
+
+        // Jobbdagbok
+        if (Array.isArray(result.jobDiary)) {
+          try { localStorage.setItem('pathfinder_job_diary', JSON.stringify(result.jobDiary)); } catch(e) {}
+        }
+
+        console.log('✅ All data laddad från Supabase');
+        showToast('✅ Din data är laddad!', 'success');
+      } catch(e) {
+        console.log('Kunde inte ladda data från Supabase:', e.message);
+      }
+    }
+
     function authEnterApp() {
       document.getElementById('authOverlay').classList.add('hidden');
       setNavStep(2);
@@ -7348,7 +7424,7 @@ ${styleTexts}
       document.getElementById('authUserBadge').style.display = 'flex';
       setShowPhoto(cvData.showPhoto === true, false);
       if (userId && accessToken) {
-        loadCVFromSupabase(userId, accessToken);
+        loadAllFromSupabase(userId, accessToken);
       }
     }
 
@@ -7899,7 +7975,7 @@ ${styleTexts}
       <!-- Footer -->
       <div style="padding:28px 4px 8px;text-align:center;">
         <div style="font-size:10px;color:rgba(255,255,255,0.18);line-height:2;">CVmatchen av PathfinderAI</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.12);">hej@pathfinderai.se</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.12);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c5ada0af85b5a4b1ada3acaba1a0b7a4acebb6a0">[email&#160;protected]</a></div>
       </div>
     </div>
 
@@ -7916,7 +7992,7 @@ ${styleTexts}
         <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Personuppgiftsansvarig</div>
-          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: hej@pathfinderai.se</p>
+          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b3dbd6d9f3c3d2c7dbd5daddd7d6c1d2da9dc0d6">[email&#160;protected]</a></p>
           <p style="margin:0 0 20px;">PathfinderAI är personuppgiftsansvarig för CVmatchen — appen du använder för att bygga CV, matcha mot jobb och söka utbildningar.</p>
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Vilka uppgifter samlar vi in?</div>
@@ -7945,7 +8021,7 @@ ${styleTexts}
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">5. Lagring och radering</div>
           <p style="margin:0 0 8px;">Ditt konto och dina uppgifter lagras så länge du använder tjänsten. Du kan när som helst radera ditt konto under <em>Avtal och inställningar</em> i Profil-fliken — all data raderas då omedelbart.</p>
-          <p style="margin:0 0 20px;">CV-data sparas lokalt i din webbläsare (localStorage) och rensas automatiskt om du rensar webbläsardata.</p>
+          <p style="margin:0 0 20px;">CV-data sparas säkert i molnet kopplat till ditt konto. Du kan logga in från vilken enhet som helst och se din data.</p>
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">6. Dina rättigheter (GDPR)</div>
           <p style="margin:0 0 8px;">Enligt GDPR har du rätt att:</p>
@@ -7959,7 +8035,7 @@ ${styleTexts}
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Kontakt</div>
           <p style="margin:0 0 4px;">För frågor om dataskydd, kontakta oss på:</p>
-          <p style="margin:0;"><a href="mailto:hej@pathfinderai.se" style="color:#3eb489;">hej@pathfinderai.se</a></p>
+          <p style="margin:0;"><a href="/cdn-cgi/l/email-protection#49212c230939283d212f20272d2c3b2820673a2c" style="color:#3eb489;"><span class="__cf_email__" data-cfemail="335b5659734352475b555a5d575641525a1d4056">[email&#160;protected]</span></a></p>
 
         </div>
 
@@ -8365,7 +8441,7 @@ ${styleTexts}
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   
@@ -11303,7 +11379,7 @@ ${styleTexts}
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
             <div class="cv-title" id="previewTitle">Studie &amp; Yrkesvägledare</div>
-            <div class="cv-contact" id="previewContact">oliver.pettersson2@gmail.com · 0766071757</div>
+            <div class="cv-contact" id="previewContact"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f59a999c839087db85908181908786869a9bc7b59298949c99db969a98">[email&#160;protected]</a> · 0766071757</div>
           </div>
         </div>
         <div class="cv-body">
@@ -12762,7 +12838,7 @@ ${styleTexts}
   <!-- SLUT MOBIL UI -->
 
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // =====================================================
   // MOBIL JS — flik-navigation + synkronisering
   // =====================================================
@@ -13410,10 +13486,12 @@ ${styleTexts}
       list.unshift(entry);
       if (list.length > 50) list = list.slice(0, 50);
       localStorage.setItem(JOB_DIARY_KEY, JSON.stringify(list));
+      if (typeof _sbSync === 'function') _sbSync('job_diary', list);
     } catch(e) {}
   }
   function mobPutMatchedCVs(list) {
     try { localStorage.setItem(MATCHED_CVS_KEY, JSON.stringify(list)); } catch(e) {}
+    if (typeof _sbSync === 'function') _sbSync('matched_cvs', list);
   }
   function mobDeleteMatchedCV(id) {
     mobPutMatchedCVs(mobGetMatchedCVs().filter(c => c.id !== id));
@@ -13485,6 +13563,7 @@ ${styleTexts}
 
   function mobPutSavedCVs(list) {
     try { localStorage.setItem(SAVED_CVS_KEY, JSON.stringify(list)); } catch(e) {}
+    if (typeof _sbSync === 'function') _sbSync('saved_cvs', list);
   }
 
   function mobSaveCVToList() {
@@ -16219,6 +16298,7 @@ ${styleTexts}
   }
   function saveProgress(p) {
     try { localStorage.setItem(OVN_KEY, JSON.stringify(p)); } catch(e) {}
+    if (typeof _sbSync === 'function') _sbSync('ovning_progress', p);
   }
 
   // ── Moduldata ──
@@ -17788,6 +17868,8 @@ ${styleTexts}
   }
   function setSaved(arr) {
     try { localStorage.setItem(EDU_SAVED_KEY, JSON.stringify(arr)); } catch(e) {}
+    try { localStorage.setItem('pf_saved_edu', JSON.stringify(arr)); } catch(e) {}
+    if (typeof _sbSync === 'function') _sbSync('saved_edu', arr);
     updateSavedBadge();
   }
   function toggleSaved(prog) {
@@ -18265,33 +18347,4 @@ ${styleTexts}
   function initProfilLink() {
     var link = document.getElementById('profil-edu-link');
     if (link && !link._wired) {
-      link._wired = true;
-      link.addEventListener('click', function() {
-        // Byt till Utbilda dig-fliken och visa sparade
-        if (typeof mobSwitchTab === 'function') mobSwitchTab('aisyv');
-        setTimeout(function() { showChat('saved'); }, 100);
-      });
-    }
-    // Uppdatera räknaren
-    var n = getSaved().length;
-    var count = document.getElementById('profil-edu-count');
-    if (count) { count.textContent = n > 0 ? '(' + n + ')' : ''; }
-    var count2 = document.getElementById('profil-edu-count2');
-    if (count2) { count2.textContent = n > 0 ? n : '›'; }
-  }
-
-  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-
-  // Kör profil-länk-init lite senare (profil-panelen kanske inte finns än)
-  window.addEventListener('load', initProfilLink);
-  // Uppdatera räknaren varje gång profil-fliken öppnas
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('[data-tab="export"], #tabBtn-export, [onclick*="export"]')) {
-      setTimeout(initProfilLink, 100);
-    }
-  });
-
-})();
-</script>
-</div></body></html>
+      link._wired = tr
