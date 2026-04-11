@@ -6395,7 +6395,7 @@ ${styleTexts}
       if (!window.jspdf) throw new Error('PDF-biblioteket ej laddat');
       const { jsPDF } = window.jspdf;
 
-      const SCALE        = 2;
+      const SCALE        = 1.7;
       const A4_PX_W      = 920;   // Bredare rendering → mindre text i PDF
       const MARGIN_MM    = 8;
       const PAGE_W_MM    = 210;
@@ -6494,7 +6494,7 @@ ${styleTexts}
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvasW, srcH);
           ctx.drawImage(fullCanvas, 0, srcTop, canvasW, srcH, 0, 0, canvasW, srcH);
-          const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+          const imgData = pageCanvas.toDataURL('image/jpeg', 0.88);
           if (p > 0) pdf.addPage();
           const sliceH_mm = (srcH / SCALE) / PX_PER_MM;
           pdf.addImage(imgData, 'JPEG', MARGIN_MM, MARGIN_MM, imgWidthMm, sliceH_mm);
