@@ -2466,7 +2466,7 @@
 <body>
 
   <!-- ===== AUTENTISERINGSOVERLAY ===== -->
-  <div id="authOverlay">
+  <div id="authOverlay" class="hidden">
     <div class="auth-card">
       <div class="auth-logo"><span style="color:#f0c040;">CV</span>matchen</div>
       <div class="auth-tagline">Gör ett CV med AI på 15 minuter, en kvart.</div>
@@ -7484,7 +7484,6 @@ ${styleTexts}
       // Direkt till appen utan overlay/bekräftelseskärm
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
-      document.getElementById('authOverlay').classList.add('hidden'); // dölj overlay — session bekräftad
       setNavStep(2);
       const emailEl = document.getElementById('authUserEmail');
       if (emailEl) emailEl.textContent = email;
@@ -7644,7 +7643,14 @@ ${styleTexts}
     // Init
     document.addEventListener('DOMContentLoaded', () => {
       loadData();
-      authInit();
+      try {
+        authInit();
+      } catch(e) {
+        // Säkerhetsnet: om authInit kraschar, visa inloggningsskärmen istället för att släppa in användaren
+        console.error('authInit fel:', e);
+        const overlay = document.getElementById('authOverlay');
+        if (overlay) overlay.classList.remove('hidden');
+      }
     });
   </script>
 
@@ -10995,7 +11001,7 @@ ${styleTexts}
 
 
   <!-- ===== AUTENTISERINGSOVERLAY ===== -->
-  <div id="authOverlay">
+  <div id="authOverlay" class="hidden">
     <div class="auth-card">
       <div class="auth-logo"><span style="color:#f0c040;">CV</span>matchen</div>
       <div class="auth-tagline">Gör ett CV med AI på 15 minuter, en kvart.</div>
