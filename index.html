@@ -14651,27 +14651,105 @@ ${styleTexts}
       mobRenderSavedCVs();
     }
   }
+  // Bygger annons-PDF som blob (utan dela/spara)
+  async function _buildAnnonsPdfBlob(entry) {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageW = 210, margin = 20, maxW = pageW - margin * 2;
+    let y = margin;
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(18); pdf.setTextColor(30, 34, 64);
+    const titleLines = pdf.splitTextToSize(entry.title || 'Annonsinfo', maxW);
+    pdf.text(titleLines, margin, y); y += titleLines.length * 8 + 4;
+    if (entry.company) {
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(12); pdf.setTextColor(100, 100, 120);
+      pdf.text('hos ' + entry.company, margin, y); y += 7;
+    }
+    pdf.setDrawColor(62, 180, 137); pdf.setLineWidth(0.8);
+    pdf.line(margin, y, pageW - margin, y); y += 8;
+    if (entry.adText) {
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(11); pdf.setTextColor(62, 180, 137);
+      pdf.text('Annonstext', margin, y); y += 6;
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10); pdf.setTextColor(60, 60, 70);
+      const adLines = pdf.splitTextToSize(entry.adText.substring(0, 2000), maxW);
+      adLines.forEach(function(line) {
+        if (y > 270) { pdf.addPage(); y = margin; }
+        pdf.text(line, margin, y); y += 5.5;
+      }); y += 6;
+    }
+    if (entry.jobUrl) {
+      if (y > 260) { pdf.addPage(); y = margin; }
+      pdf.setDrawColor(200, 200, 210); pdf.setLineWidth(0.3);
+      pdf.line(margin, y, pageW - margin, y); y += 7;
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.setTextColor(62, 180, 137);
+      pdf.text('Länk till annonsen:', margin, y); y += 5;
+      pdf.setFont('helvetica', 'normal'); pdf.setTextColor(30, 100, 200);
+      pdf.textWithLink(entry.jobUrl, margin, y, { url: entry.jobUrl }); y += 8;
+    }
+    pdf.setFont('helvetica', 'italic'); pdf.setFontSize(8); pdf.setTextColor(160, 160, 170);
+    pdf.text('Skapad med CVmatchen av PathfinderAI', margin, 287);
+    return pdf.output('blob');
+  }
+
   async function mobExportMatchedPDF(id) {
     const entry = mobGetMatchedCVs().find(c => c.id === id);
     if (!entry) return;
-    // Ladda CV-data utan att byta vy
+
     const prevData = JSON.parse(JSON.stringify(cvData));
     Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
     updatePreview();
-    // Sätt annonstext globalt
-    window._activeMatchedAdText = entry.adText || '';
-    window._activeMatchedAdTitle = entry.title || '';
-    window._mobAdPdfForced = true; // override toggle
-    if (typeof showAiLoader === 'function') showAiLoader('Skapar PDF…', 'Genererar ditt matchade CV som PDF-fil');
-    else showToast('⏳ Skapar PDF...', 'info');
+    // CV-PDF utan annonstext
+    window._activeMatchedAdText = '';
+    window._activeMatchedAdTitle = '';
+    window._mobAdPdfForced = false;
+
+    if (typeof showAiLoader === 'function') showAiLoader('Skapar PDFer…', 'Genererar CV och annons som separata filer');
+    else showToast('⏳ Skapar PDFer...', 'info');
+
     try {
-      await mobGenerateAndSharePDF();
+      // 1. CV-PDF
+      let cvBlob, cvFileName;
+      try {
+        ({ blob: cvBlob, fileName: cvFileName } = await _generateServerPDF());
+      } catch(e) {
+        const r = await _generateClientPDF();
+        cvBlob = r.blob; cvFileName = r.fileName;
+      }
+
+      // 2. Annons-PDF (bara om det finns annonsdata)
+      const hasAnnons = true; // alltid separata filer
+      let annonsBlob = null, annonsFileName = null;
+      if (hasAnnons && window.jspdf) {
+        const safeName = (entry.title || 'annons').replace(/[^a-z0-9åäö]/gi, '_').substring(0, 40);
+        annonsFileName = 'Annons_' + safeName + '.pdf';
+        annonsBlob = await _buildAnnonsPdfBlob(entry);
+      }
+
+      // 3. Dela eller ladda ner
+      const cvFile = new File([cvBlob], cvFileName, { type: 'application/pdf' });
+      const filesToShare = [cvFile];
+      if (annonsBlob) filesToShare.push(new File([annonsBlob], annonsFileName, { type: 'application/pdf' }));
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: filesToShare })) {
+        await navigator.share({ files: filesToShare, title: 'Mitt CV — ' + (cvData.name || '') });
+        showToast('✅ Delat!', 'success');
+      } else {
+        // Fallback: ladda ner båda
+        const dl = function(blob, name) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = name;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+        };
+        dl(cvBlob, cvFileName);
+        if (annonsBlob) setTimeout(function() { dl(annonsBlob, annonsFileName); }, 500);
+        showToast('📄 PDFer sparade!', 'success');
+      }
+    } catch(e) {
+      if (e.name !== 'AbortError') showToast('❌ Fel: ' + e.message, 'error');
     } finally {
-      // Återställ cvData
       Object.assign(cvData, prevData);
       updatePreview();
-      window._activeMatchedAdText = '';
-      window._mobAdPdfForced = false;
       if (typeof hideAiLoader === 'function') hideAiLoader();
     }
   }
@@ -15779,7 +15857,7 @@ ${styleTexts}
               '</div>' +
               // PDF button
               '<button onclick="window._exportMatchedWithReminder(\'' + sid + '\')" ' +
-              'style="width:100%;padding:10px;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);color:#3eb489;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;">📄 Spara CV som PDF</button>' +
+              'style="width:100%;padding:10px;background:rgba(62,180,137,0.12);border:1.5px solid rgba(62,180,137,0.35);color:#3eb489;font-size:12px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;margin-bottom:8px;">📄 Spara/Dela CV & Annons</button>' +
               // Decision buttons
               '<div style="display:flex;gap:7px;">' +
               '<button onclick="window._matchMarkSokt(\'' + sid + '\')" ' +
