@@ -13668,7 +13668,7 @@ ${styleTexts}
               <button onclick="mobDeleteMatchedCV('${entry.id}')" style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0;">✕</button>
             </div>
             <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
-              <button onclick="mobExportMatchedPDF('${entry.id}')" style="flex:1;padding:9px 12px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">📄 Spara / dela PDF</button>
+              <button onclick="mobExportMatchedPDF('${entry.id}')" style="flex:1;padding:9px 12px;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">📄 Dela PDF</button>
               ${hasAdText || hasUrl ? `<button onclick="mobExportAnnonsePDF('${entry.id}')" style="padding:9px 12px;background:rgba(62,180,137,0.12);border:1px solid rgba(62,180,137,0.3);color:#3eb489;font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">📋 Annons PDF</button>` : ''}
               ${hasAdText ? `<button onclick="mobToggleMatchedAdText('${entry.id}')" id="matchedAdBtn_${entry.id}" style="padding:9px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;cursor:pointer;border-radius:10px;font-family:inherit;">👁</button>` : ''}
               ${hasUrl ? `<a href="${entry.jobUrl}" target="_blank" rel="noopener" style="padding:9px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:12px;font-weight:600;border-radius:10px;text-decoration:none;display:inline-block;">↗</a>` : ''}
@@ -15725,7 +15725,7 @@ ${styleTexts}
               '<div style="font-size:11px;color:rgba(255,255,255,0.35);">' + rd(cv.savedAt) + '</div></div>' +
               '<div style="display:flex;gap:6px;flex-shrink:0;">' +
               '<button onclick="if(typeof mobExportSavedCVPDF===\'function\') mobExportSavedCVPDF(\'' + cv.id + '\')" ' +
-              'style="padding:9px 14px;background:rgba(240,192,64,0.12);border:1.5px solid rgba(240,192,64,0.35);color:#f0c040;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">📤 Spara / dela PDF</button>' +
+              'style="padding:9px 14px;background:rgba(240,192,64,0.12);border:1.5px solid rgba(240,192,64,0.35);color:#f0c040;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">📤 Dela PDF</button>' +
               '<button onclick="if(typeof mobShowSavedCVDetail===\'function\') mobShowSavedCVDetail(\'' + cv.id + '\')" ' +
               'style="padding:7px 14px;background:#3eb489;border:none;color:#fff;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Öppna</button>' +
               '</div></div>';
@@ -16293,19 +16293,6 @@ ${styleTexts}
   // ── Veckodagsstruktur ──
 
   // ── Tisdag: Moduler ──
-  // Exponera % för profilpanelen — exakt samma formel som portalen
-  window.getOvningsPct = function() {
-    try {
-      var p = JSON.parse(localStorage.getItem(OVN_KEY) || '{}');
-      var total = 0, done = 0;
-      MODULES.forEach(function(mod) {
-        var mp = p[mod.id] || {};
-        total += mod.lessons.length + 2;
-        done += Math.min(mp.lessonsRead||0, mod.lessons.length) + (mp.exerciseDone?1:0) + (mp.quizDone?1:0);
-      });
-      return total > 0 ? Math.round((done/total)*100) : 0;
-    } catch(e) { return 0; }
-  };
   const TISDAG_MODULES = [
     {
       id: 'tis1',
@@ -16901,6 +16888,22 @@ ${styleTexts}
     { id: 'torsdag', label: 'Torsdag', short: 'Tor', modules: (typeof TORSDAG_MODULES !== 'undefined' ? TORSDAG_MODULES : []), theme: '#f87171' },
     { id: 'fredag',  label: 'Fredag',  short: 'Fre', modules: (typeof FREDAG_MODULES  !== 'undefined' ? FREDAG_MODULES  : []), theme: '#38bdf8' }
   ];
+
+  // Exponera % för profilpanelen — identisk med portalens v1Pct
+  window.getOvningsPct = function() {
+    try {
+      var p = JSON.parse(localStorage.getItem(OVN_KEY) || '{}');
+      var total = 0, done = 0;
+      DAYS.forEach(function(day) {
+        day.modules.forEach(function(mod) {
+          var mp = p[mod.id] || {};
+          total += mod.lessons.length + 2;
+          done += Math.min(mp.lessonsRead||0, mod.lessons.length) + (mp.exerciseDone?1:0) + (mp.quizDone?1:0);
+        });
+      });
+      return total > 0 ? Math.round((done/total)*100) : 0;
+    } catch(e) { return 0; }
+  };
 
   // Aktiv dag per vecka
   var _ovnActiveDay = { v1: 'mandag', v2: 'mandag' };
