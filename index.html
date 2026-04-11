@@ -15678,14 +15678,8 @@ ${styleTexts}
       try {
         var ovnP = JSON.parse(localStorage.getItem('cvmatchen_ovningar_progress') || '{}');
         var ovnTotal = 0, ovnDone = 0;
-        var _allMods = [].concat(
-          (typeof MODULES !== 'undefined' ? MODULES : []),
-          (typeof TISDAG_MODULES !== 'undefined' ? TISDAG_MODULES : []),
-          (typeof ONSDAG_MODULES !== 'undefined' ? ONSDAG_MODULES : []),
-          (typeof TORSDAG_MODULES !== 'undefined' ? TORSDAG_MODULES : []),
-          (typeof FREDAG_MODULES !== 'undefined' ? FREDAG_MODULES : [])
-        );
-        _allMods.forEach(function(mod) {
+        var _v1Mods = (typeof MODULES !== 'undefined' ? MODULES : []);
+        _v1Mods.forEach(function(mod) {
           var mp = ovnP[mod.id] || {};
           ovnTotal += (mod.lessons ? mod.lessons.length : 0) + 2;
           ovnDone += Math.min(mp.lessonsRead||0, mod.lessons ? mod.lessons.length : 0) + (mp.exerciseDone?1:0) + (mp.quizDone?1:0);
