@@ -13643,7 +13643,7 @@ ${styleTexts}
       html += `
         <div style="margin:20px 0 14px;display:flex;align-items:center;gap:10px;">
           <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(62,180,137,0.6);white-space:nowrap;">Matchade CV (${mlist.length})</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(62,180,137,0.6);white-space:nowrap;">Mina matchningar (${mlist.length})</div>
           <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
         </div>`;
 
@@ -15747,7 +15747,7 @@ ${styleTexts}
       }
 
       if (s === 'matched') {
-        if (!matched.length) { html += empty('Inga aktiva matcher', 'Gå till Matcha och matcha ditt CV mot ett jobb — matcher försvinner efter 14 dagar'); }
+        if (!matched.length) { html += empty('Inga matchningar än', 'Gå till Matcha och matcha ditt CV mot ett jobb — matchningar försvinner efter 14 dagar'); }
         else {
           matched.sort((a, b) => b.savedAt - a.savedAt).forEach(function(cv, idx) {
             const sid = cv.id.replace(/'/g, "\\'");
