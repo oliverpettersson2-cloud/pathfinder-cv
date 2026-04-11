@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-
-<html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="sv"><head><meta charset="UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
@@ -8,7 +7,6 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
 
-  <!-- PDF Generation Libraries -->
   <!-- PDF Generation Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -8021,7 +8019,7 @@ ${styleTexts}
           </div>
 
           <!-- Övningar -->
-          <div onclick="mobSwitchTab('ovningar')" style="background:rgba(240,192,64,0.07);border:1.5px solid rgba(240,192,64,0.2);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
+          <div onclick="mobSwitchTab(&#39;ovningar&#39;)" style="background:rgba(240,192,64,0.07);border:1.5px solid rgba(240,192,64,0.2);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
             <div style="width:48px;height:48px;border-radius:14px;background:rgba(240,192,64,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🏋️</div>
             <div style="flex:1;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -8246,7 +8244,7 @@ ${styleTexts}
 
 
     <!-- UTBILDNINGS-MODAL -->
-    <div id="edu-link-modal" onclick="if(event.target===this)this.style.display='none';" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:24px;">
+    <div id="edu-link-modal" onclick="if(event.target===this)this.style.display=&#39;none&#39;;" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:24px;">
       <div style="background:#1e2545;border:1.5px solid rgba(62,180,137,0.3);border-radius:20px;padding:24px 20px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
         <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:6px;">Du lämnar appen</div>
         <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:18px;" id="edu-modal-site"></div>
@@ -8255,7 +8253,7 @@ ${styleTexts}
           <div style="font-size:15px;font-weight:900;color:#3eb489;" id="edu-modal-namn"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <button onclick="document.getElementById('edu-link-modal').style.display='none';" style="padding:13px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Stanna kvar</button>
+          <button onclick="document.getElementById(&#39;edu-link-modal&#39;).style.display=&#39;none&#39;;" style="padding:13px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Stanna kvar</button>
           <button id="edu-modal-go" style="padding:13px;background:#3eb489;border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Gå till sidan →</button>
         </div>
       </div>
@@ -8367,8 +8365,6 @@ ${styleTexts}
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
 
-  <!-- PDF Generation Libraries -->
-  <!-- PDF Generation Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
@@ -11302,7 +11298,7 @@ ${styleTexts}
       <div class="cv-document cv-template-10" id="cvDocument">
         <div class="cv-header">
           <div class="cv-header-photo" id="photoContainer" style="display: block;">
-            <img id="profilePhoto" src="" alt="Foto" style="display: block;">
+            <img id="profilePhoto" src="file:///C:/Users/olive/Downloads/index_39.html" alt="Foto" style="display: block;">
           </div>
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
@@ -15682,13 +15678,18 @@ ${styleTexts}
       try {
         var ovnP = JSON.parse(localStorage.getItem('cvmatchen_ovningar_progress') || '{}');
         var ovnTotal = 0, ovnDone = 0;
-        if (typeof MODULES !== 'undefined') {
-          MODULES.forEach(function(mod) {
-            var mp = ovnP[mod.id] || {};
-            ovnTotal += (mod.lessons ? mod.lessons.length : 0) + 2;
-            ovnDone += Math.min(mp.lessonsRead||0, mod.lessons ? mod.lessons.length : 0) + (mp.exerciseDone?1:0) + (mp.quizDone?1:0);
-          });
-        }
+        var _allMods = [].concat(
+          (typeof MODULES !== 'undefined' ? MODULES : []),
+          (typeof TISDAG_MODULES !== 'undefined' ? TISDAG_MODULES : []),
+          (typeof ONSDAG_MODULES !== 'undefined' ? ONSDAG_MODULES : []),
+          (typeof TORSDAG_MODULES !== 'undefined' ? TORSDAG_MODULES : []),
+          (typeof FREDAG_MODULES !== 'undefined' ? FREDAG_MODULES : [])
+        );
+        _allMods.forEach(function(mod) {
+          var mp = ovnP[mod.id] || {};
+          ovnTotal += (mod.lessons ? mod.lessons.length : 0) + 2;
+          ovnDone += Math.min(mp.lessonsRead||0, mod.lessons ? mod.lessons.length : 0) + (mp.exerciseDone?1:0) + (mp.quizDone?1:0);
+        });
         ovnPct = ovnTotal > 0 ? Math.round((ovnDone/ovnTotal)*100) : 0;
       } catch(e) {}
       var eduSaved = [];
