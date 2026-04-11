@@ -14081,6 +14081,19 @@ ${styleTexts}
     return out.trim() || clean.substring(0, 110) + '…';
   }
 
+  function _isAlreadyMatched(hit) {
+    if (typeof mobGetMatchedCVs !== 'function') return false;
+    const hitId   = (hit && hit.id) || '';
+    const title   = (hit && hit.headline || '').toLowerCase().trim();
+    const company = (hit && hit.employer && hit.employer.name || '').toLowerCase().trim();
+    return mobGetMatchedCVs().some(function(m) {
+      if (hitId && m._hit && m._hit.id === hitId) return true;
+      const mTitle = (m.title || '').replace('Matchat CV – ', '').replace('Matchat CV - ', '').toLowerCase().trim();
+      const mComp  = (m.company || '').toLowerCase().trim();
+      return mTitle === title && (!mComp || !company || mComp === company);
+    });
+  }
+
   function matchaBuildCard(hit) {
     const title = hit.headline || '';
     const company = (hit.employer && hit.employer.name) || '';
@@ -14106,22 +14119,6 @@ ${styleTexts}
     card.style.cssText = 'padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:6px;cursor:pointer;transition:background 0.15s,border-color 0.15s;';
     card.onmouseover = () => { card.style.background = 'rgba(62,180,137,0.07)'; card.style.borderColor = 'rgba(62,180,137,0.2)'; };
     card.onmouseout  = () => { card.style.background = 'rgba(255,255,255,0.04)'; card.style.borderColor = 'rgba(255,255,255,0.07)'; };
-  // Kolla om ett jobb (hit) redan är matchat — ID-match primärt, titel-match som fallback
-  function _isAlreadyMatched(hit) {
-    if (typeof mobGetMatchedCVs !== 'function') return false;
-    const hitId   = (hit && hit.id) || '';
-    const title   = (hit && hit.headline || '').toLowerCase().trim();
-    const company = (hit && hit.employer && hit.employer.name || '').toLowerCase().trim();
-    return mobGetMatchedCVs().some(function(m) {
-      // 1. Exakt annons-ID (pålitligast)
-      if (hitId && m._hit && m._hit.id === hitId) return true;
-      // 2. Titel + företag som fallback för äldre matchningar
-      const mTitle = (m.title || '').replace('Matchat CV – ', '').replace('Matchat CV - ', '').toLowerCase().trim();
-      const mComp  = (m.company || '').toLowerCase().trim();
-      return mTitle === title && (!mComp || !company || mComp === company);
-    });
-  }
-
     // Kolla om detta jobb redan är matchat i Profil-listan
     const alreadyMatched = _isAlreadyMatched(hit);
 
