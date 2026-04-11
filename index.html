@@ -7960,9 +7960,13 @@ ${styleTexts}
 
     <!-- FLIK 4: Förhandsgranska -->
     <div class="mob-panel" id="mobPanel-forhandsgranska" style="background:#f0ede6;padding:16px;">
-      <div style="margin-bottom:14px;">
-        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;display:block;margin-bottom:6px;">Design-mall</label>
-        <select id="mobTemplateSelect" onchange="mobSelectTemplateFromPreview(this.value)" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.15);background:#fff;font-size:14px;font-family:inherit;color:#1a1a2e;cursor:pointer;">
+      <div style="margin-bottom:14px;background:linear-gradient(135deg,rgba(62,180,137,0.1),rgba(124,58,237,0.06));border:2px solid rgba(62,180,137,0.4);border-radius:14px;padding:12px 14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:18px;">&#127912;</span>
+          <span style="font-size:13px;font-weight:800;color:#1a1a2e;letter-spacing:0.3px;">Design-mallar</span>
+          <span style="font-size:10px;font-weight:700;background:#3eb489;color:#fff;border-radius:20px;padding:2px 7px;margin-left:auto;">10 st</span>
+        </div>
+        <select id="mobTemplateSelect" onchange="mobSelectTemplateFromPreview(this.value)" style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid rgba(62,180,137,0.4);background:#fff;font-size:14px;font-weight:600;font-family:inherit;color:#1a1a2e;cursor:pointer;">
           <option value="classic">Klassisk</option>
           <option value="minimal">Minimal</option>
           <option value="template-3">Modern Bla/Gron</option>
