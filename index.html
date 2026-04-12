@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_40.html -->
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_41.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,8 +9,8 @@
   <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
 
   <!-- PDF Generation Libraries -->
-  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
-  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
+  <script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
+  <script src="file:///C:/Users/olive/Downloads/index_files/html2canvas.min.js.ladda%20ned"></script>
   
   
   <style>
@@ -2473,7 +2473,7 @@
       <div class="auth-tagline">Vi matchar ditt CV mot utbildning &amp; jobbannonser.</div>
 
       <!-- STEG 1: E-postformular -->
-      <div id="authStep1" class="auth-step">
+      <div id="authStep1" class="auth-step active">
         <div class="auth-title">Logga in eller skapa konto</div>
         <div class="auth-subtitle">Ange din e-postadress så skickar vi en 6-siffrig kod.</div>
         <input type="email" id="authEmail" class="auth-input" placeholder="din@epost.se" autocomplete="email" inputmode="email">
@@ -2508,7 +2508,7 @@
       </div>
 
       <!-- STEG 3: Inloggad -->
-      <div id="authStep3" class="auth-step active">
+      <div id="authStep3" class="auth-step">
         <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
         <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1b7477726d7e69356b7e6f6f7e6968687475295b7c767a727735787476">[email&nbsp;protected]</a></div>
@@ -3197,8 +3197,7 @@
   <!-- MODALER -->
   <div class="modal" id="jobModal" data-edit-idx="0">
     <div class="modal-content">
-      <div id="jobModalRef"></div>
-      <div class="modal-title">Arbetslivserfarenhet</div>
+      <div class="modal-title">Lägg till arbetsupplevelse</div>
       <input type="text" class="modal-input" id="jobTitle" placeholder="Jobbtitel">
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
@@ -3258,7 +3257,6 @@
 
   <div class="modal" id="eduModal" data-edit-idx="-1">
     <div class="modal-content">
-      <div id="eduModalRef"></div>
       <div class="modal-title">Lägg till utbildning</div>
       <input type="text" class="modal-input" id="eduDegree" placeholder="Examen/Utbildning">
       <input type="text" class="modal-input" id="eduSchoolName" placeholder="Namn på skola/Universitet">
@@ -4677,7 +4675,6 @@
 
     // ===== CUSTOM DATE PICKER =====
     let _cpickerField = null;
-    let _cpickerEditMode = false; // true = redigeringsläge → ingen auto-advance
 
     function cpickerOpen(field, title, color) {
       _cpickerField = field;
@@ -4725,9 +4722,9 @@
         eduEndMonth:   'eduEndYear'
       };
       const next = nextMap[prevField];
-      // I redigeringsläge: ingen auto-advance — användaren väljer bara det fält de klickade på
-      // I nytt-jobb-läge: auto-advance hela kedjan så det går snabbt
-      if (next && !_cpickerEditMode) {
+      // Hoppa inte till jobEndYear automatiskt (brukar vara Pågående eller väljs manuellt)
+      // Men för utbildning: vi auto-advancear hela vägen inkl. eduEndYear
+      if (next) {
         const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
         const label = labelMap[next] || 'TILL - Ar';
         const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
@@ -5010,10 +5007,10 @@
       const title = titleRaw.toLowerCase();
 
       if (!title) {
-        showToast('⚠️ Skriv in en yrkestitel först!', 'error');
+        showToast('⚠️ Skriv in en jobbtitel först!', 'error');
         return;
       }
-      showAiLoader('Matchar kompetenser...', 'AI söker rätt kompetenser för din profil');
+      showAiLoader('Matchar kompetenser...', 'AI söker rätt kompetenser för din titel');
 
       // Snabb lokal matchning först
       for (let [jobKey, skills] of Object.entries(SKILL_MATCHER)) {
@@ -5025,34 +5022,18 @@
           cvData.skills = skills;
           saveData(); renderSkills(); updatePreview();
           hideAiLoader();
-          showToast(`✨ ${skills.length} kompetenser matchade för "${titleRaw}"!`, 'success');
+          showToast(`✨ ${skills.length} kompetenser matchade!`, 'success');
           return;
         }
       }
 
-      // Inget lokalt — bygg CV-kontext och fråga AI
-      // Samla jobbeskrivningar från CV → hjälper AI förstå bransch/kontext för vaga titlar
-      const jobContext = (cvData.jobs || [])
-        .filter(j => j.title || j.desc1)
-        .map(j => {
-          const descs = [j.desc1, j.desc2, j.desc3].filter(Boolean).join('. ');
-          return `${j.title || ''}${j.company ? ' hos ' + j.company : ''}: ${descs}`;
-        })
-        .join('\n');
-
-      const hasJobContext = jobContext.trim().length > 0;
-
+      // Inget lokalt — fråga AI
       try {
         const prompt = [
-          `Yrkestitel: ${titleRaw}`,
-          hasJobContext
-            ? `\nPersonens arbetslivserfarenhet (använd detta för att förstå bransch och specialisering):\n${jobContext}`
-            : '',
-          '\nGenerera 6 konkreta yrkeskompetenser på svenska som passar EXAKT denna persons bakgrund.',
-          'Kompetenserna ska vara korta (1–3 ord), branschspecifika och relevanta för svensk arbetsmarknad.',
-          'Undvik generiska ord som "Teamarbete" om det finns mer specifika alternativ från erfarenheten.',
+          'Generera 4 konkreta yrkeskompetenser på svenska för yrket: ' + titleRaw,
+          'Kompetenserna ska vara korta (1-3 ord), konkreta och relevanta för svensk arbetsmarknad.',
           'Svara ENBART med JSON: {"kompetenser": ["k1", "k2", "k3", "k4", "k5", "k6"]}'
-        ].filter(Boolean).join('\n');
+        ].join('\n');
 
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -5070,14 +5051,13 @@
         const raw = data.content[0].text.trim().replace(/```json|```/g, '').trim();
         let parsed;
         try { parsed = JSON.parse(raw); } catch(e) { parsed = { kompetenser: [] }; }
-        const skills = (parsed.kompetenser || []).slice(0, 6);
+        const skills = (parsed.kompetenser || []).slice(0, 4);
         if (skills.length < 1) throw new Error('Inga kompetenser returnerades');
 
         cvData.skills = skills;
         saveData(); renderSkills(); updatePreview();
         hideAiLoader();
-        const source = hasJobContext ? 'din erfarenhet + titel' : 'yrkestitel';
-        showToast(`✨ ${skills.length} kompetenser baserade på ${source}!`, 'success');
+        showToast(`✨ ${skills.length} AI-kompetenser för ${titleRaw}!`, 'success');
       } catch(err) {
         hideAiLoader();
         showToast('⚠️ Kunde inte hämta kompetenser: ' + err.message, 'error');
@@ -5341,48 +5321,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
     }
 
     // Job-funktioner
-    function renderModalRef(refIds, items, currentIdx, type) {
-      const MAX_VISIBLE = 3;
-      const others = items.filter((_, i) => i !== currentIdx);
-      if (!others.length) {
-        refIds.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
-        return;
-      }
-      const visible = others.slice(0, MAX_VISIBLE);
-      const hidden  = others.length - MAX_VISIBLE;
-
-      const rows = visible.map(item => {
-        let label, dates;
-        if (type === 'job') {
-          label = [item.title, item.company].filter(Boolean).join(' · ');
-          const from = [item.startMonth, item.startYear].filter(Boolean).join(' ');
-          const to   = item.endYear === 'Pågående' ? 'Pågående' : [item.endMonth, item.endYear].filter(Boolean).join(' ');
-          dates = [from, to].filter(Boolean).join(' – ');
-        } else {
-          label = [item.degree, item.school].filter(Boolean).join(' · ');
-          const from = [item.startMonth, item.startYear].filter(Boolean).join(' ');
-          const to   = item.endYear === 'Pågående' ? 'Pågående' : [item.endMonth, item.endYear].filter(Boolean).join(' ');
-          dates = [from, to].filter(Boolean).join(' – ');
-        }
-        return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%;">${label || '—'}</span>
-          <span style="font-size:11px;color:rgba(62,180,137,0.85);white-space:nowrap;flex-shrink:0;">${dates || '—'}</span>
-        </div>`;
-      }).join('');
-
-      const extra = hidden > 0
-        ? `<div style="font-size:11px;color:rgba(255,255,255,0.3);padding-top:4px;">+${hidden} till</div>`
-        : '';
-
-      const label = type === 'job' ? 'Redan tillagda arbeten' : 'Redan tillagda utbildningar';
-      const html = `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;margin-bottom:12px;">
-        <div style="font-size:10px;font-weight:800;color:#ffffff;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">${label}</div>
-        ${rows}${extra}
-      </div>`;
-
-      refIds.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = html; });
-    }
-
     function openJobModal(idx = null) {
       document.getElementById('jobTitle').value = '';
       document.getElementById('jobCompany').value = '';
@@ -5432,8 +5370,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
       
       const modal = document.getElementById('jobModal');
       modal.dataset.editIdx = idx ?? -1;
-      _cpickerEditMode = (idx !== null && idx >= 0); // redigeringsläge = ingen auto-advance
-      renderModalRef(['jobModalRef','jobModalRef2'], cvData.jobs || [], idx ?? -1, 'job');
       modal.classList.add('active');
     }
 
@@ -5554,7 +5490,6 @@ Ge bara profiltexten, ingen förklaringtext.`;
       
       const modal = document.getElementById('eduModal');
       modal.dataset.editIdx = idx ?? -1;
-      renderModalRef(['eduModalRef','eduModalRef2'], cvData.education || [], idx ?? -1, 'edu');
       modal.classList.add('active');
     }
 
@@ -6245,10 +6180,13 @@ Ge bara profiltexten, ingen förklaringtext.`;
       if (!titleInput) return;
       const title = titleInput.value.trim();
 
-      if (!title) {
+      // Om profiltext redan finns — generera nya alternativ direkt utan att kräva titel
+      const existingSummary = (cvData.summary || '').trim();
+      if (!title && !existingSummary) {
         showToast('⚠️ Skriv in en jobbtitel först', 'error');
         return;
       }
+      const effectiveTitle = title || 'samma yrkestitel som tidigare';
 
       const jobSummary = (cvData.jobs || []).map(j =>
         j.title + (j.company ? ' på ' + j.company : '') +
@@ -6269,7 +6207,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         '',
         'Info om personen:',
         firstName ? 'Förnamn: ' + firstName : '',
-        'Sökt titel: ' + title,
+        'Sökt titel: ' + effectiveTitle,
         jobSummary ? 'Erfarenhet:\n' + jobSummary : '',
         skillsList ? 'Kompetenser: ' + skillsList : '',
         eduList    ? 'Utbildning: ' + eduList    : '',
@@ -6294,7 +6232,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
       showAiLoader('Genererar profiltexter...', 'AI skapar 3 unika alternativ åt dig');
 
       // Kolla cache
-      const profileCacheKey = aiCacheKey('profile', title, jobSummary.slice(0,80), skillsList.slice(0,40));
+      const profileCacheKey = aiCacheKey('profile', effectiveTitle, jobSummary.slice(0,80), skillsList.slice(0,40));
       const cachedProfile = aiCacheGet(profileCacheKey);
       if (cachedProfile) {
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
@@ -7590,20 +7528,21 @@ ${styleTexts}
     function nyttCVConfirm() {
       document.getElementById('nyttCVModal').classList.remove('active');
 
-      // Rensa CV-data (behaaller profil/konto)
+      // Behåll jobb, utbildning, körkort, språk, certifikat, referenser
+      // Rensa: namn, titel, email, telefon, profiltext, foto, kompetenser
       cvData = {
         name: '',
         title: '',
         email: '',
         phone: '',
         summary: '',
-        jobs: [],
-        education: [],
-        languages: [],
-        certifications: [],
-        licenses: [],
-        references: [],
-        skills: [],
+        jobs: cvData.jobs || [],
+        education: cvData.education || [],
+        languages: cvData.languages || [],
+        certifications: cvData.certifications || [],
+        licenses: cvData.licenses || [],
+        references: cvData.references || [],
+        skills: [],           // Kompetenser rensas — stämmer sällan med ny titel
         photoData: null,
         showPhoto: true,
         template: 'classic'
@@ -7636,21 +7575,14 @@ ${styleTexts}
       updatePreview();
       setShowPhoto(true);
 
-      showToast('Nytt CV startat!', 'success');
+      showToast('Nytt CV startat! Jobb och utbildning är kvar.', 'success');
     }
     // ===== SLUT NYTT CV =====
 
     // Init
     document.addEventListener('DOMContentLoaded', () => {
       loadData();
-      try {
-        authInit();
-      } catch(e) {
-        // Säkerhetsnet: om authInit kraschar, visa inloggningsskärmen istället för att släppa in användaren
-        console.error('authInit fel:', e);
-        const overlay = document.getElementById('authOverlay');
-        if (overlay) overlay.classList.remove('hidden');
-      }
+      authInit();
     });
   </script>
 
@@ -7960,13 +7892,9 @@ ${styleTexts}
 
     <!-- FLIK 4: Förhandsgranska -->
     <div class="mob-panel" id="mobPanel-forhandsgranska" style="background:#f0ede6;padding:16px;">
-      <div style="margin-bottom:14px;background:linear-gradient(135deg,rgba(62,180,137,0.1),rgba(124,58,237,0.06));border:2px solid rgba(62,180,137,0.4);border-radius:14px;padding:12px 14px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <span style="font-size:18px;">&#127912;</span>
-          <span style="font-size:13px;font-weight:800;color:#1a1a2e;letter-spacing:0.3px;">Design-mallar</span>
-          <span style="font-size:10px;font-weight:700;background:#3eb489;color:#fff;border-radius:20px;padding:2px 7px;margin-left:auto;">10 st</span>
-        </div>
-        <select id="mobTemplateSelect" onchange="mobSelectTemplateFromPreview(this.value)" style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid rgba(62,180,137,0.4);background:#fff;font-size:14px;font-weight:600;font-family:inherit;color:#1a1a2e;cursor:pointer;">
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;display:block;margin-bottom:6px;">Design-mall</label>
+        <select id="mobTemplateSelect" onchange="mobSelectTemplateFromPreview(this.value)" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(0,0,0,0.15);background:#fff;font-size:14px;font-family:inherit;color:#1a1a2e;cursor:pointer;">
           <option value="classic">Klassisk</option>
           <option value="minimal">Minimal</option>
           <option value="template-3">Modern Bla/Gron</option>
@@ -8518,8 +8446,8 @@ ${styleTexts}
   <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
 
-  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
-  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
+  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="file:///C:/Users/olive/Downloads/index_files/jspdf.umd.min.js.ladda%20ned"></script>
+  <script src="file:///C:/Users/olive/Downloads/index_files/html2canvas.min.js.ladda%20ned"></script>
   
   
   <style>
@@ -11012,7 +10940,7 @@ ${styleTexts}
       <div class="auth-tagline">Vi matchar ditt CV mot utbildning &amp; jobbannonser.</div>
 
       <!-- STEG 1: E-postformular -->
-      <div id="authStep1" class="auth-step">
+      <div id="authStep1" class="auth-step active">
         <div class="auth-title">Logga in eller skapa konto</div>
         <div class="auth-subtitle">Ange din e-postadress så skickar vi en 6-siffrig kod.</div>
         <input type="email" id="authEmail" class="auth-input" placeholder="din@epost.se" autocomplete="email" inputmode="email">
@@ -11047,7 +10975,7 @@ ${styleTexts}
       </div>
 
       <!-- STEG 3: Inloggad -->
-      <div id="authStep3" class="auth-step active">
+      <div id="authStep3" class="auth-step">
         <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
         <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1b7477726d7e69356b7e6f6f7e6968687475295b7c767a727735787476">[email&nbsp;protected]</a></div>
@@ -11451,7 +11379,7 @@ ${styleTexts}
       <div class="cv-document cv-template-10" id="cvDocument">
         <div class="cv-header">
           <div class="cv-header-photo" id="photoContainer" style="display: block;">
-            <img id="profilePhoto" src="./index_files/index_39.html" alt="Foto" style="display: block;">
+            <img id="profilePhoto" src="file:///C:/Users/olive/Downloads/index_files/index_39.html" alt="Foto" style="display: block;">
           </div>
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
@@ -11736,8 +11664,7 @@ ${styleTexts}
   <!-- MODALER -->
   <div class="modal" id="jobModal" data-edit-idx="0">
     <div class="modal-content">
-      <div id="jobModalRef2"></div>
-      <div class="modal-title">Arbetslivserfarenhet</div>
+      <div class="modal-title">Lägg till arbetsupplevelse</div>
       <input type="text" class="modal-input" id="jobTitle" placeholder="Jobbtitel">
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
@@ -11797,7 +11724,6 @@ ${styleTexts}
 
   <div class="modal" id="eduModal" data-edit-idx="-1">
     <div class="modal-content">
-      <div id="eduModalRef2"></div>
       <div class="modal-title">Lägg till utbildning</div>
       <input type="text" class="modal-input" id="eduDegree" placeholder="Examen/Utbildning">
       <input type="text" class="modal-input" id="eduSchoolName" placeholder="Namn på skola/Universitet">
@@ -13144,6 +13070,19 @@ ${styleTexts}
   // ── Flik-navigation ──────────────────────────────────
   function mobSwitchTab(tab) {
     if (!isMobile()) return;
+
+    // Varning om man lämnar CV-vyn med ett påbörjat men osparat CV
+    const currentTab = document.querySelector('#mobileTabBar .mob-tab--active');
+    const currentTabId = currentTab ? currentTab.id.replace('tabBtn-', '') : '';
+    if (currentTabId === 'hej' && tab !== 'hej') {
+      const hasContent = (cvData.name || cvData.title || (cvData.jobs && cvData.jobs.length));
+      const hasSaved = (() => {
+        try { return !!localStorage.getItem('cvmatchen_saved_cvs'); } catch(e) { return false; }
+      })();
+      if (hasContent && !hasSaved) {
+        if (!confirm('Du har ett påbörjat CV som inte är sparat. Vill du lämna ändå?')) return;
+      }
+    }
 
     // Lämna CV-läget
     mobExitCVMode();
@@ -18433,7 +18372,7 @@ ${styleTexts}
       });
     }
   }
-
-})(); // Stänger edu-modulens IIFE
-
-</script></div></body></html>
+  initProfilLink();
+})();
+</script></div>
+</body></html>
