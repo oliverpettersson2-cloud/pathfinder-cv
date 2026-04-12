@@ -13584,7 +13584,7 @@ ${styleTexts}
     if (toggle) toggle.style.display = entry.adText ? 'flex' : 'none';
     const cb = document.getElementById('mobAdPdfToggle');
     if (cb) cb.checked = true; // default: inkludera
-    mobOpenCV(); mobSwitchSubTab('forhandsgranska');
+    mobEnterCVMode(); mobSwitchSubTab('forhandsgranska');
     showToast('✅ ' + entry.title + ' öppnat', 'success');
   }
 
@@ -13598,7 +13598,7 @@ ${styleTexts}
     window._activeMatchedAdText = '';
     const toggle = document.getElementById('mobAdPdfToggleRow');
     if (toggle) toggle.style.display = 'none';
-    mobOpenCV(); mobSwitchSubTab('forhandsgranska');
+    mobEnterCVMode(); mobSwitchSubTab('forhandsgranska');
     showToast('✅ ' + entry.title + ' öppnat — dela eller spara som PDF', 'success');
   }
 
