@@ -7583,10 +7583,9 @@ ${styleTexts}
         template: 'classic'
       };
 
-      // Rensa alla inputfallt
+      // Rensa alla inputfält (querySelectorAll hanterar duplicerade id:n)
       ['name','title','email','phone','summary'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
+        document.querySelectorAll('#' + id).forEach(el => { el.value = ''; });
       });
 
       // Aterstarll profilbild
@@ -7950,7 +7949,7 @@ ${styleTexts}
         Spara CV/dela som PDF
       </button>
       <button onclick="mobSaveCVToList()" style="margin-top:10px;width:100%;padding:13px;background:#f0c040;color:#1a1a2e;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;">
-        Spara CV-version till listan
+        Spara CV-version till Profil
       </button>
     </div>
 
