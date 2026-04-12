@@ -7583,9 +7583,14 @@ ${styleTexts}
         template: 'classic'
       };
 
-      // Rensa alla inputfält (querySelectorAll hanterar duplicerade id:n)
+      // Rensa alla inputfält (desktop + mobil)
       ['name','title','email','phone','summary'].forEach(id => {
         document.querySelectorAll('#' + id).forEach(el => { el.value = ''; });
+      });
+      // Rensa mob-specifika fält
+      ['mob-name','mob-title','mob-email','mob-phone','mob-summary'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
       });
 
       // Aterstarll profilbild
@@ -13130,7 +13135,7 @@ ${styleTexts}
       const hasSaved = (() => {
         try { return !!localStorage.getItem('cvmatchen_saved_cvs'); } catch(e) { return false; }
       })();
-      if (hasContent && !hasSaved) {
+      if (hasContent) {
         if (!confirm('Du har ett påbörjat CV som inte är sparat. Vill du lämna ändå?')) return;
       }
     }
