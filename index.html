@@ -13575,6 +13575,10 @@ ${styleTexts}
     const entry = mobGetMatchedCVs().find(c => c.id === id);
     if (!entry) return;
     Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+    // Synka DOM-fälten innan saveData() läser tillbaka från dem
+    const _sd = document.getElementById('summary'); if (_sd) _sd.value = cvData.summary || '';
+    const _sn = document.getElementById('name');    if (_sn) _sn.value = cvData.name    || '';
+    const _st = document.getElementById('title');   if (_st) _st.value = cvData.title   || '';
     saveData(); updatePreview(); mobLoadFields();
     // Spara annonstext globalt för PDF-export
     window._activeMatchedAdText = entry.adText || '';
@@ -13583,7 +13587,7 @@ ${styleTexts}
     const toggle = document.getElementById('mobAdPdfToggleRow');
     if (toggle) toggle.style.display = entry.adText ? 'flex' : 'none';
     const cb = document.getElementById('mobAdPdfToggle');
-    if (cb) cb.checked = true; // default: inkludera
+    if (cb) cb.checked = true;
     mobEnterCVMode(); mobSwitchSubTab('forhandsgranska');
     showToast('✅ ' + entry.title + ' öppnat', 'success');
   }
@@ -13593,6 +13597,10 @@ ${styleTexts}
     const entry = list.find(c => c.id === id);
     if (!entry) return;
     Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+    // Synka DOM-fälten innan saveData() läser tillbaka från dem
+    const _sd = document.getElementById('summary'); if (_sd) _sd.value = cvData.summary || '';
+    const _sn = document.getElementById('name');    if (_sn) _sn.value = cvData.name    || '';
+    const _st = document.getElementById('title');   if (_st) _st.value = cvData.title   || '';
     saveData(); updatePreview(); mobLoadFields(); mobBuildTemplateGrid();
     // Inget matchat CV — dölj annons-toggle
     window._activeMatchedAdText = '';
@@ -18432,6 +18440,7 @@ ${styleTexts}
       });
     }
   }
+  init();
   initProfilLink();
 })();
 </script></div>
