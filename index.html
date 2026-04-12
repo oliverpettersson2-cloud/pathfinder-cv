@@ -6307,7 +6307,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         document.getElementById('summary').value = cvData.summary;
         saveData();
         updatePreview();
-        
+        logEvent('profile_generated');
         // Stäng modal på rätt sätt
         const modal = document.getElementById('profilSummaryModal');
         modal.classList.remove('active');
@@ -6588,6 +6588,7 @@ ${styleTexts}
       try {
         if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Arbetar...'; }
         showToast('⏳ Genererar PDF...', 'info');
+        logEvent('cv_exported');
 
         // ── Försök server-side PDF (fixar iOS + bättre kvalitet) ─────────────
         try {
@@ -7279,6 +7280,7 @@ ${styleTexts}
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
 
+      logEvent('login');
       setNavStep(2);
 
       const emailEl = document.getElementById('authUserEmail');
@@ -7422,6 +7424,7 @@ ${styleTexts}
       // Direkt till appen utan overlay/bekräftelseskärm
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
+      logEvent('login');
       setNavStep(2);
       const emailEl = document.getElementById('authUserEmail');
       if (emailEl) emailEl.textContent = email;
@@ -7463,6 +7466,20 @@ ${styleTexts}
       }
     }
     // ===== SLUT AUTENTISERING =====
+
+    // ===== AKTIVITETSLOGGNING =====
+    function logEvent(event_type, metadata = {}) {
+      const userId = window.authUserId;
+      const accessToken = window.authAccessToken;
+      if (!userId || !accessToken) return;
+      fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'log_event', accessToken, userId, event_type, metadata })
+      }).catch(() => {});
+    }
+    // ===== SLUT AKTIVITETSLOGGNING =====
+
 
     // ===== INTEGRITETSPOLICY =====
     function showPrivacyPolicy() {
@@ -7527,6 +7544,7 @@ ${styleTexts}
 
     function nyttCVConfirm() {
       document.getElementById('nyttCVModal').classList.remove('active');
+      logEvent('cv_created');
 
       // Behåll jobb, utbildning, körkort, språk, certifikat, referenser
       // Rensa: namn, titel, email, telefon, profiltext, foto, kompetenser
@@ -13588,6 +13606,7 @@ ${styleTexts}
     const title = (cvData.title || '').trim();
     if (!title) { showToast('⚠️ Fyll i en yrkestitel under Info först', 'error'); return; }
     if (!cvData.name) { showToast('⚠️ Fyll i ditt namn under Info först', 'error'); return; }
+    logEvent('cv_saved', { title });
 
     let list = mobGetSavedCVs();
     // Kolla om det redan finns ett CV med samma titel → uppdatera
@@ -14409,6 +14428,7 @@ ${styleTexts}
     const locSuffix = MATCHA_LOC[matchaLocFilter] ? ' ' + MATCHA_LOC[matchaLocFilter] : '';
     matchaCurrentQ = rawQ + locSuffix;
     matchaCurrentOffset = 0;
+    logEvent('job_search', { query: rawQ });
 
     skeleton.style.display = 'block';
     resultsEl.style.display = 'none';
