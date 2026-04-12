@@ -6231,7 +6231,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
         '',
         'VIKTIGA REGLER:',
         '- Skriv ALLTID i första person (jag/mig/min — ALDRIG "han/hon/de" eller tredjeperson)',
-        '- Varje alternativ ska bestå av TWO stycken separerade med \n\n',
+        '- Varje alternativ ska bestå av TVÅ stycken separerade med \n\n — TOTALT minst 120 ord per alternativ',
         '- Stycke 1 (3-4 meningar): presentera dig, din bakgrund och dina styrkor',
         '- Stycke 2 (3-4 meningar): vad du bidrar med, vad som driver dig — avsluta ALLTID med exakt: "Jag ser fram emot att berätta mer om mig själv på en intervju, bli en del av ert team eller få höra mer om ert företag och jobbmöjligheterna."',
         firstName ? '- Alt 1 ska börja med "' + firstName + ' heter jag" eller liknande varm personlig inledning' : '- Alt 1: varm, personlig inledning i jagform',
@@ -6271,7 +6271,7 @@ Ge bara profiltexten, ingen förklaringtext.`;
           },
           body: JSON.stringify({
             model: 'claude-sonnet-4-6',
-            max_tokens: 700,
+            max_tokens: 2000,
             system: PATHFINDER_SYSTEM_PROMPT,
             messages: [{ role: 'user', content: prompt }]
           })
