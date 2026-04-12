@@ -13130,11 +13130,8 @@ ${styleTexts}
     // Varning om man lämnar CV-vyn med ett påbörjat men osparat CV
     const currentTab = document.querySelector('#mobileTabBar .mob-tab--active');
     const currentTabId = currentTab ? currentTab.id.replace('tabBtn-', '') : '';
-    if (currentTabId === 'hej' && tab !== 'hej') {
+    if (currentTabId === 'cv' && tab !== 'cv') {
       const hasContent = (cvData.name || cvData.title || (cvData.jobs && cvData.jobs.length));
-      const hasSaved = (() => {
-        try { return !!localStorage.getItem('cvmatchen_saved_cvs'); } catch(e) { return false; }
-      })();
       if (hasContent) {
         if (!confirm('Du har ett påbörjat CV som inte är sparat. Vill du lämna ändå?')) return;
       }
