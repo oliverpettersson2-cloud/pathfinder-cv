@@ -15,6 +15,7 @@
     }
   },
   "rewrites": [
-    { "source": "/app", "destination": "/app.html" }
+    { "source": "/app", "destination": "/app.html" },
+    { "source": "/admin", "destination": "/handlaggare.html" }
   ]
 }
