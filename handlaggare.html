@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVmatchen — Handläggarvy</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f3f0;--sf:#fff;--sf2:#fafaf8;--bd:#e6e4e0;--bdl:#f0eeeb;--tx:#1a1917;--tx2:#6b6860;--mu:#9b978f;--ac:#d4a436;--acs:#fef5e0;--gn:#1a8a5a;--gnb:#e8f5ee;--bl:#2563eb;--blb:#e8effc;--or:#d97706;--orb:#fef3d6;--rd:#d94444;--rdb:#fce8e8;--sh:0 1px 3px rgba(0,0,0,.06);--r:10px;--tr:.2s ease}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased}
+body.embed header{display:none}
+
+/* ── Login overlay ── */
+#loginOverlay{position:fixed;inset:0;background:linear-gradient(170deg,#0a0f1e,#0f1729 40%,#141e33);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+#loginOverlay.hidden{display:none}
+.login-card{background:rgba(255,255,255,.06);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.08);border-radius:20px;width:100%;max-width:400px;padding:40px 36px;text-align:center}
+.login-compass{margin:0 auto 18px}
+.login-brand{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.login-cv{color:#d4a436}.login-rest{color:#fff}
+.login-sub{font-size:10px;color:rgba(212,164,54,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.login-msg{padding:10px 14px;border-radius:10px;font-size:12px;font-weight:500;margin-bottom:16px;display:none}
+.login-msg.error{display:block;background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
+.login-msg.info{display:block;background:rgba(212,164,54,.1);color:#d4a436;border:1px solid rgba(212,164,54,.15)}
+.ms-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;color:#fff;transition:all .2s}
+.ms-btn:hover{background:rgba(255,255,255,.12)}
+.login-footer{margin-top:20px;font-size:10px;color:rgba(255,255,255,.15)}
+.login-footer a{color:rgba(255,255,255,.25);text-decoration:none}
+
+/* ── Header ── */
+header{background:#0f1729;padding:0 24px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:8px}
+.logo svg{flex-shrink:0}
+.logo-t{font-size:14px;font-weight:600;color:#fff}
+.logo-t b{color:#d4a436;font-weight:800}
+.hdr-r{display:flex;align-items:center;gap:12px}
+.hdr-name{font-size:11px;color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace}
+.hdr-av{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer}
+
+/* ── Layout ── */
+.cnt{max-width:1280px;margin:0 auto;padding:24px 24px 48px}
+.pg-t{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:2px}
+.pg-s{color:var(--mu);font-size:12px;margin-bottom:20px}
+.tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:20px;gap:0}
+.tab{padding:9px 16px;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;position:relative;bottom:-1px;transition:all var(--tr)}
+.tab:hover{color:var(--tx)}.tab.act{color:var(--tx);border-bottom-color:var(--ac)}
+.pan{display:none}.pan.act{display:block}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
+.stc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stc:nth-child(1)::after{background:var(--gn)}.stc:nth-child(2)::after{background:var(--tx)}.stc:nth-child(3)::after{background:var(--bl)}.stc:nth-child(4)::after{background:var(--ac)}
+.stl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);margin-bottom:5px}
+.stv{font-size:26px;font-weight:700;letter-spacing:-1px}
+
+/* ── Toolbar ── */
+.tb{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.sw{position:relative;flex:1;min-width:160px;max-width:280px}
+.sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none}
+input[type=text],select{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;border:1px solid var(--bd);border-radius:8px;background:var(--sf);color:var(--tx);outline:none;transition:border-color var(--tr)}
+input[type=text]{width:100%;padding:7px 10px 7px 32px}
+select{padding:7px 28px 7px 10px;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b978f' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+input:focus,select:focus{border-color:var(--ac)}
+.sp{flex:1}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:1px solid var(--bd);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:var(--sf);color:var(--tx);transition:all var(--tr)}
+.btn:hover{border-color:var(--tx)}
+
+/* ── Table ── */
+.tw{background:var(--sf);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--sf2);padding:9px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);border-bottom:1px solid var(--bd);cursor:pointer}
+thead th:hover{color:var(--tx)}
+tbody tr{border-bottom:1px solid var(--bdl);cursor:pointer;transition:background var(--tr)}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#fafaf6}
+td{padding:10px 13px;vertical-align:middle}
+.uc{display:flex;align-items:center;gap:9px}
+.ua{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;background:var(--gnb);color:var(--gn)}
+.un{font-weight:600;font-size:13px}.ue{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace}
+.dc{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--tx2)}
+.bd{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600}
+.bd::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.bd.active{background:var(--gnb);color:var(--gn)}.bd.new{background:var(--blb);color:var(--bl)}.bd.recent{background:var(--orb);color:var(--or)}.bd.inactive{background:#f0efec;color:var(--mu)}
+.tc{font-size:12px;font-family:'JetBrains Mono',monospace;text-align:center;font-weight:600}
+
+/* ── Drawer ── */
+.dov{display:none;position:fixed;inset:0;background:rgba(26,25,23,.3);z-index:100;backdrop-filter:blur(2px)}.dov.open{display:block}
+.dr{position:fixed;right:0;top:0;bottom:0;width:440px;background:var(--sf);box-shadow:-4px 0 24px rgba(0,0,0,.1);z-index:101;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}.dr.open{transform:translateX(0)}
+.dr-top{padding:20px;border-bottom:1px solid var(--bdl);display:flex;justify-content:space-between;align-items:flex-start}
+.dr-user{display:flex;gap:10px;align-items:center}
+.dr-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--gnb);color:var(--gn)}
+.dr-nm{font-size:16px;font-weight:700}.dr-em{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace}
+.bcl{background:none;border:none;cursor:pointer;color:var(--mu);padding:4px;border-radius:5px;display:flex}.bcl:hover{background:var(--bdl);color:var(--tx)}
+.dr-body{padding:18px 20px 28px}
+.dr-sec{margin-bottom:20px}
+.dr-sec-t{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:8px}
+.dr-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.dr-m{background:var(--sf2);border:1px solid var(--bdl);border-radius:7px;padding:10px 12px}
+.dr-ml{font-size:10px;color:var(--mu)}.dr-mv{font-size:18px;font-weight:700;letter-spacing:-.5px}
+
+/* ── Task cards in drawer ── */
+.tsk{background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px}
+.tsk-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.tsk-t{font-size:12px;font-weight:600}.tsk-s{font-size:10px;color:var(--mu);margin-top:2px}
+.tsk-tag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;margin-top:4px;display:inline-block}
+
+/* ── Quick assign buttons ── */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.qa-btn{background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:border-color var(--tr)}
+.qa-btn:hover{border-color:var(--bd)}
+.qa-icon{font-size:18px;margin-bottom:3px}
+.qa-t{font-size:11px;font-weight:600}
+
+/* ── Pagination ── */
+.pg-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--bdl);background:var(--sf2);font-size:12px;color:var(--mu)}
+
+/* ── Loading ── */
+.loading{text-align:center;padding:40px;color:var(--mu);font-size:14px}
+
+@media(max-width:768px){.stats{grid-template-columns:1fr 1fr}.dr{width:100%}td.hm,th.hm{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginOverlay">
+<div class="login-card">
+  <svg class="login-compass" width="48" height="48" viewBox="0 0 56 56" fill="none">
+    <circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+    <circle cx="28" cy="28" r="18" stroke="rgba(255,255,255,.08)" stroke-width=".5"/>
+    <line x1="28" y1="6" x2="28" y2="10" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-linecap="round"/>
+    <line x1="28" y1="46" x2="28" y2="50" stroke="rgba(255,255,255,.15)" stroke-width="1" stroke-linecap="round"/>
+    <line x1="6" y1="28" x2="10" y2="28" stroke="rgba(255,255,255,.15)" stroke-width="1" stroke-linecap="round"/>
+    <line x1="46" y1="28" x2="50" y2="28" stroke="rgba(255,255,255,.15)" stroke-width="1" stroke-linecap="round"/>
+    <path d="M28 12L30.5 26L28 28L25.5 26Z" fill="#d4a436"/>
+    <path d="M28 12L30.5 26L28 24Z" fill="#e8803a"/>
+    <path d="M28 44L25.5 30L28 28L30.5 30Z" fill="rgba(255,255,255,.18)"/>
+    <circle cx="28" cy="28" r="1.5" fill="#d4a436"/>
+  </svg>
+  <div class="login-brand"><span class="login-cv">CV</span><span class="login-rest">matchen</span></div>
+  <div class="login-sub">Handläggarvy</div>
+  <div class="login-msg" id="loginMsg"></div>
+  <button class="ms-btn" onclick="loginMicrosoft()">
+    <svg width="20" height="20" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+    Logga in med Microsoft
+  </button>
+  <div class="login-footer"><br>PathfinderAI AB · <a href="#">Allmänna villkor</a> · <a href="#">GDPR</a></div>
+</div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<header>
+  <div class="logo">
+    <svg width="24" height="24" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,.25)" stroke-width="1"/><path d="M28 12L30.5 26L28 28L25.5 26Z" fill="#d4a436"/><path d="M28 12L30.5 26L28 24Z" fill="#e8803a"/><path d="M28 44L25.5 30L28 28L30.5 30Z" fill="rgba(255,255,255,.18)"/><circle cx="28" cy="28" r="1.5" fill="#d4a436"/></svg>
+    <div class="logo-t"><b>CV</b>matchen · Handläggarvy</div>
+  </div>
+  <div class="hdr-r">
+    <div class="hdr-name" id="hdrName"></div>
+    <div class="hdr-av" id="hdrAv" onclick="logout()" title="Logga ut"></div>
+  </div>
+</header>
+
+<div class="cnt">
+  <div class="pg-t" id="pgTitle">Ärenden</div>
+  <div class="pg-s" id="pgSub"></div>
+
+  <div class="tabs" id="tabBar"></div>
+
+  <div class="pan act" id="p-arenden">
+    <div class="stats" id="statCards"><div class="loading">Laddar...</div></div>
+    <div class="tb">
+      <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
+      <select id="statusFlt"><option value="">Alla statusar</option><option value="active">Aktiv</option><option value="new">Ny</option><option value="recent">Nyligen aktiv</option><option value="inactive">Inaktiv</option></select>
+      <div class="sp"></div>
+      <button class="btn" onclick="exportData()">Exportera</button>
+    </div>
+    <div class="tw"><table><thead><tr><th>Namn</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead><tbody id="tBody"><tr><td colspan="7" class="loading">Laddar ärenden...</td></tr></tbody></table>
+    <div class="pg-bar"><span id="pgInfo"></span></div></div>
+  </div>
+
+  <div class="pan" id="p-statistik"><div id="statsContent" class="loading">Laddar statistik...</div></div>
+  <div class="pan" id="p-uppgifter"><div id="tasksContent" class="loading">Laddar uppgifter...</div></div>
+</div>
+
+<!-- ═══ DRAWER ═══ -->
+<div class="dov" id="overlay" onclick="closeDrawer()"></div>
+<div class="dr" id="drawer">
+  <div class="dr-top">
+    <div class="dr-user"><div class="dr-av" id="drAv"></div><div><div class="dr-nm" id="drNm"></div><div class="dr-em" id="drEm"></div></div></div>
+    <button class="bcl" onclick="closeDrawer()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="dr-body">
+    <div class="dr-sec"><div id="drBadge"></div></div>
+    <div class="dr-sec"><div class="dr-sec-t">Översikt</div><div class="dr-grid" id="drMetrics"></div></div>
+    <div class="dr-sec">
+      <div class="dr-sec-t">Tilldela uppgift</div>
+      <div class="qa-grid" id="drQuickAssign"></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" id="drCustomTask" placeholder="Egen uppgift…" style="flex:1;padding:7px 10px 7px 10px">
+        <select id="drDeadline" style="min-width:100px"><option value="">Deadline</option><option value="1">Imorgon</option><option value="3">3 dagar</option><option value="7">1 vecka</option><option value="14">2 veckor</option></select>
+      </div>
+      <div style="display:flex;gap:6px">
+        <select id="drDuration" style="flex:1"><option value="">Ingen timer</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option></select>
+        <button class="btn" onclick="assignCustomTask()" style="white-space:nowrap">Tilldela</button>
+      </div>
+    </div>
+    <div class="dr-sec"><div class="dr-sec-t">Aktiva uppgifter</div><div id="drTasks"></div></div>
+  </div>
+</div>
+
+<script>
+const API = '/api/supabase';
+const SL = {active:'Aktiv',recent:'Nyligen aktiv',new:'Ny',inactive:'Inaktiv'};
+let admin = null;
+let allUsers = [];
+let currentUserId = null;
+
+function ini(n){return (n||'').split(' ').map(w=>w[0]).join('').toUpperCase()}
+function post(action, data){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})}).then(r=>r.json())}
+
+// ═══ LOGIN ═══
+const SUPABASE_URL = ''; // Fylls i automatiskt via env
+const SUPABASE_ANON_KEY = '';
+
+function loginMicrosoft(){
+  // Supabase Azure OAuth — redirect till Supabase auth endpoint
+  // I produktion: window.location.href = `${SUPABASE_URL}/auth/v1/authorize?provider=azure&redirect_to=${encodeURIComponent(window.location.origin + '/handlaggare.html')}`;
+  // Dev-fallback: logga in direkt
+  const email = prompt('Dev-läge: Ange e-post (t.ex. oliver.pettersson@helsingborg.se)');
+  if (!email) return;
+  post('admin_login', { adminEmail: email }).then(data => {
+    if (data.error) { showLoginError(data.error); return; }
+    admin = data.admin;
+    sessionStorage.setItem('cvmatchen_admin', JSON.stringify(admin));
+    enterApp();
+  }).catch(e => showLoginError('Kunde inte ansluta'));
+}
+
+function showLoginError(msg){
+  const el = document.getElementById('loginMsg');
+  el.textContent = msg;
+  el.className = 'login-msg error';
+}
+
+function logout(){
+  sessionStorage.removeItem('cvmatchen_admin');
+  admin = null;
+  location.reload();
+}
+
+function enterApp(){
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('hdrName').textContent = admin.name;
+  document.getElementById('hdrAv').textContent = ini(admin.name);
+  document.getElementById('pgSub').textContent =
+    admin.role === 'superadmin' ? 'Alla kommuner och enheter' :
+    admin.role === 'kommunadmin' ? (admin.kommuner?.name || 'Kommun') + ' — alla enheter' :
+    (admin.enheter?.name || 'Enhet');
+
+  buildTabs();
+  loadUsers();
+  loadStats();
+}
+
+// ═══ TABS ═══
+function buildTabs(){
+  const tabs = [{id:'arenden',label:'Ärenden'},{id:'statistik',label:'Statistik'},{id:'uppgifter',label:'Uppgifter'}];
+  document.getElementById('tabBar').innerHTML = tabs.map((t,i)=>
+    `<div class="tab${i===0?' act':''}" onclick="switchTab('${t.id}')">${t.label}</div>`
+  ).join('');
+}
+
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.pan').forEach(p=>p.classList.remove('act'));
+  document.getElementById('p-'+id)?.classList.add('act');
+  document.querySelectorAll('.tab').forEach(t=>{if(t.textContent.toLowerCase().includes(id==='arenden'?'ärenden':id))t.classList.add('act')});
+  if(id==='uppgifter') loadAllTasks();
+}
+
+// ═══ USERS ═══
+async function loadUsers(){
+  const filters = {};
+  if(admin.role==='kommunadmin') filters.kommun_id = admin.kommun_id;
+  if(admin.role==='handlaggare') filters.enhet_id = admin.enhet_id;
+
+  const data = await post('admin_list_users',{filters});
+  allUsers = data.data || [];
+  renderStats();
+  renderTable(allUsers);
+}
+
+function renderStats(){
+  const u = allUsers;
+  const act = u.filter(x=>x.status==='active').length;
+  const tot = u.length;
+  const tasks = u.reduce((s,x)=>s+(x.tasks?.total||0),0);
+  const done = u.reduce((s,x)=>s+(x.tasks?.completed||0),0);
+  document.getElementById('statCards').innerHTML = `
+    <div class="stc"><div class="stl">Deltagare</div><div class="stv">${tot}</div></div>
+    <div class="stc"><div class="stl">Aktiva</div><div class="stv" style="color:var(--gn)">${act}</div></div>
+    <div class="stc"><div class="stl">Uppgifter</div><div class="stv">${tasks}</div></div>
+    <div class="stc"><div class="stl">Klara</div><div class="stv" style="color:var(--ac)">${done}</div></div>
+  `;
+}
+
+function renderTable(users){
+  const q = (document.getElementById('searchIn')?.value||'').toLowerCase();
+  const st = document.getElementById('statusFlt')?.value||'';
+  let f = users.filter(u=>(!q||(u.user_id||'').toLowerCase().includes(q)||JSON.stringify(u).toLowerCase().includes(q))&&(!st||u.status===st));
+
+  document.getElementById('tBody').innerHTML = f.length ? f.map(u=>{
+    const cv = u.cv?.data;
+    const name = cv ? [cv.firstName,cv.lastName].filter(Boolean).join(' ') : (u.user_id||'').slice(0,8);
+    const email = cv?.email || '';
+    const taskInfo = u.tasks ? `${u.tasks.completed}/${u.tasks.total}` : '0/0';
+    const progData = u.progress;
+    let progPct = 0;
+    if(progData && typeof progData === 'object'){
+      const vals = Object.values(progData);
+      const done = vals.filter(v=>v&&v.done).length;
+      progPct = vals.length ? Math.round(done/vals.length*100) : 0;
+    }
+    return `<tr onclick="openDrawer('${u.user_id}')">
+      <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name||'Okänd'}</div><div class="ue">${email}</div></div></div></td>
+      <td class="hm dc">${u.enheter?.name||''}</td>
+      <td class="dc">${u.cv?.updated_at?.split('T')[0]||'—'}</td>
+      <td class="hm tc">${cv?'✅':'—'}</td>
+      <td class="hm tc">${progPct}%</td>
+      <td class="hm tc">${taskInfo}</td>
+      <td><span class="bd ${u.status||'new'}">${SL[u.status]||'Ny'}</span></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" class="loading">Inga deltagare hittades</td></tr>';
+
+  document.getElementById('pgInfo').textContent = `${f.length} deltagare`;
+}
+
+document.getElementById('searchIn')?.addEventListener('input',()=>renderTable(allUsers));
+document.getElementById('statusFlt')?.addEventListener('change',()=>renderTable(allUsers));
+
+// ═══ DRAWER ═══
+async function openDrawer(userId){
+  currentUserId = userId;
+  const data = await post('admin_get_user',{targetUserId:userId});
+
+  const cv = data.cv;
+  const name = cv ? [cv.firstName,cv.lastName].filter(Boolean).join(' ') : 'Deltagare';
+  const email = cv?.email || '';
+
+  document.getElementById('drNm').textContent = name;
+  document.getElementById('drEm').textContent = email;
+  document.getElementById('drAv').textContent = ini(name);
+
+  const asgn = data.assignment;
+  document.getElementById('drBadge').innerHTML = `
+    <span class="bd ${asgn?.status||'new'}">${SL[asgn?.status]||'Ny'}</span>
+    <span style="font-size:11px;color:var(--mu);margin-left:6px">${asgn?.enheter?.name||''}</span>
+  `;
+
+  // Metrics
+  let progPct = 0;
+  if(data.progress && typeof data.progress === 'object'){
+    const vals = Object.values(data.progress);
+    const done = vals.filter(v=>v&&v.done).length;
+    progPct = vals.length ? Math.round(done/vals.length*100) : 0;
+  }
+  const tasks = data.tasks || [];
+  const tasksDone = tasks.filter(t=>t.status==='completed').length;
+
+  document.getElementById('drMetrics').innerHTML = `
+    <div class="dr-m"><div class="dr-ml">CV</div><div class="dr-mv">${cv?'✅':'❌'}</div></div>
+    <div class="dr-m"><div class="dr-ml">Övningar</div><div class="dr-mv">${progPct}%</div></div>
+    <div class="dr-m"><div class="dr-ml">Uppgifter</div><div class="dr-mv">${tasksDone}/${tasks.length}</div></div>
+    <div class="dr-m"><div class="dr-ml">Matchningar</div><div class="dr-mv">${data.matchedCvs?.length||0}</div></div>
+  `;
+
+  // Quick assign buttons
+  document.getElementById('drQuickAssign').innerHTML = [
+    {icon:'📄',t:'Gör klart CV',tmpl:'cv-komplett'},
+    {icon:'🎤',t:'Intervju 15 min',tmpl:'intervju-15'},
+    {icon:'📚',t:'3 övningar',tmpl:'ovning-3'},
+    {icon:'🎯',t:'Matcha CV',tmpl:'matcha-5'},
+  ].map(q=>`<div class="qa-btn" onclick="quickAssign('${q.tmpl}')"><div class="qa-icon">${q.icon}</div><div class="qa-t">${q.t}</div></div>`).join('');
+
+  // Current tasks
+  const catIcons = {cv:'📄',övning:'📚',intervju:'🎤',matchning:'🎯',jobbsök:'🔍',övrigt:'📝'};
+  const statusColors = {pending:{bg:'var(--blb)',c:'var(--bl)',t:'Ny'},active:{bg:'var(--orb)',c:'var(--or)',t:'Pågår'},completed:{bg:'var(--gnb)',c:'var(--gn)',t:'Klar'},expired:{bg:'var(--rdb)',c:'var(--rd)',t:'Försenad'}};
+
+  document.getElementById('drTasks').innerHTML = tasks.length ? tasks.map(t=>{
+    const sc = statusColors[t.status]||statusColors.pending;
+    return `<div class="tsk">
+      <div class="tsk-icon" style="background:${sc.bg}">${catIcons[t.category]||'📝'}</div>
+      <div style="flex:1"><div class="tsk-t">${t.title}</div>
+        <div class="tsk-s">${t.deadline?'Deadline: '+t.deadline.split('T')[0]:''}${t.time_spent_sec?' · '+Math.round(t.time_spent_sec/60)+' min':''}</div>
+        <span class="tsk-tag" style="background:${sc.bg};color:${sc.c}">${sc.t}</span>
+      </div>
+    </div>`;
+  }).join('') : '<div style="font-size:12px;color:var(--mu);padding:8px 0">Inga uppgifter tilldelade</div>';
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+
+function closeDrawer(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('drawer').classList.remove('open');
+}
+
+// ═══ TASK ASSIGNMENT ═══
+const QUICK_TEMPLATES = {
+  'cv-komplett': {title:'Gör klart hela CV:t',category:'cv',description:'Alla sektioner ifyllda',params:{verify_field:'cv_progress',verify_operator:'>=',verify_target:'100'}},
+  'intervju-15': {title:'Intervjuövning 15 min',category:'intervju',durationMinutes:15,params:{verify_field:'session_duration',verify_operator:'>=',verify_target:'900'}},
+  'ovning-3':    {title:'Genomför 3 övningar',category:'övning',params:{verify_field:'exercises_completed_count',verify_operator:'>=',verify_target:'3'}},
+  'matcha-5':    {title:'Matcha CV mot 5 annonser',category:'matchning',params:{verify_field:'match_count_delta',verify_operator:'>=',verify_target:'5'}},
+};
+
+async function quickAssign(tmplId){
+  const tmpl = QUICK_TEMPLATES[tmplId];
+  if(!tmpl||!currentUserId) return;
+
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate() + 7);
+
+  await post('assign_task',{
+    targetUserId: currentUserId,
+    title: tmpl.title,
+    description: tmpl.description || tmpl.title,
+    category: tmpl.category,
+    deadline: deadline.toISOString(),
+    durationMinutes: tmpl.durationMinutes || null,
+    tParams: tmpl.params || null,
+    filters: { adminId: admin.id }
+  });
+
+  openDrawer(currentUserId); // Refresh
+}
+
+async function assignCustomTask(){
+  const title = document.getElementById('drCustomTask').value.trim();
+  if(!title||!currentUserId) return;
+
+  const deadlineDays = parseInt(document.getElementById('drDeadline').value) || 7;
+  const duration = parseInt(document.getElementById('drDuration').value) || null;
+
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate() + deadlineDays);
+
+  await post('assign_task',{
+    targetUserId: currentUserId,
+    title: title,
+    category: 'övrigt',
+    deadline: deadline.toISOString(),
+    durationMinutes: duration,
+    filters: { adminId: admin.id }
+  });
+
+  document.getElementById('drCustomTask').value = '';
+  openDrawer(currentUserId);
+}
+
+// ═══ STATS TAB ═══
+async function loadStats(){
+  const filters = {};
+  if(admin.role==='kommunadmin') filters.kommun_id = admin.kommun_id;
+  if(admin.role==='handlaggare') filters.enhet_id = admin.enhet_id;
+
+  const data = await post('admin_stats',{filters});
+  const t = data.tasks||{};
+  const u = data.users||{};
+  const cats = data.byCategory||[];
+
+  document.getElementById('statsContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Deltagare</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="text-align:center"><div style="font-size:28px;font-weight:800">${u.total||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Totalt</div></div>
+          <div style="text-align:center"><div style="font-size:28px;font-weight:800;color:var(--gn)">${u.active||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Aktiva</div></div>
+        </div>
+      </div>
+      <div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Uppgifter</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="text-align:center"><div style="font-size:24px;font-weight:800">${t.total||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Totalt</div></div>
+          <div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--gn)">${t.completed||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Klara</div></div>
+          <div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--or)">${t.pending||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Väntande</div></div>
+        </div>
+      </div>
+      <div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px;grid-column:1/-1">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Tid per kategori</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">${cats.map(c=>
+          `<div style="background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 14px;text-align:center;min-width:100px">
+            <div style="font-size:20px;font-weight:800">${c.completed}/${c.total}</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:2px">${c.category}</div>
+          </div>`
+        ).join('')}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ═══ TASKS TAB ═══
+async function loadAllTasks(){
+  const filters = {};
+  if(admin.role==='kommunadmin') filters.kommun_id = admin.kommun_id;
+  if(admin.role==='handlaggare') filters.enhet_id = admin.enhet_id;
+
+  // Re-use admin_stats for now
+  const data = await post('admin_stats',{filters});
+  const t = data.tasks||{};
+
+  document.getElementById('tasksContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div class="stc"><div class="stl">Väntande</div><div class="stv" style="color:var(--bl)">${t.pending||0}</div></div>
+      <div class="stc"><div class="stl">Pågående</div><div class="stv" style="color:var(--or)">${t.active||0}</div></div>
+      <div class="stc"><div class="stl">Klara</div><div class="stv" style="color:var(--gn)">${t.completed||0}</div></div>
+      <div class="stc"><div class="stl">Försenade</div><div class="stv" style="color:var(--rd)">${t.expired||0}</div></div>
+    </div>
+    <div style="font-size:13px;color:var(--mu)">Total tid spenderad: <b style="color:var(--tx)">${Math.round((t.total_time_sec||0)/3600)} timmar</b></div>
+  `;
+}
+
+// ═══ EXPORT ═══
+function exportData(){
+  const csv = [['Namn','E-post','Status','CV','Övningar','Uppgifter klara']];
+  allUsers.forEach(u=>{
+    const cv = u.cv?.data;
+    csv.push([
+      cv?[cv.firstName,cv.lastName].join(' '):'Okänd',
+      cv?.email||'',
+      SL[u.status]||'',
+      cv?'Ja':'Nej',
+      u.progress?Object.values(u.progress).filter(v=>v?.done).length+'/'+Object.keys(u.progress).length:'0',
+      (u.tasks?.completed||0)+'/'+(u.tasks?.total||0)
+    ]);
+  });
+  const str = csv.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent('\ufeff'+str);
+  a.download = 'cvmatchen_export_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+}
+
+// ═══ BOOT ═══
+(function boot(){
+  // Embed mode
+  if(new URLSearchParams(location.search).get('embed')==='true'||window!==window.top){
+    document.body.classList.add('embed');
+  }
+
+  // Kolla sparad session
+  const saved = sessionStorage.getItem('cvmatchen_admin');
+  if(saved){
+    try{
+      admin = JSON.parse(saved);
+      enterApp();
+      return;
+    }catch(e){}
+  }
+
+  // Visa login
+  document.getElementById('loginOverlay').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
