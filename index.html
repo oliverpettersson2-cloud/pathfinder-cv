@@ -13552,5 +13552,26 @@ ${styleTexts}
     }
 
     // Spara via event delegation — chatt + framtidsyrken
+    function wireSaveDelegate(container) {
       if (!container) return;
-      container.addEventListener('click', func
+      container.addEventListener('click', function(e) {
+        var btn = e.target.closest('.edu-save-btn, .edu-link-btn');
+        if (btn && btn.classList.contains('edu-link-btn')) {
+          var url = btn.dataset.url;
+          var namn = btn.dataset.namn;
+          if (url) showEduModal(namn, url);
+        }
+      });
+    }
+
+    wireSaveDelegate(document.getElementById('edu-messages'));
+    wireSaveDelegate(document.getElementById('edu-framtidsyrken-list'));
+  }
+
+  // Kör init när sidan laddat
+  document.addEventListener('DOMContentLoaded', init);
+
+})();
+  </script>
+</body>
+</html>
