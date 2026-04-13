@@ -15067,15 +15067,11 @@ ${styleTexts}
       const s = document.getElementById('matchaSearch');
       if (s) {
         if (s.value.length === 0) {
-          // Hämta CV-titel för auto-sök — använd _matchaSelectedCVId (det valda CV:t i UI:t)
-          try {
-            const savedCVs = typeof mobGetSavedCVs === 'function' ? mobGetSavedCVs() : JSON.parse(localStorage.getItem('pathfinder_saved_cvs') || '[]');
-            const cv = _matchaSelectedCVId === '__active__' ? cvData : savedCVs.find(c => c.id === _matchaSelectedCVId) || savedCVs[0];
-            const cvTitle = cv && (cv.title || (cv.data && cv.data.title));
-            s.value = cvTitle || (cvData && cvData.title) || 'jobb';
-          } catch(e) { s.value = 'jobb'; }
+          // Auto-fyll från valt CV via matchaPreFillFromCV (läser _matchaSelectedCVId korrekt)
+          matchaPreFillFromCV();
+        } else {
+          matchaDoSearch();
         }
-        matchaDoSearch();
       }
     }
     // Byt till steg 3 → rendera valda annonser + CV-grid
