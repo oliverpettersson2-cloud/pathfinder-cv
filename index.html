@@ -4,13 +4,13 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
 
   <!-- PDF Generation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="./index_files/jspdf.umd.min.js.ladda ned"></script>
+  <script src="./index_files/html2canvas.min.js.ladda ned"></script>
   
   
   <style>
@@ -5608,7 +5608,9 @@ Ge bara profiltexten, ingen förklaringtext.`;
       // Profil
       const summarySection = document.getElementById('summarySection');
       if (cvData.summary) {
-        document.getElementById('previewSummary').textContent = cvData.summary;
+        document.getElementById('previewSummary').innerHTML = cvData.summary
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
         summarySection.style.display = 'block';
       } else {
         summarySection.style.display = 'none';
