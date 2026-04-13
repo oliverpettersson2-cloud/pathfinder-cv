@@ -1903,6 +1903,7 @@
         animation: mobFadeIn 0.2s ease;
       }
       .mob-panel--active { display: block; }
+      #mobPanel-aisyv.mob-panel--active { display: flex; }
 
       @keyframes mobFadeIn {
         from { opacity: 0; transform: translateY(6px); }
@@ -8034,7 +8035,7 @@ ${styleTexts}
     </div>
 
     <!-- FLIK: AI-SYV -->
-    <div class="mob-panel" id="mobPanel-aisyv" style="padding:0;overflow:hidden;height:calc(100vh - 120px);display:none;flex-direction:column;">
+    <div class="mob-panel" id="mobPanel-aisyv" style="padding:0;overflow:hidden;height:calc(100vh - 120px);flex-direction:column;">
 
       <!-- VY 1: STARTSIDA (4 kort) -->
       <div id="edu-home" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 100px;">
