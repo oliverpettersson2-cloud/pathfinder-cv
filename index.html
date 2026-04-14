@@ -4764,10 +4764,14 @@
       // Hoppa inte till jobEndYear automatiskt (brukar vara Pågående eller väljs manuellt)
       // Men för utbildning: vi auto-advancear hela vägen inkl. eduEndYear
       if (next) {
-        const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
-        const label = labelMap[next] || 'TILL - Ar';
-        const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
-        setTimeout(() => cpickerOpen(next, label, color), 200);
+        // Auto-advance bara om nästa fält är TOMT (inte vid redigering av befintlig post)
+        const nextVal = document.getElementById(next) && document.getElementById(next).value;
+        if (!nextVal) {
+          const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
+          const label = labelMap[next] || 'TILL - Ar';
+          const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
+          setTimeout(() => cpickerOpen(next, label, color), 200);
+        }
       }
     }
 
@@ -6969,28 +6973,7 @@ ${styleTexts}
       btn.innerHTML = 'Verifiera kod';
     }
 
-    // Rensa all lokal användardata — kallas vid varje ny inloggning
-    function _clearUserData() {
-      const keysToRemove = [
-        'cvData','pathfinder_saved_cvs','pathfinder_matched_cvs',
-        'pathfinder_job_diary','pathfinder_selected_cv','pathfinder_selected_ads',
-        'cvmatchen_edu_saved','pf_saved_edu','cvmatchen_ovningar_progress',
-        'pf_ai_cache','pathfinder_mob_unlocked'
-      ];
-      keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
-      cvData = {
-        name:'',title:'',email:'',phone:'',summary:'',
-        jobs:[],education:[],languages:[],certifications:[],
-        licenses:[],references:[],skills:[],
-        photoData:null,showPhoto:true,template:'classic',refOnRequest:false
-      };
-      ['name','title','email','phone','summary'].forEach(f => {
-        const el = document.getElementById(f); if(el) el.value='';
-      });
-    }
-
     function authSetLoggedIn(email, isNew, userId, accessToken) {
-      _clearUserData(); // Rensa förra användarens data
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
@@ -7120,7 +7103,6 @@ ${styleTexts}
 
     function authSetLoggedInSilent(email, userId, accessToken) {
       // Direkt till appen utan overlay/bekräftelseskärm
-      _clearUserData(); // Rensa förra användarens data
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
       logEvent('login');
@@ -7775,6 +7757,9 @@ ${styleTexts}
       </button>
       <button onclick="mobSaveCVToList()" style="margin-top:10px;width:100%;padding:13px;background:#f0c040;color:#1a1a2e;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;">
         Spara CV-version till Profil
+      </button>
+      <button onclick="nyttCV()" style="margin-top:10px;width:100%;padding:13px;background:rgba(220,38,38,0.12);border:1.5px solid rgba(220,38,38,0.4);color:#f87171;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;">
+        🗑️ Ta bort CV &amp; börja om
       </button>
     </div>
 
