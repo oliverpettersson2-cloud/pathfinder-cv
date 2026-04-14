@@ -6972,7 +6972,6 @@ ${styleTexts}
       btn.innerHTML = 'Verifiera kod';
     }
 
-    // Rensa all lokal användardata — kallas vid varje ny inloggning
     function _clearUserData() {
       const keysToRemove = [
         'cvData','pathfinder_saved_cvs','pathfinder_matched_cvs',
@@ -6981,18 +6980,16 @@ ${styleTexts}
         'pf_ai_cache','pathfinder_mob_unlocked'
       ];
       keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
-      cvData = {
-        name:'',title:'',email:'',phone:'',summary:'',
-        jobs:[],education:[],languages:[],certifications:[],
-        licenses:[],references:[],skills:[],
-        photoData:null,showPhoto:true,template:'classic',refOnRequest:false
-      };
+      cvData = { name:'',title:'',email:'',phone:'',summary:'',jobs:[],education:[],
+        languages:[],certifications:[],licenses:[],references:[],skills:[],
+        photoData:null,showPhoto:true,template:'classic',refOnRequest:false };
       ['name','title','email','phone','summary'].forEach(f => {
         const el = document.getElementById(f); if(el) el.value='';
       });
     }
 
     function authSetLoggedIn(email, isNew, userId, accessToken) {
+      window._authEmail = email;
       _clearUserData();
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
@@ -7111,6 +7108,18 @@ ${styleTexts}
         }
 
         showToast('✅ Din data är laddad!', 'success');
+
+        // Auto-registrera deltagaren i user_assignments
+        try {
+          const name = cvData.name || '';
+          const phone = cvData.phone || '';
+          await fetch('/api/supabase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'ensure_participant', userId, email: window._authEmail || '', name, phone })
+          });
+        } catch(e) {}
+
       } catch(e) {
       }
     }
@@ -7123,6 +7132,7 @@ ${styleTexts}
 
     function authSetLoggedInSilent(email, userId, accessToken) {
       // Direkt till appen utan overlay/bekräftelseskärm
+      if (typeof email !== 'undefined') window._authEmail = email;
       _clearUserData();
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
@@ -8457,7 +8467,6 @@ ${styleTexts}
       slotsDiv.appendChild(btn);
     });
 
-    // Delete-delegation
     slotsDiv.addEventListener('click', function(e) {
       const delBtn = e.target.closest('[data-del-id]');
       if (!delBtn) return;
@@ -8474,7 +8483,6 @@ ${styleTexts}
 
     drawer.appendChild(slotsDiv);
 
-    // Tillbaka-knapp (via DOM, inte innerHTML — undviker quote-syntax-buggar)
     const backBtn = document.createElement('button');
     backBtn.textContent = '← Tillbaka';
     backBtn.style.cssText = 'margin-top:16px;width:100%;padding:13px;background:rgba(220,38,38,0.15);border:1.5px solid rgba(220,38,38,0.45);border-radius:12px;color:#f87171;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;';
@@ -8488,34 +8496,10 @@ ${styleTexts}
     drawer.style.transition = 'transform 0.28s cubic-bezier(0.32,0.72,0,1)';
     requestAnimationFrame(() => requestAnimationFrame(() => { drawer.style.transform = 'translateY(0)'; }));
 
-    // Swipe-to-dismiss
-    let _sy = 0, _cy = 0, _drag = false;
-    drawer.addEventListener('touchstart', function(e) {
-      _sy = e.touches[0].clientY; _drag = true;
-      drawer.style.transition = 'none';
-    }, {passive:true});
-    drawer.addEventListener('touchmove', function(e) {
-      if (!_drag) return;
-      _cy = e.touches[0].clientY;
-      const dy = Math.max(0, _cy - _sy);
-      drawer.style.transform = 'translateY(' + dy + 'px)';
-      overlay.style.background = 'rgba(0,0,0,' + Math.max(0, 0.6 - dy/400) + ')';
-    }, {passive:true});
-    drawer.addEventListener('touchend', function() {
-      if (!_drag) return; _drag = false;
-      const dy = Math.max(0, _cy - _sy);
-      if (dy > 100) {
-        drawer.style.transition = 'transform 0.22s ease-out';
-        drawer.style.transform = 'translateY(100%)';
-        overlay.style.transition = 'opacity 0.22s';
-        overlay.style.opacity = '0';
-        setTimeout(function() { overlay.remove(); }, 230);
-      } else {
-        drawer.style.transition = 'transform 0.22s cubic-bezier(0.32,0.72,0,1)';
-        drawer.style.transform = 'translateY(0)';
-        overlay.style.background = 'rgba(0,0,0,0.6)';
-      }
-    });
+    let _sy=0,_cy=0,_drag=false;
+    drawer.addEventListener('touchstart',function(e){_sy=e.touches[0].clientY;_drag=true;drawer.style.transition='none';},{passive:true});
+    drawer.addEventListener('touchmove',function(e){if(!_drag)return;_cy=e.touches[0].clientY;const dy=Math.max(0,_cy-_sy);drawer.style.transform='translateY('+dy+'px)';overlay.style.background='rgba(0,0,0,'+Math.max(0,0.6-dy/400)+')';},{passive:true});
+    drawer.addEventListener('touchend',function(){if(!_drag)return;_drag=false;const dy=Math.max(0,_cy-_sy);if(dy>100){drawer.style.transition='transform 0.22s ease-out';drawer.style.transform='translateY(100%)';overlay.style.transition='opacity 0.22s';overlay.style.opacity='0';setTimeout(function(){overlay.remove();},230);}else{drawer.style.transition='transform 0.22s cubic-bezier(0.32,0.72,0,1)';drawer.style.transform='translateY(0)';overlay.style.background='rgba(0,0,0,0.6)';}});
   }
 
   function mobEnterCVMode() {
