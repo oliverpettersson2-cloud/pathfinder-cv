@@ -123,18 +123,17 @@ export default async function handler(req, res) {
     }
 
     if (action === 'ensure_participant') {
-      // Skapa rad om den inte finns
+      // FIX: Bara kolumner som faktiskt finns i user_assignments (ingen email/updated_at)
       await makeRequest(
         `${SUPABASE_URL}/rest/v1/user_assignments`,
         { method: 'POST', headers: { ...serviceHeaders(), 'Prefer': 'resolution=ignore-duplicates,return=minimal' } },
-        { user_id: userId, email: email || null, name: personName || null, phone: personPhone || null, status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+        { user_id: userId, name: personName || null, phone: personPhone || null, status: 'active', created_at: new Date().toISOString() }
       );
-      // Uppdatera namn/telefon om de finns
       if (personName) {
         await makeRequest(
           `${SUPABASE_URL}/rest/v1/user_assignments?user_id=eq.${userId}`,
           { method: 'PATCH', headers: serviceHeaders() },
-          { name: personName, phone: personPhone || null, email: email || null, updated_at: new Date().toISOString() }
+          { name: personName, phone: personPhone || null }
         );
       }
       return res.status(200).json({ ok: true });
@@ -149,8 +148,8 @@ export default async function handler(req, res) {
     }
 
     if (action === 'admin_list_users') {
-      // FIX: Tog bort ',admins(name)' — FK-relation saknas och kraschade queryn
-      let url = `${SUPABASE_URL}/rest/v1/user_assignments?select=*&order=updated_at.desc,created_at.desc`;
+      // FIX: Sorterar på created_at — updated_at finns ej i user_assignments
+      let url = `${SUPABASE_URL}/rest/v1/user_assignments?select=*&order=created_at.desc`;
       if (filters?.enhet_id) url += `&enhet_id=eq.${filters.enhet_id}`;
       if (filters?.kommun_id) url += `&kommun_id=eq.${filters.kommun_id}`;
       if (filters?.status) url += `&status=eq.${filters.status}`;
