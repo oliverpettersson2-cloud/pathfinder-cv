@@ -327,15 +327,23 @@ async function loadUsers(){
 
 function renderStats(){
   const u = allUsers;
-  const act = u.filter(x=>x.status==='active').length;
-  const tot = u.length;
+  const tot   = u.length;
+  const act   = u.filter(x=>x.status==='active').length;
+  const withCV = u.filter(x => {
+    const cvd = x.cv?.data || x.cv || {};
+    return !!(cvd.name || cvd.title);
+  }).length;
+  const withProg = u.filter(x => {
+    const p = x.progress || {};
+    return Object.values(p).some(v => v && v.done);
+  }).length;
   const tasks = u.reduce((s,x)=>s+(x.tasks?.total||0),0);
   const done  = u.reduce((s,x)=>s+(x.tasks?.completed||0),0);
   document.getElementById('statCards').innerHTML = `
     <div class="stc"><div class="stl">Deltagare</div><div class="stv">${tot}</div></div>
     <div class="stc"><div class="stl">Aktiva</div><div class="stv" style="color:var(--gn)">${act}</div></div>
-    <div class="stc"><div class="stl">Uppgifter</div><div class="stv">${tasks}</div></div>
-    <div class="stc"><div class="stl">Klara</div><div class="stv" style="color:var(--ac)">${done}</div></div>
+    <div class="stc"><div class="stl">Har CV</div><div class="stv" style="color:var(--bl)">${withCV}</div></div>
+    <div class="stc"><div class="stl">Gjort övningar</div><div class="stv" style="color:var(--ac)">${withProg}</div></div>
   `;
 }
 
@@ -359,7 +367,7 @@ function renderTable(users){
     const taskInfo = u.tasks ? `${u.tasks.completed||0}/${u.tasks.total||0}` : '—';
     const progData = u.progress || {};
     const vals    = Object.values(progData);
-    const doneP   = vals.filter(v=>v&&v.done).length;
+    const doneP   = vals.filter(v => v === true || (v && v.done === true)).length;
     const progPct = vals.length ? Math.round(doneP/vals.length*100) : 0;
     const uid     = u.user_id || u.id || '';
     const lastSeen = u.cv?.updated_at?.split('T')[0] || u.last_seen?.split('T')[0] || '—';
@@ -409,7 +417,7 @@ async function openDrawer(userId){
 
   const progData = data.progress || {};
   const vals  = Object.values(progData);
-  const doneP = vals.filter(v=>v&&v.done).length;
+  const doneP = vals.filter(v => v === true || (v && v.done === true)).length;
   const progPct = vals.length ? Math.round(doneP/vals.length*100) : 0;
 
   const tasks     = data.tasks || [];
