@@ -6976,7 +6976,7 @@ ${styleTexts}
       btn.innerHTML = 'Verifiera kod';
     }
 
-    function authSetLoggedIn(email, isNew, userId, accessToken) {
+    async function authSetLoggedIn(email, isNew, userId, accessToken) {
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
@@ -6987,6 +6987,7 @@ ${styleTexts}
 
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
+      window._authEmail = email;
 
       logEvent('login');
       setNavStep(2);
@@ -6995,22 +6996,32 @@ ${styleTexts}
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
 
-      window._authEmail = email;
-
-      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-
-      // Visa onboarding om namn saknas, annars gå direkt in
-      if (!cvData.name || cvData.name.trim() === '') {
-        document.getElementById('onboardEmail').value = email;
-        document.getElementById('authStep3').classList.add('active');
-      } else {
-        authEnterApp();
-      }
-
       // Ladda CV från Supabase om inloggad
       if (userId && accessToken) {
         loadAllFromSupabase(userId, accessToken);
       }
+
+      // Kolla Supabase om användaren redan gjort onboarding
+      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+
+      if (userId) {
+        try {
+          const resp = await fetch('/api/supabase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'check_onboarding', userId })
+          });
+          const result = await resp.json();
+          if (result.hasName) {
+            authEnterApp();
+            return;
+          }
+        } catch(e) {}
+      }
+
+      // Visa onboarding
+      document.getElementById('onboardEmail').value = email;
+      document.getElementById('authStep3').classList.add('active');
     }
 
 
@@ -7120,7 +7131,6 @@ ${styleTexts}
       }
       errEl.classList.remove('visible');
 
-      // Spara i cvData → hamnar automatiskt i Profil-fliken
       cvData.name  = first + ' ' + last;
       cvData.email = window._authEmail || cvData.email;
       cvData.phone = phone;
@@ -7128,10 +7138,8 @@ ${styleTexts}
       if (typeof updateFormFields === 'function') updateFormFields();
       if (typeof updatePreview === 'function') updatePreview();
 
-      // Synka CV till Supabase
       saveCVToSupabase();
 
-      // Registrera i handläggarvyn
       const userId = window.authUserId;
       const accessToken = window.authAccessToken;
       if (userId) {
