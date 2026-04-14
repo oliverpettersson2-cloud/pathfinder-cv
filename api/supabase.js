@@ -7,18 +7,18 @@ export default async function handler(req, res) {
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY; // Ny — för admin-operationer
+  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return res.status(500).json({ error: 'Missing env vars' });
   }
 
   const { action, email, token, accessToken, userId, cvData, table, data,
-    // Nya fält för uppgifter/admin
     adminEmail, taskId, templateId, params: tParams,
     title, description, category, deadline, durationMinutes, note,
     targetUserId, role, kommunId, enhetId, name: personName,
-    filters
+    filters,
+    phone: personPhone
   } = req.body || {};
 
   function makeRequest(url, options, body) {
@@ -59,17 +59,12 @@ export default async function handler(req, res) {
     return { ...baseHeaders, 'Authorization': `Bearer ${token}` };
   }
 
-  // Service-headers för admin-operationer (kringgår RLS)
   function serviceHeaders() {
     const key = SUPABASE_SERVICE_KEY || SUPABASE_ANON_KEY;
     return { ...baseHeaders, 'apikey': key, 'Authorization': `Bearer ${key}` };
   }
 
   try {
-
-    // ╔═══════════════════════════════════════════════╗
-    // ║  BEFINTLIGA ACTIONS — INGA ÄNDRINGAR          ║
-    // ╚═══════════════════════════════════════════════╝
 
     // ── Skicka OTP-kod via mail ──
     if (action === 'send_otp') {
@@ -179,10 +174,23 @@ export default async function handler(req, res) {
       });
     }
 
-
-    // ╔═══════════════════════════════════════════════╗
-    // ║  NYA ACTIONS — HANDLÄGGARVY & UPPGIFTER       ║
-    // ╚═══════════════════════════════════════════════╝
+    // ── Auto-registrera deltagare vid login ──
+    if (action === 'ensure_participant') {
+      await makeRequest(
+        `${SUPABASE_URL}/rest/v1/user_assignments`,
+        { method: 'POST', headers: { ...serviceHeaders(), 'Prefer': 'resolution=ignore-duplicates,return=minimal' } },
+        {
+          user_id: userId,
+          email: email,
+          name: personName || null,
+          phone: personPhone || null,
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      );
+      return res.status(200).json({ ok: true });
+    }
 
     // ── Admin: identifiera handläggare via e-post ──
     if (action === 'admin_login') {
@@ -193,7 +201,6 @@ export default async function handler(req, res) {
       const rows = Array.isArray(result.data) ? result.data : [];
       if (!rows.length) return res.status(404).json({ error: 'Ej inbjuden till CVmatchen' });
 
-      // Uppdatera last_login
       await makeRequest(
         `${SUPABASE_URL}/rest/v1/admins?id=eq.${rows[0].id}`,
         { method: 'PATCH', headers: serviceHeaders() },
@@ -207,7 +214,6 @@ export default async function handler(req, res) {
     if (action === 'admin_list_users') {
       let url = `${SUPABASE_URL}/rest/v1/user_assignments?select=*,admins(name)&order=created_at.desc`;
 
-      // Rollfiltrering
       if (filters?.enhet_id) url += `&enhet_id=eq.${filters.enhet_id}`;
       if (filters?.kommun_id) url += `&kommun_id=eq.${filters.kommun_id}`;
       if (filters?.status) url += `&status=eq.${filters.status}`;
@@ -216,11 +222,9 @@ export default async function handler(req, res) {
 
       const result = await makeRequest(url, { method: 'GET', headers: serviceHeaders() });
 
-      // Hämta CV-data och övningsprogress för varje användare
       const users = Array.isArray(result.data) ? result.data : [];
-
-      // Batch-hämta extra data
       const userIds = users.map(u => u.user_id);
+
       if (userIds.length) {
         const idsFilter = userIds.map(id => `"${id}"`).join(',');
 
@@ -301,7 +305,6 @@ export default async function handler(req, res) {
         task
       );
 
-      // Logga
       await makeRequest(
         `${SUPABASE_URL}/rest/v1/admin_activity_log`,
         { method: 'POST', headers: { ...serviceHeaders(), 'Prefer': 'return=minimal' } },
@@ -323,14 +326,12 @@ export default async function handler(req, res) {
 
     // ── Uppgifter: starta timer ──
     if (action === 'start_task_session') {
-      // Uppdatera task-status
       await makeRequest(
         `${SUPABASE_URL}/rest/v1/tasks?id=eq.${taskId}&user_id=eq.${userId}`,
         { method: 'PATCH', headers: authHeaders(accessToken) },
         { status: 'active', started_at: new Date().toISOString(), updated_at: new Date().toISOString() }
       );
 
-      // Skapa session
       const result = await makeRequest(
         `${SUPABASE_URL}/rest/v1/task_sessions`,
         { method: 'POST', headers: { ...authHeaders(accessToken), 'Prefer': 'return=representation' } },
@@ -343,7 +344,6 @@ export default async function handler(req, res) {
 
     // ── Uppgifter: stoppa timer ──
     if (action === 'stop_task_session') {
-      // Hämta aktiv session
       const sessRes = await makeRequest(
         `${SUPABASE_URL}/rest/v1/task_sessions?task_id=eq.${taskId}&user_id=eq.${userId}&ended_at=is.null&order=started_at.desc&limit=1`,
         { method: 'GET', headers: authHeaders(accessToken) }
@@ -355,14 +355,12 @@ export default async function handler(req, res) {
       const startTime = new Date(session.started_at).getTime();
       const durationSec = Math.round((Date.now() - startTime) / 1000);
 
-      // Avsluta session
       await makeRequest(
         `${SUPABASE_URL}/rest/v1/task_sessions?id=eq.${session.id}`,
         { method: 'PATCH', headers: authHeaders(accessToken) },
         { ended_at: new Date().toISOString(), duration_sec: durationSec }
       );
 
-      // Summera total tid för denna task
       const totalRes = await makeRequest(
         `${SUPABASE_URL}/rest/v1/task_sessions?task_id=eq.${taskId}&select=duration_sec`,
         { method: 'GET', headers: authHeaders(accessToken) }
@@ -370,7 +368,6 @@ export default async function handler(req, res) {
       const totalSec = (Array.isArray(totalRes.data) ? totalRes.data : [])
         .reduce((sum, s) => sum + (s.duration_sec || 0), 0);
 
-      // Hämta task för att kolla target
       const taskRes = await makeRequest(
         `${SUPABASE_URL}/rest/v1/tasks?id=eq.${taskId}&limit=1`,
         { method: 'GET', headers: authHeaders(accessToken) }
@@ -382,7 +379,6 @@ export default async function handler(req, res) {
         completed = totalSec >= parseInt(task.verify_target);
       }
 
-      // Uppdatera task
       const updates = { time_spent_sec: totalSec, updated_at: new Date().toISOString() };
       if (completed) { updates.status = 'completed'; updates.completed_at = new Date().toISOString(); }
 
@@ -460,12 +456,8 @@ export default async function handler(req, res) {
       let taskUrl = `${SUPABASE_URL}/rest/v1/tasks?select=status,category,time_spent_sec,user_id`;
       let userUrl = `${SUPABASE_URL}/rest/v1/user_assignments?select=status,kommun_id,enhet_id`;
 
-      if (filters?.kommun_id) {
-        userUrl += `&kommun_id=eq.${filters.kommun_id}`;
-      }
-      if (filters?.enhet_id) {
-        userUrl += `&enhet_id=eq.${filters.enhet_id}`;
-      }
+      if (filters?.kommun_id) userUrl += `&kommun_id=eq.${filters.kommun_id}`;
+      if (filters?.enhet_id) userUrl += `&enhet_id=eq.${filters.enhet_id}`;
 
       const [taskRes, userRes] = await Promise.all([
         makeRequest(taskUrl, { method: 'GET', headers: serviceHeaders() }),
