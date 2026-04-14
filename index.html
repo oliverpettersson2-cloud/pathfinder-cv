@@ -6969,7 +6969,28 @@ ${styleTexts}
       btn.innerHTML = 'Verifiera kod';
     }
 
+    // Rensa all lokal användardata — kallas vid varje ny inloggning
+    function _clearUserData() {
+      const keysToRemove = [
+        'cvData','pathfinder_saved_cvs','pathfinder_matched_cvs',
+        'pathfinder_job_diary','pathfinder_selected_cv','pathfinder_selected_ads',
+        'cvmatchen_edu_saved','pf_saved_edu','cvmatchen_ovningar_progress',
+        'pf_ai_cache','pathfinder_mob_unlocked'
+      ];
+      keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+      cvData = {
+        name:'',title:'',email:'',phone:'',summary:'',
+        jobs:[],education:[],languages:[],certifications:[],
+        licenses:[],references:[],skills:[],
+        photoData:null,showPhoto:true,template:'classic',refOnRequest:false
+      };
+      ['name','title','email','phone','summary'].forEach(f => {
+        const el = document.getElementById(f); if(el) el.value='';
+      });
+    }
+
     function authSetLoggedIn(email, isNew, userId, accessToken) {
+      _clearUserData(); // Rensa förra användarens data
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
@@ -7099,6 +7120,7 @@ ${styleTexts}
 
     function authSetLoggedInSilent(email, userId, accessToken) {
       // Direkt till appen utan overlay/bekräftelseskärm
+      _clearUserData(); // Rensa förra användarens data
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
       logEvent('login');
@@ -7126,35 +7148,9 @@ ${styleTexts}
       const saved = pfRead(AUTH_STORAGE_KEY);
       const email = saved ? JSON.parse(saved).email : '';
       if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
-        // ── Rensa all användardata från localStorage ──
-        const keysToRemove = [
-          AUTH_STORAGE_KEY,
-          'cvData',
-          'pathfinder_saved_cvs',
-          'pathfinder_matched_cvs',
-          'pathfinder_job_diary',
-          'pathfinder_selected_cv',
-          'pathfinder_selected_ads',
-          'cvmatchen_edu_saved',
-          'pf_saved_edu',
-          'cvmatchen_ovningar_progress',
-          'pf_ai_cache',
-          'pathfinder_api_key',
-          'pathfinder_mob_unlocked'
-        ];
-        keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
-
-        // ── Återställ cvData i minnet ──
-        cvData = {
-          name: '', title: '', email: '', phone: '', summary: '',
-          jobs: [], education: [], languages: [], certifications: [],
-          licenses: [], references: [], skills: [],
-          photoData: null, showPhoto: true, template: 'classic', refOnRequest: false
-        };
-
+        pfRemove(AUTH_STORAGE_KEY);
         window.authUserId = null;
         window.authAccessToken = null;
-        window._authEmail = null;
         document.getElementById('authUserBadge').style.display = 'none';
         document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
         document.getElementById('authStep1').classList.add('active');
