@@ -1,15 +1,16 @@
 <!DOCTYPE html>
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_47.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
 
   <!-- PDF Generation Libraries -->
-  <script src="/jspdf.umd.min.js"></script>
-  <script src="/html2canvas.min.js"></script>
+  <script src="file:///C:/jspdf.umd.min.js"></script>
+  <script src="file:///C:/html2canvas.min.js"></script>
   
   
   <style>
@@ -2500,8 +2501,8 @@
 
         <!-- Handläggare: Microsoft -->
         <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);font-weight:700;margin-bottom:12px;">Handläggare</div>
-        <button onclick="authLoginMicrosoft()" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 18px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;color:#fff;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.07)'">
-          <svg width="20" height="20" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+        <button onclick="authLoginMicrosoft()" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 18px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;color:#fff;" onmouseover="this.style.background=&#39;rgba(255,255,255,0.12)&#39;" onmouseout="this.style.background=&#39;rgba(255,255,255,0.07)&#39;">
+          <svg width="20" height="20" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"></rect><rect x="11" y="1" width="9" height="9" fill="#7fba00"></rect><rect x="1" y="11" width="9" height="9" fill="#00a4ef"></rect><rect x="11" y="11" width="9" height="9" fill="#ffb900"></rect></svg>
           Logga in med Microsoft
         </button>
 
@@ -2514,8 +2515,8 @@
         <div id="authStep1Error" class="auth-error"></div>
 
         <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:center;gap:16px;font-size:11px;">
-          <a href="#" style="color:rgba(255,255,255,0.3);text-decoration:none;">Allmänna villkor</a>
-          <a href="#" style="color:rgba(255,255,255,0.3);text-decoration:none;">GDPR</a>
+          <a href="file:///C:/Users/olive/Downloads/index_47.html#" style="color:rgba(255,255,255,0.3);text-decoration:none;">Allmänna villkor</a>
+          <a href="file:///C:/Users/olive/Downloads/index_47.html#" style="color:rgba(255,255,255,0.3);text-decoration:none;">GDPR</a>
         </div>
         <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.15);margin-top:8px;">PathfinderAI AB</div>
       </div>
@@ -2548,10 +2549,17 @@
 
       <!-- STEG 3: Inloggad -->
       <div id="authStep3" class="auth-step">
-        <div style="font-size:48px; margin-bottom:16px;">✅</div>
-        <div class="auth-title">Du ar inloggad!</div>
-        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96f2fff8d6f3e6f9e5e2b8e5f3">[email&#160;protected]</a></div>
-        <button class="auth-btn" onclick="authEnterApp()">Fortsätt till CVmatchen</button>
+        <div style="font-size:40px; margin-bottom:12px;">👋</div>
+        <div class="auth-title">Vad heter du?</div>
+        <div class="auth-subtitle" style="margin-bottom:20px;">Fyll i dina uppgifter — de hamnar direkt i ditt CV.</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;">
+          <input type="text" id="onboardFirstName" class="auth-input" placeholder="Förnamn*" style="flex:1;">
+          <input type="text" id="onboardLastName" class="auth-input" placeholder="Efternamn*" style="flex:1;">
+        </div>
+        <input type="tel" id="onboardPhone" class="auth-input" placeholder="Telefon (valfritt)" style="margin-bottom:12px;">
+        <input type="email" id="onboardEmail" class="auth-input" placeholder="E-post" disabled style="margin-bottom:20px;opacity:0.5;cursor:not-allowed;">
+        <div id="onboardError" class="auth-error"></div>
+        <button class="auth-btn" onclick="authSaveOnboarding()">Kom igång →</button>
       </div>
     </div>
   </div>
@@ -2583,7 +2591,7 @@
       </div>
       <!-- Osynlig placeholder — JS-refs kräver detta element -->
       <div id="authUserBadge" style="display: flex; position: absolute; right: 4px;">
-        <span id="authUserEmail" style="display:none;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="731c1f1a0516015d03160707160100001c1d4133141e121a1f5d101c1e">[email&#160;protected]</a></span>
+        <span id="authUserEmail" style="display:none;">oliver.pettersson2@gmail.com</span>
       </div>
     </div>
     <!-- Rad 2: CV-stegindikator (dold tills CV-läge) -->
@@ -2937,7 +2945,7 @@
           </div>
         </div>
         <button class="btn-add" onclick="openRefModal()">+ Lägg till referens</button>
-        <button class="btn-add" style="border-style: solid; background: rgba(62,180,137,0.1); color: rgba(62,180,137,0.8); border-color: rgba(62,180,137,0.3);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
+        <button class="btn-add" style="border-style: solid; background: rgba(62, 180, 137, 0.3); color: rgb(62, 180, 137); border-color: rgb(62, 180, 137); font-weight: 700;" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
       </div>
 
       <!-- PDF Export -->
@@ -2956,7 +2964,7 @@
           <div class="cv-header-content">
             <div class="cv-name" id="previewName">Oliver Pettersson</div>
             <div class="cv-title" id="previewTitle">Studie &amp; Yrkesvägledare</div>
-            <div class="cv-contact" id="previewContact"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="90fffcf9e6f5e2bee0f5e4e4f5e2e3e3fffea2d0f7fdf1f9fcbef3fffd">[email&#160;protected]</a> · 0766071757</div>
+            <div class="cv-contact" id="previewContact">oliver.pettersson2@gmail.com · 0766071757</div>
           </div>
         </div>
         <div class="cv-body">
@@ -4293,7 +4301,7 @@
     </div>
   </div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -6987,13 +6995,17 @@ ${styleTexts}
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
 
-      const welcomeText = isNew
-        ? 'Välkommen till CVmatchen, ' + email + '!'
-        : 'Du är inloggad som ' + email;
-      document.getElementById('authWelcomeText').textContent = welcomeText;
+      window._authEmail = email;
 
       document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-      document.getElementById('authStep3').classList.add('active');
+
+      // Visa onboarding om namn saknas, annars gå direkt in
+      if (!cvData.name || cvData.name.trim() === '') {
+        document.getElementById('onboardEmail').value = email;
+        document.getElementById('authStep3').classList.add('active');
+      } else {
+        authEnterApp();
+      }
 
       // Ladda CV från Supabase om inloggad
       if (userId && accessToken) {
@@ -7093,6 +7105,51 @@ ${styleTexts}
     function authEnterApp() {
       document.getElementById('authOverlay').classList.add('hidden');
       setNavStep(2);
+    }
+
+    async function authSaveOnboarding() {
+      const first = document.getElementById('onboardFirstName').value.trim();
+      const last  = document.getElementById('onboardLastName').value.trim();
+      const phone = document.getElementById('onboardPhone').value.trim();
+      const errEl = document.getElementById('onboardError');
+
+      if (!first || !last) {
+        errEl.textContent = 'Förnamn och efternamn krävs.';
+        errEl.classList.add('visible');
+        return;
+      }
+      errEl.classList.remove('visible');
+
+      // Spara i cvData → hamnar automatiskt i Profil-fliken
+      cvData.name  = first + ' ' + last;
+      cvData.email = window._authEmail || cvData.email;
+      cvData.phone = phone;
+      try { localStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
+      if (typeof updateFormFields === 'function') updateFormFields();
+      if (typeof updatePreview === 'function') updatePreview();
+
+      // Synka CV till Supabase
+      saveCVToSupabase();
+
+      // Registrera i handläggarvyn
+      const userId = window.authUserId;
+      const accessToken = window.authAccessToken;
+      if (userId) {
+        fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'ensure_participant',
+            userId,
+            email: cvData.email,
+            accessToken,
+            name: cvData.name,
+            phone: phone
+          })
+        }).catch(() => {});
+      }
+
+      authEnterApp();
     }
 
 
@@ -7410,17 +7467,17 @@ ${styleTexts}
        ===================================================== -->
 
   <!-- Tab bar längst ner -->
-  <div id="mobProgressBar" style="width:14%;"></div>
+  <div id="mobProgressBar" style="width: 100%;"></div>
 
   <!-- Huvud-navbar (5 knappar) -->
   <div id="mobileTabBar">
     <!-- 1. Hej -->
-    <button class="mob-tab" id="tabBtn-hej" onclick="mobSwitchTab(&#39;hej&#39;)">
+    <button class="mob-tab mob-tab--active" id="tabBtn-hej" onclick="mobSwitchTab(&#39;hej&#39;)">
       <span class="mob-tab__icon">👋</span>
       <span>Hej</span>
     </button>
     <!-- 2. CV (öppnar undermeny) -->
-    <button class="mob-tab mob-tab--active" id="tabBtn-cv-menu" onclick="mobOpenCV()">
+    <button class="mob-tab" id="tabBtn-cv-menu" onclick="mobOpenCV()">
       <span class="mob-tab__icon">📄</span>
       <span>CV</span>
     </button>
@@ -7441,7 +7498,7 @@ ${styleTexts}
       <span style="font-size:8px;font-weight:900;letter-spacing:0.3px;">Övningar</span>
     </button>
     <!-- 6. Profil -->
-    <button class="mob-tab" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
+    <button class="mob-tab mob-tab--done" id="tabBtn-export" onclick="mobSwitchTab(&#39;export&#39;)">
       <span class="mob-tab__icon">👤</span>
       <span>Profil</span>
     </button>
@@ -7450,10 +7507,10 @@ ${styleTexts}
 
 
   <!-- Mobil innehållsyta -->
-  <div id="mobileContent">
+  <div id="mobileContent" style="top: 52px;">
 
     <!-- FLIK 1: Info (Personuppgifter) -->
-    <div class="mob-panel mob-panel--active" id="mobPanel-info">
+    <div class="mob-panel" id="mobPanel-info">
 
       <div class="mob-section">
         <div class="mob-section-title">Profilbild</div>
@@ -7465,7 +7522,7 @@ ${styleTexts}
         <button class="mob-btn-primary mob-btn-green" onclick="document.getElementById(&#39;mobPhotoUpload&#39;).click()">
           🖼️ Välj foto från bilder
         </button>
-        <button class="mob-btn-primary mob-btn-danger" id="mobRemovePhotoBtn" onclick="mobRemovePhoto()" style="display:none;">
+        <button class="mob-btn-primary mob-btn-danger" id="mobRemovePhotoBtn" onclick="mobRemovePhoto()" style="display: flex;">
           🗑️ Ta bort bild
         </button>
       </div>
@@ -7479,7 +7536,7 @@ ${styleTexts}
       </div>
 
       <div class="mob-fortsatt">
-        <button class="mob-fortsatt-btn mob-fortsatt-btn--disabled" id="mobFortsattInfo" onclick="mobFortsatt(&#39;info&#39;,&#39;jobb&#39;)">
+        <button class="mob-fortsatt-btn" id="mobFortsattInfo" onclick="mobFortsatt(&#39;info&#39;,&#39;jobb&#39;)">
           Fortsätt till Jobb &amp; Utbildning →
         </button>
       </div>
@@ -7515,14 +7572,80 @@ ${styleTexts}
     <div class="mob-panel" id="mobPanel-jobb">
       <div class="mob-section">
         <div class="mob-section-title">Arbetslivserfarenhet</div>
-        <div id="mobJobsList"></div>
+        <div id="mobJobsList">
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>Studie &amp; Yrkesvägledare</strong>
+          <small>Arbetsmarknad · 2017</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openJobModal(0)">✏️</button>
+          <button class="mob-icon-btn" onclick="removeJob(0); mobRenderJobs();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>Bartender/servitör</strong>
+          <small>Speakers Corner · 2013</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openJobModal(1)">✏️</button>
+          <button class="mob-icon-btn" onclick="removeJob(1); mobRenderJobs();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>Servitör/Bartender</strong>
+          <small>Tycho Brahe Restaurang · 2014</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openJobModal(2)">✏️</button>
+          <button class="mob-icon-btn" onclick="removeJob(2); mobRenderJobs();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>Bartender/servitör</strong>
+          <small>NISSE</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openJobModal(3)">✏️</button>
+          <button class="mob-icon-btn" onclick="removeJob(3); mobRenderJobs();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    </div>
         <button class="mob-btn-primary mob-btn-outline" onclick="openJobModal()">
           + Lägg till jobb
         </button>
       </div>
       <div class="mob-section" style="margin-top:8px;">
         <div class="mob-section-title">Utbildning</div>
-        <div id="mobEduList"></div>
+        <div id="mobEduList">
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>haha</strong>
+          <small></small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openEduModal(0)">✏️</button>
+          <button class="mob-icon-btn" onclick="removeEdu(0); mobRenderEdu();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>UHRIY</strong>
+          <small>Folkhögskola</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openEduModal(1)">✏️</button>
+          <button class="mob-icon-btn" onclick="removeEdu(1); mobRenderEdu();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    </div>
         <button class="mob-btn-primary mob-btn-outline" onclick="openEduModal()">+ Lägg till utbildning</button>
       </div>
       <div class="mob-fortsatt">
@@ -7541,7 +7664,37 @@ ${styleTexts}
           <span>Kompetenser</span>
           <button style="background:none;border:none;color:#ff8080;font-size:11px;font-weight:700;cursor:pointer;" onclick="clearAllSkills()">🗑️ Rensa</button>
         </div>
-        <div class="skills-grid" id="mobSkillsGrid" style="margin-bottom:10px;"></div>
+        <div class="skills-grid" id="mobSkillsGrid" style="margin-bottom:10px;">
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 0)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 0)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Vägledning
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(0)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 1)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 1)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Kommunikation
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(1)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 2)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 2)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Pedagogik
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(2)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 3)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 3)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Analys
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(3)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 4)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 4)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Samarbete
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(4)">×</span>
+        </div>
+      
+        <div class="skill-badge selected" draggable="true" ondragstart="startDrag(event, &#39;skills&#39;, 5)" ondragover="dragOver(event)" ondrop="drop(event, &#39;skills&#39;, 5)" ondragend="dragEnd(event)" style="cursor: grab; user-select: none;">
+          Service
+          <span style="opacity: 0.7; cursor: pointer; margin-left: 4px;" onclick="removeSkill(5)">×</span>
+        </div>
+      </div>
         <button class="mob-btn-primary mob-btn-outline" onclick="openSkillsModal()">+ Hantera kompetenser</button>
         <button class="mob-btn-primary mob-btn-ai" onclick="aiMatchSkills()" style="margin-top:6px;">🤖 AI-förslag på kompetenser</button>
       </div>
@@ -7551,7 +7704,17 @@ ${styleTexts}
           <span>Språk</span>
           <button style="background:none;border:none;color:#ff8080;font-size:11px;font-weight:700;cursor:pointer;" onclick="clearAllLanguages()">🗑️ Rensa</button>
         </div>
-        <div class="skills-grid" id="mobLanguagesGrid" style="margin-bottom:10px;"></div>
+        <div class="skills-grid" id="mobLanguagesGrid" style="margin-bottom:10px;">
+        <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;" onclick="removeLanguage(&#39;Svenska&#39;)">
+          Svenska - Modersmål
+          <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;">×</span>
+        </div>
+      
+        <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;" onclick="removeLanguage(&#39;Arabiska&#39;)">
+          Arabiska - Flytande
+          <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;">×</span>
+        </div>
+      </div>
         <button class="mob-btn-primary mob-btn-outline" onclick="openLanguagesModal()">+ Hantera språk</button>
       </div>
 
@@ -7560,21 +7723,57 @@ ${styleTexts}
           <span>Körkort &amp; Licenser</span>
           <button style="background:none;border:none;color:#ff8080;font-size:11px;font-weight:700;cursor:pointer;" onclick="clearAllLicenses()">🗑️ Rensa</button>
         </div>
-        <div class="skills-grid" id="mobLicensesGrid" style="margin-bottom:10px;"></div>
+        <div class="skills-grid" id="mobLicensesGrid" style="margin-bottom:10px;">
+          <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ B - Personbil (max 3500kg)
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(0)">×</span>
+          </div>
+        
+          <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ Truckkort A - Låglyftande (plocktruck, ledstaplare)
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(1)">×</span>
+          </div>
+        
+          <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ Truckkort B - Höglyftande (motviktstruck, åkstaplare)
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(2)">×</span>
+          </div>
+        
+          <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ Truckkort C - Större specialtruckar
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(3)">×</span>
+          </div>
+        
+          <div style="display: inline-block; background: #f0ede6; border-radius: 6px; padding: 6px 12px; margin: 4px; font-size: 12px; font-weight: 600; color: var(--deep); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background=&#39;#e8e5de&#39;" onmouseout="this.style.background=&#39;#f0ede6&#39;">
+            ✓ Truckkort D - Specialiserade truckar
+            <span style="opacity: 0.6; cursor: pointer; margin-left: 6px;" onclick="removeLicense(4)">×</span>
+          </div>
+        </div>
         <button class="mob-btn-primary mob-btn-outline" onclick="openLicensesModal()">+ Hantera körkort</button>
       </div>
 
       <div class="mob-section">
         <div class="mob-section-title">Certifikationer</div>
-        <div id="mobCertList"></div>
+        <div id="mobCertList">
+      <div class="mob-item-card">
+        <div class="mob-item-text">
+          <strong>HLR</strong>
+          <small>Polis · 2023</small>
+        </div>
+        <div class="mob-item-actions">
+          <button class="mob-icon-btn" onclick="openCertModal(0)">✏️</button>
+          <button class="mob-icon-btn" onclick="removeCert(0); mobRenderCerts();" style="color:#ff8080;">✕</button>
+        </div>
+      </div>
+    </div>
         <button class="mob-btn-primary mob-btn-outline" onclick="openCertModal()">+ Lägg till certifikat</button>
       </div>
 
       <div class="mob-section">
         <div class="mob-section-title">Referenser</div>
-        <div id="mobRefList"></div>
+        <div id="mobRefList"><div style="color:rgba(255,255,255,0.3);font-size:13px;padding:12px;text-align:center;">Inga referenser tillagda ännu</div></div>
         <button class="mob-btn-primary mob-btn-outline" onclick="openRefModal()">+ Lägg till referens</button>
-        <button class="mob-btn-primary mob-btn-outline" style="border-color:rgba(62,180,137,0.4);color:rgba(62,180,137,0.8);" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
+        <button class="mob-btn-primary mob-btn-outline" style="border-color: rgb(62, 180, 137); color: rgb(62, 180, 137); background: rgba(62, 180, 137, 0.25); font-weight: 700;" onclick="toggleRefOnRequest()">+ Referenser lämnas på begäran</button>
       </div>
       <div class="mob-fortsatt">
         <button class="mob-tillbaka-btn" onclick="mobSwitchSubTab(&#39;jobb&#39;)">← Tillbaka till Jobb &amp; Utbildning</button>
@@ -7674,7 +7873,7 @@ ${styleTexts}
       <!-- Footer -->
       <div style="padding:28px 4px 8px;text-align:center;">
         <div style="font-size:10px;color:rgba(255,255,255,0.18);line-height:2;">CVmatchen av PathfinderAI</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.12);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adc5c8c7edddccd9c5cbc4c3c9c8dfccc483dec8">[email&#160;protected]</a></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.12);"><a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adc5c8c7edddccd9c5cbc4c3c9c8dfccc483dec8">[email&nbsp;protected]</a></div>
       </div>
     </div>
 
@@ -7691,7 +7890,7 @@ ${styleTexts}
         <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Personuppgiftsansvarig</div>
-          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="/cdn-cgi/l/email-protection#422a2728023223362a242b2c262730232b6c3127"><span class="__cf_email__" data-cfemail="c0a8a5aa80b0a1b4a8a6a9aea4a5b2a1a9eeb3a5">[email&#160;protected]</span></a></p>
+          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="file:///C:/cdn-cgi/l/email-protection#422a2728023223362a242b2c262730232b6c3127"><span class="__cf_email__" data-cfemail="c0a8a5aa80b0a1b4a8a6a9aea4a5b2a1a9eeb3a5">[email&nbsp;protected]</span></a></p>
           <p style="margin:0 0 20px;">PathfinderAI är personuppgiftsansvarig för CVmatchen — appen du använder för att bygga CV, matcha mot jobb och söka utbildningar.</p>
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Vilka uppgifter samlar vi in?</div>
@@ -7734,7 +7933,7 @@ ${styleTexts}
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Kontakt</div>
           <p style="margin:0 0 4px;">För frågor om dataskydd, kontakta oss på:</p>
-          <p style="margin:0;"><a href="/cdn-cgi/l/email-protection#2c4449466c5c4d58444a454248495e4d45025f49" style="color:#3eb489;"><span class="__cf_email__" data-cfemail="81e9e4ebc1f1e0f5e9e7e8efe5e4f3e0e8aff2e4">[email&#160;protected]</span></a></p>
+          <p style="margin:0;"><a href="file:///C:/cdn-cgi/l/email-protection#2c4449466c5c4d58444a454248495e4d45025f49" style="color:#3eb489;"><span class="__cf_email__" data-cfemail="81e9e4ebc1f1e0f5e9e7e8efe5e4f3e0e8aff2e4">[email&nbsp;protected]</span></a></p>
 
         </div>
 
@@ -7743,7 +7942,7 @@ ${styleTexts}
     </div>
 
     <!-- FLIK: Hej -->
-    <div class="mob-panel" id="mobPanel-hej">
+    <div class="mob-panel mob-panel--active" id="mobPanel-hej">
       <div style="padding:8px 16px 32px;">
 
         <!-- Hero -->
@@ -8143,7 +8342,7 @@ ${styleTexts}
   <!-- SLUT MOBIL UI -->
 
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // =====================================================
   // MOBIL JS — flik-navigation + synkronisering
   // =====================================================
@@ -13574,5 +13773,5 @@ ${styleTexts}
 
 })();
   </script>
-</body>
-</html>
+
+</div></body></html>
