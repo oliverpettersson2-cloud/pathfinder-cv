@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_47.html -->
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_48.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -2549,17 +2549,10 @@
 
       <!-- STEG 3: Inloggad -->
       <div id="authStep3" class="auth-step">
-        <div style="font-size:40px; margin-bottom:12px;">👋</div>
-        <div class="auth-title">Vad heter du?</div>
-        <div class="auth-subtitle" style="margin-bottom:20px;">Fyll i dina uppgifter — de hamnar direkt i ditt CV.</div>
-        <div style="display:flex;gap:10px;margin-bottom:12px;">
-          <input type="text" id="onboardFirstName" class="auth-input" placeholder="Förnamn*" style="flex:1;">
-          <input type="text" id="onboardLastName" class="auth-input" placeholder="Efternamn*" style="flex:1;">
-        </div>
-        <input type="tel" id="onboardPhone" class="auth-input" placeholder="Telefon (valfritt)" style="margin-bottom:12px;">
-        <input type="email" id="onboardEmail" class="auth-input" placeholder="E-post" disabled style="margin-bottom:20px;opacity:0.5;cursor:not-allowed;">
-        <div id="onboardError" class="auth-error"></div>
-        <button class="auth-btn" onclick="authSaveOnboarding()">Kom igång →</button>
+        <div style="font-size:48px; margin-bottom:16px;">✅</div>
+        <div class="auth-title">Du ar inloggad!</div>
+        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96f2fff8d6f3e6f9e5e2b8e5f3">[email&nbsp;protected]</a></div>
+        <button class="auth-btn" onclick="authEnterApp()">Fortsätt till CVmatchen</button>
       </div>
     </div>
   </div>
@@ -6976,7 +6969,7 @@ ${styleTexts}
       btn.innerHTML = 'Verifiera kod';
     }
 
-    async function authSetLoggedIn(email, isNew, userId, accessToken) {
+    function authSetLoggedIn(email, isNew, userId, accessToken) {
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
@@ -6987,7 +6980,6 @@ ${styleTexts}
 
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
-      window._authEmail = email;
 
       logEvent('login');
       setNavStep(2);
@@ -6996,32 +6988,18 @@ ${styleTexts}
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
 
+      const welcomeText = isNew
+        ? 'Välkommen till CVmatchen, ' + email + '!'
+        : 'Du är inloggad som ' + email;
+      document.getElementById('authWelcomeText').textContent = welcomeText;
+
+      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('authStep3').classList.add('active');
+
       // Ladda CV från Supabase om inloggad
       if (userId && accessToken) {
         loadAllFromSupabase(userId, accessToken);
       }
-
-      // Kolla Supabase om användaren redan gjort onboarding
-      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-
-      if (userId) {
-        try {
-          const resp = await fetch('/api/supabase', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'check_onboarding', userId })
-          });
-          const result = await resp.json();
-          if (result.hasName) {
-            authEnterApp();
-            return;
-          }
-        } catch(e) {}
-      }
-
-      // Visa onboarding
-      document.getElementById('onboardEmail').value = email;
-      document.getElementById('authStep3').classList.add('active');
     }
 
 
@@ -7118,48 +7096,6 @@ ${styleTexts}
       setNavStep(2);
     }
 
-    async function authSaveOnboarding() {
-      const first = document.getElementById('onboardFirstName').value.trim();
-      const last  = document.getElementById('onboardLastName').value.trim();
-      const phone = document.getElementById('onboardPhone').value.trim();
-      const errEl = document.getElementById('onboardError');
-
-      if (!first || !last) {
-        errEl.textContent = 'Förnamn och efternamn krävs.';
-        errEl.classList.add('visible');
-        return;
-      }
-      errEl.classList.remove('visible');
-
-      cvData.name  = first + ' ' + last;
-      cvData.email = window._authEmail || cvData.email;
-      cvData.phone = phone;
-      try { localStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
-      if (typeof updateFormFields === 'function') updateFormFields();
-      if (typeof updatePreview === 'function') updatePreview();
-
-      saveCVToSupabase();
-
-      const userId = window.authUserId;
-      const accessToken = window.authAccessToken;
-      if (userId) {
-        fetch('/api/supabase', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'ensure_participant',
-            userId,
-            email: cvData.email,
-            accessToken,
-            name: cvData.name,
-            phone: phone
-          })
-        }).catch(() => {});
-      }
-
-      authEnterApp();
-    }
-
 
     function authSetLoggedInSilent(email, userId, accessToken) {
       // Direkt till appen utan overlay/bekräftelseskärm
@@ -7190,9 +7126,35 @@ ${styleTexts}
       const saved = pfRead(AUTH_STORAGE_KEY);
       const email = saved ? JSON.parse(saved).email : '';
       if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
-        pfRemove(AUTH_STORAGE_KEY);
+        // ── Rensa all användardata från localStorage ──
+        const keysToRemove = [
+          AUTH_STORAGE_KEY,
+          'cvData',
+          'pathfinder_saved_cvs',
+          'pathfinder_matched_cvs',
+          'pathfinder_job_diary',
+          'pathfinder_selected_cv',
+          'pathfinder_selected_ads',
+          'cvmatchen_edu_saved',
+          'pf_saved_edu',
+          'cvmatchen_ovningar_progress',
+          'pf_ai_cache',
+          'pathfinder_api_key',
+          'pathfinder_mob_unlocked'
+        ];
+        keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+
+        // ── Återställ cvData i minnet ──
+        cvData = {
+          name: '', title: '', email: '', phone: '', summary: '',
+          jobs: [], education: [], languages: [], certifications: [],
+          licenses: [], references: [], skills: [],
+          photoData: null, showPhoto: true, template: 'classic', refOnRequest: false
+        };
+
         window.authUserId = null;
         window.authAccessToken = null;
+        window._authEmail = null;
         document.getElementById('authUserBadge').style.display = 'none';
         document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
         document.getElementById('authStep1').classList.add('active');
