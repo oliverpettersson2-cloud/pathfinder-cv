@@ -112,7 +112,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ cv: pick(cvRes, 'data'), savedCvs: pick(savedRes, 'data'), matchedCvs: pick(matchedRes, 'data'), progress: pick(progressRes, 'progress'), savedEdu: pick(eduRes, 'data'), jobDiary: pick(diaryRes, 'data') });
     }
 
-    // ── Kolla om användaren gjort onboarding (kollar Supabase, inte localStorage) ──
     if (action === 'check_onboarding') {
       const result = await makeRequest(
         `${SUPABASE_URL}/rest/v1/user_assignments?user_id=eq.${userId}&select=name&limit=1`,
@@ -123,20 +122,19 @@ export default async function handler(req, res) {
       return res.status(200).json({ hasName });
     }
 
-    // ── Auto-registrera deltagare vid login ──
     if (action === 'ensure_participant') {
-      // Försök skapa ny rad
+      // Skapa rad om den inte finns
       await makeRequest(
         `${SUPABASE_URL}/rest/v1/user_assignments`,
         { method: 'POST', headers: { ...serviceHeaders(), 'Prefer': 'resolution=ignore-duplicates,return=minimal' } },
-        { user_id: userId, email: email, name: personName || null, phone: personPhone || null, status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+        { user_id: userId, email: email || null, name: personName || null, phone: personPhone || null, status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
       );
-      // Uppdatera namn/telefon på befintlig rad om namn finns
+      // Uppdatera namn/telefon om de finns
       if (personName) {
         await makeRequest(
           `${SUPABASE_URL}/rest/v1/user_assignments?user_id=eq.${userId}`,
           { method: 'PATCH', headers: serviceHeaders() },
-          { name: personName, phone: personPhone || null, updated_at: new Date().toISOString() }
+          { name: personName, phone: personPhone || null, email: email || null, updated_at: new Date().toISOString() }
         );
       }
       return res.status(200).json({ ok: true });
@@ -151,7 +149,8 @@ export default async function handler(req, res) {
     }
 
     if (action === 'admin_list_users') {
-      let url = `${SUPABASE_URL}/rest/v1/user_assignments?select=*,admins(name)&order=created_at.desc`;
+      // FIX: Tog bort ',admins(name)' — FK-relation saknas och kraschade queryn
+      let url = `${SUPABASE_URL}/rest/v1/user_assignments?select=*&order=updated_at.desc,created_at.desc`;
       if (filters?.enhet_id) url += `&enhet_id=eq.${filters.enhet_id}`;
       if (filters?.kommun_id) url += `&kommun_id=eq.${filters.kommun_id}`;
       if (filters?.status) url += `&status=eq.${filters.status}`;
@@ -159,7 +158,7 @@ export default async function handler(req, res) {
       if (filters?.offset) url += `&offset=${filters.offset}`;
       const result = await makeRequest(url, { method: 'GET', headers: serviceHeaders() });
       const users = Array.isArray(result.data) ? result.data : [];
-      const userIds = users.map(u => u.user_id);
+      const userIds = users.map(u => u.user_id).filter(Boolean);
       if (userIds.length) {
         const idsFilter = userIds.map(id => `"${id}"`).join(',');
         const [cvRes, progressRes, taskRes] = await Promise.all([
@@ -178,7 +177,11 @@ export default async function handler(req, res) {
           if (r.status === 'completed') taskMap[r.user_id].completed++;
           if (r.status === 'pending') taskMap[r.user_id].pending++;
         });
-        users.forEach(u => { u.cv = cvMap[u.user_id] || null; u.progress = progMap[u.user_id] || null; u.tasks = taskMap[u.user_id] || { total: 0, completed: 0, pending: 0 }; });
+        users.forEach(u => {
+          u.cv = cvMap[u.user_id] || null;
+          u.progress = progMap[u.user_id] || null;
+          u.tasks = taskMap[u.user_id] || { total: 0, completed: 0, pending: 0 };
+        });
       }
       return res.status(200).json({ data: users });
     }
@@ -186,18 +189,39 @@ export default async function handler(req, res) {
     if (action === 'admin_get_user') {
       const uid = targetUserId || userId;
       const [assignRes, cvRes, progressRes, tasksRes, matchRes] = await Promise.all([
-        makeRequest(`${SUPABASE_URL}/rest/v1/user_assignments?user_id=eq.${uid}&select=*,admins(name),enheter(name),kommuner(name)&limit=1`, { method: 'GET', headers: serviceHeaders() }),
+        makeRequest(`${SUPABASE_URL}/rest/v1/user_assignments?user_id=eq.${uid}&select=*&limit=1`, { method: 'GET', headers: serviceHeaders() }),
         makeRequest(`${SUPABASE_URL}/rest/v1/cvs?user_id=eq.${uid}&select=data,updated_at&limit=1`, { method: 'GET', headers: serviceHeaders() }),
         makeRequest(`${SUPABASE_URL}/rest/v1/ovning_progress?user_id=eq.${uid}&select=progress&limit=1`, { method: 'GET', headers: serviceHeaders() }),
         makeRequest(`${SUPABASE_URL}/rest/v1/tasks?user_id=eq.${uid}&select=*&order=created_at.desc`, { method: 'GET', headers: serviceHeaders() }),
         makeRequest(`${SUPABASE_URL}/rest/v1/matched_cvs?user_id=eq.${uid}&select=data&limit=1`, { method: 'GET', headers: serviceHeaders() }),
       ]);
       const pick = (r, key) => { const rows = Array.isArray(r.data) ? r.data : []; return rows[0]?.[key] || null; };
-      return res.status(200).json({ assignment: (Array.isArray(assignRes.data) ? assignRes.data : [])[0] || null, cv: pick(cvRes, 'data'), cv_updated: pick(cvRes, 'updated_at'), progress: pick(progressRes, 'progress'), tasks: Array.isArray(tasksRes.data) ? tasksRes.data : [], matchedCvs: pick(matchRes, 'data') });
+      return res.status(200).json({
+        assignment: (Array.isArray(assignRes.data) ? assignRes.data : [])[0] || null,
+        cv: pick(cvRes, 'data'),
+        cv_updated: pick(cvRes, 'updated_at'),
+        progress: pick(progressRes, 'progress'),
+        tasks: Array.isArray(tasksRes.data) ? tasksRes.data : [],
+        matchedCvs: pick(matchRes, 'data')
+      });
     }
 
     if (action === 'assign_task') {
-      const task = { user_id: targetUserId, assigned_by: filters?.adminId || null, title, description: description || '', category: category || 'övrigt', type: durationMinutes ? 'timed' : (tParams?.verify_field ? 'auto' : 'manual'), verify_field: tParams?.verify_field || null, verify_operator: tParams?.verify_operator || '>=', verify_target: tParams?.verify_target || null, deadline: deadline || null, duration_minutes: durationMinutes || null, status: 'pending', created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      const task = {
+        user_id: targetUserId,
+        assigned_by: filters?.adminId || null,
+        title, description: description || '',
+        category: category || 'övrigt',
+        type: durationMinutes ? 'timed' : (tParams?.verify_field ? 'auto' : 'manual'),
+        verify_field: tParams?.verify_field || null,
+        verify_operator: tParams?.verify_operator || '>=',
+        verify_target: tParams?.verify_target || null,
+        deadline: deadline || null,
+        duration_minutes: durationMinutes || null,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
       const result = await makeRequest(`${SUPABASE_URL}/rest/v1/tasks`, { method: 'POST', headers: { ...serviceHeaders(), 'Prefer': 'return=representation' } }, task);
       await makeRequest(`${SUPABASE_URL}/rest/v1/admin_activity_log`, { method: 'POST', headers: { ...serviceHeaders(), 'Prefer': 'return=minimal' } }, { user_id: targetUserId, admin_id: filters?.adminId, action: 'task_assigned', detail: title });
       const rows = Array.isArray(result.data) ? result.data : [];
@@ -205,7 +229,7 @@ export default async function handler(req, res) {
     }
 
     if (action === 'my_tasks') {
-      const result = await makeRequest(`${SUPABASE_URL}/rest/v1/tasks?user_id=eq.${userId}&select=*,admins(name)&order=status.asc,deadline.asc.nullslast`, { method: 'GET', headers: authHeaders(accessToken) });
+      const result = await makeRequest(`${SUPABASE_URL}/rest/v1/tasks?user_id=eq.${userId}&select=*&order=status.asc,deadline.asc.nullslast`, { method: 'GET', headers: authHeaders(accessToken) });
       return res.status(200).json({ data: Array.isArray(result.data) ? result.data : [] });
     }
 
@@ -266,8 +290,11 @@ export default async function handler(req, res) {
       let taskUrl = `${SUPABASE_URL}/rest/v1/tasks?select=status,category,time_spent_sec,user_id`;
       let userUrl = `${SUPABASE_URL}/rest/v1/user_assignments?select=status,kommun_id,enhet_id`;
       if (filters?.kommun_id) userUrl += `&kommun_id=eq.${filters.kommun_id}`;
-      if (filters?.enhet_id) userUrl += `&enhet_id=eq.${filters.enhet_id}`;
-      const [taskRes, userRes] = await Promise.all([makeRequest(taskUrl, { method: 'GET', headers: serviceHeaders() }), makeRequest(userUrl, { method: 'GET', headers: serviceHeaders() })]);
+      if (filters?.enhet_id)  userUrl += `&enhet_id=eq.${filters.enhet_id}`;
+      const [taskRes, userRes] = await Promise.all([
+        makeRequest(taskUrl, { method: 'GET', headers: serviceHeaders() }),
+        makeRequest(userUrl, { method: 'GET', headers: serviceHeaders() })
+      ]);
       const tasks = Array.isArray(taskRes.data) ? taskRes.data : [];
       const users = Array.isArray(userRes.data) ? userRes.data : [];
       return res.status(200).json({
