@@ -8159,7 +8159,7 @@ ${styleTexts}
       <!-- Snabbknappar — statisk HTML, JS kopplar bara handlers -->
       <div id="_snabbWrap" style="margin-top:16px;margin-bottom:4px;">
         <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;">⚡ Snabbsök i Familjen Helsingborg</div>
-        <div id="_snabbBtns" style="display:flex;flex-wrap:wrap;gap:7px;" data-init="1">
+        <div id="_snabbBtns" style="display:flex;flex-wrap:wrap;gap:7px;">
           <button data-q="__ALLA__" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🌐 Alla jobb</button>
           <button data-q="lager logistik" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">📦 Lager &amp; logistik</button>
           <button data-q="vård omsorg undersköterska" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🤝 Vård &amp; omsorg</button>
@@ -10436,6 +10436,7 @@ ${styleTexts}
   let _matchaCurrentTab = 1;
   function matchaSwitchTab(n) {
     _matchaCurrentTab = n;
+    if (n === 2 && window._snabbInit) { setTimeout(window._snabbInit, 50); }
     [1,2,3].forEach(i => {
       const step = document.getElementById('matchaStep' + i);
       const tab  = document.getElementById('matchaTab'  + i);
@@ -11665,6 +11666,7 @@ ${styleTexts}
       }
     }
 
+    window._snabbInit = initHandlers;
     // Kör direkt + vid load (säkerhetsgaranti)
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initHandlers);
