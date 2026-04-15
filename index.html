@@ -7114,7 +7114,32 @@ ${styleTexts}
           try { localStorage.setItem('pathfinder_job_diary', JSON.stringify(result.jobDiary)); } catch(e) {}
         }
 
-        showToast('✅ Din data är laddad!', 'success');
+        // Välkomst-popup med timglas
+        (function() {
+          const firstName = (cvData.name || '').split(' ')[0] || '';
+          const pop = document.createElement('div');
+          pop.id = '_welcomePop';
+          pop.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);';
+          pop.innerHTML =
+            '<div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(62,180,137,0.3);border-radius:24px;padding:36px 32px;text-align:center;max-width:300px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">' +
+              '<div id="_welcomeIcon" style="font-size:48px;margin-bottom:16px;">⏳</div>' +
+              '<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Välkommen' + (firstName ? ', ' + firstName + '!' : '!') + '</div>' +
+              '<div id="_welcomeSub" style="font-size:13px;color:rgba(255,255,255,0.45);">Laddar din data…</div>' +
+            '</div>';
+          document.body.appendChild(pop);
+          // Byt till checkmark efter 1.2s
+          setTimeout(function() {
+            const ic = document.getElementById('_welcomeIcon');
+            const sub = document.getElementById('_welcomeSub');
+            if (ic) ic.textContent = '✅';
+            if (sub) { sub.textContent = 'Din data är laddad!'; sub.style.color = '#3eb489'; }
+          }, 1200);
+          // Stäng efter 3s
+          setTimeout(function() {
+            const p = document.getElementById('_welcomePop');
+            if (p) { p.style.transition = 'opacity 0.4s'; p.style.opacity = '0'; setTimeout(function(){ p.remove(); }, 400); }
+          }, 3000);
+        })();
         try {
           await fetch('/api/supabase', {
             method: 'POST',
@@ -7142,7 +7167,7 @@ ${styleTexts}
       const emailEl = document.getElementById('authUserEmail');
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
-      setShowPhoto(cvData.showPhoto === true, false);
+      setShowPhoto(cvData.showPhoto === true, true);
       if (userId && accessToken) {
         loadAllFromSupabase(userId, accessToken);
       }
