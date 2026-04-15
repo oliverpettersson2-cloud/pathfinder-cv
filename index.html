@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_48.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
+  
+  
+  
 
   <!-- PDF Generation Libraries -->
-  <script src="file:///C:/jspdf.umd.min.js"></script>
-  <script src="file:///C:/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   
   <style>
@@ -2515,8 +2514,8 @@
         <div id="authStep1Error" class="auth-error"></div>
 
         <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:center;gap:16px;font-size:11px;">
-          <a href="file:///C:/Users/olive/Downloads/index_47.html#" style="color:rgba(255,255,255,0.3);text-decoration:none;">Allmänna villkor</a>
-          <a href="file:///C:/Users/olive/Downloads/index_47.html#" style="color:rgba(255,255,255,0.3);text-decoration:none;">GDPR</a>
+          <a href="#" style="color:rgba(255,255,255,0.3);text-decoration:none;">Allmänna villkor</a>
+          <a href="#" style="color:rgba(255,255,255,0.3);text-decoration:none;">GDPR</a>
         </div>
         <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.15);margin-top:8px;">PathfinderAI AB</div>
       </div>
@@ -2551,7 +2550,7 @@
       <div id="authStep3" class="auth-step">
         <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
-        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96f2fff8d6f3e6f9e5e2b8e5f3">[email&nbsp;protected]</a></div>
+        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som info@cvmatchen.se</div>
         <button class="auth-btn" onclick="authEnterApp()">Fortsätt till CVmatchen</button>
       </div>
     </div>
@@ -4294,7 +4293,7 @@
     </div>
   </div>
 
-  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -6972,7 +6971,15 @@ ${styleTexts}
       btn.innerHTML = 'Verifiera kod';
     }
 
-    function _clearUserData() {
+    function _clearUserData(newUserId) {
+      // Rensa bara om det är en ANNAN användare än den som var inloggad
+      try {
+        const prev = pfRead('pathfinder_auth');
+        const prevId = prev ? JSON.parse(prev).userId : null;
+        if (prevId && newUserId && prevId === newUserId) {
+          return; // Samma användare — rensa inte
+        }
+      } catch(e) {}
       const keysToRemove = [
         'cvData','pathfinder_saved_cvs','pathfinder_matched_cvs',
         'pathfinder_job_diary','pathfinder_selected_cv','pathfinder_selected_ads',
@@ -6981,7 +6988,7 @@ ${styleTexts}
       ];
       keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
       cvData = { name:'',title:'',email:'',phone:'',summary:'',jobs:[],education:[],
-        languages:[],certifications:[],licenses:[],references:[],skills:[],
+        languages:[],certifications:[],references:[],skills:[],certifications:[],
         photoData:null,showPhoto:true,template:'classic',refOnRequest:false };
       ['name','title','email','phone','summary'].forEach(f => {
         const el = document.getElementById(f); if(el) el.value='';
@@ -6990,7 +6997,7 @@ ${styleTexts}
 
     function authSetLoggedIn(email, isNew, userId, accessToken) {
       window._authEmail = email;
-      _clearUserData();
+      _clearUserData(userId);
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
@@ -7108,18 +7115,13 @@ ${styleTexts}
         }
 
         showToast('✅ Din data är laddad!', 'success');
-
-        // Auto-registrera deltagaren i user_assignments
         try {
-          const name = cvData.name || '';
-          const phone = cvData.phone || '';
           await fetch('/api/supabase', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'ensure_participant', userId, email: window._authEmail || '', name, phone })
+            body: JSON.stringify({ action: 'ensure_participant', userId, name: cvData.name || '', phone: cvData.phone || '' })
           });
         } catch(e) {}
-
       } catch(e) {
       }
     }
@@ -7132,8 +7134,7 @@ ${styleTexts}
 
     function authSetLoggedInSilent(email, userId, accessToken) {
       // Direkt till appen utan overlay/bekräftelseskärm
-      if (typeof email !== 'undefined') window._authEmail = email;
-      _clearUserData();
+      _clearUserData(userId);
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
       logEvent('login');
@@ -7161,7 +7162,7 @@ ${styleTexts}
       const saved = pfRead(AUTH_STORAGE_KEY);
       const email = saved ? JSON.parse(saved).email : '';
       if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
-        _clearUserData();
+        _clearUserData(null);
         pfRemove(AUTH_STORAGE_KEY);
         window.authUserId = null;
         window.authAccessToken = null;
@@ -7853,7 +7854,7 @@ ${styleTexts}
       <!-- Footer -->
       <div style="padding:28px 4px 8px;text-align:center;">
         <div style="font-size:10px;color:rgba(255,255,255,0.18);line-height:2;">CVmatchen av PathfinderAI</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.12);"><a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adc5c8c7edddccd9c5cbc4c3c9c8dfccc483dec8">[email&nbsp;protected]</a></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.12);">info@cvmatchen.se</div>
       </div>
     </div>
 
@@ -7870,7 +7871,7 @@ ${styleTexts}
         <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Personuppgiftsansvarig</div>
-          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="file:///C:/cdn-cgi/l/email-protection#422a2728023223362a242b2c262730232b6c3127"><span class="__cf_email__" data-cfemail="c0a8a5aa80b0a1b4a8a6a9aea4a5b2a1a9eeb3a5">[email&nbsp;protected]</span></a></p>
+          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: info@cvmatchen.se</p>
           <p style="margin:0 0 20px;">PathfinderAI är personuppgiftsansvarig för CVmatchen — appen du använder för att bygga CV, matcha mot jobb och söka utbildningar.</p>
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Vilka uppgifter samlar vi in?</div>
@@ -7913,7 +7914,7 @@ ${styleTexts}
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Kontakt</div>
           <p style="margin:0 0 4px;">För frågor om dataskydd, kontakta oss på:</p>
-          <p style="margin:0;"><a href="file:///C:/cdn-cgi/l/email-protection#2c4449466c5c4d58444a454248495e4d45025f49" style="color:#3eb489;"><span class="__cf_email__" data-cfemail="81e9e4ebc1f1e0f5e9e7e8efe5e4f3e0e8aff2e4">[email&nbsp;protected]</span></a></p>
+          <p style="margin:0;">info@cvmatchen.se</p>
 
         </div>
 
@@ -8322,7 +8323,7 @@ ${styleTexts}
   <!-- SLUT MOBIL UI -->
 
 
-  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
   // =====================================================
   // MOBIL JS — flik-navigation + synkronisering
   // =====================================================
@@ -8400,7 +8401,7 @@ ${styleTexts}
             '<div style="font-size:14px;font-weight:800;color:#fff;">' + (cv.title || 'Namnlöst CV') + '</div>' +
             '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + (cv.data && cv.data.name ? cv.data.name + ' · ' : '') + date + '</div>' +
           '</div>' +
-          '<span style="font-size:18px;color:rgba(62,180,137,0.6);">›</span>' +
+          '<span style="font-size:11px;font-weight:800;color:#3eb489;border:1.5px solid rgba(62,180,137,0.4);border-radius:8px;padding:5px 10px;white-space:nowrap;">Visa</span>' +
           '<button data-del-id="' + cv.id + '" style="flex-shrink:0;background:rgba(220,38,38,0.15);border:1.5px solid rgba(220,38,38,0.45);border-radius:10px;color:#f87171;font-size:13px;font-weight:800;cursor:pointer;padding:7px 11px;font-family:inherit;-webkit-tap-highlight-color:transparent;">🗑️</button>';
         btn.onclick = function() {
           overlay.remove();
