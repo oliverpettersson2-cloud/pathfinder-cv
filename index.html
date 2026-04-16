@@ -1,15 +1,16 @@
 <!DOCTYPE html>
+<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_48.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  
-  
-  
+  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
 
   <!-- PDF Generation Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="file:///C:/jspdf.umd.min.js"></script>
+  <script src="file:///C:/html2canvas.min.js"></script>
   
   
   <style>
@@ -2514,8 +2515,8 @@
         <div id="authStep1Error" class="auth-error"></div>
 
         <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:center;gap:16px;font-size:11px;">
-          <a href="#" style="color:rgba(255,255,255,0.3);text-decoration:none;">Allmänna villkor</a>
-          <a href="#" style="color:rgba(255,255,255,0.3);text-decoration:none;">GDPR</a>
+          <a href="file:///C:/Users/olive/Downloads/index_47.html#" style="color:rgba(255,255,255,0.3);text-decoration:none;">Allmänna villkor</a>
+          <a href="file:///C:/Users/olive/Downloads/index_47.html#" style="color:rgba(255,255,255,0.3);text-decoration:none;">GDPR</a>
         </div>
         <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.15);margin-top:8px;">PathfinderAI AB</div>
       </div>
@@ -2550,7 +2551,7 @@
       <div id="authStep3" class="auth-step">
         <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
-        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som info@cvmatchen.se</div>
+        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96f2fff8d6f3e6f9e5e2b8e5f3">[email&nbsp;protected]</a></div>
         <button class="auth-btn" onclick="authEnterApp()">Fortsätt till CVmatchen</button>
       </div>
     </div>
@@ -4293,7 +4294,7 @@
     </div>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -4763,13 +4764,10 @@
       // Hoppa inte till jobEndYear automatiskt (brukar vara Pågående eller väljs manuellt)
       // Men för utbildning: vi auto-advancear hela vägen inkl. eduEndYear
       if (next) {
-        const nextVal = document.getElementById(next) && document.getElementById(next).value;
-        if (!nextVal) {
-          const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
-          const label = labelMap[next] || 'TILL - Ar';
-          const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
-          setTimeout(() => cpickerOpen(next, label, color), 200);
-        }
+        const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
+        const label = labelMap[next] || 'TILL - Ar';
+        const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
+        setTimeout(() => cpickerOpen(next, label, color), 200);
       }
     }
 
@@ -6971,33 +6969,7 @@ ${styleTexts}
       btn.innerHTML = 'Verifiera kod';
     }
 
-    function _clearUserData(newUserId) {
-      // Rensa bara om det är en ANNAN användare än den som var inloggad
-      try {
-        const prev = pfRead('pathfinder_auth');
-        const prevId = prev ? JSON.parse(prev).userId : null;
-        if (prevId && newUserId && prevId === newUserId) {
-          return; // Samma användare — rensa inte
-        }
-      } catch(e) {}
-      const keysToRemove = [
-        'cvData','pathfinder_saved_cvs','pathfinder_matched_cvs',
-        'pathfinder_job_diary','pathfinder_selected_cv','pathfinder_selected_ads',
-        'cvmatchen_edu_saved','pf_saved_edu','cvmatchen_ovningar_progress',
-        'pf_ai_cache','pathfinder_mob_unlocked'
-      ];
-      keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
-      cvData = { name:'',title:'',email:'',phone:'',summary:'',jobs:[],education:[],
-        languages:[],certifications:[],references:[],skills:[],certifications:[],
-        photoData:null,showPhoto:true,template:'classic',refOnRequest:false };
-      ['name','title','email','phone','summary'].forEach(f => {
-        const el = document.getElementById(f); if(el) el.value='';
-      });
-    }
-
     function authSetLoggedIn(email, isNew, userId, accessToken) {
-      window._authEmail = email;
-      _clearUserData(userId);
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
@@ -7114,39 +7086,7 @@ ${styleTexts}
           try { localStorage.setItem('pathfinder_job_diary', JSON.stringify(result.jobDiary)); } catch(e) {}
         }
 
-        // Välkomst-popup med timglas
-        (function() {
-          const firstName = (cvData.name || '').split(' ')[0] || '';
-          const pop = document.createElement('div');
-          pop.id = '_welcomePop';
-          pop.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);';
-          pop.innerHTML =
-            '<div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(62,180,137,0.3);border-radius:24px;padding:36px 32px;text-align:center;max-width:300px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">' +
-              '<div id="_welcomeIcon" style="font-size:48px;margin-bottom:16px;">⏳</div>' +
-              '<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Välkommen' + (firstName ? ', ' + firstName + '!' : '!') + '</div>' +
-              '<div id="_welcomeSub" style="font-size:13px;color:rgba(255,255,255,0.45);">Laddar din data…</div>' +
-            '</div>';
-          document.body.appendChild(pop);
-          // Byt till checkmark efter 1.2s
-          setTimeout(function() {
-            const ic = document.getElementById('_welcomeIcon');
-            const sub = document.getElementById('_welcomeSub');
-            if (ic) ic.textContent = '✅';
-            if (sub) { sub.textContent = 'Din data är laddad!'; sub.style.color = '#3eb489'; }
-          }, 1200);
-          // Stäng efter 3s
-          setTimeout(function() {
-            const p = document.getElementById('_welcomePop');
-            if (p) { p.style.transition = 'opacity 0.4s'; p.style.opacity = '0'; setTimeout(function(){ p.remove(); }, 400); }
-          }, 3000);
-        })();
-        try {
-          await fetch('/api/supabase', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'ensure_participant', userId, name: cvData.name || '', phone: cvData.phone || '' })
-          });
-        } catch(e) {}
+        showToast('✅ Din data är laddad!', 'success');
       } catch(e) {
       }
     }
@@ -7159,7 +7099,6 @@ ${styleTexts}
 
     function authSetLoggedInSilent(email, userId, accessToken) {
       // Direkt till appen utan overlay/bekräftelseskärm
-      _clearUserData(userId);
       window.authUserId = userId || null;
       window.authAccessToken = accessToken || null;
       logEvent('login');
@@ -7167,7 +7106,7 @@ ${styleTexts}
       const emailEl = document.getElementById('authUserEmail');
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
-      setShowPhoto(cvData.showPhoto === true, true);
+      setShowPhoto(cvData.showPhoto === true, false);
       if (userId && accessToken) {
         loadAllFromSupabase(userId, accessToken);
       }
@@ -7187,7 +7126,6 @@ ${styleTexts}
       const saved = pfRead(AUTH_STORAGE_KEY);
       const email = saved ? JSON.parse(saved).email : '';
       if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
-        _clearUserData(null);
         pfRemove(AUTH_STORAGE_KEY);
         window.authUserId = null;
         window.authAccessToken = null;
@@ -7879,7 +7817,7 @@ ${styleTexts}
       <!-- Footer -->
       <div style="padding:28px 4px 8px;text-align:center;">
         <div style="font-size:10px;color:rgba(255,255,255,0.18);line-height:2;">CVmatchen av PathfinderAI</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.12);">info@cvmatchen.se</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.12);"><a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adc5c8c7edddccd9c5cbc4c3c9c8dfccc483dec8">[email&nbsp;protected]</a></div>
       </div>
     </div>
 
@@ -7896,7 +7834,7 @@ ${styleTexts}
         <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Personuppgiftsansvarig</div>
-          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: info@cvmatchen.se</p>
+          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="file:///C:/cdn-cgi/l/email-protection#422a2728023223362a242b2c262730232b6c3127"><span class="__cf_email__" data-cfemail="c0a8a5aa80b0a1b4a8a6a9aea4a5b2a1a9eeb3a5">[email&nbsp;protected]</span></a></p>
           <p style="margin:0 0 20px;">PathfinderAI är personuppgiftsansvarig för CVmatchen — appen du använder för att bygga CV, matcha mot jobb och söka utbildningar.</p>
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Vilka uppgifter samlar vi in?</div>
@@ -7939,7 +7877,7 @@ ${styleTexts}
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Kontakt</div>
           <p style="margin:0 0 4px;">För frågor om dataskydd, kontakta oss på:</p>
-          <p style="margin:0;">info@cvmatchen.se</p>
+          <p style="margin:0;"><a href="file:///C:/cdn-cgi/l/email-protection#2c4449466c5c4d58444a454248495e4d45025f49" style="color:#3eb489;"><span class="__cf_email__" data-cfemail="81e9e4ebc1f1e0f5e9e7e8efe5e4f3e0e8aff2e4">[email&nbsp;protected]</span></a></p>
 
         </div>
 
@@ -8128,7 +8066,8 @@ ${styleTexts}
               <div style="position:relative;">
                 <select id="matchaOrtSelect" onchange="matchaSetFilterFromSelect(this.value)" style="width:100%;appearance:none;-webkit-appearance:none;background:rgba(62,180,137,0.1);border:2px solid rgba(62,180,137,0.5);border-radius:10px;padding:10px 30px 10px 12px;color:#3eb489;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;outline:none;">
                   <option value="hbg">Helsingborg</option>
-                  <option value="fam" selected="">Familjen Helsingborg</option>
+                  <option value="fam" selected="">Familjen Helsingborg + Helsingør 🇩🇰</option>
+                  <option value="helsingör">Helsingør 🇩🇰 (Danmark)</option>
                   <option value="angeholm">Ängelholm</option>
                   <option value="landskrona">Landskrona</option>
                   <option value="hoganas">Höganäs</option>
@@ -8158,8 +8097,8 @@ ${styleTexts}
         <div style="padding:0 16px;">
       <!-- Snabbknappar — statisk HTML, JS kopplar bara handlers -->
       <div id="_snabbWrap" style="margin-top:16px;margin-bottom:4px;">
-        <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;">⚡ Snabbsök i Familjen Helsingborg</div>
-        <div id="_snabbBtns" style="display:flex;flex-wrap:wrap;gap:7px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;">⚡ Snabbsök</div>
+        <div id="_snabbBtns" style="display:flex;flex-wrap:wrap;gap:7px;" data-init="1">
           <button data-q="__ALLA__" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🌐 Alla jobb</button>
           <button data-q="lager logistik" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">📦 Lager &amp; logistik</button>
           <button data-q="vård omsorg undersköterska" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🤝 Vård &amp; omsorg</button>
@@ -8168,6 +8107,7 @@ ${styleTexts}
           <button data-q="restaurang kök" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🍽️ Restaurang &amp; kök</button>
           <button data-q="butik handel" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🛒 Butik &amp; handel</button>
           <button data-q="industri tillverkning" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🏭 Industri</button>
+          <button data-q="__HELSINGÖR__" class="_snabb-btn _snabb-dk" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(200,16,46,0.12); border: 1.5px solid rgba(200,16,46,0.4); color: #ff8fa3;">🇩🇰 Jobb i Helsingør</button>
         </div>
         <button id="_cvTitelBtn" class="_snabb-cv-btn" style="width: 100%; margin-top: 12px; padding: 11px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; background: rgba(255, 255, 255, 0.04); border: 2px dashed rgba(62, 180, 137, 0.4); color: rgba(62, 180, 137, 0.7); display: flex; align-items: center; justify-content: center; gap: 8px;">🎯 Sök jobb som matchar min CV-titel</button>
       </div>
@@ -8348,7 +8288,7 @@ ${styleTexts}
   <!-- SLUT MOBIL UI -->
 
 
-  <script>
+  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // =====================================================
   // MOBIL JS — flik-navigation + synkronisering
   // =====================================================
@@ -8426,8 +8366,7 @@ ${styleTexts}
             '<div style="font-size:14px;font-weight:800;color:#fff;">' + (cv.title || 'Namnlöst CV') + '</div>' +
             '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + (cv.data && cv.data.name ? cv.data.name + ' · ' : '') + date + '</div>' +
           '</div>' +
-          '<span style="font-size:11px;font-weight:800;color:#3eb489;border:1.5px solid rgba(62,180,137,0.4);border-radius:8px;padding:5px 10px;white-space:nowrap;">Visa</span>' +
-          '<button data-del-id="' + cv.id + '" style="flex-shrink:0;background:rgba(220,38,38,0.15);border:1.5px solid rgba(220,38,38,0.45);border-radius:10px;color:#f87171;font-size:13px;font-weight:800;cursor:pointer;padding:7px 11px;font-family:inherit;-webkit-tap-highlight-color:transparent;">🗑️</button>';
+          '<span style="font-size:18px;color:rgba(62,180,137,0.6);">›</span>';
         btn.onclick = function() {
           overlay.remove();
           mobEnterCVMode();
@@ -8493,27 +8432,7 @@ ${styleTexts}
       slotsDiv.appendChild(btn);
     });
 
-    slotsDiv.addEventListener('click', function(e) {
-      const delBtn = e.target.closest('[data-del-id]');
-      if (!delBtn) return;
-      e.stopPropagation();
-      const id = delBtn.dataset.delId;
-      const titleEl = delBtn.closest('button') ? delBtn.closest('button').querySelector('div > div:first-child') : null;
-      const title = titleEl ? titleEl.textContent : 'detta CV';
-      if (!confirm('Ta bort "' + title + '"? Detta kan inte ångras.')) return;
-      let list = mobGetSavedCVs().filter(function(c){ return c.id !== id; });
-      mobPutSavedCVs(list);
-      overlay.remove();
-      mobShowCVPicker();
-    });
-
     drawer.appendChild(slotsDiv);
-
-    const backBtn = document.createElement('button');
-    backBtn.textContent = '← Tillbaka';
-    backBtn.style.cssText = 'margin-top:16px;width:100%;padding:13px;background:rgba(220,38,38,0.15);border:1.5px solid rgba(220,38,38,0.45);border-radius:12px;color:#f87171;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;';
-    backBtn.onclick = function() { overlay.remove(); };
-    drawer.appendChild(backBtn);
     overlay.appendChild(drawer);
     document.body.appendChild(overlay);
 
@@ -8521,11 +8440,6 @@ ${styleTexts}
     drawer.style.transform = 'translateY(100%)';
     drawer.style.transition = 'transform 0.28s cubic-bezier(0.32,0.72,0,1)';
     requestAnimationFrame(() => requestAnimationFrame(() => { drawer.style.transform = 'translateY(0)'; }));
-
-    let _sy=0,_cy=0,_drag=false;
-    drawer.addEventListener('touchstart',function(e){_sy=e.touches[0].clientY;_drag=true;drawer.style.transition='none';},{passive:true});
-    drawer.addEventListener('touchmove',function(e){if(!_drag)return;_cy=e.touches[0].clientY;const dy=Math.max(0,_cy-_sy);drawer.style.transform='translateY('+dy+'px)';overlay.style.background='rgba(0,0,0,'+Math.max(0,0.6-dy/400)+')';},{passive:true});
-    drawer.addEventListener('touchend',function(){if(!_drag)return;_drag=false;const dy=Math.max(0,_cy-_sy);if(dy>100){drawer.style.transition='transform 0.22s ease-out';drawer.style.transform='translateY(100%)';overlay.style.transition='opacity 0.22s';overlay.style.opacity='0';setTimeout(function(){overlay.remove();},230);}else{drawer.style.transition='transform 0.22s cubic-bezier(0.32,0.72,0,1)';drawer.style.transform='translateY(0)';overlay.style.background='rgba(0,0,0,0.6)';}});
   }
 
   function mobEnterCVMode() {
@@ -9610,6 +9524,7 @@ ${styleTexts}
   const MATCHA_LOC = {
     hbg:        'Helsingborg',
     fam:        'Helsingborg Ängelholm Landskrona Höganäs Bjuv Åstorp Klippan Örkelljunga Perstorp Båstad',
+    helsingör:  '',   // Dansk ort — söks via Jobnet.dk, ej Jobtech
     angeholm:   'Ängelholm',
     landskrona: 'Landskrona',
     hoganas:    'Höganäs',
@@ -9619,7 +9534,8 @@ ${styleTexts}
     skane:      'Skåne',
     all:        ''
   };
-  const MATCHA_LOC_LABEL = { hbg:'Helsingborg', fam:'Familjen Helsingborg', angeholm:'Ängelholm', landskrona:'Landskrona', hoganas:'Höganäs', bjuv:'Bjuv', astorp:'Åstorp', klippan:'Klippan', skane:'Skåne', all:'Hela Sverige' };
+  // fam inkluderar nu även Helsingør via Jobnet.dk (parallel fetch)
+  const MATCHA_LOC_LABEL = { hbg:'Helsingborg', fam:'Familjen Helsingborg + Helsingør 🇩🇰', helsingör:'Helsingør 🇩🇰', angeholm:'Ängelholm', landskrona:'Landskrona', hoganas:'Höganäs', bjuv:'Bjuv', astorp:'Åstorp', klippan:'Klippan', skane:'Skåne', all:'Hela Sverige' };
 
   const MATCHA_AVATAR_COLORS = [
     ['rgba(62,180,137,0.18)','#3eb489'],
@@ -9900,16 +9816,49 @@ ${styleTexts}
     return card;
   }
 
+  // ── Jobtech (Sverige) ──────────────────────────────────────────
   async function matchaFetch(q, offset) {
+    return matchaFetchJobtech(q, offset);
+  }
+  async function matchaFetchJobtech(q, offset) {
     let url = 'https://jobsearch.api.jobtechdev.se/search?q=' + encodeURIComponent(q) + '&limit=20&offset=' + offset;
     if (typeof matchaTidFilter !== 'undefined' && matchaTidFilter) {
       url += '&working-hours-type=' + encodeURIComponent(matchaTidFilter);
     }
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error('API-fel');
+    if (!resp.ok) throw new Error('Jobtech API-fel');
     return resp.json();
   }
 
+  // ── Jobnet.dk (Danmark / Helsingør) ────────────────────────────
+  function matchaMapJobnetHit(item) {
+    const id = item.Id || item.AutoJobId || ('dk_' + Math.random().toString(36).slice(2));
+    return {
+      id: 'dk_' + id,
+      headline: item.Title || item.Headline || '',
+      employer: { name: item.EmployerName || item.WorkplaceName || item.HiringOrgName || '' },
+      workplace_address: { municipality: '🇩🇰 ' + (item.WorkPlaceCity || item.Municipality || 'Helsingør') },
+      webpage_url: item.ApplicationUrl || item.JobPostingUrl || item.Url || '',
+      description: { text: item.Description || item.JobDescription || '' },
+      _source: 'jobnet_dk'
+    };
+  }
+  async function matchaFetchJobnet(q, page) {
+    const params = new URLSearchParams({
+      SearchString: q || '',
+      Region: '',
+      Zip: '3000',
+      ItemsPerPage: '20',
+      CurrentPage: String((page || 0) + 1)
+    });
+    const resp = await fetch('https://job.jobnet.dk/CV/FindWork/JobList?' + params.toString());
+    if (!resp.ok) throw new Error('Jobnet API-fel');
+    const data = await resp.json();
+    const items = data.JobPositionPostings || data.Hits || data.Results || [];
+    return items.map(matchaMapJobnetHit);
+  }
+
+  // ── Kombinerad sökning ──────────────────────────────────────────
   async function matchaDoSearch() {
     const rawQ = (document.getElementById('matchaSearch').value || '').trim();
     const resultsEl = document.getElementById('matchaSearchResults');
@@ -9917,35 +9866,52 @@ ${styleTexts}
     const visaFlerEl = document.getElementById('matchaVisaFler');
     if (rawQ.length < 2) { resultsEl.style.display = 'none'; skeleton.style.display = 'none'; if(visaFlerEl) visaFlerEl.style.display='none'; return; }
 
-    const locSuffix = MATCHA_LOC[matchaLocFilter] ? ' ' + MATCHA_LOC[matchaLocFilter] : '';
+    const isDK  = matchaLocFilter === 'helsingör';
+    const isFam = matchaLocFilter === 'fam';
+    const locSuffix = (!isDK && MATCHA_LOC[matchaLocFilter]) ? ' ' + MATCHA_LOC[matchaLocFilter] : '';
     matchaCurrentQ = rawQ + locSuffix;
     matchaCurrentOffset = 0;
-    logEvent('job_search', { query: rawQ });
+    logEvent('job_search', { query: rawQ, source: isDK ? 'jobnet' : 'jobtech' });
 
     skeleton.style.display = 'block';
     resultsEl.style.display = 'none';
     if(visaFlerEl) visaFlerEl.style.display = 'none';
 
     try {
-      const data = await matchaFetch(matchaCurrentQ, 0);
-      skeleton.style.display = 'none';
-      const hits = data.hits || [];
-      const total = (data.total && data.total.value) || 0;
+      // Kör parallella fetch om fam eller helsingör-filter
+      const [sweResult, dkResult] = await Promise.allSettled([
+        isDK  ? Promise.resolve({ hits: [], total: { value: 0 } })
+              : matchaFetchJobtech(matchaCurrentQ, 0),
+        (isDK || isFam) ? matchaFetchJobnet(rawQ, 0)
+                        : Promise.resolve([])
+      ]);
 
-      if (!hits.length) {
+      skeleton.style.display = 'none';
+
+      const sweHits  = (sweResult.status  === 'fulfilled' ? (sweResult.value.hits  || []) : []);
+      const sweTotal = (sweResult.status  === 'fulfilled' ? ((sweResult.value.total && sweResult.value.total.value) || 0) : 0);
+      const dkHits   = (dkResult.status   === 'fulfilled' ? dkResult.value : []);
+
+      const allHits = [...sweHits, ...dkHits];
+      const totalCount = sweTotal + dkHits.length;
+
+      if (!allHits.length) {
         resultsEl.innerHTML = '<div style="padding:14px;font-size:13px;color:rgba(255,255,255,0.35);text-align:center;">Inga annonser hittades</div>';
         resultsEl.style.display = 'block';
         return;
       }
 
       const locLabel = MATCHA_LOC_LABEL[matchaLocFilter] || 'Hela Sverige';
+      const dkBadge = dkHits.length
+        ? ' <span style="font-size:10px;background:rgba(200,16,46,0.2);color:#ff8fa3;padding:2px 6px;border-radius:10px;border:1px solid rgba(200,16,46,0.4);">+ ' + dkHits.length + ' 🇩🇰 Helsingør</span>'
+        : '';
       resultsEl.innerHTML =
-        '<div style="font-size:11px;color:rgba(255,255,255,0.3);display:flex;justify-content:space-between;margin-bottom:6px;"><span>Visar ' + hits.length + ' av ' + total + '</span><span>' + locLabel + '</span></div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.3);display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px;"><span>Visar ' + allHits.length + ' av ' + totalCount + dkBadge + '</span><span>' + locLabel + '</span></div>' +
         '<div style="font-size:12px;color:#fff;margin-bottom:12px;opacity:0.75;">👆 Tryck på en annons för att läsa mer och välja</div>';
-      hits.forEach(hit => resultsEl.appendChild(matchaBuildCard(hit)));
-      matchaCurrentOffset = hits.length;
+      allHits.forEach(hit => resultsEl.appendChild(matchaBuildCard(hit)));
+      matchaCurrentOffset = sweHits.length; // Visa fler gäller bara Jobtech
       resultsEl.style.display = 'block';
-      if(visaFlerEl) visaFlerEl.style.display = matchaCurrentOffset < total ? 'block' : 'none';
+      if(visaFlerEl) visaFlerEl.style.display = (!isDK && matchaCurrentOffset < sweTotal) ? 'block' : 'none';
     } catch(e) {
       skeleton.style.display = 'none';
       resultsEl.innerHTML = '<div style="padding:14px;font-size:13px;color:rgba(232,93,38,0.7);text-align:center;">Kunde inte hämta annonser just nu</div>';
@@ -10436,7 +10402,6 @@ ${styleTexts}
   let _matchaCurrentTab = 1;
   function matchaSwitchTab(n) {
     _matchaCurrentTab = n;
-    if (n === 2 && window._snabbInit) { setTimeout(window._snabbInit, 50); }
     [1,2,3].forEach(i => {
       const step = document.getElementById('matchaStep' + i);
       const tab  = document.getElementById('matchaTab'  + i);
@@ -11610,7 +11575,11 @@ ${styleTexts}
 
     function resetAll() {
       var btns = document.querySelectorAll('#_snabbBtns ._snabb-btn');
-      btns.forEach(function(b) { b.style.cssText = INACTIVE; });
+      btns.forEach(function(b) {
+        b.style.cssText = b.classList.contains('_snabb-dk')
+          ? 'display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;background:rgba(200,16,46,0.12);border:1.5px solid rgba(200,16,46,0.4);color:#ff8fa3;'
+          : INACTIVE;
+      });
       var cvb = document.getElementById('_cvTitelBtn');
       if (cvb) cvb.style.cssText = CVB_INACTIVE;
     }
@@ -11621,14 +11590,28 @@ ${styleTexts}
       btnsEl.dataset.init = '1';
 
       // Sätt initial stil på alla knappar
+      var DK_INACTIVE = 'display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;background:rgba(200,16,46,0.12);border:1.5px solid rgba(200,16,46,0.4);color:#ff8fa3;';
+      var DK_ACTIVE   = 'display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;transition:all 0.15s;background:linear-gradient(135deg,#c8102e,#e63950);border:2px solid #c8102e;color:#fff;box-shadow:0 0 0 4px rgba(200,16,46,0.3),0 4px 16px rgba(200,16,46,0.4);transform:scale(1.06);';
+
       btnsEl.querySelectorAll('._snabb-btn').forEach(function(btn) {
-        btn.style.cssText = INACTIVE;
+        var isDkBtn = btn.classList.contains('_snabb-dk');
+        btn.style.cssText = isDkBtn ? DK_INACTIVE : INACTIVE;
         btn.onclick = function() {
           resetAll();
-          btn.style.cssText = ACTIVE;
+          // Återställ DK-knappar till rätt stil
+          btnsEl.querySelectorAll('._snabb-dk').forEach(function(b){ b.style.cssText = DK_INACTIVE; });
+          btn.style.cssText = isDkBtn ? DK_ACTIVE : ACTIVE;
           var input = document.getElementById('matchaSearch');
+          var q = btn.dataset.q;
+          if (q === '__HELSINGÖR__') {
+            // Byt filter till Helsingør och sök brett
+            if (typeof matchaSetFilter === 'function') matchaSetFilter('helsingör');
+            if (input) input.value = 'jobb';
+            if (typeof matchaDoSearch === 'function') matchaDoSearch();
+            return;
+          }
           if (input) {
-            input.value = btn.dataset.q === '__ALLA__' ? 'jobb' : btn.dataset.q;
+            input.value = q === '__ALLA__' ? 'jobb' : q;
           }
           if (typeof matchaDoSearch === 'function') matchaDoSearch();
         };
@@ -11666,7 +11649,6 @@ ${styleTexts}
       }
     }
 
-    window._snabbInit = initHandlers;
     // Kör direkt + vid load (säkerhetsgaranti)
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initHandlers);
