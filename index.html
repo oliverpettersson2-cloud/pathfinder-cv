@@ -9263,6 +9263,16 @@ ${styleTexts}
     showToast('✅ ' + entry.title + ' öppnat', 'success');
   }
 
+  function mobDeleteSavedCV(id) {
+    const list = mobGetSavedCVs();
+    const entry = list.find(c => c.id === id);
+    if (!entry) return;
+    if (!confirm('Ta bort "' + entry.title + '"?\nDetta kan inte ångras.')) return;
+    mobPutSavedCVs(list.filter(c => c.id !== id));
+    mobRenderSavedCVs();
+    showToast('🗑️ ' + entry.title + ' borttaget', 'success');
+  }
+
   function mobShowSavedCVDetail(id) {
     const list = mobGetSavedCVs();
     const entry = list.find(c => c.id === id);
@@ -9443,13 +9453,13 @@ ${styleTexts}
     const sorted = [...list].sort((a,b) => b.savedAt - a.savedAt);
     sorted.forEach(entry => {
       const dateStr = _mobRelDate(new Date(entry.savedAt));
-      const cvEmoji = matchaCvEmoji ? matchaCvEmoji(entry.title) : '📄';
       html += `
-        <div onclick="mobShowSavedCVDetail('${entry.id}')"
-             style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px;border-radius:14px;cursor:pointer;text-align:center;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);position:relative;">
-          <div style="font-size:18px;font-weight:900;font-family:Georgia,serif;line-height:1;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">match</span></div>
-          <div style="font-size:11px;font-weight:700;color:#fff;line-height:1.3;word-break:break-word;">${entry.title}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:14px 8px 10px;border-radius:14px;text-align:center;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);position:relative;">
+          <button onclick="mobDeleteSavedCV('${entry.id}')" style="position:absolute;top:6px;right:6px;background:rgba(220,38,38,0.15);border:none;color:rgba(252,165,165,0.8);width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;" title="Ta bort">🗑</button>
+          <div style="font-size:18px;font-weight:900;font-family:Georgia,serif;line-height:1;margin-top:4px;"><span style="color:#f0c040;">CV</span><span style="color:#fff;">match</span></div>
+          <div style="font-size:11px;font-weight:700;color:#fff;line-height:1.3;word-break:break-word;padding:0 4px;">${entry.title}</div>
           <div style="font-size:10px;color:rgba(255,255,255,0.3);">${dateStr}</div>
+          <button onclick="mobShowSavedCVDetail('${entry.id}')" style="width:100%;margin-top:4px;padding:6px 0;background:rgba(62,180,137,0.15);border:1.5px solid rgba(62,180,137,0.4);border-radius:8px;color:#3eb489;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">👁 Visa</button>
         </div>`;
     });
 
@@ -11254,17 +11264,6 @@ ${styleTexts}
   <!-- Max 3 annonser modal (legacy, används ej längre) -->
   <div id="matchaMaxModal" style="display:none;"></div>
 
-
-  <!-- CUSTOM DATE PICKER OVERLAY -->
-  <div id="cpickerOverlay" style="display:none;pposition:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);" onclick="cpickerClose()">
-    <div id="cpickerSheet" onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:#1e2235;border-radius:20px 20px 0 0;padding:0 0 40px 0;max-height:70vh;display:flex;flex-direction:column;">
-      <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-        <div id="cpickerTitle" style="font-size:15px;font-weight:800;letter-spacing:0.5px;"></div>
-        <button onclick="cpickerClose()" style="background:rgba(255,255,255,0.1);border:none;border-radius:20px;padding:6px 14px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Stäng</button>
-      </div>
-      <div id="cpickerList" style="overflow-y:auto;flex:1;padding:8px 0;"></div>
-    </div>
-  </div>
 <script>
 
 (function () {
