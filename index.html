@@ -3354,8 +3354,8 @@
           <div style="flex:1;">
             <div style="font-size:11px;font-weight:700;color:#3eb489;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Från</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-              <button type="button" id="jobStartMonthBtn" onclick="cpickerOpen(&#39;jobStartMonth&#39;,&#39;FRÅN — Månad&#39;,&#39;#3eb489&#39;)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
-              <button type="button" id="jobStartYearBtn" onclick="cpickerOpen(&#39;jobStartYear&#39;,&#39;FRÅN — År&#39;,&#39;#3eb489&#39;)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
+              <button type="button" id="jobStartMonthBtn" onclick="cpickerOpen('jobStartMonth','FRÅN — Månad','#3eb489')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
+              <button type="button" id="jobStartYearBtn" onclick="cpickerOpen('jobStartYear','FRÅN — År','#3eb489')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(62,180,137,0.3);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
             </div>
           </div>
 
@@ -3370,16 +3370,19 @@
               </label>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-              <button type="button" id="jobEndMonthBtn" onclick="cpickerOpen(&#39;jobEndMonth&#39;,&#39;TILL — Månad&#39;,&#39;rgba(255,255,255,0.5)&#39;)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
-              <button type="button" id="jobEndYearBtn" onclick="cpickerOpen(&#39;jobEndYear&#39;,&#39;TILL — År&#39;,&#39;rgba(255,255,255,0.5)&#39;)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
+              <button type="button" id="jobEndMonthBtn" onclick="cpickerOpen('jobEndMonth','TILL — Månad','rgba(255,255,255,0.5)')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">Månad</button>
+              <button type="button" id="jobEndYearBtn" onclick="cpickerOpen('jobEndYear','TILL — År','rgba(255,255,255,0.5)')" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 6px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;">År</button>
             </div>
           </div>
         </div>
+
+        <!-- Rensa datum — direkt under datumraderna -->
+        <button type="button" onclick="clearJobDates()" style="margin-top:8px;width:100%;padding:7px;background:none;border:1px dashed rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;cursor:pointer;letter-spacing:0.3px;">🗓 Rensa datum</button>
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 8px; gap: 8px;">
         <label style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 600;">Dina arbetsuppgifter (3 punkter)</label>
-        <button style="background: none; border: none; color: var(--accent3); font-size: 12px; cursor: pointer; padding: 4px 8px; font-weight: 700; border-radius: 4px; transition: 0.2s;" onmouseover="this.style.background=&#39;rgba(124,58,237,0.1)&#39;" onmouseout="this.style.background=&#39;none&#39;" onclick="aiAutofillJobDesc()">✨ AI Autofyll</button>
+        <button style="background:rgba(124,58,237,0.2);border:1.5px solid rgba(124,58,237,0.5);color:#c4b5fd;font-size:12px;cursor:pointer;padding:6px 10px;font-weight:700;border-radius:8px;transition:0.2s;font-family:inherit;" onmouseover="this.style.background='rgba(124,58,237,0.35)'" onmouseout="this.style.background='rgba(124,58,237,0.2)'" onclick="aiAutofillJobDesc()">✨ AI Autofyll</button>
       </div>
       <textarea class="modal-input" id="jobDesc1" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)" rows="2" style="resize:none;line-height:1.5;padding:10px 12px;font-family:inherit;font-size:14px;"></textarea>
       <textarea class="modal-input" id="jobDesc2" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)" rows="2" style="resize:none;line-height:1.5;padding:10px 12px;font-family:inherit;font-size:14px;"></textarea>
@@ -4889,6 +4892,23 @@
         if (monthBtn) { monthBtn.style.opacity=''; monthBtn.style.pointerEvents=''; monthBtn.textContent='Månad'; monthBtn.style.color=''; }
         if (yearBtn) { yearBtn.style.opacity=''; yearBtn.style.pointerEvents=''; yearBtn.textContent='År'; yearBtn.style.color=''; }
       }
+    }
+
+    function clearJobDates() {
+      ['jobStartMonth','jobStartYear','jobEndMonth','jobEndYear'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+        const btn = document.getElementById(id + 'Btn');
+        if (btn) {
+          btn.textContent = id.includes('Month') ? 'Månad' : 'År';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.style.opacity = '';
+          btn.style.pointerEvents = '';
+        }
+      });
+      const ongoing = document.getElementById('jobOngoing');
+      if (ongoing) { ongoing.checked = false; }
     }
 
     function toggleEduOngoing(cb) {
