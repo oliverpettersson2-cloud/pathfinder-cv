@@ -2466,10 +2466,82 @@
     }
     .cpicker-item:active { background: rgba(255,255,255,0.1); }
     .cpicker-item.selected { color: #3eb489; font-weight: 700; }
+
+    /* ===== SPLASH SCREEN ===== */
+    #splashScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background: linear-gradient(145deg, #0d0f1e 0%, #1a1a2e 60%, #12192e 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      transition: opacity 0.45s ease, visibility 0.45s;
+    }
+    #splashScreen.splash-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .splash-logo {
+      font-size: 36px;
+      font-weight: 900;
+      font-family: Georgia, serif;
+      letter-spacing: -0.5px;
+    }
+    .splash-logo span:first-child  { color: #f0c040; }
+    .splash-logo span:last-child   { color: #fff; }
+    .splash-dots {
+      display: flex;
+      gap: 10px;
+    }
+    .splash-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #3eb489;
+      animation: dotPulse 1.3s ease-in-out infinite;
+    }
+    .splash-dot:nth-child(2) { animation-delay: 0.22s; background: #e85d26; }
+    .splash-dot:nth-child(3) { animation-delay: 0.44s; background: #f0c040; }
+    @keyframes dotPulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.75); }
+      40%            { opacity: 1;   transform: scale(1.2); }
+    }
   </style>
 
 </head>
 <body>
+
+  <!-- ===== SPLASH SCREEN ===== -->
+  <div id="splashScreen" class="splash-hidden">
+    <div class="splash-logo"><span>CV</span><span>matchen</span></div>
+    <!-- Timglas (samma SVG som aiLoadingOverlay) -->
+    <div style="position:relative;width:56px;height:56px;">
+      <svg viewBox="0 0 56 56" width="56" height="56" style="animation:hourglassSpin 2s ease-in-out infinite;">
+        <defs>
+          <linearGradient id="splashHgGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3eb489"/>
+            <stop offset="100%" stop-color="#e85d26"/>
+          </linearGradient>
+        </defs>
+        <path d="M14 6 L42 6 L28 28 L42 50 L14 50 L28 28 Z" fill="none" stroke="url(#splashHgGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M16 8 L40 8 L28 24 Z" fill="#3eb489" opacity="0.35" style="animation:sandDrain 2s ease-in-out infinite;"/>
+        <path d="M28 32 L40 48 L16 48 Z" fill="#e85d26" opacity="0.5" style="animation:sandFill 2s ease-in-out infinite;"/>
+        <circle cx="28" cy="29" r="2" fill="#f0c040" style="animation:sandDrop 2s ease-in-out infinite;"/>
+      </svg>
+    </div>
+    <div id="splashGreeting" style="font-size:15px;color:rgba(255,255,255,0.75);font-weight:600;letter-spacing:0.2px;">
+      Din profil laddas…
+    </div>
+    <div class="splash-dots">
+      <div class="splash-dot"></div>
+      <div class="splash-dot"></div>
+      <div class="splash-dot"></div>
+    </div>
+  </div>
 
   <!-- ===== AUTENTISERINGSOVERLAY ===== -->
   <div id="authOverlay" class="hidden">
@@ -2553,6 +2625,34 @@
         <div class="auth-title">Du ar inloggad!</div>
         <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96f2fff8d6f3e6f9e5e2b8e5f3">[email&nbsp;protected]</a></div>
         <button class="auth-btn" onclick="authEnterApp()">Fortsätt till CVmatchen</button>
+      </div>
+
+      <!-- Steg 4: Onboarding för NYA användare -->
+      <div id="authStep4" class="auth-step">
+        <div style="font-size:40px;margin-bottom:12px;">👋</div>
+        <div class="auth-title">Välkommen!</div>
+        <div class="auth-subtitle" style="margin-bottom:20px;">Fyll i dina uppgifter så är du redo att bygga ditt CV.</div>
+
+        <!-- E-post (visas, redigerbar ej) -->
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;margin-bottom:12px;text-align:left;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.5px;">E-post</div>
+          <div id="onbEmail" style="font-size:14px;color:rgba(255,255,255,0.7);"></div>
+        </div>
+
+        <input id="onbFirstName" type="text" class="auth-input"
+          placeholder="Förnamn *" autocomplete="given-name"
+          style="margin-bottom:10px;"
+          oninput="document.getElementById('onbErr').textContent=''">
+        <input id="onbLastName" type="text" class="auth-input"
+          placeholder="Efternamn *" autocomplete="family-name"
+          style="margin-bottom:10px;"
+          oninput="document.getElementById('onbErr').textContent=''">
+        <input id="onbPhone" type="tel" class="auth-input"
+          placeholder="Telefonnummer (valfritt)" autocomplete="tel"
+          inputmode="tel" style="margin-bottom:6px;">
+
+        <div id="onbErr" style="color:#ff8fa3;font-size:12px;min-height:18px;margin-bottom:10px;"></div>
+        <button class="auth-btn" onclick="authCompleteOnboarding()">Skapa mitt CV →</button>
       </div>
     </div>
   </div>
@@ -6753,6 +6853,36 @@ ${styleTexts}
       delete _authMemory[key];
     }
 
+    // ===== INLOGGNINGS-SPLASH =====
+    // Visas direkt när användaren landar i appen (alltid på "Hej"-sidan).
+    // Undertrycker "Din data är laddad"- och "Profilbild dold"-toasts.
+    function showLoginSplash(emailOrName) {
+      // Plocka ut förnamnet (ur email eller fullt namn)
+      var name = (emailOrName || '').trim().split(/[\s@]/)[0];
+      try {
+        var saved = pfRead('cvData');
+        if (saved) {
+          var d = JSON.parse(saved);
+          if (d.name) name = d.name.trim().split(' ')[0];
+        }
+      } catch(e) {}
+
+      var el = document.getElementById('splashGreeting');
+      if (el) el.textContent = name ? 'Hej ' + name + ', din profil laddas…' : 'Din profil laddas…';
+
+      var s = document.getElementById('splashScreen');
+      if (s) s.classList.remove('splash-hidden');
+
+      // Alltid "Hej"-fliken
+      if (typeof mobSwitchTab === 'function') mobSwitchTab('hej');
+
+      // Stäng efter 3 sekunder
+      setTimeout(function() {
+        if (s) s.classList.add('splash-hidden');
+      }, 3000);
+    }
+    // ===== SLUT INLOGGNINGS-SPLASH =====
+
     function authInit() {
       // Kolla om magic link redirect (URL innehåller access_token)
       const hash = window.location.hash;
@@ -6762,7 +6892,7 @@ ${styleTexts}
         if (accessToken) {
           authHandleMagicLinkRedirect(accessToken);
           window.history.replaceState({}, document.title, window.location.pathname);
-          return;
+          return; // splash hides inside authHandleMagicLinkRedirect
         }
       }
 
@@ -6797,6 +6927,7 @@ ${styleTexts}
           authSetLoggedIn(email, false, userId, accessToken);
           document.getElementById('authOverlay').classList.add('hidden');
           setNavStep(2);
+          showLoginSplash(email);
         } else {
           authInitFallback();
         }
@@ -6988,13 +7119,19 @@ ${styleTexts}
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
 
-      const welcomeText = isNew
-        ? 'Välkommen till CVmatchen, ' + email + '!'
-        : 'Du är inloggad som ' + email;
-      document.getElementById('authWelcomeText').textContent = welcomeText;
-
       document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-      document.getElementById('authStep3').classList.add('active');
+
+      if (isNew) {
+        // Ny användare → onboarding
+        const onbEmail = document.getElementById('onbEmail');
+        if (onbEmail) onbEmail.textContent = email;
+        document.getElementById('authStep4').classList.add('active');
+      } else {
+        // Återkommande → direkt vidare
+        const welcomeText = 'Du är inloggad som ' + email;
+        document.getElementById('authWelcomeText').textContent = welcomeText;
+        document.getElementById('authStep3').classList.add('active');
+      }
 
       // Ladda CV från Supabase om inloggad
       if (userId && accessToken) {
@@ -7086,7 +7223,7 @@ ${styleTexts}
           try { localStorage.setItem('pathfinder_job_diary', JSON.stringify(result.jobDiary)); } catch(e) {}
         }
 
-        showToast('✅ Din data är laddad!', 'success');
+        // Toast undertryckt — splashskärmen fyller den rollen vid start
       } catch(e) {
       }
     }
@@ -7094,6 +7231,40 @@ ${styleTexts}
     function authEnterApp() {
       document.getElementById('authOverlay').classList.add('hidden');
       setNavStep(2);
+      showLoginSplash(authCurrentEmail || '');
+    }
+
+    function authCompleteOnboarding() {
+      const firstName = (document.getElementById('onbFirstName').value || '').trim();
+      const lastName  = (document.getElementById('onbLastName').value  || '').trim();
+      const phone     = (document.getElementById('onbPhone').value     || '').trim();
+      const email     = authCurrentEmail || '';
+      const errEl     = document.getElementById('onbErr');
+
+      if (!firstName) { errEl.textContent = 'Förnamn krävs.'; return; }
+      if (!lastName)  { errEl.textContent = 'Efternamn krävs.'; return; }
+
+      // Spara ALLT i cvData → direkt in i CV-byggaren
+      cvData.name  = (firstName + ' ' + lastName).trim();
+      if (phone) cvData.phone = phone;
+      if (email) cvData.email = email;
+      saveData();
+
+      // Desktop CV-fält
+      const f = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      f('name',  cvData.name);
+      f('phone', phone);
+      f('email', email);
+
+      // Mobil CV-fält
+      f('mob-name',  cvData.name);
+      f('mob-phone', phone);
+      f('mob-email', email);
+
+      updatePreview();
+      document.getElementById('authOverlay').classList.add('hidden');
+      setNavStep(2);
+      showLoginSplash(firstName);
     }
 
 
@@ -7106,7 +7277,8 @@ ${styleTexts}
       const emailEl = document.getElementById('authUserEmail');
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
-      setShowPhoto(cvData.showPhoto === true, false);
+      setShowPhoto(cvData.showPhoto === true, true); // tyst vid login — splash fyller rollen
+      showLoginSplash(email);                        // visa splash på Hej-sidan
       if (userId && accessToken) {
         loadAllFromSupabase(userId, accessToken);
       }
@@ -8098,7 +8270,7 @@ ${styleTexts}
       <!-- Snabbknappar — statisk HTML, JS kopplar bara handlers -->
       <div id="_snabbWrap" style="margin-top:16px;margin-bottom:4px;">
         <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;">⚡ Snabbsök</div>
-        <div id="_snabbBtns" style="display:flex;flex-wrap:wrap;gap:7px;" data-init="1">
+        <div id="_snabbBtns" style="display:flex;flex-wrap:wrap;gap:7px;">
           <button data-q="__ALLA__" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🌐 Alla jobb</button>
           <button data-q="lager logistik" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">📦 Lager &amp; logistik</button>
           <button data-q="vård omsorg undersköterska" class="_snabb-btn" style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.15s; background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.6);">🤝 Vård &amp; omsorg</button>
@@ -11584,10 +11756,12 @@ ${styleTexts}
       if (cvb) cvb.style.cssText = CVB_INACTIVE;
     }
 
+    var _snabbHandlersAttached = false;
     function initHandlers() {
+      if (_snabbHandlersAttached) return;
       var btnsEl = document.getElementById('_snabbBtns');
-      if (!btnsEl || btnsEl.dataset.init) return;
-      btnsEl.dataset.init = '1';
+      if (!btnsEl) return;
+      _snabbHandlersAttached = true;
 
       // Sätt initial stil på alla knappar
       var DK_INACTIVE = 'display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;background:rgba(200,16,46,0.12);border:1.5px solid rgba(200,16,46,0.4);color:#ff8fa3;';
