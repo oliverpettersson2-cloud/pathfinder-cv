@@ -10027,14 +10027,15 @@ ${styleTexts}
     const resp = await fetch('/api/jobnet?' + params.toString());
     if (!resp.ok) throw new Error('Jobnet proxy ' + resp.status);
     const data = await resp.json();
+    console.log('[Jobnet] raw response:', JSON.stringify(data).slice(0, 600));
     if (data.error) { console.warn('Jobnet fel:', data.error, data.raw || ''); return []; }
-    // Jobnet kan returnera listan under flera möjliga nycklar
     const items = data.JobPositionPostings
                 || data.JobAds
                 || data.Hits
                 || data.Results
                 || data.jobs
                 || (Array.isArray(data) ? data : []);
+    console.log('[Jobnet] items hittade:', items.length);
     return items.map(matchaMapJobnetHit);
   }
 
@@ -11786,9 +11787,15 @@ ${styleTexts}
           var input = document.getElementById('matchaSearch');
           var q = btn.dataset.q;
           if (q === '__HELSINGÖR__') {
-            // Byt filter till Helsingør och sök brett
-            if (typeof matchaSetFilter === 'function') matchaSetFilter('helsingör');
-            if (input) input.value = 'jobb';
+            // Håll fam-filtret (Familjen HBG + Helsingør) — byt inte till helsingör
+            if (typeof matchaSetFilter === 'function') matchaSetFilter('fam');
+            // Synka dropdown
+            var sel = document.getElementById('matchaOrtSelect');
+            if (sel) sel.value = 'fam';
+            // Sök på CV-titeln, inte "jobb"
+            var cvTitle = '';
+            try { cvTitle = (JSON.parse(localStorage.getItem('cvData') || '{}')).title || ''; } catch(e) {}
+            if (input) input.value = cvTitle || 'jobb i Helsingør';
             if (typeof matchaDoSearch === 'function') matchaDoSearch();
             return;
           }
