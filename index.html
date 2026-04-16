@@ -10023,7 +10023,7 @@ ${styleTexts}
       ItemsPerPage: '20',
       CurrentPage: String((page || 0) + 1)
     });
-    const resp = await fetch('https://job.jobnet.dk/CV/FindWork/JobList?' + params.toString());
+    const resp = await fetch('/api/jobnet?' + params.toString());
     if (!resp.ok) throw new Error('Jobnet API-fel');
     const data = await resp.json();
     const items = data.JobPositionPostings || data.Hits || data.Results || [];
