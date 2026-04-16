@@ -7,10 +7,11 @@ export default async function handler(req) {
   const page = url.searchParams.get('CurrentPage')  || '1';
   const per  = url.searchParams.get('ItemsPerPage') || '20';
 
-  // SearchLocation=Helsingør är det parameter Jobnet förstår för orten
+  // Prova utan SearchLocation — annars returnerar Jobnet 0 träffar
+  // Vi filtrerar på Helsingør-kommunen med WorkArea istället
   const params = new URLSearchParams({
     SearchString:   q,
-    SearchLocation: 'Helsingør',
+    WorkArea:       'Helsingør',   // kommunnamn på danska
     CurrentPage:    page,
     ItemsPerPage:   per,
     SortOrder:      'CreatedDate',
@@ -21,20 +22,24 @@ export default async function handler(req) {
   try {
     const resp = await fetch(upstream, {
       headers: {
-        'Accept':           'application/json, text/javascript, */*',
-        'User-Agent':       'Mozilla/5.0 CVmatchen/1.0',
-        'Referer':          'https://job.jobnet.dk/',
+        'Accept':           'application/json, text/javascript, */*; q=0.01',
+        'Accept-Language':  'da,sv;q=0.9,en;q=0.8',
+        'User-Agent':       'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Referer':          'https://job.jobnet.dk/CV/FindWork',
         'X-Requested-With': 'XMLHttpRequest',
+        'Origin':           'https://job.jobnet.dk',
       },
     });
 
     const text = await resp.text();
+    console.log('[jobnet] status:', resp.status, 'url:', upstream);
+    console.log('[jobnet] body slice:', text.slice(0, 300));
 
     let data;
     try {
       data = JSON.parse(text);
     } catch {
-      return new Response(JSON.stringify({ error: 'parse_fail', raw: text.slice(0, 500) }), {
+      return new Response(JSON.stringify({ error: 'parse_fail', status: resp.status, raw: text.slice(0, 800) }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
