@@ -11787,15 +11787,16 @@ ${styleTexts}
           var input = document.getElementById('matchaSearch');
           var q = btn.dataset.q;
           if (q === '__HELSINGÖR__') {
-            // Håll fam-filtret (Familjen HBG + Helsingør) — byt inte till helsingör
-            if (typeof matchaSetFilter === 'function') matchaSetFilter('fam');
-            // Synka dropdown
+            // Sätt fam-filter direkt (utan att kalla matchaSetFilter som triggar dubbel sökning)
+            matchaLocFilter = 'fam';
             var sel = document.getElementById('matchaOrtSelect');
             if (sel) sel.value = 'fam';
-            // Sök på CV-titeln, inte "jobb"
-            var cvTitle = '';
-            try { cvTitle = (JSON.parse(localStorage.getItem('cvData') || '{}')).title || ''; } catch(e) {}
-            if (input) input.value = cvTitle || 'jobb i Helsingør';
+            // Sök på CV-titeln om den finns, annars brett
+            var cvTitle = (cvData && cvData.title) ? cvData.title.trim() : '';
+            if (!cvTitle) {
+              try { cvTitle = (JSON.parse(localStorage.getItem('cvData') || '{}')).title || ''; } catch(e) {}
+            }
+            if (input) input.value = cvTitle || '';
             if (typeof matchaDoSearch === 'function') matchaDoSearch();
             return;
           }
