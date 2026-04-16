@@ -10027,15 +10027,32 @@ ${styleTexts}
     const resp = await fetch('/api/jobnet?' + params.toString());
     if (!resp.ok) throw new Error('Jobnet proxy ' + resp.status);
     const data = await resp.json();
-    console.log('[Jobnet] raw response:', JSON.stringify(data).slice(0, 600));
-    if (data.error) { console.warn('Jobnet fel:', data.error, data.raw || ''); return []; }
+
+    // ── DEBUG: visa råsvaret direkt i appen (försvinner efter 30s) ──
+    (function showDebug(d) {
+      var raw = JSON.stringify(d).slice(0, 800);
+      var keys = Object.keys(d || {}).join(', ') || '(tomt)';
+      var el = document.getElementById('jobnetDebug');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'jobnetDebug';
+        el.style.cssText = 'margin:10px 0;padding:12px;background:#1a0a00;border:1.5px solid #e85d26;border-radius:10px;font-size:11px;color:#ffd4a0;word-break:break-all;white-space:pre-wrap;';
+        var res = document.getElementById('matchaSearchResults');
+        if (res && res.parentNode) res.parentNode.insertBefore(el, res);
+      }
+      el.style.display = 'block';
+      el.textContent = '🔍 JOBNET DEBUG\nNycklar: ' + keys + '\n\n' + raw;
+      setTimeout(function(){ if(el) el.style.display='none'; }, 30000);
+    })(data);
+    // ── SLUT DEBUG ──
+
+    if (data.error) return [];
     const items = data.JobPositionPostings
                 || data.JobAds
                 || data.Hits
                 || data.Results
                 || data.jobs
                 || (Array.isArray(data) ? data : []);
-    console.log('[Jobnet] items hittade:', items.length);
     return items.map(matchaMapJobnetHit);
   }
 
