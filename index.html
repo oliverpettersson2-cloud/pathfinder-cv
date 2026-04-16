@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/Users/olive/Downloads/index_48.html -->
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" href="file:///C:/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="file:///C:/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
 
   <!-- PDF Generation Libraries -->
-  <script src="file:///C:/jspdf.umd.min.js"></script>
-  <script src="file:///C:/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
   
   <style>
@@ -2587,8 +2586,8 @@
         <div id="authStep1Error" class="auth-error"></div>
 
         <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:center;gap:16px;font-size:11px;">
-          <a href="file:///C:/Users/olive/Downloads/index_47.html#" style="color:rgba(255,255,255,0.3);text-decoration:none;">Allmänna villkor</a>
-          <a href="file:///C:/Users/olive/Downloads/index_47.html#" style="color:rgba(255,255,255,0.3);text-decoration:none;">GDPR</a>
+          <a href="#" onclick="showLegalModal('terms');return false;" style="color:rgba(255,255,255,0.3);text-decoration:none;">Allmänna villkor</a>
+          <a href="#" onclick="showLegalModal('gdpr');return false;" style="color:rgba(255,255,255,0.3);text-decoration:none;">GDPR</a>
         </div>
         <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.15);margin-top:8px;">PathfinderAI AB</div>
       </div>
@@ -2623,7 +2622,7 @@
       <div id="authStep3" class="auth-step">
         <div style="font-size:48px; margin-bottom:16px;">✅</div>
         <div class="auth-title">Du ar inloggad!</div>
-        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad som <a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="96f2fff8d6f3e6f9e5e2b8e5f3">[email&nbsp;protected]</a></div>
+        <div class="auth-subtitle" id="authWelcomeText">Du är inloggad</div>
         <button class="auth-btn" onclick="authEnterApp()">Fortsätt till CVmatchen</button>
       </div>
 
@@ -4394,7 +4393,7 @@
     </div>
   </div>
 
-  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
     // Storage med fallback
     const safeStorage = {
       getItem: (key) => {
@@ -7332,6 +7331,81 @@ ${styleTexts}
       window.scrollTo(0, 0);
     }
 
+    function showTermsModal() {
+      var m = document.getElementById('termsModal');
+      if (m) m.style.display = 'block';
+    }
+
+    function showLegalModal(type) {
+      if (type === 'gdpr') showPrivacyPolicy();
+      else showTermsModal();
+    }
+
+    // ===== PERSONLIG INFORMATION =====
+    function togglePersonalInfoCard() {
+      var card = document.getElementById('personalInfoCard');
+      var chev = document.getElementById('personalInfoChevron');
+      var open = card.style.display !== 'none';
+      card.style.display = open ? 'none' : 'block';
+      if (chev) chev.style.transform = open ? '' : 'rotate(90deg)';
+      if (!open) _populatePersonalInfoCard();
+    }
+
+    function _populatePersonalInfoCard() {
+      var saved = pfRead(AUTH_STORAGE_KEY);
+      var email = '';
+      try { email = JSON.parse(saved).email || ''; } catch(e) {}
+      var piEmail = document.getElementById('piEmail');
+      var piName  = document.getElementById('piName');
+      var piPhone = document.getElementById('piPhone');
+      var preview = document.getElementById('profileEmailPreview');
+      if (piEmail) piEmail.textContent = email || '—';
+      if (piName)  piName.value  = cvData.name  || '';
+      if (piPhone) piPhone.value = cvData.phone || '';
+      if (preview) preview.textContent = email || '';
+    }
+
+    function savePersonalInfo() {
+      var LOCK_KEY = 'pi_last_saved';
+      var last = parseInt(localStorage.getItem(LOCK_KEY) || '0', 10);
+      var now  = Date.now();
+      var sevenDays = 7 * 24 * 60 * 60 * 1000;
+      var msgEl = document.getElementById('piMsg');
+
+      if (last && (now - last) < sevenDays) {
+        var daysLeft = Math.ceil((sevenDays - (now - last)) / (24*60*60*1000));
+        if (msgEl) { msgEl.style.color = '#ff8fa3'; msgEl.textContent = '⏳ Kan ändras om ' + daysLeft + ' dag' + (daysLeft > 1 ? 'ar' : '') + '.'; }
+        return;
+      }
+
+      var name  = (document.getElementById('piName').value  || '').trim();
+      var phone = (document.getElementById('piPhone').value || '').trim();
+      if (!name) { if(msgEl){msgEl.style.color='#ff8fa3';msgEl.textContent='Namn krävs.';} return; }
+
+      cvData.name  = name;
+      if (phone) cvData.phone = phone;
+      saveData();
+
+      // Synka fält
+      ['name','mob-name'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=name; });
+      if (phone) ['phone','mob-phone'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=phone; });
+      updatePreview();
+
+      localStorage.setItem(LOCK_KEY, String(now));
+      if (msgEl) { msgEl.style.color = '#3eb489'; msgEl.textContent = '✅ Sparat!'; setTimeout(function(){ msgEl.textContent=''; }, 3000); }
+      var preview = document.getElementById('profileEmailPreview');
+      if (preview) preview.textContent = document.getElementById('piEmail').textContent;
+    }
+
+    // Populera e-post-preview när profil-panelen öppnas
+    function _initProfilePanel() {
+      var saved = pfRead(AUTH_STORAGE_KEY);
+      var email = '';
+      try { email = JSON.parse(saved).email || ''; } catch(e) {}
+      var preview = document.getElementById('profileEmailPreview');
+      if (preview) preview.textContent = email || '';
+    }
+
     // ===== RADERA KONTO =====
     async function handleDeleteAccount() {
       const saved = pfRead(AUTH_STORAGE_KEY);
@@ -7955,6 +8029,33 @@ ${styleTexts}
       <div style="padding:0 4px;margin-top:24px;">
         <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:10px;padding:0 2px;">Avtal och inställningar</div>
 
+        <!-- ⚙️ Personlig information -->
+        <div onclick="togglePersonalInfoCard()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;background:rgba(62,180,137,0.06);border:1px solid rgba(62,180,137,0.2);margin-bottom:8px;">
+          <div style="font-size:20px;flex-shrink:0;">⚙️</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#3eb489;">Personlig information</div>
+            <div id="profileEmailPreview" style="font-size:11px;color:rgba(255,255,255,0.35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;"></div>
+          </div>
+          <span id="personalInfoChevron" style="font-size:16px;color:rgba(62,180,137,0.35);transition:transform 0.2s;">›</span>
+        </div>
+        <div id="personalInfoCard" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;margin-top:-4px;margin-bottom:8px;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:12px;line-height:1.5;">⚠️ Uppgifter kan bara ändras <strong style="color:rgba(255,255,255,0.5);">en gång var 7:e dag</strong>.</div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">E-post</div>
+            <div id="piEmail" style="font-size:13px;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;">—</div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Namn</div>
+            <input id="piName" type="text" placeholder="Ditt namn" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;font-size:13px;color:#fff;font-family:inherit;outline:none;">
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Telefon</div>
+            <input id="piPhone" type="tel" placeholder="Telefonnummer" inputmode="tel" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;font-size:13px;color:#fff;font-family:inherit;outline:none;">
+          </div>
+          <button onclick="savePersonalInfo()" style="width:100%;padding:10px;background:rgba(62,180,137,0.15);border:1.5px solid rgba(62,180,137,0.4);border-radius:10px;color:#3eb489;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Spara</button>
+          <div id="piMsg" style="font-size:11px;text-align:center;margin-top:8px;min-height:16px;color:#3eb489;"></div>
+        </div>
+
         <!-- Logga ut — röd, överst -->
         <div onclick="authShowUserMenu()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);margin-bottom:8px;">
           <div style="font-size:20px;flex-shrink:0;">🚪</div>
@@ -7969,8 +8070,18 @@ ${styleTexts}
         <div onclick="showPrivacyPolicy()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;">
           <div style="font-size:20px;flex-shrink:0;">📄</div>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);">Integritetspolicy</div>
+            <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);">Integritetspolicy / GDPR</div>
             <div style="font-size:11px;color:rgba(255,255,255,0.3);">Hur CVmatchen hanterar dina uppgifter</div>
+          </div>
+          <span style="font-size:14px;color:rgba(255,255,255,0.15);">›</span>
+        </div>
+
+        <!-- Allmänna villkor -->
+        <div onclick="showTermsModal()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;">
+          <div style="font-size:20px;flex-shrink:0;">📋</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);">Allmänna villkor</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.3);">Användarvillkor för CVmatchen</div>
           </div>
           <span style="font-size:14px;color:rgba(255,255,255,0.15);">›</span>
         </div>
@@ -7989,7 +8100,7 @@ ${styleTexts}
       <!-- Footer -->
       <div style="padding:28px 4px 8px;text-align:center;">
         <div style="font-size:10px;color:rgba(255,255,255,0.18);line-height:2;">CVmatchen av PathfinderAI</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.12);"><a href="file:///C:/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adc5c8c7edddccd9c5cbc4c3c9c8dfccc483dec8">[email&nbsp;protected]</a></div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.12);">info@cvmatchen.com</div>
       </div>
     </div>
 
@@ -8006,7 +8117,7 @@ ${styleTexts}
         <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Personuppgiftsansvarig</div>
-          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="file:///C:/cdn-cgi/l/email-protection#422a2728023223362a242b2c262730232b6c3127"><span class="__cf_email__" data-cfemail="c0a8a5aa80b0a1b4a8a6a9aea4a5b2a1a9eeb3a5">[email&nbsp;protected]</span></a></p>
+          <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: info@cvmatchen.com</p>
           <p style="margin:0 0 20px;">PathfinderAI är personuppgiftsansvarig för CVmatchen — appen du använder för att bygga CV, matcha mot jobb och söka utbildningar.</p>
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Vilka uppgifter samlar vi in?</div>
@@ -8049,11 +8160,33 @@ ${styleTexts}
 
           <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Kontakt</div>
           <p style="margin:0 0 4px;">För frågor om dataskydd, kontakta oss på:</p>
-          <p style="margin:0;"><a href="file:///C:/cdn-cgi/l/email-protection#2c4449466c5c4d58444a454248495e4d45025f49" style="color:#3eb489;"><span class="__cf_email__" data-cfemail="81e9e4ebc1f1e0f5e9e7e8efe5e4f3e0e8aff2e4">[email&nbsp;protected]</span></a></p>
+          <p style="margin:0;"><a href="mailto:info@cvmatchen.com" style="color:#3eb489;">info@cvmatchen.com</a></p>
 
         </div>
 
         <button onclick="document.getElementById(&#39;privacyPolicyModal&#39;).style.display=&#39;none&#39;" style="width:100%;margin-top:32px;padding:14px;background:#3eb489;border:none;color:#fff;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Stäng</button>
+      </div>
+    </div>
+
+    <!-- Allmänna villkor-modal -->
+    <div id="termsModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);overflow-y:auto;">
+      <div style="background:#12172a;min-height:100%;padding:24px 20px 60px;max-width:600px;margin:0 auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+          <div style="font-size:18px;font-weight:900;color:#fff;">📋 Allmänna villkor</div>
+          <button onclick="document.getElementById('termsModal').style.display='none'" style="background:rgba(255,255,255,0.08);border:none;color:#fff;font-size:20px;width:36px;height:36px;border-radius:50%;cursor:pointer;">✕</button>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:20px;">Senast uppdaterad: maj 2025</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Tjänsten</div>
+          <p>CVmatchen tillhandahålls av PathfinderAI AB för CV-skapande, jobbmatchning och utbildningssökning.</p>
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Prissättning</div>
+          <p>CVmatchen är en betaltjänst. Kommuner och organisationer upphandlar tjänsten enligt avtal. Privatpersoner debiteras enligt gällande prislista. Kontakta info@cvmatchen.com för prisuppgifter.</p>
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">3. AI-innehåll</div>
+          <p>AI-förslag ska alltid granskas av användaren. PathfinderAI ansvarar inte för fel i AI-genererat innehåll.</p>
+          <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">4. Personuppgifter</div>
+          <p>Vi behandlar dina personuppgifter enligt integritetspolicyn och GDPR.</p>
+        </div>
+        <button onclick="document.getElementById('termsModal').style.display='none'" style="width:100%;margin-top:32px;padding:14px;background:#3eb489;border:none;color:#fff;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;">Stäng</button>
       </div>
     </div>
 
@@ -8460,7 +8593,7 @@ ${styleTexts}
   <!-- SLUT MOBIL UI -->
 
 
-  <script data-cfasync="false" src="file:///C:/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
   // =====================================================
   // MOBIL JS — flik-navigation + synkronisering
   // =====================================================
@@ -8709,7 +8842,7 @@ ${styleTexts}
     const btn = document.getElementById('tabBtn-' + tab);
     if (btn) btn.classList.add('mob-tab--active');
 
-    if (tab === 'export') { mobBuildTemplateGrid(); mobRenderSavedCVs(); }
+    if (tab === 'export') { mobBuildTemplateGrid(); mobRenderSavedCVs(); _initProfilePanel(); }
     if (tab === 'matcha') { matchaPopulateCvSelect(); }
   }
 
