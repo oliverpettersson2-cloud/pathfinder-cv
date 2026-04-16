@@ -10004,29 +10004,37 @@ ${styleTexts}
 
   // ── Jobnet.dk (Danmark / Helsingør) ────────────────────────────
   function matchaMapJobnetHit(item) {
-    const id = item.Id || item.AutoJobId || ('dk_' + Math.random().toString(36).slice(2));
+    const id = item.Id || item.AutoJobId || item.JobAdId || ('dk_' + Math.random().toString(36).slice(2));
+    const city = item.WorkPlaceCity || item.WorkplaceMunicipality || item.Municipality
+               || item.WorkAreaName || item.City || 'Helsingør';
+    const link = item.ApplicationUrl || item.JobAdUrl || item.Url || item.JobPostingUrl || '';
     return {
-      id: 'dk_' + id,
-      headline: item.Title || item.Headline || '',
-      employer: { name: item.EmployerName || item.WorkplaceName || item.HiringOrgName || '' },
-      workplace_address: { municipality: '🇩🇰 ' + (item.WorkPlaceCity || item.Municipality || 'Helsingør') },
-      webpage_url: item.ApplicationUrl || item.JobPostingUrl || item.Url || '',
-      description: { text: item.Description || item.JobDescription || '' },
-      _source: 'jobnet_dk'
+      id:   'dk_' + id,
+      headline: item.Title || item.Headline || item.JobTitle || item.PositionTitle || '',
+      employer: { name: item.EmployerName || item.WorkplaceName || item.HiringOrgName || item.CompanyName || '' },
+      workplace_address: { municipality: '🇩🇰 ' + city },
+      webpage_url: link,
+      description: { text: item.Description || item.JobDescription || item.Body || '' },
+      _source: 'jobnet_dk',
     };
   }
   async function matchaFetchJobnet(q, page) {
     const params = new URLSearchParams({
       SearchString: q || '',
-      Region: '',
-      Zip: '3000',
+      CurrentPage:  String((page || 0) + 1),
       ItemsPerPage: '20',
-      CurrentPage: String((page || 0) + 1)
     });
     const resp = await fetch('/api/jobnet?' + params.toString());
-    if (!resp.ok) throw new Error('Jobnet API-fel');
+    if (!resp.ok) throw new Error('Jobnet proxy ' + resp.status);
     const data = await resp.json();
-    const items = data.JobPositionPostings || data.Hits || data.Results || [];
+    if (data.error) { console.warn('Jobnet fel:', data.error, data.raw || ''); return []; }
+    // Jobnet kan returnera listan under flera möjliga nycklar
+    const items = data.JobPositionPostings
+                || data.JobAds
+                || data.Hits
+                || data.Results
+                || data.jobs
+                || (Array.isArray(data) ? data : []);
     return items.map(matchaMapJobnetHit);
   }
 
