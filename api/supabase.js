@@ -438,7 +438,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'systemPrompt och history krävs' });
       }
 
-      const model = (config && config.model) || 'gemini-2.0-flash';
+      // Modell-prio: (1) env-var GEMINI_MODEL (sätts i Vercel), (2) klientens
+      // config.model, (3) gemini-1.5-flash som säker fallback.
+      // gemini-1.5-flash har robust free tier (15 req/min, 1500/dag).
+      // För att byta till 2.0-flash eller nyare — sätt GEMINI_MODEL=gemini-2.0-flash
+      // som environment variable i Vercel (kräver ev. billing på projektet).
+      const model = process.env.GEMINI_MODEL || (config && config.model) || 'gemini-1.5-flash';
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
 
       // Gemini kräver att `contents` har minst ett meddelande. När intervju.js
@@ -469,10 +474,28 @@ export default async function handler(req, res) {
         ]
       };
 
-      const result = await makeRequest(url, {
+      let result = await makeRequest(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       }, body);
+
+      // Auto-fallback: om primär modell ger kvotfel (429) eller saknas (404),
+      // testa gemini-1.5-flash som säker fallback (förutsatt att det inte redan
+      // var den vi använde). Detta gör appen robust mot modell-deprecations.
+      const isQuotaOrModelError = result.status === 429 || result.status === 404;
+      const FALLBACK_MODEL = 'gemini-1.5-flash';
+      if (isQuotaOrModelError && model !== FALLBACK_MODEL) {
+        const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/${FALLBACK_MODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+        const fallbackResult = await makeRequest(fallbackUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }, body);
+        if (fallbackResult.status < 400) {
+          // Fallback funkade — använd det svaret
+          result = fallbackResult;
+        }
+        // Annars låt det ursprungliga felet bubbla upp
+      }
 
       if (result.status >= 400) {
         return res.status(result.status).json({ error: 'Gemini-fel: ' + (result.data.error?.message || JSON.stringify(result.data).slice(0, 200)) });
