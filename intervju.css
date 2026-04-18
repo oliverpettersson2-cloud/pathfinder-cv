@@ -324,20 +324,33 @@
   border-radius: 14px;
   padding: 8px;
   margin-bottom: 10px;
+  /* iOS: säkerställ att hela baren tar emot input */
+  position: relative;
+  z-index: 1;
 }
 #trainView-intervju .iv-input-text {
   flex: 1;
   background: transparent;
   border: none;
   color: #fff;
-  font-size: 14px;
+  /* iOS zoomar in om font-size < 16px. 16px förhindrar zoom-glitchen. */
+  font-size: 16px;
   font-family: inherit;
-  padding: 8px;
+  padding: 10px 8px;
   resize: none;
   outline: none;
   min-height: 22px;
   max-height: 140px;
   line-height: 1.5;
+  /* iOS: se till att textarean tar emot touch */
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+  /* Tillåt iOS att förstora fältet vid fokus */
+  touch-action: manipulation;
 }
 #trainView-intervju .iv-input-text::placeholder {
   color: rgba(255, 255, 255, 0.3);
@@ -357,6 +370,12 @@
   align-items: center;
   justify-content: center;
   transition: background 0.15s, transform 0.1s;
+  /* iOS: säkerställ att klick registreras */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(167, 139, 250, 0.3);
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
 }
 #trainView-intervju .iv-icon-btn:active {
   transform: scale(0.92);
@@ -394,6 +413,61 @@
   display: flex;
   gap: 8px;
   margin-top: 8px;
+}
+
+/* ── SNABBVAL (Quick Options) ──────────────────────────────── */
+#trainView-intervju .iv-quick-options {
+  margin: 12px 0 6px;
+  padding: 12px 14px;
+  background: rgba(167, 139, 250, 0.04);
+  border: 1px dashed rgba(167, 139, 250, 0.25);
+  border-radius: 14px;
+  animation: ivQuickFadeIn 0.3s ease;
+}
+@keyframes ivQuickFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#trainView-intervju .iv-quick-options-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(167, 139, 250, 0.7);
+  margin-bottom: 10px;
+}
+#trainView-intervju .iv-quick-option {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.45;
+  cursor: pointer;
+  transition: all 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+#trainView-intervju .iv-quick-option:last-child {
+  margin-bottom: 0;
+}
+#trainView-intervju .iv-quick-option:hover {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.35);
+  color: #fff;
+}
+#trainView-intervju .iv-quick-option:active {
+  transform: scale(0.985);
+  background: rgba(167, 139, 250, 0.18);
 }
 
 /* ── FEEDBACK SCREEN ───────────────────────────────────────────── */
