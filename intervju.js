@@ -4,10 +4,11 @@
    
    Externa beroenden som redan finns i index.html:
    - window.authUserId + window.authAccessToken (CVmatchen-auth)
-   - /api/supabase endpoint med intervju-actions + gemini_call
+   - /api/chat endpoint (proxy till Anthropic Claude — samma som AI-SYV använder)
+   - /api/supabase endpoint med intervju-actions (sessions, messages, etc)
    
-   Gemini-nyckeln ligger SÄKERT i Vercel env vars (GEMINI_API_KEY).
-   Den anropas via backend-proxy - ingen nyckel i klienten.
+   AI drivs av Claude via /api/chat-proxyn. Ingen Gemini-nyckel krävs.
+   ANTHROPIC_API_KEY ligger säkert i Vercel env vars.
    
    Bygger UI:t dynamiskt in i #trainView-intervju vid sidladdning.
    ===================================================================== */
@@ -19,7 +20,7 @@
   // KONFIGURATION
   // ══════════════════════════════════════════════════════════════
   var CONFIG = {
-    geminiModel: 'gemini-1.5-flash',  // Säker free-tier-modell. Overrideras av GEMINI_MODEL env-var i Vercel.
+    claudeModel: 'claude-haiku-4-5-20251001',  // Samma modell som AI-SYV/edu-chat använder. Snabb, bra på samtals-AI.
     maxSpeechHistoryChars: 8000, // trunkera om historiken blir enorm
     defaultVoiceLang: 'sv-SE',
     ttsRate: 0.95,
@@ -238,7 +239,7 @@
       ivDebug.log('--- Miljö-check ---');
       ivDebug.log('window.authUserId: ' + (window.authUserId ? '✓ ' + window.authUserId.slice(0,8) + '...' : '✗ SAKNAS (ej inloggad?)'));
       ivDebug.log('window.authAccessToken: ' + (window.authAccessToken ? '✓ finns (' + window.authAccessToken.length + ' tecken)' : '✗ SAKNAS'));
-      ivDebug.log('Gemini: via /api/supabase proxy ✓ (säker backend)');
+      ivDebug.log('Claude: via /api/chat proxy ✓ (ANTHROPIC_API_KEY i backend)');
       ivDebug.log('SpeechRecognition: ' + ((window.SpeechRecognition || window.webkitSpeechRecognition) ? '✓' : '✗ (textfallback)'));
       ivDebug.log('speechSynthesis: ' + ('speechSynthesis' in window ? '✓' : '✗'));
       ivDebug.log('--- Check klar ---');
@@ -253,34 +254,66 @@
   }
 
   // ══════════════════════════════════════════════════════════════
-  // GEMINI-KLIENT (via /api/supabase proxy - nyckeln i backend)
+  // CLAUDE-KLIENT (via /api/chat proxy - Anthropic-nyckeln i backend)
+  // Använder samma /api/chat-endpoint som resten av CVmatchen (AI-SYV,
+  // CV-generering, kompetens-match). Ingen separat Gemini-nyckel krävs.
   // ══════════════════════════════════════════════════════════════
-  async function callGemini(history, systemPrompt, opts) {
+  async function callClaude(messages, systemPrompt, opts) {
     opts = opts || {};
-    var auth = requireAuth();
-    var data = await apiSupabase({
-      action: 'gemini_call',
-      accessToken: auth.accessToken,
-      userId: auth.userId,
-      systemPrompt: systemPrompt,
-      history: history,
-      config: {
-        model: CONFIG.geminiModel,
-        temperature: opts.temperature || 0.85,
-        maxOutputTokens: opts.maxOutputTokens || 300
-      }
+    // Kick-off: om messages är tom är det första intervjufrågan som ska
+    // genereras — skicka då ett user-meddelande som triggar intervjuaren.
+    // (Anthropic kräver att `messages` har minst ett element och börjar med user.)
+    var msgs = (Array.isArray(messages) && messages.length > 0)
+      ? messages
+      : [{ role: 'user', content: 'Starta intervjun nu. Hälsa kort och ställ din första fråga.' }];
+
+    var resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: CONFIG.claudeModel,
+        max_tokens: opts.maxOutputTokens || 400,
+        temperature: typeof opts.temperature === 'number' ? opts.temperature : 0.85,
+        system: systemPrompt,
+        messages: msgs
+      })
     });
-    if (!data.text) throw new Error('Gemini returnerade tomt svar.');
-    return data.text;
+    var data = await resp.json();
+    if (!resp.ok) {
+      var errMsg = (data && data.error && (data.error.message || data.error)) || ('HTTP ' + resp.status);
+      throw new Error('Claude-fel: ' + errMsg);
+    }
+    // Anthropic Messages-API returnerar content som array av block ({type:'text', text:'...'}).
+    var text = (data.content || [])
+      .filter(function(b){ return b.type === 'text'; })
+      .map(function(b){ return b.text; })
+      .join('')
+      .trim();
+    if (!text) throw new Error('Claude returnerade tomt svar.');
+    return text;
   }
 
-  function toGeminiHistory(msgs) {
-    return msgs.map(function(m) {
-      return {
-        role: m.role === 'interviewer' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-      };
+  // Konvertera intervju-meddelanden till Anthropic-format.
+  // Anthropic kräver strikt alternering user/assistant/user/assistant...
+  // och att första meddelandet är från user.
+  function toClaudeMessages(msgs) {
+    if (!msgs || !msgs.length) return [];
+    var out = [];
+    msgs.forEach(function(m) {
+      var role = m.role === 'interviewer' ? 'assistant' : 'user';
+      // Slå ihop konsekutiva meddelanden från samma roll (annars avvisar API:t dem)
+      if (out.length > 0 && out[out.length - 1].role === role) {
+        out[out.length - 1].content += '\n\n' + m.content;
+      } else {
+        out.push({ role: role, content: m.content });
+      }
     });
+    // Anthropic kräver att första meddelandet är user — om intervjuaren skulle
+    // råka vara först (bör inte hända), droppa det.
+    while (out.length > 0 && out[0].role !== 'user') {
+      out.shift();
+    }
+    return out;
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -812,8 +845,8 @@
     state.ai.isThinking = true;
     updateStatusPill();
     try {
-      var history = toGeminiHistory(state.messages);
-      ivDebug.log('    historik-längd: ' + history.length);
+      var messages = toClaudeMessages(state.messages);
+      ivDebug.log('    meddelanden: ' + messages.length);
       var prompt = buildInterviewerPrompt({
         branch: state.session.branch,
         company: state.session.company,
@@ -821,9 +854,9 @@
         difficulty: state.session.difficulty
       });
 
-      ivDebug.log('    anropar Gemini...');
-      var rawText = await callGemini(history, prompt, { maxOutputTokens: 250 });
-      ivDebug.log('    ✓ Gemini svarade (' + rawText.length + ' tecken)');
+      ivDebug.log('    anropar Claude...');
+      var rawText = await callClaude(messages, prompt, { maxOutputTokens: 400 });
+      ivDebug.log('    ✓ Claude svarade (' + rawText.length + ' tecken)');
 
       var isComplete = rawText.indexOf('[INTERVIEW_COMPLETE]') !== -1;
       var clean = rawText.replace(/\[INTERVIEW_COMPLETE\]/g, '').trim();
@@ -897,7 +930,7 @@
       renderAllMessages();
 
       // Be AI ställa första frågan
-      ivDebug.log('  Anropar Gemini för första frågan...');
+      ivDebug.log('  Anropar Claude för första frågan...');
       await askInterviewerNext();
       ivDebug.log('  ✓ startInterview klart');
     } catch (e) {
@@ -944,8 +977,8 @@
         roleTitle: state.session.role_title
       }, transcriptText);
 
-      var feedback = await callGemini(
-        [{ role: 'user', parts: [{ text: 'Ge feedback enligt instruktionerna.' }] }],
+      var feedback = await callClaude(
+        [{ role: 'user', content: 'Ge feedback enligt instruktionerna.' }],
         prompt,
         { maxOutputTokens: 800, temperature: 0.6 }
       );
