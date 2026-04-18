@@ -367,7 +367,32 @@
       '- Om kandidaten är tyst eller skriver kort: fråga uppmuntrande "Vill du utveckla?" innan du går vidare.',
       '- Håll intervjun till ungefär 8-12 frågor totalt om inget annat sägs.',
       '',
-      'BÖRJA NU med en kort, avslappnad hälsning. Inte "Välkommen till intervjun" — något mer naturligt.'
+      'SNABBVAL — INKLUDERA EFTER VARJE FRÅGA',
+      'Efter varje fråga (utom slutliga "Tack"-repliken) ska du inkludera 3 snabbsvar',
+      'som kandidaten kan klicka på istället för att skriva eget. VARIERA kvaliteten:',
+      '- Ett svagt/undvikande/för kort svar (realistiskt men mindre bra)',
+      '- Ett mediokert svar (rimligt men generiskt)',
+      '- Ett starkare svar (konkret, med exempel)',
+      'Använd INGA kvalitetsmarkörer (inga emoji, ingen "Bra svar:" etc) — håll dem neutrala.',
+      'Skriv snabbvalen så kandidaten själv hade kunnat säga dem, i första person.',
+      'Håll varje svar SHORT (1-2 meningar, max ~30 ord).',
+      '',
+      'FORMAT — använd EXAKT denna struktur:',
+      '[Din fråga här, i en eller få meningar]',
+      '',
+      '[OPTIONS]',
+      '1. [första snabbsvaret]',
+      '2. [andra snabbsvaret]',
+      '3. [tredje snabbsvaret]',
+      '[/OPTIONS]',
+      '',
+      'VIKTIGT om OPTIONS-blocket:',
+      '- Ska ALLTID finnas efter varje fråga.',
+      '- Bara ta bort det om intervjun är slut (när du skriver [INTERVIEW_COMPLETE]).',
+      '- Använd exakt "[OPTIONS]" och "[/OPTIONS]" som markörer — case-sensitive.',
+      '',
+      'BÖRJA NU med en kort, avslappnad hälsning följd av första småpratsfrågan.',
+      'Inte "Välkommen till intervjun" — något mer naturligt.'
     ].join('\n');
   }
 
@@ -582,7 +607,16 @@
         }
       };
       stt.rec.onerror = function(ev) {
-        if (ev.error !== 'no-speech' && ev.error !== 'aborted') {
+        if (window.ivDebug && ivDebug.log) ivDebug.log('🎤 STT-fel: ' + ev.error);
+        if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+          showError('Mikrofon blockerad. Tillåt mikrofon i webbläsarinställningarna och försök igen.');
+        } else if (ev.error === 'no-speech') {
+          // Tyst — användaren pratade inte, inget fel att visa
+        } else if (ev.error === 'aborted') {
+          // Användaren avbröt — inget fel att visa
+        } else if (ev.error === 'network') {
+          showError('Nätverksfel under röstinspelning. Försök igen.');
+        } else {
           showError('Mikrofonfel: ' + ev.error);
         }
         state.ai.isListening = false;
@@ -595,11 +629,46 @@
     },
 
     start: function() {
-      if (!stt.supported) { showError('Din webbläsare stöder inte röstinspelning. Använd textinput.'); return; }
+      if (!stt.supported) {
+        showError('Din webbläsare stöder inte röstinspelning. Skriv istället i textfältet.');
+        return;
+      }
+      if (window.ivDebug && ivDebug.log) ivDebug.log('🎤 stt.start() anropad');
       stt.finalText = '';
       var box = $('#ivInterim');
       if (box) box.style.display = 'none';
-      try { stt.rec.start(); } catch(e) {}
+      // iOS Safari kräver ibland en explicit mic-permission via getUserMedia
+      // innan webkitSpeechRecognition fungerar. Vi begär tillstånd först.
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(function(stream) {
+            // Vi behöver inte själva streamen — stäng den direkt
+            stream.getTracks().forEach(function(t) { t.stop(); });
+            try { stt.rec.start(); }
+            catch(e) {
+              if (window.ivDebug && ivDebug.log) ivDebug.log('🎤 rec.start kastade: ' + e.message);
+              // Om rec är i invalid state, skapa om det
+              stt.init();
+              try { stt.rec.start(); } catch(e2) {
+                showError('Kunde inte starta röstinspelning. Försök igen.');
+              }
+            }
+          })
+          .catch(function(err) {
+            if (window.ivDebug && ivDebug.log) ivDebug.log('🎤 getUserMedia fel: ' + err.name);
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+              showError('Mikrofonbehörighet nekad. Tillåt i webbläsarinställningarna och försök igen.');
+            } else if (err.name === 'NotFoundError') {
+              showError('Ingen mikrofon hittades på din enhet.');
+            } else {
+              showError('Kunde inte komma åt mikrofonen: ' + err.name);
+            }
+          });
+      } else {
+        // Fallback: inget getUserMedia-stöd
+        try { stt.rec.start(); }
+        catch(e) { showError('Röstinspelning kunde inte startas.'); }
+      }
     },
 
     stop: function() {
@@ -808,9 +877,69 @@
     info.innerHTML = parts.join(' · ');
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // SNABBVAL (OPTIONS): Parsa + rendera 3 klickbara svar
+  // ══════════════════════════════════════════════════════════════
+  function parseOptions(rawText) {
+    // Hitta [OPTIONS]...[/OPTIONS]-blocket och extrahera 1-3 numrerade rader.
+    var match = rawText.match(/\[OPTIONS\]([\s\S]*?)\[\/OPTIONS\]/);
+    if (!match) return { cleanText: rawText.trim(), options: [] };
+    var block = match[1];
+    var cleanText = rawText.replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/, '').trim();
+    // Matcha rader som börjar med "1.", "2.", "3." (tål ledande whitespace)
+    var lines = block.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+    var options = [];
+    lines.forEach(function(line) {
+      var m = line.match(/^\d+[\.\)]\s*(.+)$/);
+      if (m && m[1]) options.push(m[1].trim());
+    });
+    // Begränsa till max 3
+    return { cleanText: cleanText, options: options.slice(0, 3) };
+  }
+
+  function clearAllQuickOptions() {
+    // Ta bort ev. gamla snabbvals-containers när en ny intervjuarsturn kommer
+    var msgs = $('#ivMessages');
+    if (!msgs) return;
+    var old = msgs.querySelectorAll('.iv-quick-options');
+    old.forEach(function(el) { el.remove(); });
+  }
+
+  function renderQuickOptions(options) {
+    var msgs = $('#ivMessages');
+    if (!msgs || !options || !options.length) return;
+    var container = document.createElement('div');
+    container.className = 'iv-quick-options';
+    var label = document.createElement('div');
+    label.className = 'iv-quick-options-label';
+    label.textContent = 'Snabbsvar — eller skriv eget:';
+    container.appendChild(label);
+    options.forEach(function(opt) {
+      var btn = document.createElement('button');
+      btn.className = 'iv-quick-option';
+      btn.type = 'button';
+      btn.textContent = opt;
+      btn.addEventListener('click', function() {
+        // Ta bort alla snabbvals så de inte kan tryckas igen
+        clearAllQuickOptions();
+        // Skicka som användarens svar (samma flöde som manuell text)
+        submitUserAnswer(opt);
+      });
+      container.appendChild(btn);
+    });
+    msgs.appendChild(container);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
   function appendMessage(msg) {
     var msgs = $('#ivMessages');
     if (!msgs) return;
+
+    // Om intervjuaren svarar — ta bort gamla snabbvals INNAN vi lägger till nya
+    if (msg.role === 'interviewer') {
+      clearAllQuickOptions();
+    }
+
     var wrap = document.createElement('div');
     wrap.className = 'iv-msg' + (msg.role === 'candidate' ? ' iv-msg--user' : '');
 
@@ -823,10 +952,21 @@
 
     var bubble = document.createElement('div');
     bubble.className = 'iv-msg-bubble';
-    bubble.textContent = msg.content;
+    // Om intervjuaren har snabbval inbakade — visa bara den rena texten i bubblan
+    if (msg.role === 'interviewer' && msg._options) {
+      bubble.textContent = msg.content;  // content är redan den rensade versionen
+    } else {
+      bubble.textContent = msg.content;
+    }
     wrap.appendChild(bubble);
 
     msgs.appendChild(wrap);
+
+    // Rendera snabbvals-knappar efter intervjuarens meddelande
+    if (msg.role === 'interviewer' && msg._options && msg._options.length) {
+      renderQuickOptions(msg._options);
+    }
+
     msgs.scrollTop = msgs.scrollHeight;
   }
 
@@ -855,22 +995,28 @@
       });
 
       ivDebug.log('    anropar Claude...');
-      var rawText = await callClaude(messages, prompt, { maxOutputTokens: 400 });
+      var rawText = await callClaude(messages, prompt, { maxOutputTokens: 500 });
       ivDebug.log('    ✓ Claude svarade (' + rawText.length + ' tecken)');
 
       var isComplete = rawText.indexOf('[INTERVIEW_COMPLETE]') !== -1;
-      var clean = rawText.replace(/\[INTERVIEW_COMPLETE\]/g, '').trim();
+      // Först rensa bort [INTERVIEW_COMPLETE], sen parsa [OPTIONS]
+      var withoutComplete = rawText.replace(/\[INTERVIEW_COMPLETE\]/g, '').trim();
+      var parsed = parseOptions(withoutComplete);
+      var clean = parsed.cleanText;
+      ivDebug.log('    → snabbval: ' + parsed.options.length + ' st');
 
       ivDebug.log('    sparar meddelande i Supabase...');
       var saved = await addMessage(state.session.id, 'interviewer', clean);
       ivDebug.log('    ✓ Meddelande sparat');
+      // Bifoga options till meddelandet för rendering (sparas inte i DB)
+      saved._options = isComplete ? [] : parsed.options;
       state.messages.push(saved);
       appendMessage(saved);
 
       state.ai.isThinking = false;
       updateStatusPill();
 
-      // AI läser upp svaret
+      // AI läser upp svaret (bara texten, inte snabbvalen)
       ivDebug.log('    startar TTS...');
       await tts.speak(clean);
       ivDebug.log('    ✓ TTS klart');
@@ -1128,12 +1274,50 @@
         userInput.style.height = 'auto';
         userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
       });
+      // iOS: säkerställ att tap direkt fokuserar textarean
+      userInput.addEventListener('touchstart', function(e) {
+        // Låt default-beteendet ske (fokus + tangentbord)
+        if (window.ivDebug && ivDebug.log) ivDebug.log('👆 textarea touchstart');
+      }, { passive: true });
+      userInput.addEventListener('focus', function() {
+        if (window.ivDebug && ivDebug.log) ivDebug.log('👆 textarea focus');
+      });
+    }
+    // iOS: om användaren tappar nånstans i input-baren (utanför själva textarean)
+    // ska ändå textarean få fokus. Annars kan användaren fastna.
+    var inputBar = root.querySelector('.iv-input-bar');
+    if (inputBar && userInput) {
+      inputBar.addEventListener('click', function(e) {
+        // Om klicket inte var på en knapp → fokusera textarean
+        if (!e.target.closest('button')) {
+          userInput.focus();
+        }
+      });
     }
 
     if (micBtn) micBtn.addEventListener('click', function(){
       if (state.ai.isListening) {
-        var text = stt.stop();
-        if (text && userInput) { userInput.value = text; handleSend(); }
+        // Användaren trycker stop — fyll textarean med transkriberad text,
+        // låt användaren granska/redigera innan hen trycker skicka.
+        // Vi triggar inte skicka automatiskt — för många STT-fel leder annars
+        // till att halvfärdiga svar skickas iväg.
+        stt.stop();
+        // Vänta en kort stund så onresult hinner få final text
+        setTimeout(function() {
+          var text = stt.finalText.trim();
+          if (window.ivDebug && ivDebug.log) ivDebug.log('🎤 stop → finalText: "' + text + '"');
+          if (text && userInput) {
+            // Lägg till på existerande text (om användaren skrivit nåt innan)
+            var existing = userInput.value.trim();
+            userInput.value = existing ? existing + ' ' + text : text;
+            // Trigga height-adjust
+            userInput.dispatchEvent(new Event('input'));
+            userInput.focus();
+          }
+          // Rensa interim-visning
+          var interim = $('#ivInterim');
+          if (interim) { interim.style.display = 'none'; interim.textContent = ''; }
+        }, 300);
       } else {
         // Avbryt AI-tal om det pågår (barge-in)
         tts.cancel();
