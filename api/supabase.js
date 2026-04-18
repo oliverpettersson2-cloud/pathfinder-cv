@@ -310,6 +310,107 @@ export default async function handler(req, res) {
       return res.status(200).json({ data: Array.isArray(result.data) ? result.data : [] });
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // INTERVJUTRÄNING — Actions för AI-intervju-modulen
+    // ═══════════════════════════════════════════════════════════════
+
+    if (action === 'create_interview_session') {
+      // Skapa ny intervjusession
+      // Förväntar: accessToken, userId, branch, company?, roleTitle?, difficulty?, jobMatchId?
+      const { branch, company, roleTitle, difficulty, jobMatchId } = req.body || {};
+      if (!branch) return res.status(400).json({ error: 'branch krävs' });
+      const result = await makeRequest(
+        `${SUPABASE_URL}/rest/v1/interview_sessions`,
+        { method: 'POST', headers: { ...authHeaders(accessToken), 'Prefer': 'return=representation' } },
+        {
+          user_id: userId,
+          branch: branch,
+          company: company || null,
+          role_title: roleTitle || null,
+          difficulty: difficulty || 'medium',
+          job_match_id: jobMatchId || null
+        }
+      );
+      if (result.status >= 400) return res.status(result.status).json({ error: result.data.message || 'Kunde inte skapa session' });
+      const rows = Array.isArray(result.data) ? result.data : [];
+      return res.status(201).json({ session: rows[0] || null });
+    }
+
+    if (action === 'add_interview_message') {
+      // Lägg till meddelande i intervju
+      // Förväntar: accessToken, sessionId, role ('interviewer'|'candidate'), content
+      const { sessionId, role: msgRole, content } = req.body || {};
+      if (!sessionId || !msgRole || !content) return res.status(400).json({ error: 'sessionId, role, content krävs' });
+      if (msgRole !== 'interviewer' && msgRole !== 'candidate') return res.status(400).json({ error: 'role måste vara interviewer eller candidate' });
+      const result = await makeRequest(
+        `${SUPABASE_URL}/rest/v1/interview_messages`,
+        { method: 'POST', headers: { ...authHeaders(accessToken), 'Prefer': 'return=representation' } },
+        {
+          session_id: sessionId,
+          role: msgRole,
+          content: content
+        }
+      );
+      if (result.status >= 400) return res.status(result.status).json({ error: result.data.message || 'Kunde inte spara meddelande' });
+      const rows = Array.isArray(result.data) ? result.data : [];
+      return res.status(201).json({ message: rows[0] || null });
+    }
+
+    if (action === 'complete_interview_session') {
+      // Avsluta session och spara feedback
+      // Förväntar: accessToken, sessionId, durationSeconds?, overallFeedback?, userRating?, userNotes?, status?
+      const { sessionId, durationSeconds, overallFeedback, userRating, userNotes, status: sessStatus } = req.body || {};
+      if (!sessionId) return res.status(400).json({ error: 'sessionId krävs' });
+      const updates = {
+        status: sessStatus || 'completed',
+        completed_at: new Date().toISOString(),
+        duration_seconds: durationSeconds || null,
+        overall_feedback: overallFeedback || null,
+        user_rating: userRating || null,
+        user_notes: userNotes || null
+      };
+      await makeRequest(
+        `${SUPABASE_URL}/rest/v1/interview_sessions?id=eq.${sessionId}&user_id=eq.${userId}`,
+        { method: 'PATCH', headers: { ...authHeaders(accessToken), 'Prefer': 'return=minimal' } },
+        updates
+      );
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === 'save_interview_question') {
+      // Spara en fråga att öva vidare på
+      // Förväntar: accessToken, userId, sessionId?, messageId?, questionText, userAnswer?, difficulty?, category?
+      const { sessionId, messageId, questionText, userAnswer, difficulty: qDiff, category: qCat } = req.body || {};
+      if (!questionText) return res.status(400).json({ error: 'questionText krävs' });
+      const result = await makeRequest(
+        `${SUPABASE_URL}/rest/v1/saved_questions`,
+        { method: 'POST', headers: { ...authHeaders(accessToken), 'Prefer': 'return=representation' } },
+        {
+          user_id: userId,
+          session_id: sessionId || null,
+          message_id: messageId || null,
+          question_text: questionText,
+          user_answer: userAnswer || null,
+          category: qCat || null,
+          difficulty: qDiff || null
+        }
+      );
+      if (result.status >= 400) return res.status(result.status).json({ error: result.data.message || 'Kunde inte spara fråga' });
+      const rows = Array.isArray(result.data) ? result.data : [];
+      return res.status(201).json({ savedQuestion: rows[0] || null });
+    }
+
+    if (action === 'list_interview_sessions') {
+      // Hämta intervjuhistorik för användaren
+      // Förväntar: accessToken, userId, limit?
+      const listLimit = (req.body && req.body.limit) || 20;
+      const result = await makeRequest(
+        `${SUPABASE_URL}/rest/v1/interview_sessions?user_id=eq.${userId}&select=*&order=started_at.desc&limit=${listLimit}`,
+        { method: 'GET', headers: authHeaders(accessToken) }
+      );
+      return res.status(200).json({ sessions: Array.isArray(result.data) ? result.data : [] });
+    }
+
     return res.status(400).json({ error: 'Unknown action: ' + action });
 
   } catch (err) {
