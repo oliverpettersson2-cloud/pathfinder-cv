@@ -109,6 +109,141 @@
     } else {
       console.error('[Intervju]', msg);
     }
+    ivDebug.log('❌ ' + msg);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // DEBUG-PANEL (synlig på mobil utan DevTools)
+  // Aktivera genom att sätta window.IV_DEBUG = true i index.html
+  // ══════════════════════════════════════════════════════════════
+  var ivDebug = {
+    panel: null,
+    buffer: [],
+    init: function() {
+      if (!window.IV_DEBUG) return;
+      if (ivDebug.panel) return;
+
+      var panel = document.createElement('div');
+      panel.id = 'ivDebugPanel';
+      panel.style.cssText = [
+        'position:fixed',
+        'bottom:0',
+        'left:0',
+        'right:0',
+        'max-height:40vh',
+        'overflow-y:auto',
+        'background:rgba(0,0,0,0.92)',
+        'color:#0f0',
+        'font-family:monospace',
+        'font-size:11px',
+        'line-height:1.4',
+        'padding:8px 12px 8px 8px',
+        'z-index:99999',
+        'border-top:2px solid #0f0',
+        'white-space:pre-wrap',
+        'word-break:break-word'
+      ].join(';');
+
+      var header = document.createElement('div');
+      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;position:sticky;top:0;background:rgba(0,0,0,0.95);padding:4px 0';
+      header.innerHTML = '<strong style="color:#0f0">🐛 DEBUG</strong>';
+
+      var btns = document.createElement('div');
+      btns.style.cssText = 'display:flex;gap:6px';
+
+      var clearBtn = document.createElement('button');
+      clearBtn.textContent = 'Rensa';
+      clearBtn.style.cssText = 'background:#222;border:1px solid #0f0;color:#0f0;padding:2px 8px;font-size:10px;border-radius:3px;font-family:inherit;cursor:pointer';
+      clearBtn.onclick = function(){ ivDebug.clear(); };
+
+      var copyBtn = document.createElement('button');
+      copyBtn.textContent = 'Kopiera';
+      copyBtn.style.cssText = 'background:#222;border:1px solid #0f0;color:#0f0;padding:2px 8px;font-size:10px;border-radius:3px;font-family:inherit;cursor:pointer';
+      copyBtn.onclick = function(){
+        var text = ivDebug.buffer.join('\n');
+        try {
+          navigator.clipboard.writeText(text);
+          copyBtn.textContent = '✓ Kopierat';
+          setTimeout(function(){ copyBtn.textContent = 'Kopiera'; }, 1500);
+        } catch(e) {}
+      };
+
+      var closeBtn = document.createElement('button');
+      closeBtn.textContent = '✕';
+      closeBtn.style.cssText = 'background:#222;border:1px solid #0f0;color:#0f0;padding:2px 8px;font-size:10px;border-radius:3px;font-family:inherit;cursor:pointer';
+      closeBtn.onclick = function(){ panel.style.display = 'none'; };
+
+      btns.appendChild(copyBtn);
+      btns.appendChild(clearBtn);
+      btns.appendChild(closeBtn);
+      header.appendChild(btns);
+      panel.appendChild(header);
+
+      var content = document.createElement('div');
+      content.id = 'ivDebugContent';
+      panel.appendChild(content);
+
+      document.body.appendChild(panel);
+      ivDebug.panel = panel;
+
+      // Fånga okaraktäriserade fel globalt
+      window.addEventListener('error', function(e){
+        ivDebug.log('💥 JS-FEL: ' + (e.message || e) + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
+      });
+      window.addEventListener('unhandledrejection', function(e){
+        var reason = e.reason && (e.reason.message || e.reason.toString()) || 'okänt';
+        ivDebug.log('💥 PROMISE-FEL: ' + reason);
+      });
+
+      ivDebug.log('✓ Debug-panel startad');
+      ivDebug.checkEnvironment();
+    },
+    log: function(msg) {
+      var ts = new Date().toTimeString().slice(0,8);
+      var line = '[' + ts + '] ' + msg;
+      ivDebug.buffer.push(line);
+      if (!window.IV_DEBUG) return;
+      if (!ivDebug.panel) ivDebug.init();
+      var content = document.getElementById('ivDebugContent');
+      if (content) {
+        var div = document.createElement('div');
+        div.textContent = line;
+        content.appendChild(div);
+        ivDebug.panel.scrollTop = ivDebug.panel.scrollHeight;
+      }
+    },
+    clear: function() {
+      ivDebug.buffer = [];
+      var content = document.getElementById('ivDebugContent');
+      if (content) content.innerHTML = '';
+      ivDebug.log('✓ Rensat');
+    },
+    checkEnvironment: function() {
+      ivDebug.log('--- Miljö-check ---');
+      ivDebug.log('window.supabase: ' + (window.supabase ? '✓ finns' : '✗ SAKNAS'));
+      ivDebug.log('window.sb: ' + (window.sb ? '✓ finns' : '✗ saknas'));
+      if (window.supabase) {
+        ivDebug.log('  .auth: ' + (window.supabase.auth ? '✓' : '✗'));
+        ivDebug.log('  .from: ' + (typeof window.supabase.from === 'function' ? '✓' : '✗'));
+      }
+      ivDebug.log('ivConfig: ' + (window.ivConfig ? '✓ finns' : '✗ SAKNAS'));
+      if (window.ivConfig && window.ivConfig.geminiApiKey) {
+        var k = window.ivConfig.geminiApiKey;
+        ivDebug.log('  geminiApiKey: ' + k.slice(0,6) + '...' + k.slice(-4) + ' (längd ' + k.length + ')');
+      } else {
+        ivDebug.log('  geminiApiKey: ✗ SAKNAS');
+      }
+      ivDebug.log('SpeechRecognition: ' + ((window.SpeechRecognition || window.webkitSpeechRecognition) ? '✓' : '✗ (textfallback)'));
+      ivDebug.log('speechSynthesis: ' + ('speechSynthesis' in window ? '✓' : '✗'));
+      ivDebug.log('--- Check klar ---');
+    }
+  };
+
+  // Kör debug-panel init tidigt om IV_DEBUG är satt
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function(){ ivDebug.init(); });
+  } else {
+    ivDebug.init();
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -685,10 +820,12 @@
   // LOGIC: INTERVJU-LOOP
   // ══════════════════════════════════════════════════════════════
   async function askInterviewerNext() {
+    ivDebug.log('  → askInterviewerNext()');
     state.ai.isThinking = true;
     updateStatusPill();
     try {
       var history = toGeminiHistory(state.messages);
+      ivDebug.log('    historik-längd: ' + history.length);
       var prompt = buildInterviewerPrompt({
         branch: state.session.branch,
         company: state.session.company,
@@ -696,11 +833,16 @@
         difficulty: state.session.difficulty
       });
 
+      ivDebug.log('    anropar Gemini...');
       var rawText = await callGemini(history, prompt, { maxOutputTokens: 250 });
+      ivDebug.log('    ✓ Gemini svarade (' + rawText.length + ' tecken)');
+
       var isComplete = rawText.indexOf('[INTERVIEW_COMPLETE]') !== -1;
       var clean = rawText.replace(/\[INTERVIEW_COMPLETE\]/g, '').trim();
 
+      ivDebug.log('    sparar meddelande i Supabase...');
       var saved = await addMessage(state.session.id, 'interviewer', clean);
+      ivDebug.log('    ✓ Meddelande sparat');
       state.messages.push(saved);
       appendMessage(saved);
 
@@ -708,12 +850,15 @@
       updateStatusPill();
 
       // AI läser upp svaret
+      ivDebug.log('    startar TTS...');
       await tts.speak(clean);
+      ivDebug.log('    ✓ TTS klart');
 
       if (isComplete) {
         endInterview();
       }
     } catch (e) {
+      ivDebug.log('    ✗ askInterviewerNext kraschade: ' + (e.message || e));
       state.ai.isThinking = false;
       updateStatusPill();
       showError('AI-fel: ' + (e.message || e));
@@ -736,21 +881,50 @@
   }
 
   async function startInterview() {
+    ivDebug.log('▶ startInterview() anropad');
+    ivDebug.log('  Setup: bransch=' + state.setup.branch + ', företag=' + (state.setup.company||'-') + ', roll=' + (state.setup.roleTitle||'-') + ', svårighet=' + state.setup.difficulty);
     try {
       tts.cancel();
+
+      // Pre-flight: är supabase tillgängligt?
+      var sb = getSupabase();
+      if (!sb) {
+        throw new Error('Supabase-klienten saknas. window.supabase/window.sb är undefined.');
+      }
+      ivDebug.log('  ✓ Supabase-klient hittad');
+
+      // Pre-flight: är användaren inloggad?
+      ivDebug.log('  Kollar inloggning...');
+      var authRes = await sb.auth.getUser();
+      if (authRes.error) {
+        throw new Error('Auth-fel: ' + authRes.error.message);
+      }
+      if (!authRes.data || !authRes.data.user) {
+        throw new Error('Inte inloggad. Logga in först.');
+      }
+      ivDebug.log('  ✓ Inloggad som: ' + (authRes.data.user.email || authRes.data.user.id));
+
       // Skapa session i Supabase
+      ivDebug.log('  Skapar session i Supabase...');
       state.session = await createSession(state.setup);
+      ivDebug.log('  ✓ Session skapad: id=' + state.session.id);
+
       state.messages = [];
       state.savedMessageIds = {};
       state.rating = null;
 
       showScreen('session');
+      ivDebug.log('  ✓ Bytte till session-skärm');
       renderSessionInfo();
       renderAllMessages();
 
       // Be AI ställa första frågan
+      ivDebug.log('  Anropar Gemini för första frågan...');
       await askInterviewerNext();
+      ivDebug.log('  ✓ startInterview klart');
     } catch (e) {
+      ivDebug.log('✗ startInterview kraschade: ' + (e.message || e));
+      if (e.stack) ivDebug.log('  stack: ' + e.stack.slice(0, 300));
       showError('Kunde inte starta: ' + (e.message || e));
       showScreen('tips');
     }
@@ -914,7 +1088,10 @@
     var tipsBack = $('#ivTipsBackBtn');
     if (tipsBack) tipsBack.addEventListener('click', function(){ showScreen('setup'); });
     var tipsStart = $('#ivTipsStartBtn');
-    if (tipsStart) tipsStart.addEventListener('click', function(){ startInterview(); });
+    if (tipsStart) tipsStart.addEventListener('click', function(){
+      ivDebug.log('🎤 "Starta intervjun" klickad');
+      startInterview();
+    });
 
     // ─── SESSION ──────────────────
     var sendBtn = $('#ivSendBtn');
