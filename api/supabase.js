@@ -441,8 +441,20 @@ export default async function handler(req, res) {
       const model = (config && config.model) || 'gemini-2.0-flash';
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
 
+      // Gemini kräver att `contents` har minst ett meddelande. När intervju.js
+      // startar en ny session är history tom (systemprompt skickas separat).
+      // Vi injicerar då ett kick-off-user-meddelande så Gemini genererar
+      // första intervjufrågan. När user-history finns används den som vanligt.
+      let contents = history;
+      if (!Array.isArray(contents) || contents.length === 0) {
+        contents = [{
+          role: 'user',
+          parts: [{ text: 'Börja intervjun. Hälsa kort och ställ din första fråga.' }]
+        }];
+      }
+
       const body = {
-        contents: history,
+        contents: contents,
         systemInstruction: { parts: [{ text: systemPrompt }] },
         generationConfig: {
           temperature: (config && config.temperature) || 0.85,
