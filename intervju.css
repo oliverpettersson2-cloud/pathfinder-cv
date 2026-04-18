@@ -1,0 +1,136 @@
+-- =====================================================================
+-- CVmatchen — Intervjuträning: Supabase migration
+-- Kör i Supabase SQL Editor (New query → paste → Run)
+-- Tryggt att köra flera gånger (idempotent)
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- TABELL: interview_sessions
+-- ---------------------------------------------------------------------
+create table if not exists public.interview_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+
+  -- Inställningar från setup
+  branch text not null,               -- "Logistik", "IT/utveckling" osv.
+  company text,                       -- "DSV", "Spotify" (valfritt)
+  role_title text,                    -- "Lagerarbetare" (valfritt)
+  difficulty text not null default 'medium'
+    check (difficulty in ('easy','medium','hard')),
+
+  -- Koppling till matchat jobb (om startad från jobbkort)
+  job_match_id text,
+
+  -- Livscykel
+  status text not null default 'active'
+    check (status in ('active','completed','abandoned')),
+  started_at timestamptz not null default now(),
+  completed_at timestamptz,
+  duration_seconds int,
+
+  -- Resultat
+  overall_feedback text,
+  user_rating int check (user_rating between 1 and 5),
+  user_notes text,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------
+-- TABELL: interview_messages
+-- ---------------------------------------------------------------------
+create table if not exists public.interview_messages (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid references public.interview_sessions(id) on delete cascade not null,
+
+  role text not null check (role in ('interviewer','candidate')),
+  content text not null,
+  question_category text,
+
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------
+-- TABELL: saved_questions (öva vidare)
+-- ---------------------------------------------------------------------
+create table if not exists public.saved_questions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  session_id uuid references public.interview_sessions(id) on delete set null,
+  message_id uuid references public.interview_messages(id) on delete set null,
+
+  question_text text not null,
+  user_answer text,
+  ai_feedback text,
+  category text,
+  difficulty text check (difficulty in ('easy','medium','hard')),
+
+  needs_practice boolean not null default true,
+  practice_count int not null default 0,
+  last_practiced_at timestamptz,
+
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------
+-- INDEX
+-- ---------------------------------------------------------------------
+create index if not exists idx_sessions_user_started
+  on public.interview_sessions(user_id, started_at desc);
+
+create index if not exists idx_messages_session
+  on public.interview_messages(session_id, created_at asc);
+
+create index if not exists idx_saved_user_needs
+  on public.saved_questions(user_id, needs_practice)
+  where needs_practice = true;
+
+-- ---------------------------------------------------------------------
+-- Trigger för updated_at
+-- ---------------------------------------------------------------------
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_sessions_updated_at on public.interview_sessions;
+create trigger trg_sessions_updated_at
+  before update on public.interview_sessions
+  for each row execute function public.set_updated_at();
+
+-- ---------------------------------------------------------------------
+-- Row Level Security — var och en ser bara sina egna rader
+-- ---------------------------------------------------------------------
+alter table public.interview_sessions enable row level security;
+alter table public.interview_messages enable row level security;
+alter table public.saved_questions    enable row level security;
+
+drop policy if exists "own_sessions_all" on public.interview_sessions;
+create policy "own_sessions_all" on public.interview_sessions
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "own_messages_all" on public.interview_messages;
+create policy "own_messages_all" on public.interview_messages
+  for all using (
+    exists (
+      select 1 from public.interview_sessions s
+      where s.id = session_id and s.user_id = auth.uid()
+    )
+  ) with check (
+    exists (
+      select 1 from public.interview_sessions s
+      where s.id = session_id and s.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "own_saved_all" on public.saved_questions;
+create policy "own_saved_all" on public.saved_questions
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------
+-- KLART
+-- ---------------------------------------------------------------------
