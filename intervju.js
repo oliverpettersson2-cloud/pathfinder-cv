@@ -19,7 +19,7 @@
   // KONFIGURATION
   // ══════════════════════════════════════════════════════════════
   var CONFIG = {
-    geminiModel: 'gemini-2.0-flash',
+    geminiModel: 'gemini-1.5-flash',  // Säker free-tier-modell. Overrideras av GEMINI_MODEL env-var i Vercel.
     maxSpeechHistoryChars: 8000, // trunkera om historiken blir enorm
     defaultVoiceLang: 'sv-SE',
     ttsRate: 0.95,
