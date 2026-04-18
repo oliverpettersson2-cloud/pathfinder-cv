@@ -1,8 +1,16 @@
 <!DOCTYPE html>
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <!-- CVmatchen version: TRAINING-HUB-v2 (2026-04-18, med intervju-modul) — if you see this in devtools, the new version is deployed -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CVmatchen — AI-driven jobbmatchning</title>
+  
+  <!-- Intervjuträning-modul (lazy-initieras av Träning-hubben) -->
+  <link rel="stylesheet" href="intervju.css">
+  <script src="intervju.js" defer></script>
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
@@ -2510,7 +2518,7 @@
       40%            { opacity: 1;   transform: scale(1.2); }
     }
   </style>
-  <link rel="stylesheet" href="intervju.css">
+
 </head>
 <body>
 
@@ -8336,9 +8344,9 @@ ${styleTexts}
               <div>
                 <div class="train-tile-icon">🎤</div>
                 <div class="train-tile-name">Intervjuträning</div>
-                <div class="train-tile-desc">Öva på vanliga intervjufrågor och få feedback.</div>
+                <div class="train-tile-desc">Öva på vanliga intervjufrågor och få AI-feedback.</div>
               </div>
-              <div class="train-tile-meta">Kommer snart</div>
+              <div class="train-tile-meta">Öppna →</div>
             </div>
           </div>
         </div>
@@ -8382,15 +8390,10 @@ ${styleTexts}
 <div id="ovnToast"></div>
       </div>
 
-      <!-- VIEW 3: Intervjuträning (platshållare) -->
+      <!-- VIEW 3: Intervjuträning — intervju.js bygger sitt eget UI här -->
       <div id="trainView-intervju" class="train-view">
         <button class="train-back" onclick="trainSwitchView('hub')">← Tillbaka</button>
-        <div class="train-intervju-body">
-          <div class="train-intervju-icon">🎤</div>
-          <div class="train-intervju-title">Intervjuträning</div>
-          <div class="train-intervju-desc">Här kommer du snart kunna öva på vanliga intervjufrågor, träna på ditt kroppsspråk och få AI-feedback på dina svar.</div>
-          <div class="train-intervju-soon">Kommer snart</div>
-        </div>
+        <!-- Intervju-modulens UI injiceras här av intervju.js vid första öppning -->
       </div>
 
       <script>
@@ -11510,6 +11513,9 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 <script>
 // ── TRÄNING HUB CONTROLLER ──
 (function(){
+  // VERSION MARKER — lät dig verifiera i devtools/Safari console
+  console.log('%c[CVmatchen] Training hub v2 (med intervju-modul) loaded ✓','background:#3eb489;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;');
+  window.__CVMATCHEN_VERSION = 'TRAINING-HUB-v2';
 
   // Hjälpfunktion — räkna total procent för hela övningsappen
   // (Introgruppen + alla kategorier sammanvägt)
@@ -11554,8 +11560,19 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
       try { window.D.initHome(); } catch(e) {}
     }
 
+    // När Intervjuträning öppnas första gången — initiera modulen
+    if (view === 'intervju' && typeof window.ivInit === 'function') {
+      try { window.ivInit(); } catch(e) { console.warn('Intervju init fail:', e); }
+    }
+
     // Uppdatera hub-badgen när vi går tillbaka till hub
-    if (view === 'hub') refreshHubMeta();
+    if (view === 'hub') {
+      refreshHubMeta();
+      // Städa upp ev. pågående intervju-session (stoppar mic/tts)
+      if (typeof window.ivCleanup === 'function') {
+        try { window.ivCleanup(); } catch(e) {}
+      }
+    }
   };
 
   // Hook into mobSwitchTab: starta alltid Träning på hub-vyn
@@ -16186,6 +16203,5 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 
 })();
   </script>
-<script src="intervju.js" defer></script>
-<script src="intervju.js" defer></script>
+
 </div></body></html>
