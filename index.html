@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <!-- CVmatchen version: TRAINING-HUB-v2 (2026-04-18, med intervju-modul) — if you see this in devtools, the new version is deployed -->
+  <!-- CVmatchen version: TRAINING-HUB-v3 (2026-04-19, med intervju-modul + VIP-debug + Gemini kick-off) -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -11514,8 +11514,20 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 // ── TRÄNING HUB CONTROLLER ──
 (function(){
   // VERSION MARKER — lät dig verifiera i devtools/Safari console
-  console.log('%c[CVmatchen] Training hub v2 (med intervju-modul) loaded ✓','background:#3eb489;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;');
-  window.__CVMATCHEN_VERSION = 'TRAINING-HUB-v2';
+  console.log('%c[CVmatchen] Training hub v3 (intervju-modul + VIP-debug) loaded ✓','background:#3eb489;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;');
+  window.__CVMATCHEN_VERSION = 'TRAINING-HUB-v3';
+
+  // ── VIP-DEBUG: aktivera intervju-debugpanel för super-admin ──
+  // Kollar om inloggad email matchar VIP-listan. Aktivera BARA för dessa.
+  // Vanliga användare ser aldrig debug-panelen.
+  try {
+    var VIP_EMAILS = ['oliver.pettersson2@gmail.com'];
+    var authData = JSON.parse(localStorage.getItem('pathfinder_auth') || '{}');
+    if (authData && authData.email && VIP_EMAILS.indexOf(authData.email) !== -1) {
+      window.IV_DEBUG = true;
+      console.log('%c[CVmatchen] VIP-läge aktiverat (debug-panel för intervju)','background:#f0c040;color:#000;padding:2px 8px;border-radius:4px;font-weight:700;');
+    }
+  } catch(e) {}
 
   // Hjälpfunktion — räkna total procent för hela övningsappen
   // (Introgruppen + alla kategorier sammanvägt)
