@@ -1195,11 +1195,10 @@
     }
   };
 
-  // Auto-init när DOM är klart
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { window.ivInit(); });
-  } else {
-    window.ivInit();
-  }
+  // Auto-init är avstängd — intervju-modulen initieras på begäran
+  // av Träning-hubben via window.ivInit() när användaren klickar på
+  // "Intervjuträning"-rutan. Detta hindrar UI:t från att byggas upp
+  // i en dold panel vid sidladdning (vilket gjorde att den blev synlig
+  // samtidigt som hub-vyn).
 
 })();
