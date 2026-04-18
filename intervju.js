@@ -3,8 +3,11 @@
    Matchar befintlig edu-chat stil. Prefix: iv / ivInit
    
    Externa beroenden som redan finns i index.html:
-   - window.supabase (klient)
-   - window.ivConfig.geminiApiKey (sätts från index.html)
+   - window.authUserId + window.authAccessToken (CVmatchen-auth)
+   - /api/supabase endpoint med intervju-actions + gemini_call
+   
+   Gemini-nyckeln ligger SÄKERT i Vercel env vars (GEMINI_API_KEY).
+   Den anropas via backend-proxy - ingen nyckel i klienten.
    
    Bygger UI:t dynamiskt in i #trainView-intervju vid sidladdning.
    ===================================================================== */
@@ -91,13 +94,26 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function getSupabase() {
-    return window.supabase || window.sb || null;
+  function getAuth() {
+    // Hämta befintliga CVmatchen-auth-credentials
+    return {
+      userId: window.authUserId || null,
+      accessToken: window.authAccessToken || null
+    };
   }
 
-  function getGeminiKey() {
-    if (window.ivConfig && window.ivConfig.geminiApiKey) return window.ivConfig.geminiApiKey;
-    return null;
+  async function apiSupabase(payload) {
+    // Wrapper runt /api/supabase - samma pattern som resten av CVmatchen
+    var resp = await fetch('/api/supabase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(data.error || ('HTTP ' + resp.status));
+    }
+    return data;
   }
 
   function showError(msg) {
@@ -220,19 +236,9 @@
     },
     checkEnvironment: function() {
       ivDebug.log('--- Miljö-check ---');
-      ivDebug.log('window.supabase: ' + (window.supabase ? '✓ finns' : '✗ SAKNAS'));
-      ivDebug.log('window.sb: ' + (window.sb ? '✓ finns' : '✗ saknas'));
-      if (window.supabase) {
-        ivDebug.log('  .auth: ' + (window.supabase.auth ? '✓' : '✗'));
-        ivDebug.log('  .from: ' + (typeof window.supabase.from === 'function' ? '✓' : '✗'));
-      }
-      ivDebug.log('ivConfig: ' + (window.ivConfig ? '✓ finns' : '✗ SAKNAS'));
-      if (window.ivConfig && window.ivConfig.geminiApiKey) {
-        var k = window.ivConfig.geminiApiKey;
-        ivDebug.log('  geminiApiKey: ' + k.slice(0,6) + '...' + k.slice(-4) + ' (längd ' + k.length + ')');
-      } else {
-        ivDebug.log('  geminiApiKey: ✗ SAKNAS');
-      }
+      ivDebug.log('window.authUserId: ' + (window.authUserId ? '✓ ' + window.authUserId.slice(0,8) + '...' : '✗ SAKNAS (ej inloggad?)'));
+      ivDebug.log('window.authAccessToken: ' + (window.authAccessToken ? '✓ finns (' + window.authAccessToken.length + ' tecken)' : '✗ SAKNAS'));
+      ivDebug.log('Gemini: via /api/supabase proxy ✓ (säker backend)');
       ivDebug.log('SpeechRecognition: ' + ((window.SpeechRecognition || window.webkitSpeechRecognition) ? '✓' : '✗ (textfallback)'));
       ivDebug.log('speechSynthesis: ' + ('speechSynthesis' in window ? '✓' : '✗'));
       ivDebug.log('--- Check klar ---');
@@ -247,52 +253,25 @@
   }
 
   // ══════════════════════════════════════════════════════════════
-  // GEMINI-KLIENT
+  // GEMINI-KLIENT (via /api/supabase proxy - nyckeln i backend)
   // ══════════════════════════════════════════════════════════════
   async function callGemini(history, systemPrompt, opts) {
     opts = opts || {};
-    var key = getGeminiKey();
-    if (!key) {
-      throw new Error('Gemini API-nyckel saknas. Sätt window.ivConfig.geminiApiKey i index.html.');
-    }
-
-    var url = 'https://generativelanguage.googleapis.com/v1beta/models/'
-            + CONFIG.geminiModel + ':generateContent?key=' + encodeURIComponent(key);
-
-    var body = {
-      contents: history,
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      generationConfig: {
+    var auth = requireAuth();
+    var data = await apiSupabase({
+      action: 'gemini_call',
+      accessToken: auth.accessToken,
+      userId: auth.userId,
+      systemPrompt: systemPrompt,
+      history: history,
+      config: {
+        model: CONFIG.geminiModel,
         temperature: opts.temperature || 0.85,
-        maxOutputTokens: opts.maxOutputTokens || 300,
-        topP: 0.95
-      },
-      safetySettings: [
-        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
-      ]
-    };
-
-    var res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+        maxOutputTokens: opts.maxOutputTokens || 300
+      }
     });
-
-    if (!res.ok) {
-      var err = await res.text().catch(function(){ return ''; });
-      throw new Error('Gemini-fel ' + res.status + ': ' + err.slice(0, 200));
-    }
-
-    var data = await res.json();
-    var text = (data && data.candidates && data.candidates[0] &&
-                data.candidates[0].content && data.candidates[0].content.parts || [])
-      .map(function(p) { return p.text || ''; }).join('').trim();
-
-    if (!text) throw new Error('Gemini returnerade tomt svar.');
-    return text;
+    if (!data.text) throw new Error('Gemini returnerade tomt svar.');
+    return data.text;
   }
 
   function toGeminiHistory(msgs) {
@@ -390,79 +369,88 @@
   }
 
   // ══════════════════════════════════════════════════════════════
-  // SUPABASE STORAGE
+  // STORAGE via /api/supabase (samma pattern som edu-chat)
   // ══════════════════════════════════════════════════════════════
-  async function getUserId() {
-    var sb = getSupabase();
-    if (!sb) throw new Error('Supabase-klienten hittades inte.');
-    var r = await sb.auth.getUser();
-    if (r.error || !r.data || !r.data.user) throw new Error('Du måste vara inloggad.');
-    return r.data.user.id;
+  function requireAuth() {
+    var a = getAuth();
+    if (!a.userId || !a.accessToken) {
+      throw new Error('Du måste vara inloggad för att starta en intervju.');
+    }
+    return a;
   }
 
   async function createSession(input) {
-    var sb = getSupabase();
-    var uid = await getUserId();
-    var r = await sb.from('interview_sessions').insert({
-      user_id: uid,
+    var auth = requireAuth();
+    var r = await apiSupabase({
+      action: 'create_interview_session',
+      accessToken: auth.accessToken,
+      userId: auth.userId,
       branch: input.branch,
       company: input.company || null,
-      role_title: input.roleTitle || null,
+      roleTitle: input.roleTitle || null,
       difficulty: input.difficulty || 'medium',
-      job_match_id: input.jobMatchId || null
-    }).select().single();
-    if (r.error) throw r.error;
-    return r.data;
+      jobMatchId: input.jobMatchId || null
+    });
+    return r.session;
   }
 
   async function addMessage(sessionId, role, content) {
-    var sb = getSupabase();
-    var r = await sb.from('interview_messages').insert({
-      session_id: sessionId,
+    var auth = requireAuth();
+    var r = await apiSupabase({
+      action: 'add_interview_message',
+      accessToken: auth.accessToken,
+      userId: auth.userId,
+      sessionId: sessionId,
       role: role,
       content: content
-    }).select().single();
-    if (r.error) throw r.error;
-    return r.data;
+    });
+    return r.message;
   }
 
   async function completeSession(sessionId, feedback) {
-    var sb = getSupabase();
+    var auth = requireAuth();
     var startedAt = state.session ? new Date(state.session.started_at).getTime() : Date.now();
     var durSec = Math.round((Date.now() - startedAt) / 1000);
-    var r = await sb.from('interview_sessions').update({
-      status: 'completed',
-      completed_at: new Date().toISOString(),
-      duration_seconds: durSec,
-      overall_feedback: feedback || null,
-      user_rating: state.rating,
-      user_notes: ($('#ivNotes') && $('#ivNotes').value) || null
-    }).eq('id', sessionId).select().single();
-    if (r.error) throw r.error;
-    return r.data;
+    await apiSupabase({
+      action: 'complete_interview_session',
+      accessToken: auth.accessToken,
+      userId: auth.userId,
+      sessionId: sessionId,
+      durationSeconds: durSec,
+      overallFeedback: feedback || null,
+      userRating: state.rating,
+      userNotes: ($('#ivNotes') && $('#ivNotes').value) || null
+    });
+    return true;
   }
 
   async function abandonSession(sessionId) {
-    var sb = getSupabase();
-    await sb.from('interview_sessions').update({
-      status: 'abandoned',
-      completed_at: new Date().toISOString()
-    }).eq('id', sessionId);
+    try {
+      var auth = getAuth();
+      if (!auth.userId || !auth.accessToken) return;
+      await apiSupabase({
+        action: 'complete_interview_session',
+        accessToken: auth.accessToken,
+        userId: auth.userId,
+        sessionId: sessionId,
+        status: 'abandoned'
+      });
+    } catch (e) { /* tyst */ }
   }
 
   async function saveQuestionRow(sessionId, messageId, text, userAnswer) {
-    var sb = getSupabase();
-    var uid = await getUserId();
-    var r = await sb.from('saved_questions').insert({
-      user_id: uid,
-      session_id: sessionId,
-      message_id: messageId,
-      question_text: text,
-      user_answer: userAnswer || null,
+    var auth = requireAuth();
+    var r = await apiSupabase({
+      action: 'save_interview_question',
+      accessToken: auth.accessToken,
+      userId: auth.userId,
+      sessionId: sessionId,
+      messageId: messageId,
+      questionText: text,
+      userAnswer: userAnswer || null,
       difficulty: state.session ? state.session.difficulty : null
-    }).select().single();
-    if (r.error) throw r.error;
-    return r.data;
+    });
+    return r.savedQuestion;
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -886,26 +874,16 @@
     try {
       tts.cancel();
 
-      // Pre-flight: är supabase tillgängligt?
-      var sb = getSupabase();
-      if (!sb) {
-        throw new Error('Supabase-klienten saknas. window.supabase/window.sb är undefined.');
+      // Pre-flight: är användaren inloggad i CVmatchen?
+      ivDebug.log('  Kollar CVmatchen-auth...');
+      var auth = getAuth();
+      if (!auth.userId || !auth.accessToken) {
+        throw new Error('Du måste vara inloggad för att starta en intervju.');
       }
-      ivDebug.log('  ✓ Supabase-klient hittad');
+      ivDebug.log('  ✓ Inloggad (userId=' + auth.userId.slice(0, 8) + '...)');
 
-      // Pre-flight: är användaren inloggad?
-      ivDebug.log('  Kollar inloggning...');
-      var authRes = await sb.auth.getUser();
-      if (authRes.error) {
-        throw new Error('Auth-fel: ' + authRes.error.message);
-      }
-      if (!authRes.data || !authRes.data.user) {
-        throw new Error('Inte inloggad. Logga in först.');
-      }
-      ivDebug.log('  ✓ Inloggad som: ' + (authRes.data.user.email || authRes.data.user.id));
-
-      // Skapa session i Supabase
-      ivDebug.log('  Skapar session i Supabase...');
+      // Skapa session via /api/supabase
+      ivDebug.log('  Skapar session via /api/supabase...');
       state.session = await createSession(state.setup);
       ivDebug.log('  ✓ Session skapad: id=' + state.session.id);
 
@@ -1179,12 +1157,6 @@
   // ══════════════════════════════════════════════════════════════
   window.ivInit = function(opts) {
     opts = opts || {};
-
-    // Låt användaren sätta Gemini-nyckel via init
-    if (opts.geminiApiKey) {
-      window.ivConfig = window.ivConfig || {};
-      window.ivConfig.geminiApiKey = opts.geminiApiKey;
-    }
 
     if (!buildUI()) {
       console.warn('[Intervju] #trainView-intervju hittades inte');
