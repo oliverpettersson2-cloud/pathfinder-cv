@@ -411,6 +411,69 @@ export default async function handler(req, res) {
       return res.status(200).json({ sessions: Array.isArray(result.data) ? result.data : [] });
     }
 
+    if (action === 'gemini_call') {
+      // Proxy till Gemini API - nyckeln ligger säkert i Vercel env vars
+      // Förväntar: accessToken, userId, systemPrompt, history, config
+      const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+      if (!GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY saknas i miljövariabler' });
+      }
+
+      // Kräv inloggad användare (enkel DoS-skydd)
+      if (!accessToken || !userId) {
+        return res.status(401).json({ error: 'Inloggning krävs' });
+      }
+
+      // Validera att token är giltig genom att slå upp användaren
+      const userCheck = await makeRequest(
+        `${SUPABASE_URL}/auth/v1/user`,
+        { method: 'GET', headers: authHeaders(accessToken) }
+      );
+      if (userCheck.status >= 400 || !userCheck.data || !userCheck.data.id) {
+        return res.status(401).json({ error: 'Ogiltig inloggning' });
+      }
+
+      const { systemPrompt, history, config } = req.body || {};
+      if (!systemPrompt || !Array.isArray(history)) {
+        return res.status(400).json({ error: 'systemPrompt och history krävs' });
+      }
+
+      const model = (config && config.model) || 'gemini-2.0-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+
+      const body = {
+        contents: history,
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          temperature: (config && config.temperature) || 0.85,
+          maxOutputTokens: (config && config.maxOutputTokens) || 300,
+          topP: 0.95
+        },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+        ]
+      };
+
+      const result = await makeRequest(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }, body);
+
+      if (result.status >= 400) {
+        return res.status(result.status).json({ error: 'Gemini-fel: ' + (result.data.error?.message || JSON.stringify(result.data).slice(0, 200)) });
+      }
+
+      const text = (result.data && result.data.candidates && result.data.candidates[0] &&
+                    result.data.candidates[0].content && result.data.candidates[0].content.parts || [])
+        .map(p => p.text || '').join('').trim();
+
+      if (!text) return res.status(502).json({ error: 'Gemini returnerade tomt svar' });
+      return res.status(200).json({ text });
+    }
+
     return res.status(400).json({ error: 'Unknown action: ' + action });
 
   } catch (err) {
