@@ -5188,6 +5188,7 @@
           cvData.skills = skills;
           saveData(); renderSkills(); updatePreview();
           hideAiLoader();
+          logEvent('ai_skill_match', { title: titleRaw, source: 'local', count: skills.length });
           showToast(`✨ ${skills.length} kompetenser matchade!`, 'success');
           return;
         }
@@ -5223,6 +5224,7 @@
         cvData.skills = skills;
         saveData(); renderSkills(); updatePreview();
         hideAiLoader();
+        logEvent('ai_skill_match', { title: titleRaw, source: 'ai', count: skills.length });
         showToast(`✨ ${skills.length} AI-kompetenser för ${titleRaw}!`, 'success');
       } catch(err) {
         hideAiLoader();
@@ -5811,48 +5813,6 @@
     }
 
     // Language functions
-
-    // AI Autofill för profil
-    function aiAutofillSummary() {
-      const title = document.getElementById('title').value.trim();
-      
-      if (!title) {
-        showToast('⚠️ Skriv in en jobbtitel först!', 'success');
-        return;
-      }
-
-      const btn = document.getElementById('profileAiBtn');
-      btn.disabled = true;
-      btn.textContent = '⏳ Genererar...';
-
-      // Smart profil-generator
-      const latestJob = cvData.jobs[0];
-      const topSkills = cvData.skills.slice(0, 5).join(', ');
-      
-      let profile = `Erfaren ${title}`;
-      
-      if (latestJob) {
-        profile += ` med erfarenhet från ${latestJob.company}`;
-      }
-      
-      profile += '. ';
-      
-      // Lägg till dynamisk personlig touch baserat på data
-      if (topSkills) {
-        profile += `Specialiserad på ${topSkills}. `;
-      }
-
-      // Lägg till standard avslutning
-      profile += 'Driven av att leverera resultat och utveckla kompetens. Samarbetsfokuserad med starka kommunikativa förmågor. Söker nya utmaningar där jag kan bidra med min erfarenhet och expandera mina kunskaper.';
-      
-      document.getElementById('summary').value = profile;
-      saveData();
-      updatePreview();
-      
-      btn.disabled = false;
-      btn.textContent = '✨ AI';
-      showToast('✨ Smart profil genererad!', 'success');
-    }
 
     // Certifications
     function openCertModal(idx = null) {
@@ -6804,30 +6764,6 @@ ${styleTexts}
       '- Ge användaren ett professionellt, unikt och branschkorrekt CV-underlag.',
       '- Säkerställ att ingen arbetsgivare/period i CV:t ser identisk ut mot en annan.'
     ].join('\n');
-
-    // Hjalpfunktion: ett API-anrop med Pathfinder-systemprompt
-    async function pfCall(userMessage, maxTokens) {
-      const apiKey = getApiKey();
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: maxTokens || 600,
-          system: PATHFINDER_SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: userMessage }]
-        })
-      });
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error && err.error.message ? err.error.message : 'API-fel: ' + response.status);
-      }
-      const data = await response.json();
-      return data.content[0].text.trim().replace(/```json[\s\S]*?```|```/g, '').trim();
-    }
 
     // ===== SLUT PATHFINDER AI-MODUL =====
 
@@ -11551,13 +11487,13 @@ var D={
     msgs.insertAdjacentHTML('beforeend','<div id="'+ldId+'" style="background:rgba(255,255,255,.07);border-radius:12px;padding:11px 14px;width:64px;"><div style="display:flex;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#38bdf8;animation:edb 1.2s infinite;"></div><div style="width:6px;height:6px;border-radius:50%;background:#38bdf8;animation:edb 1.2s .2s infinite;"></div><div style="width:6px;height:6px;border-radius:50%;background:#38bdf8;animation:edb 1.2s .4s infinite;"></div></div></div>');
     msgs.scrollTop=msgs.scrollHeight;
     D._syvHistory.push({role:'user',content:txt});
-    var apiKey='';try{apiKey=localStorage.getItem('cvmatchen_api_key')||'';}catch(e){}
+    if(typeof logEvent==='function') logEvent('syv_chat', { qLen: txt.length });
     var ld=function(){var el=document.getElementById(ldId);if(el)el.remove();};
     var addReply=function(msg){msgs.insertAdjacentHTML('beforeend','<div style="background:rgba(255,255,255,.07);border-radius:12px 12px 12px 4px;padding:10px 13px;font-size:13px;color:rgba(255,255,255,.85);line-height:1.65;">'+msg+'</div>');msgs.scrollTop=msgs.scrollHeight;};
     try{
-      var res=await fetch('https://api.anthropic.com/v1/messages',{
+      var res=await fetch('/api/chat',{
         method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        headers:{'Content-Type':'application/json'},
         body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:500,system:'Du ar en AI-SYV for Familjen Helsingborg. ARBETSMARKNAD AF Q3 2025: Skane har Sveriges hogsta arbetsloshet. Helsingborg 11,3%, Landskrona 11,2%, Bjuv 10,2%, Astorp 10,7%, Klippan 7,7%, Hoganäs 5,4%, Ängelholm 5,2%, Sverige 8,8%, Skane 9,1%. Danmark ~2,6%, Helsingör ~2,6%, 20000 pendlar dagligen Oresund. Svara pa svenska. Namng: SFI, Komvux, YH, AMU, Folkhogskola, Hogskola.',messages:D._syvHistory.slice(-8)})
       });
       var data=await res.json();
@@ -14114,6 +14050,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 
     showAiLoader('Genererar alternativ...', 'AI skriver 3 personliga texter');
     document.getElementById('matchaResult').style.display = 'none';
+    logEvent('cv_matched', { role, company, hasAd: !!adText });
 
     try {
       const resp = await fetch('/api/chat', {
@@ -14900,6 +14837,11 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
     });
 
     showToast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil', 'success');
+    logEvent('cv_saved_from_match', {
+      title: matchTitle,
+      role: (hit && hit.headline) || '',
+      company: (hit && hit.employer && hit.employer.name) || ''
+    });
     if (typeof mobRenderSavedCVs === 'function') mobRenderSavedCVs();
   }
 
@@ -15810,10 +15752,20 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
   function getSaved() {
     try { return JSON.parse(localStorage.getItem(EDU_SAVED_KEY) || '[]'); } catch(e) { return []; }
   }
+  var _lastSavedEduCount = -1;
   function setSaved(arr) {
     try { localStorage.setItem(EDU_SAVED_KEY, JSON.stringify(arr)); } catch(e) {}
     try { localStorage.setItem('pf_saved_edu', JSON.stringify(arr)); } catch(e) {}
     if (typeof _sbSync === 'function') _sbSync('saved_edu', arr);
+    // Logga bara när antalet ändras, inte vid init
+    if (_lastSavedEduCount !== -1 && typeof logEvent === 'function') {
+      if (arr.length > _lastSavedEduCount) {
+        logEvent('edu_saved', { count: arr.length });
+      } else if (arr.length < _lastSavedEduCount) {
+        logEvent('edu_removed', { count: arr.length });
+      }
+    }
+    _lastSavedEduCount = arr.length;
     updateSavedBadge();
   }
   function updateSavedBadge() {
