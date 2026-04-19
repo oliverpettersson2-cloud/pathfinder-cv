@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="sv"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <!-- CVmatchen version: TRAINING-HUB-v8 (2026-04-19, metodväljare + timglas) -->
+  <!-- CVmatchen version: TRAINING-HUB-v9 (2026-04-19, Microsoft OAuth backend) -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -6978,27 +6978,97 @@ ${styleTexts}
       window.location.href = redirectUrl;
     }
 
-    // Kolla om vi kommer tillbaka från Microsoft med en token
+    // Kolla om vi kommer tillbaka från Microsoft-login
+    // Backend skickar tillbaka via /?ms_token=... vid lyckad login,
+    // eller /?ms_error=... vid fel.
     (function checkMicrosoftCallback() {
       const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
-      if (token) {
-        // Microsoft-login lyckades — spara token och gå in i appen
-        try {
-          pfStore(AUTH_STORAGE_KEY, JSON.stringify({
-            email: 'microsoft-sso',
-            loggedIn: true,
-            accessToken: token,
-            createdAt: Date.now()
-          }));
-          window.authAccessToken = token;
-        } catch(e) {}
-        // Rensa URL
+      const msToken = params.get('ms_token');
+      const msError = params.get('ms_error');
+      const msInfo = params.get('ms_info');
+
+      // Rensa alltid URL:en så känslig data inte ligger kvar
+      function cleanUrl() {
         window.history.replaceState({}, document.title, window.location.pathname);
-        // Hämta användarinfo från token och gå in
-        const overlay = document.getElementById('authOverlay');
-        if (overlay) overlay.classList.add('hidden');
-        if (typeof setNavStep === 'function') setNavStep(2);
+      }
+
+      if (msError) {
+        // Översätt felkoder till användarvänliga meddelanden på svenska
+        const errorMessages = {
+          'cancelled': 'Inloggningen avbröts.',
+          'unauthorized': msInfo
+            ? `Emailen ${msInfo} är inte registrerad som handläggare. Kontakta support för att bli upplagd.`
+            : 'Din email är inte registrerad som handläggare.',
+          'invalid_state': 'Säkerhetsfel vid inloggning. Försök igen.',
+          'token_exchange_failed': 'Kunde inte verifiera Microsoft-inloggning. Försök igen.',
+          'graph_failed': 'Kunde inte hämta din profilinfo från Microsoft. Försök igen.',
+          'no_email': 'Din Microsoft-profil har ingen email. Kontakta IT-support.',
+          'config_missing': 'Serverkonfiguration saknas. Kontakta administratör.',
+          'admin_check_failed': 'Kunde inte verifiera behörighet. Försök igen.',
+          'missing_code': 'Ofullständig inloggning från Microsoft. Försök igen.',
+          'ms_error': 'Microsoft returnerade ett fel. Försök igen.',
+          'unexpected': 'Ett oväntat fel inträffade. Försök igen.'
+        };
+        const msg = errorMessages[msError] || ('Inloggningsfel: ' + msError);
+        cleanUrl();
+        // Visa felet i auth-overlayen (eller som alert som fallback)
+        const errEl = document.getElementById('authStep1Error');
+        if (errEl) {
+          errEl.textContent = msg;
+          errEl.classList.add('visible');
+        } else {
+          alert(msg);
+        }
+        return;
+      }
+
+      if (msToken) {
+        // Tokenen är i formatet "payloadBase64.signature".
+        // Vi extraherar payload för att få email/name/role till UI:t.
+        // Signaturen verifieras av backend vid varje efterföljande API-anrop.
+        try {
+          const parts = msToken.split('.');
+          if (parts.length !== 2) throw new Error('Invalid token format');
+          // base64url → base64 (lägg till padding om det saknas)
+          let b64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+          while (b64.length % 4) b64 += '=';
+          const payloadJson = atob(b64);
+          const payload = JSON.parse(payloadJson);
+
+          // Spara auth-state — använd samma format som resten av appen förväntar
+          pfStore(AUTH_STORAGE_KEY, JSON.stringify({
+            email: payload.email,
+            name: payload.name,
+            role: payload.role,
+            loggedIn: true,
+            accessToken: msToken,
+            loginMethod: 'microsoft',
+            createdAt: Date.now(),
+            expiresAt: payload.expiresAt
+          }));
+          window.authAccessToken = msToken;
+          window.authUserEmail = payload.email;
+
+          cleanUrl();
+
+          // Gå in i appen — handläggare hamnar direkt i admin-vyn
+          const overlay = document.getElementById('authOverlay');
+          if (overlay) overlay.classList.add('hidden');
+
+          // Om det är en handläggare (admin-roll) — redirecta till /admin
+          if (payload.role && (payload.role === 'superadmin' || payload.role === 'handlaggare' || payload.role === 'admin')) {
+            // Dröjsmål så DOM hinner uppdatera
+            setTimeout(function() {
+              window.location.href = '/admin';
+            }, 100);
+          } else if (typeof setNavStep === 'function') {
+            setNavStep(2);
+          }
+        } catch(e) {
+          console.error('Kunde inte läsa Microsoft-token:', e);
+          cleanUrl();
+          alert('Kunde inte läsa inloggningsuppgifter. Försök igen.');
+        }
       }
     })();
     // ===== SLUT MICROSOFT OAUTH =====
@@ -11514,8 +11584,8 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 // ── TRÄNING HUB CONTROLLER ──
 (function(){
   // VERSION MARKER — lät dig verifiera i devtools/Safari console
-  console.log('%c[CVmatchen] Training hub v8 (metodväljare + timglas) loaded ✓','background:#3eb489;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;');
-  window.__CVMATCHEN_VERSION = 'TRAINING-HUB-v8';
+  console.log('%c[CVmatchen] Training hub v9 (Microsoft OAuth backend) loaded ✓','background:#3eb489;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;');
+  window.__CVMATCHEN_VERSION = 'TRAINING-HUB-v9';
 
   // ── VIP-DEBUG: aktivera intervju-debugpanel för super-admin ──
   // Kollar om inloggad email matchar VIP-listan. Aktivera BARA för dessa.
