@@ -1723,8 +1723,9 @@
 
       /* Dölj desktop-nav steg-indikator på mobil */
       .nav-steps { display: none !important; }
-      /* Mobil navbar: fast, kan ej svepas bort */
-      nav {
+      /* Mobil navbar: fast, kan ej svepas bort
+         OBS: bara #mainNav, inte alla <nav> (sidofältet använder också <nav>) */
+      nav#mainNav {
         position: fixed !important;
         top: 0; left: 0; right: 0;
         touch-action: none;
@@ -1735,7 +1736,7 @@
         flex-direction: column;
         transition: height 0.2s;
       }
-      nav.mob-cv-mode { height: 92px; }
+      nav#mainNav.mob-cv-mode { height: 92px; }
 
       /* Rad 1: profil | logga | logga ut */
       .mob-nav-row1 {
