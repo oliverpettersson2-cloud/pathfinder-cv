@@ -99,6 +99,46 @@ td{padding:10px 13px;vertical-align:middle}
 .err-box{background:var(--rdb);border:1px solid rgba(217,68,68,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--rd);margin-bottom:12px;display:none}
 .err-box.show{display:block}
 @media(max-width:768px){.stats{grid-template-columns:1fr 1fr}.dr{width:100%}td.hm,th.hm{display:none}}
+
+/* ═══════════════════════════════════════════════════════════════
+   DESKTOP-BREAKPOINT ≥1200px
+   Mobilvyn ovan rörs INTE. Dessa regler aktiveras bara på
+   bredare skärmar och ger bättre utnyttjande av plats.
+   ═══════════════════════════════════════════════════════════════ */
+@media(min-width:1200px){
+  /* Bredare content-area men inte hela vidden — text ska inte bli för långt att läsa */
+  .cnt{max-width:1600px;padding:32px 40px 64px}
+  /* Större rubrik och mer luft runt sidhuvudet */
+  .pg-t{font-size:26px;margin-bottom:4px}
+  .pg-s{font-size:14px;margin-bottom:28px}
+  /* 4 stats-kort på en rad, större */
+  .stats{gap:14px;margin-bottom:24px}
+  .stc{padding:18px 22px}
+  .stl{font-size:11px}
+  .stv{font-size:32px}
+  /* Mer luftig tabell */
+  td{padding:14px 18px}
+  thead th{padding:12px 18px;font-size:11px}
+  .un{font-size:14px}
+  .ue{font-size:11px}
+  .ua{width:36px;height:36px;font-size:12px}
+  /* Ärenden-toolbar får plats för fler filter */
+  .tb{gap:12px;margin-bottom:18px}
+  .sw{max-width:360px}
+  /* Bredare drawer så handläggaren får mer plats att jobba */
+  .dr{width:520px}
+  .dr-body{padding:22px 28px 36px}
+  .dr-m{padding:12px 14px}
+  .dr-mv{font-size:22px}
+  /* Flikar mer luftiga */
+  .tab{padding:11px 20px;font-size:14px}
+}
+
+/* Ultra-wide skärmar ≥1600px — ännu mer plats */
+@media(min-width:1600px){
+  .cnt{max-width:1800px}
+  .dr{width:580px}
+}
 </style>
 </head>
 <body>
@@ -308,7 +348,65 @@ function loginMicrosoft(){
 function logout(){
   sessionStorage.removeItem('cvmatchen_admin');
   admin = null;
+  if (window._refreshTimer) clearInterval(window._refreshTimer);
   location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SESSION AUTO-REFRESH
+// Körs var 10:e minut. Om tokenen går ut inom 1 timme → förnya den.
+// ═══════════════════════════════════════════════════════════════════════
+async function refreshSessionIfNeeded(){
+  if (!admin || !admin.accessToken || !admin.expiresAt) return;
+
+  const msUntilExpiry = admin.expiresAt - Date.now();
+  const ONE_HOUR = 60 * 60 * 1000;
+
+  // Om token redan gått ut → logga ut direkt
+  if (msUntilExpiry <= 0) {
+    console.warn('[refresh] Token gick ut, loggar ut');
+    logout();
+    return;
+  }
+
+  // Om mer än 1h kvar — inget behov att förnya än
+  if (msUntilExpiry > ONE_HOUR) return;
+
+  // Försök förnya
+  try {
+    const r = await fetch('/api/v1/auth/refresh', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ token: admin.accessToken })
+    });
+    const data = await r.json();
+
+    if (!r.ok) {
+      console.warn('[refresh] Misslyckades:', data);
+      if (data.requireLogin) {
+        alert('Din session har gått ut. Logga in igen.');
+        logout();
+      }
+      return;
+    }
+
+    // Uppdatera admin-objekt och sessionStorage
+    admin.accessToken = data.token;
+    admin.expiresAt = data.expiresAt;
+    sessionStorage.setItem('cvmatchen_admin', JSON.stringify(admin));
+    console.log('[refresh] Session förnyad till', new Date(data.expiresAt).toLocaleTimeString('sv-SE'));
+  } catch(e) {
+    console.error('[refresh] Nätverksfel:', e);
+    // Tyst — försök igen om 10 min
+  }
+}
+
+function startRefreshTimer(){
+  if (window._refreshTimer) clearInterval(window._refreshTimer);
+  // Kör direkt vid start (för att fånga sessioner som snart går ut)
+  refreshSessionIfNeeded();
+  // Sen var 10:e minut
+  window._refreshTimer = setInterval(refreshSessionIfNeeded, 10 * 60 * 1000);
 }
 
 function enterApp(){
@@ -323,6 +421,7 @@ function enterApp(){
   buildTabs();
   loadUsers();
   loadStats();
+  startRefreshTimer();  // Starta automatisk session-förnyelse
 }
 
 // ═══ TABS ═══
