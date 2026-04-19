@@ -22,6 +22,7 @@ body.embed header{display:none}
 .login-msg.info{display:block;background:rgba(212,164,54,.1);color:#d4a436;border:1px solid rgba(212,164,54,.15)}
 .ms-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;color:#fff;transition:all .2s}
 .ms-btn:hover{background:rgba(255,255,255,.12)}
+.ms-btn:disabled{opacity:.5;cursor:not-allowed}
 .login-footer{margin-top:20px;font-size:10px;color:rgba(255,255,255,.15)}
 .login-footer a{color:rgba(255,255,255,.25);text-decoration:none}
 header{background:#0f1729;padding:0 24px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
@@ -120,9 +121,9 @@ td{padding:10px 13px;vertical-align:middle}
   <div class="login-brand"><span class="login-cv">CV</span><span class="login-rest">matchen</span></div>
   <div class="login-sub">Handläggarvy</div>
   <div class="login-msg" id="loginMsg"></div>
-  <button class="ms-btn" onclick="loginMicrosoft()">
+  <button class="ms-btn" id="msBtn" onclick="loginMicrosoft()">
     <svg width="20" height="20" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
-    Logga in med Microsoft
+    <span id="msBtnText">Logga in med Microsoft</span>
   </button>
   <div class="login-footer"><br>PathfinderAI AB · <a href="#">Allmänna villkor</a> · <a href="#">GDPR</a></div>
 </div>
@@ -198,8 +199,6 @@ let currentUserId = null;
 
 function ini(n){return (n||'').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'}
 
-// ── Hjälpfunktion: namn från CV-data ──────────────────────────────────────
-// CVmatchen sparar 'name' (fullt namn) — inte firstName/lastName
 function cvName(cv) {
   if (!cv) return '';
   return cv.name || [cv.firstName, cv.lastName].filter(Boolean).join(' ') || '';
@@ -213,6 +212,12 @@ function showErr(msg) {
   setTimeout(() => el.classList.remove('show'), 8000);
 }
 
+function showLoginInfo(msg, type){
+  const el = document.getElementById('loginMsg');
+  el.textContent = msg;
+  el.className = 'login-msg ' + (type || 'error');
+}
+
 function post(action, data){
   return fetch(API,{
     method:'POST',
@@ -224,27 +229,81 @@ function post(action, data){
   });
 }
 
-// ═══ LOGIN ═══
+// ═══════════════════════════════════════════════════════════════════════
+// MICROSOFT OAUTH LOGIN — riktig OAuth-flow via /api/v1/auth/microsoft
+// ═══════════════════════════════════════════════════════════════════════
 function loginMicrosoft(){
-  const email = prompt('Dev-läge: Ange handläggare-e-post (t.ex. handlaggare@helsingborg.se)');
-  if (!email) return;
-  post('admin_login', { adminEmail: email }).then(data => {
-    console.log('[admin_login] svar:', data);
-    if (data.error) { showLoginError(data.error); return; }
-    admin = data.admin || data;
-    sessionStorage.setItem('cvmatchen_admin', JSON.stringify(admin));
-    enterApp();
-  }).catch(e => {
-    console.error('[admin_login] fel:', e);
-    showLoginError('Kunde inte ansluta: ' + e.message);
-  });
+  const btn = document.getElementById('msBtn');
+  const txt = document.getElementById('msBtnText');
+  if (btn) btn.disabled = true;
+  if (txt) txt.textContent = 'Skickar dig till Microsoft…';
+  // Fördröj lite så knappen hinner visas som pressad innan redirect
+  setTimeout(function() {
+    window.location.href = '/api/v1/auth/microsoft';
+  }, 150);
 }
 
-function showLoginError(msg){
-  const el = document.getElementById('loginMsg');
-  el.textContent = msg;
-  el.className = 'login-msg error';
-}
+// Kolla om vi återvänder från Microsoft-callback med token eller fel
+(function checkMicrosoftCallback(){
+  const params = new URLSearchParams(location.search);
+  const msToken = params.get('ms_token');
+  const msError = params.get('ms_error');
+  const msInfo  = params.get('ms_info');
+
+  function cleanUrl() {
+    history.replaceState({}, document.title, location.pathname);
+  }
+
+  if (msError) {
+    const errorMessages = {
+      'cancelled': 'Inloggningen avbröts.',
+      'unauthorized': msInfo
+        ? `Emailen ${msInfo} är inte registrerad som handläggare. Kontakta support för att bli upplagd.`
+        : 'Din email är inte registrerad som handläggare.',
+      'invalid_state': 'Säkerhetsfel vid inloggning. Försök igen.',
+      'token_exchange_failed': 'Kunde inte verifiera Microsoft-inloggning. Försök igen.',
+      'graph_failed': 'Kunde inte hämta din profilinfo från Microsoft. Försök igen.',
+      'no_email': 'Din Microsoft-profil har ingen email. Kontakta IT-support.',
+      'config_missing': 'Serverkonfiguration saknas. Kontakta administratör.',
+      'admin_check_failed': 'Kunde inte verifiera behörighet. Försök igen.',
+      'missing_code': 'Ofullständig inloggning från Microsoft. Försök igen.',
+      'ms_error': 'Microsoft returnerade ett fel. Försök igen.',
+      'unexpected': 'Ett oväntat fel inträffade. Försök igen.'
+    };
+    cleanUrl();
+    showLoginInfo(errorMessages[msError] || ('Inloggningsfel: ' + msError), 'error');
+    return;
+  }
+
+  if (msToken) {
+    try {
+      const parts = msToken.split('.');
+      if (parts.length !== 2) throw new Error('Invalid token format');
+      let b64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const payload = JSON.parse(atob(b64));
+
+      // Spara admin-info i sessionStorage (samma format som resten av filen förväntar)
+      admin = {
+        id: payload.adminId,
+        email: payload.email,
+        name: payload.name,
+        role: payload.role,
+        accessToken: msToken,
+        loginMethod: 'microsoft',
+        expiresAt: payload.expiresAt
+      };
+      sessionStorage.setItem('cvmatchen_admin', JSON.stringify(admin));
+
+      cleanUrl();
+      enterApp();
+    } catch(e) {
+      console.error('[MS-callback] Kunde inte läsa token:', e);
+      cleanUrl();
+      showLoginInfo('Kunde inte läsa inloggningsuppgifter. Försök igen.', 'error');
+    }
+  }
+})();
 
 function logout(){
   sessionStorage.removeItem('cvmatchen_admin');
@@ -312,7 +371,6 @@ async function loadUsers(){
     return;
   }
 
-  // Stöd flera möjliga svarsformat
   allUsers = data.data || data.users || (Array.isArray(data) ? data : []);
   console.log('[admin_list_users] antal användare:', allUsers.length, allUsers.slice(0,2));
 
@@ -337,8 +395,6 @@ function renderStats(){
     const p = x.progress || {};
     return Object.values(p).some(v => v && v.done);
   }).length;
-  const tasks = u.reduce((s,x)=>s+(x.tasks?.total||0),0);
-  const done  = u.reduce((s,x)=>s+(x.tasks?.completed||0),0);
   document.getElementById('statCards').innerHTML = `
     <div class="stc"><div class="stl">Deltagare</div><div class="stv">${tot}</div></div>
     <div class="stc"><div class="stl">Aktiva</div><div class="stv" style="color:var(--gn)">${act}</div></div>
@@ -584,9 +640,23 @@ function exportData(){
   if(new URLSearchParams(location.search).get('embed')==='true'||window!==window.top){
     document.body.classList.add('embed');
   }
+  // Om vi är på väg in via Microsoft-callback — checkMicrosoftCallback() ovan
+  // har redan startat enterApp() i så fall. Annars kolla sessionStorage.
+  if (admin) return; // redan inloggad via MS-callback
+
   const saved=sessionStorage.getItem('cvmatchen_admin');
   if(saved){
-    try{ admin=JSON.parse(saved); enterApp(); return; }catch(e){}
+    try{
+      admin = JSON.parse(saved);
+      // Kolla att tokenen inte gått ut
+      if (admin.expiresAt && admin.expiresAt < Date.now()) {
+        sessionStorage.removeItem('cvmatchen_admin');
+        admin = null;
+      } else {
+        enterApp();
+        return;
+      }
+    } catch(e){}
   }
   document.getElementById('loginOverlay').classList.remove('hidden');
 })();
