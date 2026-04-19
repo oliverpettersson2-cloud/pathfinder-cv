@@ -263,6 +263,152 @@
   flex-shrink: 0;
 }
 
+/* ── METOD-VÄLJARE (startscreen) ────────────────────────────── */
+#trainView-intervju .iv-method-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+#trainView-intervju .iv-method-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+#trainView-intervju .iv-method-card:active {
+  transform: scale(0.985);
+}
+#trainView-intervju .iv-method-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+#trainView-intervju .iv-method-card--active {
+  background: rgba(167, 139, 250, 0.12);
+  border-color: rgba(167, 139, 250, 0.5);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+}
+#trainView-intervju .iv-method-icon {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+#trainView-intervju .iv-method-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+}
+#trainView-intervju .iv-method-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+/* ── BYT-METOD-KNAPP (i session-headern) ────────────────────── */
+#trainView-intervju .iv-method-switch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+}
+#trainView-intervju .iv-method-switch:active { transform: scale(0.9); }
+#trainView-intervju .iv-method-switch:hover {
+  background: rgba(167, 139, 250, 0.15);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+/* ── BYT-METOD-DIALOG (overlay mitt i sessionen) ────────────── */
+#trainView-intervju .iv-method-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background: #1a1a2e;
+  border: 1.5px solid rgba(167, 139, 250, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  width: 90%;
+  max-width: 340px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1000px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: ivQuickFadeIn 0.2s ease;
+}
+#trainView-intervju .iv-method-dialog-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #c4b5fd;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  text-align: center;
+}
+#trainView-intervju .iv-method-card--compact {
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 14px;
+  gap: 12px;
+}
+#trainView-intervju .iv-method-card--compact .iv-method-icon {
+  font-size: 22px;
+  margin: 0;
+}
+#trainView-intervju .iv-method-card--compact .iv-method-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ── TIMGLAS (intervjuaren tänker) ──────────────────────────── */
+#trainView-intervju .iv-thinking-bubble {
+  background: rgba(167, 139, 250, 0.08) !important;
+  border: 1px dashed rgba(167, 139, 250, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 78%;
+}
+#trainView-intervju .iv-thinking-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+#trainView-intervju .iv-thinking-text {
+  font-size: 13px;
+  color: rgba(196, 181, 253, 0.85);
+  font-style: italic;
+}
+
 #trainView-intervju .iv-messages {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
