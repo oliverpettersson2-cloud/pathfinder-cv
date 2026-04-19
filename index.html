@@ -1715,17 +1715,14 @@
     /* ===== SLUT AUTENTISERING ===== */
   
     /* =====================================================
-       MOBIL-LAYOUT — visas under 768px OCH på desktop ≥1024px
-       (på desktop återanvänds samma UI inuti sidofältslayouten;
-       desktop-overrides på rad ~2470 justerar det specifika)
+       MOBIL-LAYOUT — visas bara under 768px
        ===================================================== */
-    @media (max-width: 768px), (min-width: 1024px) {
+    @media (max-width: 768px) {
 
       /* Dölj desktop-nav steg-indikator på mobil */
       .nav-steps { display: none !important; }
-      /* Mobil navbar: fast, kan ej svepas bort
-         OBS: bara #mainNav, inte alla <nav> (sidofältet använder också <nav>) */
-      nav#mainNav {
+      /* Mobil navbar: fast, kan ej svepas bort */
+      nav {
         position: fixed !important;
         top: 0; left: 0; right: 0;
         touch-action: none;
@@ -1736,7 +1733,7 @@
         flex-direction: column;
         transition: height 0.2s;
       }
-      nav#mainNav.mob-cv-mode { height: 92px; }
+      nav.mob-cv-mode { height: 92px; }
 
       /* Rad 1: profil | logga | logga ut */
       .mob-nav-row1 {
@@ -2496,44 +2493,147 @@
 
       /* Förskjut innehållet till höger om sidofältet */
       #mobileContent {
-        position: fixed;
+        display: block !important;
+        position: fixed !important;
         top: 0 !important;
-        left: 240px;
-        right: 0;
+        left: 240px !important;
+        right: 0 !important;
         bottom: 0 !important;
-        max-width: none;
-        margin: 0;
-        padding: 0;
-        overflow-y: auto;
-        background: #1a1a2e;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: #1a1a2e !important;
       }
 
-      /* Begränsa läsbredden på själva panelerna inuti */
+      /* ====== PANELER: visa bara den aktiva (duplicerar mobil-logiken) ====== */
       #mobileContent .mob-panel {
+        display: none;
+        padding: 32px 32px 60px;
         max-width: 1080px;
         margin: 0 auto;
-        padding-left: 32px;
-        padding-right: 32px;
+        animation: mobFadeIn 0.2s ease;
+      }
+      #mobileContent .mob-panel.mob-panel--active {
+        display: block;
+      }
+      #mobileContent #mobPanel-aisyv.mob-panel--active {
+        display: flex;
       }
 
-      /* Profil/förhandsgranskningspanelen har egen bg-färg, behåll den */
+      /* ====== PANEL-SPECIFIKA OVERRIDES ====== */
       #mobileContent #mobPanel-forhandsgranska {
         max-width: none;
         padding: 24px 32px;
+        background: #f0ede6;
       }
       #mobileContent #mobPanel-forhandsgranska > * {
         max-width: 1080px;
         margin-left: auto;
         margin-right: auto;
       }
-
-      /* Matcha- och AI-SYV-panelerna är scrollade på mobilen,
-         låt dem fylla höjden på desktop */
       #mobileContent #mobPanel-matcha,
-      #mobileContent #mobPanel-aisyv,
+      #mobileContent #mobPanel-aisyv {
+        padding: 0;
+        max-width: none;
+      }
+      #mobileContent #mobPanel-aisyv.mob-panel--active {
+        height: calc(100vh - 0px);
+        flex-direction: column;
+      }
       #mobileContent #mobPanel-ovningar {
-        height: auto;
-        min-height: 100%;
+        padding: 32px 32px 60px;
+      }
+
+      /* ====== INPUT-FÄLT ====== */
+      #mobileContent .mob-input {
+        width: 100%;
+        background: rgba(255,255,255,0.08);
+        border: 1.5px solid rgba(255,255,255,0.12);
+        border-radius: 12px;
+        padding: 14px 16px;
+        color: #fff;
+        font-size: 15px;
+        font-family: inherit;
+        outline: none;
+        margin-bottom: 10px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        -webkit-appearance: none;
+      }
+      #mobileContent .mob-input::placeholder { color: rgba(255,255,255,0.3); }
+      #mobileContent .mob-input:focus {
+        border-color: #3eb489;
+        box-shadow: 0 0 0 3px rgba(62,180,137,0.12);
+      }
+      #mobileContent textarea.mob-input {
+        resize: vertical;
+        min-height: 120px;
+        line-height: 1.6;
+      }
+
+      /* ====== SECTIONS ====== */
+      #mobileContent .mob-section { margin-bottom: 28px; }
+      #mobileContent .mob-section-title {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.4);
+        margin-bottom: 12px;
+        padding-left: 2px;
+      }
+
+      /* ====== ACTION-KNAPPAR ====== */
+      #mobileContent .mob-btn-primary {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 14px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+        margin-top: 8px;
+      }
+      #mobileContent .mob-btn-primary:hover { opacity: 0.92; }
+      #mobileContent .mob-btn-primary:active { transform: scale(0.98); }
+      #mobileContent .mob-btn-secondary {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1.5px solid rgba(255,255,255,0.15);
+        border-radius: 12px;
+        background: transparent;
+        color: rgba(255,255,255,0.85);
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+      #mobileContent .mob-btn-secondary:hover {
+        background: rgba(255,255,255,0.05);
+      }
+
+      /* "Fortsätt"-knapp specifikt */
+      #mobileContent .mob-fortsatt-btn {
+        background: linear-gradient(135deg, var(--accent2), #2da06f);
+      }
+      #mobileContent .mob-fortsatt-btn--disabled {
+        opacity: 0.4;
+        pointer-events: none;
+      }
+
+      /* ====== "Hej"-PANELENS KORT (matcha-mot-jobb etc.) ====== */
+      /* Dessa kort har inline-styles så de funkar redan – inget extra behövs */
+
+      /* ====== ANIMATION ====== */
+      @keyframes mobFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
       }
     }
 
