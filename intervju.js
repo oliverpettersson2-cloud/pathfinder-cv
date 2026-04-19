@@ -75,6 +75,7 @@
     session: null,   // {id, started_at, branch, ...} från Supabase
     messages: [],    // [{id, role, content, ...}]
     phase: 'setup',  // setup | tips | session | feedback
+    inputMode: 'type', // 'speak' | 'type' | 'quick' — hur användaren svarar
     ai: {
       isSpeaking: false,
       isListening: false,
@@ -750,15 +751,42 @@
       '  </div>',
       '</div>',
 
+      // ─── METOD-VÄLJARE ─────────────────────
+      '<div class="iv-screen" id="ivScreenMethod">',
+      '  <div class="iv-title">Hur vill du svara?</div>',
+      '  <div class="iv-sub">Välj hur det känns bekvämast. Du kan byta när som helst under intervjun.</div>',
+      '  <div class="iv-method-grid">',
+      '    <button type="button" class="iv-method-card" data-method="speak">',
+      '      <div class="iv-method-icon">🎤</div>',
+      '      <div class="iv-method-title">Röstinspelning</div>',
+      '      <div class="iv-method-desc">Prata som i en riktig intervju. Texten transkriberas automatiskt.</div>',
+      '    </button>',
+      '    <button type="button" class="iv-method-card" data-method="type">',
+      '      <div class="iv-method-icon">✍️</div>',
+      '      <div class="iv-method-title">Skriv fritt</div>',
+      '      <div class="iv-method-desc">Formulera dina egna svar i lugn och ro via tangentbordet.</div>',
+      '    </button>',
+      '    <button type="button" class="iv-method-card" data-method="quick">',
+      '      <div class="iv-method-icon">⚡</div>',
+      '      <div class="iv-method-title">Snabbval</div>',
+      '      <div class="iv-method-desc">Välj mellan 3 föreslagna svar per fråga. Bra om du är osäker.</div>',
+      '    </button>',
+      '  </div>',
+      '  <button class="iv-btn" id="ivMethodStartBtn" disabled style="margin-top:16px;opacity:0.4">Starta intervjun →</button>',
+      '</div>',
+
       // ─── SESSION (CHAT) ──────────────────
       '<div class="iv-screen" id="ivScreenSession">',
       '  <div class="iv-session-header">',
       '    <div class="iv-session-info" id="ivSessionInfo"></div>',
+      '    <button type="button" class="iv-method-switch" id="ivMethodSwitchBtn" title="Byt svarsmetod">',
+      '      <span id="ivMethodIcon">✍️</span>',
+      '    </button>',
       '    <div class="iv-status-pill" id="ivStatusPill">Väntar</div>',
       '  </div>',
       '  <div class="iv-messages" id="ivMessages"></div>',
       '  <div class="iv-interim" id="ivInterim" style="display:none;padding:0 12px 4px;font-size:13px;color:rgba(255,255,255,0.4)"></div>',
-      '  <div class="iv-input-bar">',
+      '  <div class="iv-input-bar" id="ivInputBar">',
       '    <button class="iv-icon-btn iv-icon-btn--mic" id="ivMicBtn" title="Spela in svar">🎤</button>',
       '    <textarea class="iv-input-text" id="ivUserInput" rows="1" placeholder="Skriv ditt svar..."></textarea>',
       '    <button class="iv-icon-btn iv-icon-btn--send" id="ivSendBtn" title="Skicka">➤</button>',
@@ -808,7 +836,7 @@
   // ══════════════════════════════════════════════════════════════
   function showScreen(name) {
     state.phase = name;
-    ['Setup','Tips','Session','Feedback'].forEach(function(s){
+    ['Setup','Tips','Method','Session','Feedback'].forEach(function(s){
       var el = $('#ivScreen' + s);
       if (!el) return;
       el.classList.toggle('iv-screen--active', s.toLowerCase() === name);
@@ -905,6 +933,121 @@
     old.forEach(function(el) { el.remove(); });
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // THINKING-INDIKATOR — timglas i chattbubblan medan Claude tänker
+  // Återanvänder @keyframes _spin som redan finns globalt i appen.
+  // ══════════════════════════════════════════════════════════════
+  function showThinking() {
+    var msgs = $('#ivMessages');
+    if (!msgs) return;
+    // Ta bort ev. tidigare indikator
+    hideThinking();
+    var wrap = document.createElement('div');
+    wrap.className = 'iv-msg iv-thinking';
+    wrap.id = 'ivThinkingIndicator';
+    wrap.innerHTML = [
+      '<div class="iv-msg-avatar">🤖</div>',
+      '<div class="iv-msg-bubble iv-thinking-bubble">',
+      '  <span class="iv-thinking-icon" style="animation:_spin 1.2s linear infinite;display:inline-block;">⏳</span>',
+      '  <span class="iv-thinking-text">Intervjuaren tänker...</span>',
+      '</div>'
+    ].join('');
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+  function hideThinking() {
+    var el = $('#ivThinkingIndicator');
+    if (el) el.remove();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // INPUT-MODE: applicera vald svarsmetod på UI
+  // 'speak' → visa mic-knapp, dölj snabbval
+  // 'type'  → visa textarea, dölj snabbval
+  // 'quick' → dölj input-bar, visa bara snabbval
+  // ══════════════════════════════════════════════════════════════
+  function applyInputMode() {
+    var mode = state.inputMode || 'type';
+    var bar = $('#ivInputBar');
+    var mic = $('#ivMicBtn');
+    var textarea = $('#ivUserInput');
+    var sendBtn = $('#ivSendBtn');
+    var methodIcon = $('#ivMethodIcon');
+
+    // Uppdatera header-ikonen som visar nuvarande metod
+    if (methodIcon) {
+      methodIcon.textContent = mode === 'speak' ? '🎤' : (mode === 'quick' ? '⚡' : '✍️');
+    }
+
+    if (!bar) return;
+
+    if (mode === 'quick') {
+      // Snabbval-läge: dölj hela input-baren, användaren klickar bara på snabbval
+      bar.style.display = 'none';
+      // Om vi precis bytte till quick-mode och senaste meddelandet är från
+      // intervjuaren med snabbval — rendera dem nu
+      var lastMsg = state.messages[state.messages.length - 1];
+      if (lastMsg && lastMsg.role === 'interviewer' && lastMsg._options && lastMsg._options.length) {
+        clearAllQuickOptions();
+        renderQuickOptions(lastMsg._options);
+      }
+    } else {
+      bar.style.display = 'flex';
+      // Bytte FRÅN quick-mode → ta bort eventuella synliga snabbval
+      clearAllQuickOptions();
+      if (mode === 'speak') {
+        // Röst-läge: mic primärt, textarea som fallback för redigering
+        if (mic) mic.style.display = 'flex';
+        if (textarea) textarea.placeholder = 'Tryck 🎤 för att prata (eller skriv)';
+      } else {
+        // type-läge: dölj mic-knappen
+        if (mic) mic.style.display = 'none';
+        if (textarea) textarea.placeholder = 'Skriv ditt svar...';
+      }
+    }
+  }
+
+  // Visa en enkel byt-metod-dialog (använder confirm-liknande UI)
+  function showMethodSwitcher() {
+    var current = state.inputMode;
+    // Enkel lösning: använd prompt() för att välja — eller rendera en inline-dialog
+    // Vi gör en enkel inline-dialog överlagd på session
+    var existing = $('#ivMethodDialog');
+    if (existing) { existing.remove(); return; }
+
+    var dialog = document.createElement('div');
+    dialog.id = 'ivMethodDialog';
+    dialog.className = 'iv-method-dialog';
+    dialog.innerHTML = [
+      '<div class="iv-method-dialog-title">Byt svarsmetod</div>',
+      '<button type="button" class="iv-method-card iv-method-card--compact' + (current==='speak'?' iv-method-card--active':'') + '" data-method="speak">',
+      '  <span class="iv-method-icon">🎤</span><span class="iv-method-label">Röstinspelning</span>',
+      '</button>',
+      '<button type="button" class="iv-method-card iv-method-card--compact' + (current==='type'?' iv-method-card--active':'') + '" data-method="type">',
+      '  <span class="iv-method-icon">✍️</span><span class="iv-method-label">Skriv fritt</span>',
+      '</button>',
+      '<button type="button" class="iv-method-card iv-method-card--compact' + (current==='quick'?' iv-method-card--active':'') + '" data-method="quick">',
+      '  <span class="iv-method-icon">⚡</span><span class="iv-method-label">Snabbval</span>',
+      '</button>',
+      '<button type="button" class="iv-btn iv-btn--ghost" id="ivMethodDialogClose" style="margin-top:6px">Stäng</button>'
+    ].join('');
+
+    // Positionera i sessions-headern
+    var root = getRoot();
+    root.appendChild(dialog);
+
+    dialog.querySelectorAll('.iv-method-card').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        state.inputMode = btn.getAttribute('data-method');
+        ivDebug.log('🔄 Metod bytt till: ' + state.inputMode);
+        applyInputMode();
+        dialog.remove();
+      });
+    });
+    var closeBtn = $('#ivMethodDialogClose');
+    if (closeBtn) closeBtn.addEventListener('click', function() { dialog.remove(); });
+  }
+
   function renderQuickOptions(options) {
     var msgs = $('#ivMessages');
     if (!msgs || !options || !options.length) return;
@@ -963,7 +1106,8 @@
     msgs.appendChild(wrap);
 
     // Rendera snabbvals-knappar efter intervjuarens meddelande
-    if (msg.role === 'interviewer' && msg._options && msg._options.length) {
+    // — men ENBART om användaren valt 'quick' som svarsmetod
+    if (msg.role === 'interviewer' && msg._options && msg._options.length && state.inputMode === 'quick') {
       renderQuickOptions(msg._options);
     }
 
@@ -984,6 +1128,7 @@
     ivDebug.log('  → askInterviewerNext()');
     state.ai.isThinking = true;
     updateStatusPill();
+    showThinking();
     try {
       var messages = toClaudeMessages(state.messages);
       ivDebug.log('    meddelanden: ' + messages.length);
@@ -1004,6 +1149,9 @@
       var parsed = parseOptions(withoutComplete);
       var clean = parsed.cleanText;
       ivDebug.log('    → snabbval: ' + parsed.options.length + ' st');
+
+      // Ta bort timglaset INNAN vi lägger till intervjuarens bubbla
+      hideThinking();
 
       ivDebug.log('    sparar meddelande i Supabase...');
       var saved = await addMessage(state.session.id, 'interviewer', clean);
@@ -1027,6 +1175,7 @@
     } catch (e) {
       ivDebug.log('    ✗ askInterviewerNext kraschade: ' + (e.message || e));
       state.ai.isThinking = false;
+      hideThinking();
       updateStatusPill();
       showError('AI-fel: ' + (e.message || e));
     }
@@ -1072,6 +1221,8 @@
 
       showScreen('session');
       ivDebug.log('  ✓ Bytte till session-skärm');
+      applyInputMode();
+      ivDebug.log('  ✓ Input-mode applicerad: ' + state.inputMode);
       renderSessionInfo();
       renderAllMessages();
 
@@ -1246,8 +1397,32 @@
     if (tipsBack) tipsBack.addEventListener('click', function(){ showScreen('setup'); });
     var tipsStart = $('#ivTipsStartBtn');
     if (tipsStart) tipsStart.addEventListener('click', function(){
-      ivDebug.log('🎤 "Starta intervjun" klickad');
+      ivDebug.log('▶ Tips klara — går till metodväljare');
+      showScreen('method');
+    });
+
+    // ─── METOD-VÄLJARE ──────────────────
+    // Klick på ett metodkort markerar det och aktiverar start-knappen
+    var methodCards = root.querySelectorAll('.iv-method-card');
+    methodCards.forEach(function(card) {
+      card.addEventListener('click', function() {
+        methodCards.forEach(function(c) { c.classList.remove('iv-method-card--active'); });
+        card.classList.add('iv-method-card--active');
+        state.inputMode = card.getAttribute('data-method') || 'type';
+        // Aktivera start-knappen
+        var startBtn = $('#ivMethodStartBtn');
+        if (startBtn) { startBtn.disabled = false; startBtn.style.opacity = '1'; }
+      });
+    });
+    var methodStart = $('#ivMethodStartBtn');
+    if (methodStart) methodStart.addEventListener('click', function() {
+      ivDebug.log('🎯 Metod vald: ' + state.inputMode + ' — startar intervjun');
       startInterview();
+    });
+    // Byt-metod-knappen i session-headern
+    var methodSwitchBtn = $('#ivMethodSwitchBtn');
+    if (methodSwitchBtn) methodSwitchBtn.addEventListener('click', function() {
+      showMethodSwitcher();
     });
 
     // ─── SESSION ──────────────────
