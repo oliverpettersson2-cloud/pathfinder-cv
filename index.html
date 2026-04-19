@@ -2451,12 +2451,201 @@
     /* Desktop: dölj mobil-UI */
     /* Mobile UI visas på alla skärmar */
 
-    /* Desktop: centrera mobilappen med max-bredd */
-    @media (min-width: 769px) {
+    /* Tablet (769–1023px): centrera mobilappen med max-bredd */
+    @media (min-width: 769px) and (max-width: 1023px) {
       body { background: var(--deep); }
       #mobileContent { max-width: 500px; margin: 0 auto; }
       #mobileTabBar { max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
       nav { max-width: 500px; margin: 0 auto; left: 50%; transform: translateX(-50%); }
+    }
+
+    /* ============================================================
+       DESKTOP-LAYOUT (≥1024px)
+       Sidofält till vänster + breddat innehåll till höger.
+       Mobil-UI och bottom-nav används fortfarande, bara omformade.
+       Inget annat i appen ändras — alla mobile-funktioner (mobSwitchTab,
+       mobOpenCV osv) anropas från sidofältet på samma sätt.
+       ============================================================ */
+    @media (min-width: 1024px) {
+      body {
+        background: var(--deep);
+      }
+
+      /* Visa sidofält */
+      #desktopSidebar {
+        display: flex !important;
+      }
+
+      /* Dölj mobil bottom-tab-bar på desktop */
+      #mobileTabBar {
+        display: none !important;
+      }
+
+      /* Dölj steg-indikator-nav på desktop (ersätts av sidofältet) */
+      nav#mainNav {
+        display: none !important;
+      }
+
+      /* Förskjut innehållet till höger om sidofältet */
+      #mobileContent {
+        position: fixed;
+        top: 0 !important;
+        left: 240px;
+        right: 0;
+        bottom: 0;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        overflow-y: auto;
+        background: var(--bg);
+      }
+
+      /* Begränsa läsbredden på själva panelerna inuti */
+      #mobileContent .mob-panel {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding-left: 32px;
+        padding-right: 32px;
+      }
+
+      /* Profil/förhandsgranskningspanelen har egen bg-färg, behåll den */
+      #mobileContent #mobPanel-forhandsgranska {
+        max-width: none;
+        padding: 24px 32px;
+      }
+      #mobileContent #mobPanel-forhandsgranska > * {
+        max-width: 1080px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Matcha- och AI-SYV-panelerna är scrollade på mobilen,
+         låt dem fylla höjden på desktop */
+      #mobileContent #mobPanel-matcha,
+      #mobileContent #mobPanel-aisyv,
+      #mobileContent #mobPanel-ovningar {
+        height: auto;
+        min-height: 100%;
+      }
+    }
+
+    /* ============================================================
+       SIDOFÄLT — alltid dolt på mobil/tablet, visas på desktop
+       ============================================================ */
+    #desktopSidebar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 240px;
+      background: var(--deep);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      flex-direction: column;
+      z-index: 100;
+      padding: 24px 0 16px;
+      box-sizing: border-box;
+    }
+    #desktopSidebar .ds-brand {
+      padding: 0 24px 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.3px;
+    }
+    #desktopSidebar .ds-brand-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    #desktopSidebar .ds-nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 0 12px;
+      overflow-y: auto;
+    }
+    #desktopSidebar .ds-tab {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.65);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      padding: 11px 14px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      position: relative;
+    }
+    #desktopSidebar .ds-tab:hover {
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+    }
+    #desktopSidebar .ds-tab.ds-tab--active {
+      background: rgba(232,93,38,0.15);
+      color: #fff;
+    }
+    #desktopSidebar .ds-tab.ds-tab--active::before {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+    #desktopSidebar .ds-tab-icon {
+      font-size: 18px;
+      line-height: 1;
+      width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    #desktopSidebar .ds-tab-label {
+      flex: 1;
+      min-width: 0;
+    }
+    #desktopSidebar .ds-tab-badge {
+      display: none;
+      background: #ef4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      border-radius: 999px;
+      min-width: 18px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      padding: 0 5px;
+    }
+    #desktopSidebar .ds-tab-badge.ds-tab-badge--show {
+      display: inline-block;
+    }
+    #desktopSidebar .ds-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 12px 16px;
+    }
+    #desktopSidebar .ds-foot {
+      padding: 0 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
   @keyframes capBounce { 0%,100%{transform:translateY(0) rotate(-5deg);} 40%{transform:translateY(-6px) rotate(5deg);} }
@@ -7691,6 +7880,53 @@ ${styleTexts}
   <!-- Tab bar längst ner -->
   <div id="mobProgressBar" style="width: 100%;"></div>
 
+  <!-- ========================================================
+       DESKTOP-SIDOFÄLT
+       Dolt på mobil/tablet via CSS (display:none).
+       Visas på desktop (≥1024px). Knapparna anropar exakt samma
+       funktioner som mobil-tab-baren — ingen ny logik.
+       ======================================================== -->
+  <aside id="desktopSidebar" aria-label="Huvudnavigation">
+    <div class="ds-brand">
+      <span class="ds-brand-logo">📋</span>
+      <span>CVmatchen</span>
+    </div>
+    <nav class="ds-nav">
+      <button class="ds-tab ds-tab--active" id="dsTab-hej" onclick="mobSwitchTab('hej')">
+        <span class="ds-tab-icon">👋</span>
+        <span class="ds-tab-label">Hej</span>
+      </button>
+      <button class="ds-tab" id="dsTab-cv-menu" onclick="mobOpenCV()">
+        <span class="ds-tab-icon">📄</span>
+        <span class="ds-tab-label">CV</span>
+      </button>
+      <button class="ds-tab" id="dsTab-matcha" onclick="mobSwitchTab('matcha')">
+        <span class="ds-tab-icon">🎯</span>
+        <span class="ds-tab-label">Matcha arbete</span>
+      </button>
+      <button class="ds-tab" id="dsTab-aisyv" onclick="mobSwitchTab('aisyv')">
+        <span class="ds-tab-icon">🎓</span>
+        <span class="ds-tab-label">Utbilda dig</span>
+        <span class="ds-tab-badge" id="dsBadge-aisyv"></span>
+      </button>
+      <button class="ds-tab" id="dsTab-ovningar" onclick="mobSwitchTab('ovningar')">
+        <span class="ds-tab-icon">🏋️</span>
+        <span class="ds-tab-label">Träning</span>
+      </button>
+      <button class="ds-tab" id="dsTab-export" onclick="mobSwitchTab('export')">
+        <span class="ds-tab-icon">👤</span>
+        <span class="ds-tab-label">Profil</span>
+      </button>
+    </nav>
+    <div class="ds-divider"></div>
+    <div class="ds-foot">
+      <button class="ds-tab" onclick="if(typeof openSettings==='function')openSettings();else{var s=document.getElementById('settingsOverlay');if(s)s.style.display='block';}">
+        <span class="ds-tab-icon">⚙️</span>
+        <span class="ds-tab-label">Inställningar</span>
+      </button>
+    </div>
+  </aside>
+
   <!-- Huvud-navbar (5 knappar) -->
   <div id="mobileTabBar">
     <!-- 1. Hej -->
@@ -12220,6 +12456,10 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
   // Öppna CV-läge — visar steg-indikator i nav, öppnar senast aktiv sub-tab
   let _mobLastCVTab = 'info';
   function mobOpenCV() {
+    // Markera CV-knappen i desktop-sidofältet
+    document.querySelectorAll('#desktopSidebar .ds-tab').forEach(b => b.classList.remove('ds-tab--active'));
+    var dsCV = document.getElementById('dsTab-cv-menu');
+    if (dsCV) dsCV.classList.add('ds-tab--active');
     mobShowCVPicker();
   }
 
@@ -12486,6 +12726,11 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
     if (panel) panel.classList.add('mob-panel--active');
     const btn = document.getElementById('tabBtn-' + tab);
     if (btn) btn.classList.add('mob-tab--active');
+
+    // Synka desktop-sidofältet
+    document.querySelectorAll('#desktopSidebar .ds-tab').forEach(b => b.classList.remove('ds-tab--active'));
+    const dsBtn = document.getElementById('dsTab-' + tab);
+    if (dsBtn) dsBtn.classList.add('ds-tab--active');
 
     if (tab === 'export') { mobBuildTemplateGrid(); mobRenderSavedCVs(); _initProfilePanel(); }
     if (tab === 'matcha') { matchaPopulateCvSelect(); }
@@ -15779,6 +16024,12 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
     document.querySelectorAll('.edu-saved-count').forEach(function(el) {
       el.textContent = n > 0 ? '(' + n + ')' : '';
     });
+    // Desktop-sidofältets badge på "Utbilda dig"
+    var dsBadge = document.getElementById('dsBadge-aisyv');
+    if (dsBadge) {
+      if (n > 0) { dsBadge.textContent = n; dsBadge.classList.add('ds-tab-badge--show'); }
+      else { dsBadge.classList.remove('ds-tab-badge--show'); }
+    }
   }
 
   // Alias för anrop från mobSwitchTab
