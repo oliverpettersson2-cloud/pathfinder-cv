@@ -1715,9 +1715,11 @@
     /* ===== SLUT AUTENTISERING ===== */
   
     /* =====================================================
-       MOBIL-LAYOUT — visas bara under 768px
+       MOBIL-LAYOUT — visas under 768px OCH på desktop ≥1024px
+       (på desktop återanvänds samma UI inuti sidofältslayouten;
+       desktop-overrides på rad ~2470 justerar det specifika)
        ===================================================== */
-    @media (max-width: 768px) {
+    @media (max-width: 768px), (min-width: 1024px) {
 
       /* Dölj desktop-nav steg-indikator på mobil */
       .nav-steps { display: none !important; }
@@ -2486,18 +2488,23 @@
         display: none !important;
       }
 
+      /* Dölj mobilens progressbar (gröna strecket högst upp) på desktop */
+      #mobProgressBar {
+        display: none !important;
+      }
+
       /* Förskjut innehållet till höger om sidofältet */
       #mobileContent {
         position: fixed;
         top: 0 !important;
         left: 240px;
         right: 0;
-        bottom: 0;
+        bottom: 0 !important;
         max-width: none;
         margin: 0;
         padding: 0;
         overflow-y: auto;
-        background: var(--bg);
+        background: #1a1a2e;
       }
 
       /* Begränsa läsbredden på själva panelerna inuti */
