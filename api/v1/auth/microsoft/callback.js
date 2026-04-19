@@ -176,7 +176,11 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie',
       'ms_oauth_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0');
 
-    const returnUrl = `${protocol}://${host}/?ms_token=${encodeURIComponent(sessionToken)}`;
+    // Handläggare/admin/superadmin skickas till handlaggar-vyn (/admin),
+    // andra (om det skulle finnas) till startsidan.
+    const isAdmin = admin.role === 'superadmin' || admin.role === 'admin' || admin.role === 'handlaggare';
+    const landingPath = isAdmin ? '/admin' : '/';
+    const returnUrl = `${protocol}://${host}${landingPath}?ms_token=${encodeURIComponent(sessionToken)}`;
     res.setHeader('Location', returnUrl);
     res.status(302).end();
 
