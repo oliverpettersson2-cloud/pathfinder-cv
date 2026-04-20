@@ -722,19 +722,22 @@
       list.innerHTML = '<div class="empty">Inga jobb tillagda än</div>';
       return;
     }
-    list.innerHTML = cvData.jobs.map((j, i) => `
+    list.innerHTML = cvData.jobs.map((j, i) => {
+      const period = (j.startYear || '') + '–' + (j.endYear || 'nu');
+      const loc = j.location ? ' · ' + escape(j.location) : '';
+      return `
       <div class="item-card">
         <div class="item-card-body">
           <div class="item-card-title">${escape(j.title || 'Utan titel')}</div>
-          <div class="item-card-meta">${escape(j.company || '')} · ${escape(j.startYear || '')}–${escape(j.endYear || 'nu')}</div>
+          <div class="item-card-meta">${escape(j.company || '')} · ${escape(period)}${loc}</div>
           ${j.desc ? `<div class="item-card-desc">${escape(j.desc)}</div>` : ''}
         </div>
         <div class="item-actions">
           <button class="icon-btn" onclick="cvEditJob(${i})" title="Redigera">✎</button>
           <button class="icon-btn danger" onclick="cvDeleteJob(${i})" title="Ta bort">✕</button>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 
   function renderEducation() {
@@ -757,23 +760,15 @@
     `).join('');
   }
 
+  // ============================================================
+  // CV: JOBB — riktig modal (ingen native prompt)
+  // ============================================================
   window.cvAddJob = function() {
-    const job = promptJobModal();
-    if (!job) return;
-    cvData.jobs.push(job);
-    saveCVLocal();
-    renderJobs();
-    renderPreview();
-    markStepDone('jobb');
+    openJobModal();
   };
 
   window.cvEditJob = function(i) {
-    const job = promptJobModal(cvData.jobs[i]);
-    if (!job) return;
-    cvData.jobs[i] = job;
-    saveCVLocal();
-    renderJobs();
-    renderPreview();
+    openJobModal(i);
   };
 
   window.cvDeleteJob = function(i) {
@@ -785,38 +780,106 @@
     markStepDone('jobb');
   };
 
-  function promptJobModal(existing) {
-    // Enkel prompt-baserad inmatning. Kan ersättas med riktig modal senare.
-    const e = existing || {};
-    const title = prompt('Jobbtitel:', e.title || '');
-    if (title === null) return null;
-    const company = prompt('Företag:', e.company || '');
-    if (company === null) return null;
-    const startYear = prompt('Startår (t.ex. 2020):', e.startYear || '');
-    if (startYear === null) return null;
-    const endYear = prompt('Slutår (eller "nu"):', e.endYear || 'nu');
-    if (endYear === null) return null;
-    const desc = prompt('Kort beskrivning av rollen:', e.desc || '');
-    return { title, company, startYear, endYear, desc: desc || '' };
-  }
+  window.openJobModal = function(idx) {
+    const modal = document.getElementById('jobModal');
+    const isEdit = (typeof idx === 'number' && idx >= 0);
+    const title = document.getElementById('jobModalTitle');
+    modal.dataset.editIdx = isEdit ? String(idx) : '-1';
+    if (title) title.textContent = isEdit ? 'Redigera arbetslivserfarenhet' : 'Lägg till arbetslivserfarenhet';
 
-  window.cvAddEdu = function() {
-    const edu = promptEduModal();
-    if (!edu) return;
-    cvData.education.push(edu);
+    const e = isEdit ? (cvData.jobs[idx] || {}) : {};
+    document.getElementById('jobTitle').value    = e.title    || '';
+    document.getElementById('jobCompany').value  = e.company  || '';
+    document.getElementById('jobLocation').value = e.location || '';
+    document.getElementById('jobStartYear').value= e.startYear || '';
+
+    const ongoing = (e.endYear === 'nu' || e.endYear === 'Pågående' || e.ongoing === true);
+    document.getElementById('jobOngoing').checked = !!ongoing;
+    const endInput = document.getElementById('jobEndYear');
+    endInput.value = ongoing ? '' : (e.endYear || '');
+    endInput.disabled = !!ongoing;
+    endInput.style.opacity = ongoing ? '0.4' : '1';
+
+    document.getElementById('jobDesc').value = e.desc || '';
+
+    modal.classList.add('open');
+    setTimeout(() => document.getElementById('jobTitle').focus(), 100);
+  };
+
+  window.closeJobModal = function() {
+    document.getElementById('jobModal').classList.remove('open');
+  };
+
+  window.toggleJobOngoing = function(cb) {
+    const endInput = document.getElementById('jobEndYear');
+    if (cb.checked) {
+      endInput.value = '';
+      endInput.disabled = true;
+      endInput.style.opacity = '0.4';
+    } else {
+      endInput.disabled = false;
+      endInput.style.opacity = '1';
+    }
+  };
+
+  window.saveJobFromModal = function() {
+    const title     = document.getElementById('jobTitle').value.trim();
+    const company   = document.getElementById('jobCompany').value.trim();
+    const location  = document.getElementById('jobLocation').value.trim();
+    const startYear = document.getElementById('jobStartYear').value.trim();
+    const ongoing   = document.getElementById('jobOngoing').checked;
+    const endYearIn = document.getElementById('jobEndYear').value.trim();
+    const desc      = document.getElementById('jobDesc').value.trim();
+
+    if (!title) {
+      toast('Fyll i jobbtitel', 'error');
+      document.getElementById('jobTitle').focus();
+      return;
+    }
+    if (!company) {
+      toast('Fyll i företag', 'error');
+      document.getElementById('jobCompany').focus();
+      return;
+    }
+    if (!startYear) {
+      toast('Fyll i startår', 'error');
+      document.getElementById('jobStartYear').focus();
+      return;
+    }
+
+    const job = {
+      title: title,
+      company: company,
+      location: location,
+      startYear: startYear,
+      endYear: ongoing ? 'nu' : (endYearIn || ''),
+      ongoing: ongoing,
+      desc: desc
+    };
+
+    const idx = parseInt(document.getElementById('jobModal').dataset.editIdx);
+    if (idx >= 0 && cvData.jobs[idx]) {
+      cvData.jobs[idx] = job;
+    } else {
+      cvData.jobs.push(job);
+    }
     saveCVLocal();
-    renderEducation();
+    renderJobs();
     renderPreview();
     markStepDone('jobb');
+    closeJobModal();
+    toast('✅ ' + (idx >= 0 ? 'Uppdaterat' : 'Lagt till'));
+  };
+
+  // ============================================================
+  // CV: UTBILDNING — riktig modal
+  // ============================================================
+  window.cvAddEdu = function() {
+    openEduModal();
   };
 
   window.cvEditEdu = function(i) {
-    const edu = promptEduModal(cvData.education[i]);
-    if (!edu) return;
-    cvData.education[i] = edu;
-    saveCVLocal();
-    renderEducation();
-    renderPreview();
+    openEduModal(i);
   };
 
   window.cvDeleteEdu = function(i) {
@@ -828,18 +891,74 @@
     markStepDone('jobb');
   };
 
-  function promptEduModal(existing) {
-    const e = existing || {};
-    const degree = prompt('Examen / utbildning:', e.degree || '');
-    if (degree === null) return null;
-    const school = prompt('Skola:', e.school || '');
-    if (school === null) return null;
-    const startYear = prompt('Startår:', e.startYear || '');
-    if (startYear === null) return null;
-    const endYear = prompt('Slutår:', e.endYear || '');
-    if (endYear === null) return null;
-    return { degree, school, startYear, endYear };
-  }
+  window.openEduModal = function(idx) {
+    const modal = document.getElementById('eduModal');
+    const isEdit = (typeof idx === 'number' && idx >= 0);
+    const title = document.getElementById('eduModalTitle');
+    modal.dataset.editIdx = isEdit ? String(idx) : '-1';
+    if (title) title.textContent = isEdit ? 'Redigera utbildning' : 'Lägg till utbildning';
+
+    const e = isEdit ? (cvData.education[idx] || {}) : {};
+    document.getElementById('eduDegree').value   = e.degree    || '';
+    document.getElementById('eduSchool').value   = e.school    || '';
+    document.getElementById('eduStartYear').value= e.startYear || '';
+    document.getElementById('eduEndYear').value  = e.endYear   || '';
+
+    modal.classList.add('open');
+    setTimeout(() => document.getElementById('eduDegree').focus(), 100);
+  };
+
+  window.closeEduModal = function() {
+    document.getElementById('eduModal').classList.remove('open');
+  };
+
+  window.saveEduFromModal = function() {
+    const degree    = document.getElementById('eduDegree').value.trim();
+    const school    = document.getElementById('eduSchool').value.trim();
+    const startYear = document.getElementById('eduStartYear').value.trim();
+    const endYear   = document.getElementById('eduEndYear').value.trim();
+
+    if (!degree) {
+      toast('Fyll i examen/utbildning', 'error');
+      document.getElementById('eduDegree').focus();
+      return;
+    }
+    if (!school) {
+      toast('Fyll i skola', 'error');
+      document.getElementById('eduSchool').focus();
+      return;
+    }
+
+    const edu = { degree, school, startYear, endYear };
+
+    const idx = parseInt(document.getElementById('eduModal').dataset.editIdx);
+    if (idx >= 0 && cvData.education[idx]) {
+      cvData.education[idx] = edu;
+    } else {
+      cvData.education.push(edu);
+    }
+    saveCVLocal();
+    renderEducation();
+    renderPreview();
+    markStepDone('jobb');
+    closeEduModal();
+    toast('✅ ' + (idx >= 0 ? 'Uppdaterat' : 'Lagt till'));
+  };
+
+  // Stäng modal vid klick på backdrop
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList && e.target.classList.contains('edit-modal')) {
+      e.target.classList.remove('open');
+    }
+  });
+
+  // Escape-tangent stänger öppen modal
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const openModals = document.querySelectorAll('.edit-modal.open');
+      openModals.forEach(m => m.classList.remove('open'));
+    }
+  });
 
   // ============================================================
   // CV: SKILLS
@@ -1085,9 +1204,10 @@
       html.push('<div class="cv-doc-section">');
       html.push('<div class="cv-doc-section-title">Arbetslivserfarenhet</div>');
       cvData.jobs.forEach(j => {
+        const loc = j.location ? ' · ' + escape(j.location) : '';
         html.push('<div class="cv-doc-entry">');
         html.push('<div class="cv-doc-entry-title">' + escape(j.title || '') + '</div>');
-        html.push('<div class="cv-doc-entry-meta">' + escape(j.company || '') + ' · ' + escape(j.startYear || '') + '–' + escape(j.endYear || 'nu') + '</div>');
+        html.push('<div class="cv-doc-entry-meta">' + escape(j.company || '') + ' · ' + escape(j.startYear || '') + '–' + escape(j.endYear || 'nu') + loc + '</div>');
         if (j.desc) html.push('<div class="cv-doc-entry-desc">' + escape(j.desc) + '</div>');
         html.push('</div>');
       });
