@@ -784,6 +784,120 @@
   .edit-modal-buttons .btn { flex: 1; }
 
   /* ============================================================
+     PROFILBILD
+     ============================================================ */
+  .photo-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .photo-toggle-btn {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: rgba(255,255,255,0.7);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .photo-toggle-btn.active {
+    background: rgba(62,180,137,0.15);
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+  .photo-upload-section {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1.5px dashed rgba(255,255,255,0.1);
+    border-radius: 12px;
+  }
+  .photo-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  .photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .photo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+  .photo-btn {
+    padding: 8px 14px;
+    background: var(--accent2);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .photo-btn:hover:not(:disabled) { filter: brightness(1.1); }
+  .photo-btn.danger {
+    background: rgba(255,100,100,0.15);
+    color: rgba(255,150,150,0.9);
+    border: 1px solid rgba(255,100,100,0.3);
+  }
+  .photo-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .photo-hint {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.4;
+  }
+
+  /* ============================================================
+     REFERENSER "PÅ BEGÄRAN"-CHECKBOX
+     ============================================================ */
+  .ref-on-request {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s;
+  }
+  .ref-on-request:hover { border-color: rgba(62,180,137,0.3); }
+  .ref-on-request input {
+    accent-color: var(--accent2);
+    width: 16px; height: 16px;
+  }
+  .ref-on-request-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 600;
+  }
+
+  /* ============================================================
      TOAST
      ============================================================ */
   #toast {
@@ -1440,6 +1554,28 @@
               <input type="tel" class="cv-input" id="cv-phone" placeholder="Telefonnummer" oninput="cvUpdate('phone', this.value)">
             </div>
           </div>
+
+          <div class="cv-section">
+            <div class="cv-section-title">Profilbild</div>
+            <div class="photo-toggle">
+              <button type="button" class="photo-toggle-btn" id="photoYesBtn" onclick="setShowPhoto(true)">✓ Ja, visa bild</button>
+              <button type="button" class="photo-toggle-btn active" id="photoNoBtn" onclick="setShowPhoto(false)">✗ Nej, ingen bild</button>
+            </div>
+            <div id="photoUploadSection" style="display:none;">
+              <div class="photo-upload-section">
+                <div class="photo-preview" id="photoPreview">
+                  <span id="photoPreviewPlaceholder">👤</span>
+                  <img id="profilePhoto" style="display:none;" alt="Profilbild">
+                </div>
+                <div class="photo-actions">
+                  <input type="file" id="photoUpload" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+                  <button type="button" class="photo-btn" onclick="document.getElementById('photoUpload').click()">📷 Ladda upp bild</button>
+                  <button type="button" class="photo-btn danger" id="removePhotoBtn" onclick="removeProfilePhoto()" disabled>🗑 Ta bort bild</button>
+                  <div class="photo-hint">Rekommenderad: kvadratisk bild, minst 300×300 pixlar</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="cv-step-content" id="step-jobb" style="display:none;">
@@ -1475,6 +1611,22 @@
           <div class="cv-section">
             <div class="cv-section-title">Körkort</div>
             <div class="check-grid" id="licensesGrid"></div>
+          </div>
+
+          <div class="cv-section">
+            <div class="cv-section-title">Certifikat</div>
+            <div id="certsList"></div>
+            <button class="btn btn-ghost" onclick="openCertModal()">+ Lägg till certifikat</button>
+          </div>
+
+          <div class="cv-section">
+            <div class="cv-section-title">Referenser</div>
+            <label class="ref-on-request">
+              <input type="checkbox" id="refOnRequestCheck" onchange="toggleRefOnRequest(this.checked)">
+              <span class="ref-on-request-label">Referenser lämnas på begäran</span>
+            </label>
+            <div id="refsList"></div>
+            <button class="btn btn-ghost" onclick="openRefModal()">+ Lägg till referens</button>
           </div>
         </div>
 
@@ -1570,7 +1722,7 @@
 </main>
 
 <!-- ============================================================
-     JOBBMODAL
+     JOBBMODAL — matchar mobilens funktionalitet
      ============================================================ -->
 <div id="jobModal" class="edit-modal" data-edit-idx="-1">
   <div class="edit-modal-content">
@@ -1583,26 +1735,70 @@
     <input type="text" class="cv-input" id="jobCompany" placeholder="t.ex. ICA Maxi">
 
     <label class="edit-modal-label">Plats</label>
-    <input type="text" class="cv-input" id="jobLocation" placeholder="Stad (valfritt)">
+    <input type="text" class="cv-input" id="jobLocation" placeholder="Stad, land (valfritt)">
 
-    <div class="edit-modal-row">
-      <div>
-        <label class="edit-modal-label">Startår *</label>
-        <input type="text" class="cv-input" id="jobStartYear" placeholder="t.ex. 2020" inputmode="numeric" maxlength="4">
+    <!-- Datumrad: Från / Till med månad+år -->
+    <div style="display: flex; gap: 10px; margin-bottom: 12px; margin-top: 4px;">
+      <!-- FRÅN -->
+      <div style="flex:1;">
+        <div class="edit-modal-label" style="color: var(--accent2);">Från</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <select class="cv-input" id="jobStartMonth" style="margin:0;">
+            <option value="">Månad</option>
+            <option value="Jan">Jan</option><option value="Feb">Feb</option>
+            <option value="Mar">Mar</option><option value="Apr">Apr</option>
+            <option value="Maj">Maj</option><option value="Jun">Jun</option>
+            <option value="Jul">Jul</option><option value="Aug">Aug</option>
+            <option value="Sep">Sep</option><option value="Okt">Okt</option>
+            <option value="Nov">Nov</option><option value="Dec">Dec</option>
+          </select>
+          <select class="cv-input" id="jobStartYear" style="margin:0;"></select>
+        </div>
       </div>
-      <div>
-        <label class="edit-modal-label" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>Slutår</span>
+
+      <div style="color: rgba(255,255,255,0.25); font-size: 18px; padding-top: 26px; flex-shrink: 0;">→</div>
+
+      <!-- TILL -->
+      <div style="flex:1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span class="edit-modal-label" style="margin:0;">Till</span>
           <label class="edit-modal-ongoing">
             <input type="checkbox" id="jobOngoing" onchange="toggleJobOngoing(this)"> Pågående
           </label>
-        </label>
-        <input type="text" class="cv-input" id="jobEndYear" placeholder="t.ex. 2023" inputmode="numeric" maxlength="4">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <select class="cv-input" id="jobEndMonth" style="margin:0;">
+            <option value="">Månad</option>
+            <option value="Jan">Jan</option><option value="Feb">Feb</option>
+            <option value="Mar">Mar</option><option value="Apr">Apr</option>
+            <option value="Maj">Maj</option><option value="Jun">Jun</option>
+            <option value="Jul">Jul</option><option value="Aug">Aug</option>
+            <option value="Sep">Sep</option><option value="Okt">Okt</option>
+            <option value="Nov">Nov</option><option value="Dec">Dec</option>
+          </select>
+          <select class="cv-input" id="jobEndYear" style="margin:0;"></select>
+        </div>
       </div>
     </div>
 
-    <label class="edit-modal-label" style="margin-top:6px;">Kort beskrivning av rollen</label>
-    <textarea class="cv-textarea" id="jobDesc" placeholder="Beskriv dina huvudsakliga arbetsuppgifter..." rows="4"></textarea>
+    <!-- 3 arbetsuppgifter + AI Autofyll -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 14px 0 8px;">
+      <span class="edit-modal-label" style="margin:0;">Dina arbetsuppgifter (3 punkter)</span>
+      <button type="button" id="jobAutofillBtn" onclick="aiAutofillJobDesc()"
+        style="background: rgba(124,58,237,0.2); border: 1.5px solid rgba(124,58,237,0.5); color: #c4b5fd; font-size: 12px; cursor: pointer; padding: 6px 12px; font-weight: 700; border-radius: 8px; font-family: inherit;"
+        onmouseover="this.style.background='rgba(124,58,237,0.35)'"
+        onmouseout="this.style.background='rgba(124,58,237,0.2)'">
+        ✨ AI Autofyll
+      </button>
+    </div>
+    <textarea class="cv-textarea" id="jobDesc1" placeholder="• Första arbetsuppgift (t.ex. Kundservice och försäljning)" rows="2" style="resize:none; line-height: 1.5; margin-bottom: 8px;"></textarea>
+    <textarea class="cv-textarea" id="jobDesc2" placeholder="• Andra arbetsuppgift (t.ex. Lagerhantering och inventering)" rows="2" style="resize:none; line-height: 1.5; margin-bottom: 8px;"></textarea>
+    <textarea class="cv-textarea" id="jobDesc3" placeholder="• Tredje arbetsuppgift (t.ex. Koordinering med leverantörer)" rows="2" style="resize:none; line-height: 1.5; margin-bottom: 4px;"></textarea>
+
+    <button type="button" onclick="clearJobDesc()"
+      style="width: 100%; margin-top: 4px; padding: 8px; background: rgba(255,80,80,0.08); border: 1px solid rgba(255,80,80,0.2); border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: rgba(255,100,100,0.7); font-family: inherit;">
+      🗑 Rensa arbetsuppgifter
+    </button>
 
     <div class="edit-modal-buttons">
       <button class="btn btn-secondary" onclick="closeJobModal()">Avbryt</button>
@@ -1612,7 +1808,7 @@
 </div>
 
 <!-- ============================================================
-     UTBILDNINGSMODAL
+     UTBILDNINGSMODAL — matchar mobilens funktionalitet
      ============================================================ -->
 <div id="eduModal" class="edit-modal" data-edit-idx="-1">
   <div class="edit-modal-content">
@@ -1621,23 +1817,124 @@
     <label class="edit-modal-label">Examen / Utbildning *</label>
     <input type="text" class="cv-input" id="eduDegree" placeholder="t.ex. Samhällsvetenskaplig linje">
 
-    <label class="edit-modal-label">Skola *</label>
-    <input type="text" class="cv-input" id="eduSchool" placeholder="t.ex. Katedralskolan">
+    <label class="edit-modal-label">Namn på skola / Universitet *</label>
+    <input type="text" class="cv-input" id="eduSchoolName" placeholder="t.ex. Katedralskolan">
 
-    <div class="edit-modal-row">
-      <div>
-        <label class="edit-modal-label">Startår</label>
-        <input type="text" class="cv-input" id="eduStartYear" placeholder="t.ex. 2018" inputmode="numeric" maxlength="4">
+    <label class="edit-modal-label">Skolform</label>
+    <select class="cv-input" id="eduSchoolForm">
+      <option value="">Välj skolform</option>
+      <option value="Grundskola">Grundskola</option>
+      <option value="Gymnasium">Gymnasium</option>
+      <option value="Folkhögskola">Folkhögskola</option>
+      <option value="Komvux">Komvux (Kommunal vuxenutbildning)</option>
+      <option value="Yrkeshögskola">Yrkeshögskola (YH)</option>
+      <option value="KY-utbildning">KY-utbildning</option>
+      <option value="Högskola">Högskola</option>
+      <option value="Universitet">Universitet</option>
+      <option value="Lärlingsutbildning">Lärlingsutbildning (Lärvux)</option>
+      <option value="Arbetsmarknadsutbildning">Arbetsmarknadsutbildning</option>
+      <option value="Övrig utbildning">Övrig utbildning</option>
+    </select>
+
+    <!-- Datumrad -->
+    <div style="display: flex; gap: 10px; margin-bottom: 6px; margin-top: 4px;">
+      <div style="flex:1;">
+        <div class="edit-modal-label" style="color: var(--accent2);">Från</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <select class="cv-input" id="eduStartMonth" style="margin:0;">
+            <option value="">Månad</option>
+            <option value="Jan">Jan</option><option value="Feb">Feb</option>
+            <option value="Mar">Mar</option><option value="Apr">Apr</option>
+            <option value="Maj">Maj</option><option value="Jun">Jun</option>
+            <option value="Jul">Jul</option><option value="Aug">Aug</option>
+            <option value="Sep">Sep</option><option value="Okt">Okt</option>
+            <option value="Nov">Nov</option><option value="Dec">Dec</option>
+          </select>
+          <select class="cv-input" id="eduStartYear" style="margin:0;"></select>
+        </div>
       </div>
-      <div>
-        <label class="edit-modal-label">Slutår</label>
-        <input type="text" class="cv-input" id="eduEndYear" placeholder="t.ex. 2021" inputmode="numeric" maxlength="4">
+
+      <div style="color: rgba(255,255,255,0.25); font-size: 18px; padding-top: 26px; flex-shrink: 0;">→</div>
+
+      <div style="flex:1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span class="edit-modal-label" style="margin:0;">Till</span>
+          <label class="edit-modal-ongoing">
+            <input type="checkbox" id="eduOngoing" onchange="toggleEduOngoing(this)"> Pågående
+          </label>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+          <select class="cv-input" id="eduEndMonth" style="margin:0;">
+            <option value="">Månad</option>
+            <option value="Jan">Jan</option><option value="Feb">Feb</option>
+            <option value="Mar">Mar</option><option value="Apr">Apr</option>
+            <option value="Maj">Maj</option><option value="Jun">Jun</option>
+            <option value="Jul">Jul</option><option value="Aug">Aug</option>
+            <option value="Sep">Sep</option><option value="Okt">Okt</option>
+            <option value="Nov">Nov</option><option value="Dec">Dec</option>
+          </select>
+          <select class="cv-input" id="eduEndYear" style="margin:0;"></select>
+        </div>
       </div>
     </div>
 
     <div class="edit-modal-buttons">
       <button class="btn btn-secondary" onclick="closeEduModal()">Avbryt</button>
       <button class="btn btn-primary" onclick="saveEduFromModal()">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CERTIFIKAT-MODAL
+     ============================================================ -->
+<div id="certModal" class="edit-modal" data-edit-idx="-1">
+  <div class="edit-modal-content">
+    <div class="edit-modal-title" id="certModalTitle">Lägg till certifikat</div>
+
+    <label class="edit-modal-label">Certifikatets namn *</label>
+    <input type="text" class="cv-input" id="certName" placeholder="t.ex. Heta arbeten">
+
+    <label class="edit-modal-label">Utfärdare *</label>
+    <input type="text" class="cv-input" id="certIssuer" placeholder="t.ex. Brandskyddsföreningen">
+
+    <label class="edit-modal-label">Datum</label>
+    <input type="text" class="cv-input" id="certDate" placeholder="t.ex. Januari 2023">
+
+    <div class="edit-modal-buttons">
+      <button class="btn btn-secondary" onclick="closeCertModal()">Avbryt</button>
+      <button class="btn btn-primary" onclick="saveCertFromModal()">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     REFERENS-MODAL
+     ============================================================ -->
+<div id="refModal" class="edit-modal" data-edit-idx="-1">
+  <div class="edit-modal-content">
+    <div class="edit-modal-title" id="refModalTitle">Lägg till referens</div>
+
+    <label class="edit-modal-label">Namn *</label>
+    <input type="text" class="cv-input" id="refName" placeholder="För- och efternamn">
+
+    <label class="edit-modal-label">Titel / Roll *</label>
+    <input type="text" class="cv-input" id="refTitle" placeholder="t.ex. Butikschef på ICA">
+
+    <div class="edit-modal-row">
+      <div>
+        <label class="edit-modal-label">E-post</label>
+        <input type="email" class="cv-input" id="refEmail" placeholder="namn@företag.se">
+      </div>
+      <div>
+        <label class="edit-modal-label">Telefon</label>
+        <input type="tel" class="cv-input" id="refPhone" placeholder="070-123 45 67">
+      </div>
+    </div>
+
+    <div class="edit-modal-buttons">
+      <button class="btn btn-secondary" onclick="closeRefModal()">Avbryt</button>
+      <button class="btn btn-primary" onclick="saveRefFromModal()">Spara</button>
     </div>
   </div>
 </div>
