@@ -715,6 +715,75 @@
   .settings-hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 6px; }
 
   /* ============================================================
+     JOBB- / UTBILDNINGSMODAL
+     ============================================================ */
+  .edit-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 1100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .edit-modal.open { display: flex; }
+  .edit-modal-content {
+    background: #1e2545;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 26px 26px 22px;
+    width: 520px;
+    max-width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .edit-modal-title {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 18px;
+    color: #fff;
+  }
+  .edit-modal-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+  .edit-modal .cv-input,
+  .edit-modal .cv-textarea {
+    margin-bottom: 12px;
+  }
+  .edit-modal-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .edit-modal-ongoing {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--accent2);
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+  .edit-modal-ongoing input {
+    accent-color: var(--accent2);
+    width: 14px; height: 14px;
+  }
+  .edit-modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .edit-modal-buttons .btn { flex: 1; }
+
+  /* ============================================================
      TOAST
      ============================================================ */
   #toast {
@@ -1054,23 +1123,27 @@
 
   .auth-btn {
     width: 100%;
-    padding: 13px 16px;
-    background: var(--accent);
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #3eb489 0%, #2a9d72 100%);
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     color: #fff;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: filter 0.15s;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+    box-shadow: 0 4px 16px rgba(62,180,137,0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
   }
-  .auth-btn:hover:not(:disabled) { filter: brightness(1.08); }
-  .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .auth-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(62,180,137,0.4);
+  }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .auth-spinner {
     width: 14px; height: 14px;
@@ -1108,8 +1181,8 @@
   .auth-divider {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin: 20px 0 14px;
+    gap: 12px;
+    margin: 22px 0 16px;
   }
   .auth-divider::before,
   .auth-divider::after {
@@ -1119,8 +1192,11 @@
     background: rgba(255,255,255,0.08);
   }
   .auth-divider span {
-    font-size: 10px;
-    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
   }
 
   .auth-magic-sent {
@@ -1492,6 +1568,79 @@
   </section>
 
 </main>
+
+<!-- ============================================================
+     JOBBMODAL
+     ============================================================ -->
+<div id="jobModal" class="edit-modal" data-edit-idx="-1">
+  <div class="edit-modal-content">
+    <div class="edit-modal-title" id="jobModalTitle">Lägg till arbetslivserfarenhet</div>
+
+    <label class="edit-modal-label">Jobbtitel *</label>
+    <input type="text" class="cv-input" id="jobTitle" placeholder="t.ex. Butiksbiträde">
+
+    <label class="edit-modal-label">Företag *</label>
+    <input type="text" class="cv-input" id="jobCompany" placeholder="t.ex. ICA Maxi">
+
+    <label class="edit-modal-label">Plats</label>
+    <input type="text" class="cv-input" id="jobLocation" placeholder="Stad (valfritt)">
+
+    <div class="edit-modal-row">
+      <div>
+        <label class="edit-modal-label">Startår *</label>
+        <input type="text" class="cv-input" id="jobStartYear" placeholder="t.ex. 2020" inputmode="numeric" maxlength="4">
+      </div>
+      <div>
+        <label class="edit-modal-label" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Slutår</span>
+          <label class="edit-modal-ongoing">
+            <input type="checkbox" id="jobOngoing" onchange="toggleJobOngoing(this)"> Pågående
+          </label>
+        </label>
+        <input type="text" class="cv-input" id="jobEndYear" placeholder="t.ex. 2023" inputmode="numeric" maxlength="4">
+      </div>
+    </div>
+
+    <label class="edit-modal-label" style="margin-top:6px;">Kort beskrivning av rollen</label>
+    <textarea class="cv-textarea" id="jobDesc" placeholder="Beskriv dina huvudsakliga arbetsuppgifter..." rows="4"></textarea>
+
+    <div class="edit-modal-buttons">
+      <button class="btn btn-secondary" onclick="closeJobModal()">Avbryt</button>
+      <button class="btn btn-primary" onclick="saveJobFromModal()">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     UTBILDNINGSMODAL
+     ============================================================ -->
+<div id="eduModal" class="edit-modal" data-edit-idx="-1">
+  <div class="edit-modal-content">
+    <div class="edit-modal-title" id="eduModalTitle">Lägg till utbildning</div>
+
+    <label class="edit-modal-label">Examen / Utbildning *</label>
+    <input type="text" class="cv-input" id="eduDegree" placeholder="t.ex. Samhällsvetenskaplig linje">
+
+    <label class="edit-modal-label">Skola *</label>
+    <input type="text" class="cv-input" id="eduSchool" placeholder="t.ex. Katedralskolan">
+
+    <div class="edit-modal-row">
+      <div>
+        <label class="edit-modal-label">Startår</label>
+        <input type="text" class="cv-input" id="eduStartYear" placeholder="t.ex. 2018" inputmode="numeric" maxlength="4">
+      </div>
+      <div>
+        <label class="edit-modal-label">Slutår</label>
+        <input type="text" class="cv-input" id="eduEndYear" placeholder="t.ex. 2021" inputmode="numeric" maxlength="4">
+      </div>
+    </div>
+
+    <div class="edit-modal-buttons">
+      <button class="btn btn-secondary" onclick="closeEduModal()">Avbryt</button>
+      <button class="btn btn-primary" onclick="saveEduFromModal()">Spara</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============================================================
      INSTÄLLNINGAR-MODAL
