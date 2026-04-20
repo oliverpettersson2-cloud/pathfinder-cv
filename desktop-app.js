@@ -13,6 +13,10 @@
   const AUTH_STORAGE_KEY = 'cvmatchen_auth';
   const API_KEY_STORAGE  = 'cvmatchen_api_key';
   const TRAINING_PROGRESS_KEY = 'cvmatchen_ovning_progress';
+  const SAVED_CVS_KEY    = 'pathfinder_saved_cvs';
+  const MATCHED_CVS_KEY  = 'pathfinder_matched_cvs';
+  const MATCHED_TTL_MS   = 14 * 24 * 3600 * 1000; // 14 dagar — samma som mobilen
+  const MAX_SAVED_CVS    = 3;
 
   const ALL_LANGUAGES = [
     'Svenska', 'Engelska', 'Danska', 'Tyska', 'Franska', 'Spanska',
@@ -205,6 +209,8 @@
     }
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('sbUserName').textContent = auth.email;
+    const pfEmail = document.getElementById('pfUserEmail');
+    if (pfEmail) pfEmail.textContent = auth.email;
     window.authUserId = auth.userId || null;
     window.authAccessToken = auth.accessToken || null;
     return true;
@@ -330,6 +336,9 @@
     }
     if (view === 'ovningar') {
       renderTrainingHome();
+    }
+    if (view === 'profil') {
+      renderProfilView();
     }
   };
 
@@ -824,16 +833,69 @@
   // ============================================================
   window.cvSaveAndStore = async function() {
     saveCVLocal();
-    logEvent('cv_saved', { title: cvData.title || 'Utan titel' });
 
+    // Validera innan vi sparar version till listan
+    const title = (cvData.title || '').trim();
+    if (!cvData.name) {
+      toast('Fyll i ditt namn först', 'error');
+      cvSwitchStep('profil');
+      return;
+    }
+    if (!title) {
+      toast('Fyll i en yrkestitel först', 'error');
+      cvSwitchStep('profil');
+      return;
+    }
+
+    // Lägg till / uppdatera i listan över sparade CV:n (max 3, samma logik som mobilen)
+    const list = pfGetSaved();
+    const existing = list.findIndex(c => c.title === title);
+    const snapshot = {
+      id: existing >= 0 ? list[existing].id : 'cv_' + Date.now(),
+      title: title,
+      savedAt: Date.now(),
+      data: JSON.parse(JSON.stringify(cvData))
+    };
+
+    if (existing >= 0) {
+      list[existing] = snapshot;
+      pfPutSaved(list);
+    } else if (list.length >= MAX_SAVED_CVS) {
+      // Lista full — fråga om äldsta ska ersättas
+      list.sort((a, b) => a.savedAt - b.savedAt);
+      const oldest = list[0];
+      const oldestDate = new Date(oldest.savedAt).toLocaleDateString('sv-SE',
+        { day: 'numeric', month: 'long' });
+      const ok = confirm(
+        'Du har redan ' + MAX_SAVED_CVS + ' sparade CV:n.\n\n' +
+        'Vill du ersätta det äldsta ("' + oldest.title + '" sparat ' + oldestDate + ') ' +
+        'med detta nya?'
+      );
+      if (!ok) {
+        toast('CV inte sparat', 'error');
+        return;
+      }
+      const filtered = list.filter(c => c.id !== oldest.id);
+      filtered.push(snapshot);
+      pfPutSaved(filtered);
+    } else {
+      list.push(snapshot);
+      pfPutSaved(list);
+    }
+
+    logEvent('cv_saved', { title: title });
+
+    // Synka till molnet
     const auth = getAuth();
     if (!auth || !auth.accessToken || !auth.userId) {
-      toast('Sparat lokalt. Logga in för molnsynk.');
+      toast('✅ CV sparat lokalt. Logga in för molnsynk.');
+      if (currentView === 'profil') renderProfilView();
       return;
     }
 
     showAiLoader('Sparar i molnet...', 'Synkar med dina enheter');
     try {
+      // Spara nuvarande CV-state (action: saveCV — befintlig)
       const r = await fetch('/api/supabase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -844,6 +906,9 @@
           cvData: cvData
         })
       });
+      // Synka även listan över sparade CV:n
+      sbSync('saved_cvs', pfGetSaved());
+
       hideAiLoader();
       if (r.ok) {
         toast('✅ CV sparat — synligt på alla enheter');
@@ -854,6 +919,8 @@
       hideAiLoader();
       toast('Sparat lokalt, nätverksfel', 'error');
     }
+
+    if (currentView === 'profil') renderProfilView();
   };
 
   // ============================================================
@@ -933,6 +1000,295 @@
       hideAiLoader();
       toast('Export misslyckades: ' + e.message, 'error');
       console.error(e);
+    }
+  };
+
+  // ============================================================
+  // PROFIL — sparade & matchade CV:n
+  // (samma datastrukturer som mobilen: pathfinder_saved_cvs / pathfinder_matched_cvs)
+  // ============================================================
+  function pfGetSaved() {
+    try {
+      const raw = safeGet(SAVED_CVS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  }
+
+  function pfPutSaved(list) {
+    safeSet(SAVED_CVS_KEY, JSON.stringify(list));
+    sbSync('saved_cvs', list);
+  }
+
+  function pfGetMatched() {
+    try {
+      const raw = safeGet(MATCHED_CVS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  }
+
+  function pfPutMatched(list) {
+    safeSet(MATCHED_CVS_KEY, JSON.stringify(list));
+    sbSync('matched_cvs', list);
+  }
+
+  function pfMatchedActiveList() {
+    const now = Date.now();
+    return pfGetMatched().filter(cv => now - (cv.savedAt || 0) < MATCHED_TTL_MS);
+  }
+
+  function pfMatchedDaysLeft(cv) {
+    const ms = MATCHED_TTL_MS - (Date.now() - (cv.savedAt || 0));
+    return Math.max(1, Math.ceil(ms / (24 * 3600 * 1000)));
+  }
+
+  // Supabase-synk för listor (saved_cvs, matched_cvs).
+  // Mobilen använder samma action 'save_table' med {table, data}.
+  // Tystfailar om ej inloggad eller nätverksfel.
+  let _sbSyncTimers = {};
+  function sbSync(table, data) {
+    const auth = getAuth();
+    if (!auth || !auth.accessToken || !auth.userId) return;
+    clearTimeout(_sbSyncTimers[table]);
+    _sbSyncTimers[table] = setTimeout(() => {
+      fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_table',
+          accessToken: auth.accessToken,
+          userId: auth.userId,
+          table: table,
+          data: data
+        })
+      }).catch(() => {});
+    }, 1500);
+  }
+
+  // ── Format & escape ────────────────────────────────────────
+  function pfFormatDate(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const that = new Date(ts); that.setHours(0,0,0,0);
+    const diff = Math.round((today - that) / (24*3600*1000));
+    if (diff === 0) return 'Idag';
+    if (diff === 1) return 'Igår';
+    if (diff < 7)   return diff + ' dagar sedan';
+    return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  // ── Render ─────────────────────────────────────────────────
+  function renderProfilView() {
+    // Email
+    const auth = getAuth();
+    const pfEmail = document.getElementById('pfUserEmail');
+    if (pfEmail) pfEmail.textContent = (auth && auth.email) ? auth.email : 'Inte inloggad';
+
+    pfRenderSavedList();
+    pfRenderMatchedList();
+  }
+
+  function pfRenderSavedList() {
+    const container = document.getElementById('pfSavedList');
+    const countEl   = document.getElementById('pfSavedCount');
+    if (!container) return;
+
+    const list = pfGetSaved();
+    if (countEl) {
+      countEl.textContent = list.length + '/' + MAX_SAVED_CVS;
+      countEl.classList.toggle('warn', list.length >= MAX_SAVED_CVS);
+    }
+
+    if (!list.length) {
+      container.innerHTML =
+        '<div class="pf-empty">' +
+          '<div class="pf-empty-icon">📄</div>' +
+          '<div class="pf-empty-text">Du har inga sparade CV:n än.<br>Bygg ett CV och tryck <strong>Spara CV</strong> för att lägga till det här.</div>' +
+          '<button class="pf-empty-cta" onclick="switchView(\'cv\')">Bygg ditt första CV →</button>' +
+        '</div>';
+      return;
+    }
+
+    // Sortera: nyaste först
+    const sorted = list.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+
+    container.innerHTML = sorted.map(cv => {
+      const title = escape(cv.title || 'Utan titel');
+      const name  = escape((cv.data && cv.data.name) || '');
+      const date  = pfFormatDate(cv.savedAt);
+      return `
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <div class="pf-card-icon">📄</div>
+            <div class="pf-card-info">
+              <div class="pf-card-title">${title}</div>
+              <div class="pf-card-meta">${name ? name + ' · ' : ''}${escape(date)}</div>
+            </div>
+          </div>
+          <div class="pf-card-actions">
+            <button class="pf-card-btn primary" onclick="pfOpenSaved('${cv.id}')">Öppna</button>
+            <button class="pf-card-btn" onclick="pfExportSaved('${cv.id}')">📤 PDF</button>
+            <button class="pf-card-btn danger" onclick="pfDeleteSaved('${cv.id}')" title="Ta bort">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function pfRenderMatchedList() {
+    const container = document.getElementById('pfMatchedList');
+    const countEl   = document.getElementById('pfMatchedCount');
+    if (!container) return;
+
+    // Rensa utgångna i bakgrunden
+    const all = pfGetMatched();
+    const active = pfMatchedActiveList();
+    if (active.length !== all.length) {
+      pfPutMatched(active);
+    }
+
+    if (countEl) countEl.textContent = String(active.length);
+
+    if (!active.length) {
+      container.innerHTML =
+        '<div class="pf-empty">' +
+          '<div class="pf-empty-icon">🎯</div>' +
+          '<div class="pf-empty-text">Inga matchade CV:n än.<br>Använd <strong>Matcha</strong> för att skräddarsy ett CV mot en jobbannons.<br><span style="font-size:11px;opacity:0.6;">Matchade CV:n sparas i 14 dagar.</span></div>' +
+        '</div>';
+      return;
+    }
+
+    const sorted = active.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+
+    container.innerHTML = sorted.map(cv => {
+      const title   = escape(cv.title || 'Utan titel');
+      const company = escape(cv.company || '');
+      const days    = pfMatchedDaysLeft(cv);
+      let badgeCls  = 'ok';
+      if (days <= 3) badgeCls = 'danger';
+      else if (days <= 7) badgeCls = 'warn';
+      const jobUrlBtn = cv.jobUrl
+        ? `<a href="${escape(cv.jobUrl)}" target="_blank" rel="noopener" class="pf-card-btn" style="text-decoration:none; text-align:center;" onclick="event.stopPropagation()">↗ Annons</a>`
+        : '';
+      return `
+        <div class="pf-card matched">
+          <div class="pf-card-head">
+            <div class="pf-card-icon">🎯</div>
+            <div class="pf-card-info">
+              <div class="pf-card-title">${title}</div>
+              <div class="pf-card-meta">${company ? company + ' · ' : ''}${pfFormatDate(cv.savedAt)}</div>
+            </div>
+          </div>
+          <div class="pf-card-badge ${badgeCls}">⏳ ${days} dag${days === 1 ? '' : 'ar'} kvar</div>
+          <div class="pf-card-actions">
+            <button class="pf-card-btn primary" onclick="pfOpenMatched('${cv.id}')">Öppna</button>
+            <button class="pf-card-btn" onclick="pfExportMatched('${cv.id}')">📤 PDF</button>
+            ${jobUrlBtn}
+            <button class="pf-card-btn danger" onclick="pfDeleteMatched('${cv.id}')" title="Ta bort">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Actions: Sparade CV ───────────────────────────────────
+  window.pfOpenSaved = function(id) {
+    const list = pfGetSaved();
+    const entry = list.find(c => c.id === id);
+    if (!entry) { toast('CV hittades inte', 'error'); return; }
+
+    cvData = Object.assign(createEmptyCV(), JSON.parse(JSON.stringify(entry.data)));
+    ['jobs','education','languages','certifications','licenses','references','skills'].forEach(k => {
+      if (!Array.isArray(cvData[k])) cvData[k] = [];
+    });
+    saveCVLocal();
+    switchView('cv');
+    cvSwitchStep('profil');
+    loadCVIntoForm();
+    renderJobs(); renderEducation();
+    renderSkillsChips(); renderLanguages(); renderLicenses();
+    renderTemplates();
+    renderPreview();
+    toast('✅ ' + (entry.title || 'CV') + ' öppnat');
+  };
+
+  window.pfDeleteSaved = function(id) {
+    const list = pfGetSaved();
+    const entry = list.find(c => c.id === id);
+    if (!entry) return;
+    if (!confirm('Ta bort "' + (entry.title || 'CV') + '"?\nDetta kan inte ångras.')) return;
+    pfPutSaved(list.filter(c => c.id !== id));
+    pfRenderSavedList();
+    toast('🗑️ ' + (entry.title || 'CV') + ' borttaget');
+  };
+
+  window.pfExportSaved = async function(id) {
+    const list = pfGetSaved();
+    const entry = list.find(c => c.id === id);
+    if (!entry) { toast('CV hittades inte', 'error'); return; }
+
+    // Spara nuvarande state, ladda in det sparade tillfälligt, exportera, återställ
+    const prev = JSON.parse(JSON.stringify(cvData));
+    try {
+      cvData = Object.assign(createEmptyCV(), JSON.parse(JSON.stringify(entry.data)));
+      ['jobs','education','languages','certifications','licenses','references','skills'].forEach(k => {
+        if (!Array.isArray(cvData[k])) cvData[k] = [];
+      });
+      renderPreview();
+      await new Promise(r => setTimeout(r, 100));
+      await window.cvExportPDF();
+    } finally {
+      cvData = prev;
+      renderPreview();
+    }
+  };
+
+  // ── Actions: Matchade CV ──────────────────────────────────
+  window.pfOpenMatched = function(id) {
+    const list = pfGetMatched();
+    const entry = list.find(c => c.id === id);
+    if (!entry) { toast('Matchat CV hittades inte', 'error'); return; }
+
+    cvData = Object.assign(createEmptyCV(), JSON.parse(JSON.stringify(entry.data)));
+    ['jobs','education','languages','certifications','licenses','references','skills'].forEach(k => {
+      if (!Array.isArray(cvData[k])) cvData[k] = [];
+    });
+    saveCVLocal();
+    switchView('cv');
+    cvSwitchStep('profil');
+    loadCVIntoForm();
+    renderJobs(); renderEducation();
+    renderSkillsChips(); renderLanguages(); renderLicenses();
+    renderTemplates();
+    renderPreview();
+    toast('✅ ' + (entry.title || 'Matchat CV') + ' öppnat');
+  };
+
+  window.pfDeleteMatched = function(id) {
+    const list = pfGetMatched();
+    const entry = list.find(c => c.id === id);
+    if (!entry) return;
+    if (!confirm('Ta bort matchat CV "' + (entry.title || 'Utan titel') + '"?')) return;
+    pfPutMatched(list.filter(c => c.id !== id));
+    pfRenderMatchedList();
+    toast('🗑️ Borttaget');
+  };
+
+  window.pfExportMatched = async function(id) {
+    const list = pfGetMatched();
+    const entry = list.find(c => c.id === id);
+    if (!entry) { toast('Matchat CV hittades inte', 'error'); return; }
+    const prev = JSON.parse(JSON.stringify(cvData));
+    try {
+      cvData = Object.assign(createEmptyCV(), JSON.parse(JSON.stringify(entry.data)));
+      ['jobs','education','languages','certifications','licenses','references','skills'].forEach(k => {
+        if (!Array.isArray(cvData[k])) cvData[k] = [];
+      });
+      renderPreview();
+      await new Promise(r => setTimeout(r, 100));
+      await window.cvExportPDF();
+    } finally {
+      cvData = prev;
+      renderPreview();
     }
   };
 
