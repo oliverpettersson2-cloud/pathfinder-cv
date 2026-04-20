@@ -193,67 +193,377 @@
   }
 
   // ============================================================
-  // AUTH
+  // AUTH (OTP-flöde — speglar mobilen)
   // ============================================================
+  let authCurrentEmail = '';
+
   function getAuth() {
     const raw = safeGet(AUTH_STORAGE_KEY);
     if (!raw) return null;
     try { return JSON.parse(raw); } catch(e) { return null; }
   }
 
+  function showAuthOverlay() {
+    const o = document.getElementById('loginOverlay');
+    if (o) o.classList.remove('hidden');
+    // Återställ till steg 1
+    document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+    const s1 = document.getElementById('authStep1');
+    if (s1) s1.classList.add('active');
+  }
+  function hideAuthOverlay() {
+    const o = document.getElementById('loginOverlay');
+    if (o) o.classList.add('hidden');
+  }
+
   function checkAuth() {
     const auth = getAuth();
     if (!auth || !auth.email) {
-      document.getElementById('loginOverlay').style.display = 'flex';
+      showAuthOverlay();
       return false;
     }
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('sbUserName').textContent = auth.email;
+    hideAuthOverlay();
+    const sbName = document.getElementById('sbUserName');
+    if (sbName) sbName.textContent = auth.email;
     const pfEmail = document.getElementById('pfUserEmail');
     if (pfEmail) pfEmail.textContent = auth.email;
     window.authUserId = auth.userId || null;
     window.authAccessToken = auth.accessToken || null;
+    authCurrentEmail = auth.email;
     return true;
   }
 
-  window.loginMagicLink = async function() {
-    const email = document.getElementById('loginEmail').value.trim();
-    if (!email || !email.includes('@')) {
-      toast('Fyll i en giltig e-postadress', 'error');
+  // ── STEG 1 → STEG 2: skicka OTP-kod ───────────────────────
+  window.authSendOtp = async function() {
+    const input = document.getElementById('authEmail');
+    const email = (input && input.value || '').trim().toLowerCase();
+    const errEl = document.getElementById('authStep1Error');
+    if (errEl) errEl.classList.remove('visible');
+
+    if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+      if (errEl) {
+        errEl.textContent = 'Ange en giltig e-postadress.';
+        errEl.classList.add('visible');
+      }
       return;
     }
-    showAiLoader('Skickar länk...', email);
+
+    const btn = document.getElementById('authSendBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="auth-spinner"></span>Skickar...';
+    }
+
     try {
       const r = await fetch('/api/supabase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'sendMagicLink', email })
+        body: JSON.stringify({ action: 'send_otp', email })
       });
-      hideAiLoader();
-      if (r.ok) {
-        toast('✉️ Inloggningslänk skickad till ' + email);
-      } else {
-        toast('Kunde inte skicka länk — försök igen', 'error');
-      }
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || 'Något gick fel');
+
+      authCurrentEmail = email;
+      const disp = document.getElementById('authEmailDisplay');
+      if (disp) disp.textContent = email;
+
+      // Gå till steg 2
+      document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('authStep2').classList.add('active');
+      // Fokusera första kodrutan
+      setTimeout(() => {
+        const first = document.querySelector('.code-digit');
+        if (first) first.focus();
+      }, 200);
+
     } catch(e) {
-      hideAiLoader();
-      toast('Nätverksfel — försök igen', 'error');
+      if (errEl) {
+        errEl.textContent = e.message || 'Något gick fel, försök igen.';
+        errEl.classList.add('visible');
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'Skicka kod till min e-post';
+      }
     }
   };
 
-  window.loginMicrosoft = function() {
-    const email = document.getElementById('loginEmail').value.trim();
+  // ── Kodinputs: tangent/input/paste ─────────────────────────
+  window.codeKeydown = function(e, idx) {
+    const digits = document.querySelectorAll('.code-digit');
+    if (e.key === 'Backspace' && !digits[idx].value && idx > 0) {
+      digits[idx - 1].focus();
+    }
+    if (e.key === 'ArrowLeft' && idx > 0) digits[idx - 1].focus();
+    if (e.key === 'ArrowRight' && idx < 5) digits[idx + 1].focus();
+    if (e.key === 'Enter') {
+      const full = Array.from(digits).map(d => d.value).join('');
+      if (full.length === 6) window.authVerifyCode();
+    }
+  };
+
+  window.codeInput = function(e, idx) {
+    const digits = document.querySelectorAll('.code-digit');
+    const val = e.target.value.replace(/\D/g, '');
+    e.target.value = val.slice(-1);
+    if (val) {
+      e.target.classList.add('filled');
+      if (idx < 5) digits[idx + 1].focus();
+      const full = Array.from(digits).map(d => d.value).join('');
+      if (full.length === 6) window.authVerifyCode();
+    } else {
+      e.target.classList.remove('filled');
+    }
+  };
+
+  window.codePaste = function(e) {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const digits = document.querySelectorAll('.code-digit');
+    pasted.split('').forEach((ch, i) => {
+      if (digits[i]) { digits[i].value = ch; digits[i].classList.add('filled'); }
+    });
+    const nextEmpty = Array.from(digits).findIndex(d => !d.value);
+    if (nextEmpty >= 0) digits[nextEmpty].focus(); else digits[5].focus();
+    if (pasted.length === 6) setTimeout(() => window.authVerifyCode(), 100);
+  };
+
+  // ── STEG 2 → verifiera kod ─────────────────────────────────
+  window.authVerifyCode = async function() {
+    const digits = document.querySelectorAll('.code-digit');
+    const entered = Array.from(digits).map(d => d.value).join('');
+    const errEl = document.getElementById('authStep2Error');
+    if (errEl) errEl.classList.remove('visible');
+
+    if (entered.length < 6) {
+      if (errEl) {
+        errEl.textContent = 'Ange alla 6 siffror.';
+        errEl.classList.add('visible');
+      }
+      return;
+    }
+
+    const btn = document.getElementById('authVerifyBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="auth-spinner"></span>Verifierar...';
+    }
+
+    try {
+      const r = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify_otp', email: authCurrentEmail, token: entered })
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || 'Felaktig kod');
+
+      const userId = (data.user && data.user.id) || '';
+      const accessToken = data.access_token || '';
+      // Mobilen sätter isNew=true vid verify_otp → visar onboarding-steg
+      authSetLoggedIn(authCurrentEmail, true, userId, accessToken);
+
+    } catch(e) {
+      if (errEl) {
+        errEl.textContent = e.message || 'Felaktig eller utgången kod. Försök igen.';
+        errEl.classList.add('visible');
+      }
+      // Skaka kodfälten
+      const ci = document.getElementById('codeInputs');
+      if (ci) { ci.style.animation = 'none'; setTimeout(() => { ci.style.animation = ''; }, 100); }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'Verifiera kod';
+      }
+    }
+  };
+
+  // ── Spara login-state + gå till onboarding eller klar-steg ─
+  function authSetLoggedIn(email, isNew, userId, accessToken) {
+    safeSet(AUTH_STORAGE_KEY, JSON.stringify({
+      email: email,
+      loggedIn: true,
+      userId: userId || null,
+      accessToken: accessToken || null,
+      createdAt: Date.now()
+    }));
+    window.authUserId = userId || null;
+    window.authAccessToken = accessToken || null;
+    authCurrentEmail = email;
+    logEvent('login');
+
+    const sbName = document.getElementById('sbUserName');
+    if (sbName) sbName.textContent = email;
+    const pfEmail = document.getElementById('pfUserEmail');
+    if (pfEmail) pfEmail.textContent = email;
+
+    document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+
+    // Kolla om det är en ny användare genom att se om namn saknas i cvData
+    const needsOnboarding = isNew && !cvData.name;
+
+    if (needsOnboarding) {
+      const onbEmail = document.getElementById('onbEmail');
+      if (onbEmail) onbEmail.textContent = email;
+      const s4 = document.getElementById('authStep4');
+      if (s4) s4.classList.add('active');
+    } else {
+      const wel = document.getElementById('authWelcomeText');
+      if (wel) wel.textContent = 'Du är inloggad som ' + email;
+      const s3 = document.getElementById('authStep3');
+      if (s3) s3.classList.add('active');
+    }
+  }
+
+  window.authEnterApp = function() {
+    hideAuthOverlay();
+    toast('✅ Välkommen tillbaka!');
+    // Rendera om aktuell vy
+    if (currentView === 'profil') renderProfilView();
+  };
+
+  window.authCompleteOnboarding = function() {
+    const firstName = (document.getElementById('onbFirstName').value || '').trim();
+    const lastName  = (document.getElementById('onbLastName').value  || '').trim();
+    const phone     = (document.getElementById('onbPhone').value     || '').trim();
+    const email     = authCurrentEmail || '';
+    const errEl     = document.getElementById('onbErr');
+
+    if (!firstName) {
+      errEl.textContent = 'Förnamn krävs.';
+      errEl.classList.add('visible');
+      return;
+    }
+    if (!lastName) {
+      errEl.textContent = 'Efternamn krävs.';
+      errEl.classList.add('visible');
+      return;
+    }
+
+    cvData.name = (firstName + ' ' + lastName).trim();
+    if (phone) cvData.phone = phone;
+    if (email) cvData.email = email;
+    saveCVLocal();
+
+    // Synka med desktop-CV-fält
+    const f = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    f('cv-name',  cvData.name);
+    f('cv-email', email);
+    f('cv-phone', phone);
+
+    renderPreview();
+    hideAuthOverlay();
+    toast('✅ Välkommen ' + firstName + '!');
+    switchView('cv');
+  };
+
+  window.authGoBack = function() {
+    document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('authStep1').classList.add('active');
+    document.querySelectorAll('.code-digit').forEach(d => {
+      d.value = '';
+      d.classList.remove('filled');
+    });
+  };
+
+  window.authLoginMicrosoft = function() {
+    const input = document.getElementById('authEmail');
+    const email = input ? input.value.trim() : '';
     const url = email
       ? '/api/v1/auth/microsoft?e=' + encodeURIComponent(email)
       : '/api/v1/auth/microsoft';
     window.location.href = url;
   };
 
+  // Bakåtkompat: om något i app.js fortfarande råkar kalla dessa
+  window.loginMagicLink = window.authSendOtp;
+  window.loginMicrosoft = window.authLoginMicrosoft;
+
   window.logout = function() {
     if (!confirm('Logga ut?')) return;
     try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch(e) {}
     window.location.reload();
   };
+
+  // ── Microsoft OAuth callback (läser ?ms_token=... / ?ms_error=... ur URL) ──
+  function checkMicrosoftCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const msToken = params.get('ms_token');
+    const msError = params.get('ms_error');
+    const msInfo  = params.get('ms_info');
+
+    function cleanUrl() {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (msError) {
+      const errorMessages = {
+        'cancelled': 'Inloggningen avbröts.',
+        'unauthorized': msInfo
+          ? 'Emailen ' + msInfo + ' är inte registrerad som handläggare. Kontakta support.'
+          : 'Din email är inte registrerad som handläggare.',
+        'invalid_state': 'Säkerhetsfel vid inloggning. Försök igen.',
+        'token_exchange_failed': 'Kunde inte verifiera Microsoft-inloggning. Försök igen.',
+        'graph_failed': 'Kunde inte hämta din profilinfo från Microsoft. Försök igen.',
+        'no_email': 'Din Microsoft-profil har ingen email. Kontakta IT-support.',
+        'config_missing': 'Serverkonfiguration saknas. Kontakta administratör.',
+        'admin_check_failed': 'Kunde inte verifiera behörighet. Försök igen.',
+        'missing_code': 'Ofullständig inloggning från Microsoft. Försök igen.',
+        'ms_error': 'Microsoft returnerade ett fel. Försök igen.',
+        'unexpected': 'Ett oväntat fel inträffade. Försök igen.'
+      };
+      const msg = errorMessages[msError] || ('Inloggningsfel: ' + msError);
+      cleanUrl();
+      showAuthOverlay();
+      const errEl = document.getElementById('authStep1Error');
+      if (errEl) {
+        errEl.textContent = msg;
+        errEl.classList.add('visible');
+      }
+      return false;
+    }
+
+    if (msToken) {
+      try {
+        const parts = msToken.split('.');
+        if (parts.length !== 2) throw new Error('Invalid token format');
+        let b64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        const payload = JSON.parse(atob(b64));
+
+        safeSet(AUTH_STORAGE_KEY, JSON.stringify({
+          email: payload.email,
+          name: payload.name,
+          role: payload.role,
+          loggedIn: true,
+          accessToken: msToken,
+          loginMethod: 'microsoft',
+          createdAt: Date.now(),
+          expiresAt: payload.expiresAt
+        }));
+        window.authAccessToken = msToken;
+        window.authUserEmail = payload.email;
+        authCurrentEmail = payload.email;
+
+        cleanUrl();
+        hideAuthOverlay();
+        const sbName = document.getElementById('sbUserName');
+        if (sbName) sbName.textContent = payload.email;
+        const pfEmail = document.getElementById('pfUserEmail');
+        if (pfEmail) pfEmail.textContent = payload.email;
+        logEvent('login');
+        toast('✅ Inloggad som ' + payload.email);
+        return true;
+      } catch(e) {
+        console.error('Microsoft token parse failed:', e);
+        cleanUrl();
+      }
+    }
+    return false;
+  }
 
   // ============================================================
   // ACTIVITY LOG
@@ -1419,17 +1729,27 @@
     loadCV();
     loadCVIntoForm();
     renderPreview();
-    if (checkAuth()) {
-      logEvent('login');
+
+    // Steg 1: kolla Microsoft OAuth callback (?ms_token=... eller ?ms_error=...)
+    const msHandled = checkMicrosoftCallback();
+
+    // Steg 2: om inget MS-callback, kör normal auth-check
+    if (!msHandled) {
+      if (checkAuth()) {
+        // redan inloggad — logEvent anropas av checkMicrosoftCallback om det var MS,
+        // annars behövs det inte just här då 'login' redan loggats vid senaste inlogg
+      }
     }
   });
 
-  // Kolla magic link callback
+  // Magic link callback — desktop stödjer inte magic link (vi använder OTP)
+  // Men om någon råkar landa här med en magic-link-token, delegera till mobilen
+  // där authHandleMagicLinkRedirect är implementerat.
   (function checkMagicLink() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token') || params.get('access_token');
-    if (token) {
-      // Låt mobilversionen hantera magic-link callback för konsistens
+    // Endast delegera om det INTE är ett ms_token (det har egen handler ovan)
+    if (token && !params.get('ms_token')) {
       window.location.href = '/?' + window.location.search.substring(1);
     }
   })();
