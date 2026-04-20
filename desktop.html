@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>CVmatchen Desktop — AI-driven jobbmatchning</title>
+
+<!-- Auto-redirect till mobil-vyn på små skärmar -->
+<script>
+  if (window.innerWidth < 1024) {
+    window.location.replace('/');
+  }
+</script>
+
+<!-- PDF-bibliotek -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+  :root {
+    --bg: #f5f2eb;
+    --deep: #1a1a2e;
+    --deep-2: #252f47;
+    --accent: #e85d26;
+    --accent2: #3eb489;
+    --accent3: #f0c040;
+    --muted: #888;
+    --sidebar-w: 240px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--deep);
+    color: #fff;
+  }
+
+  /* ============================================================
+     SIDOFÄLT
+     ============================================================ */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: var(--deep);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    padding: 24px 0 16px;
+  }
+  .sb-brand {
+    padding: 0 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sb-brand-logo {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .sb-brand-text {
+    font-family: Georgia, serif;
+    font-size: 18px; font-weight: 800;
+    color: var(--accent3);
+    line-height: 1.1;
+  }
+  .sb-brand-text span { color: #fff; }
+  .sb-brand-sub {
+    font-size: 9px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 2px;
+  }
+
+  .sb-nav {
+    flex: 1;
+    display: flex; flex-direction: column;
+    gap: 2px;
+    padding: 0 12px;
+    overflow-y: auto;
+  }
+  .sb-tab {
+    background: transparent; border: none;
+    color: rgba(255,255,255,0.65);
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+    width: 100%;
+  }
+  .sb-tab:hover {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+  }
+  .sb-tab.active {
+    background: rgba(232,93,38,0.15);
+    color: #fff;
+  }
+  .sb-tab.active::before {
+    content: '';
+    position: absolute;
+    left: -12px; top: 8px; bottom: 8px;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
+  }
+  .sb-tab-icon {
+    font-size: 18px; line-height: 1;
+    width: 22px; text-align: center;
+    flex-shrink: 0;
+  }
+
+  .sb-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 12px 16px;
+  }
+  .sb-foot {
+    padding: 0 12px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .sb-user {
+    padding: 12px 14px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: 8px;
+  }
+  .sb-user-name {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ============================================================
+     HUVUDYTA
+     ============================================================ */
+  #main {
+    position: fixed;
+    top: 0; left: var(--sidebar-w); right: 0; bottom: 0;
+    overflow-y: auto;
+    background: #1a1a2e;
+  }
+  .view {
+    display: none;
+    padding: 40px 48px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.2s ease;
+  }
+  .view.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============================================================
+     HEJ-VYN
+     ============================================================ */
+  .hej-hero {
+    text-align: center;
+    padding: 24px 0 48px;
+  }
+  .hej-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+  .hej-title {
+    font-family: Georgia, serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--accent3);
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .hej-title span { color: #fff; }
+  .hej-sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  .hej-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+  }
+  .hej-card {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .hej-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.18);
+    transform: translateY(-1px);
+  }
+  .hej-card-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .hej-card.cv     .hej-card-icon { background: rgba(62,180,137,0.12); border: 1.5px solid rgba(62,180,137,0.3); }
+  .hej-card.train  .hej-card-icon { background: rgba(240,192,64,0.10); border: 1.5px solid rgba(240,192,64,0.28); }
+  .hej-card-body { flex: 1; min-width: 0; }
+  .hej-card-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .hej-card.cv     .hej-card-title { color: var(--accent2); }
+  .hej-card.train  .hej-card-title { color: var(--accent3); }
+  .hej-card-desc {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.55;
+  }
+
+  /* ============================================================
+     CV-VYN — tvåkolumnslayout
+     ============================================================ */
+  #view-cv .cv-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(440px, 540px);
+    gap: 32px;
+    align-items: flex-start;
+  }
+  .cv-edit-panel {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .cv-preview-panel {
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+
+  /* CV-stegindikator (5 flikar) */
+  .cv-steps {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 0;
+  }
+  .cv-step {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 12px 8px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .cv-step:hover { color: rgba(255,255,255,0.85); }
+  .cv-step.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent2);
+  }
+  .cv-step.done { color: rgba(62,180,137,0.7); }
+  .cv-step.done::after { content: ' ✓'; }
+
+  /* CV-formulär */
+  .cv-section { margin-bottom: 28px; }
+  .cv-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 14px;
+  }
+  .cv-input, .cv-textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+  .cv-input::placeholder, .cv-textarea::placeholder { color: rgba(255,255,255,0.3); }
+  .cv-input:focus, .cv-textarea:focus {
+    border-color: var(--accent2);
+    background: rgba(255,255,255,0.08);
+  }
+  .cv-textarea { resize: vertical; min-height: 110px; line-height: 1.6; font-size: 14px; }
+  .cv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cv-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* Knappar */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s, background 0.15s;
+  }
+  .btn:hover { opacity: 0.92; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--accent2);
+    color: #fff;
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.85);
+    border: 1.5px solid rgba(255,255,255,0.12);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    border: 1.5px dashed rgba(255,255,255,0.2);
+    width: 100%;
+    padding: 12px;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.04); color: #fff; }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .btn-row .btn { flex: 1; }
+  .btn-ai {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    color: #fff;
+  }
+
+  /* Listor (jobs, education etc) */
+  .item-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .item-card-body { flex: 1; min-width: 0; }
+  .item-card-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .item-card-meta { font-size: 12px; color: rgba(255,255,255,0.5); }
+  .item-card-desc { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 6px; line-height: 1.5; }
+  .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    width: 30px; height: 30px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+  .icon-btn.danger:hover { color: #ef4444; border-color: rgba(239,68,68,0.4); }
+
+  /* Chips (skills, languages, licenses) */
+  .chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .chip {
+    background: rgba(62,180,137,0.12);
+    border: 1.5px solid rgba(62,180,137,0.3);
+    color: var(--accent2);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .chip-remove {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.12s;
+  }
+  .check-item:hover { background: rgba(255,255,255,0.07); }
+  .check-item.checked {
+    background: rgba(62,180,137,0.10);
+    border-color: rgba(62,180,137,0.35);
+  }
+  .check-item input { cursor: pointer; }
+
+  /* Spara-row på Visa-fliken */
+  .save-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  /* Mall-väljare */
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .template-card {
+    background: rgba(255,255,255,0.04);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .template-card:hover { background: rgba(255,255,255,0.07); }
+  .template-card.active {
+    border-color: var(--accent2);
+    background: rgba(62,180,137,0.1);
+  }
+  .template-card-icon { font-size: 22px; margin-bottom: 6px; }
+
+  /* ============================================================
+     CV-FÖRHANDSGRANSKNING (preview-pane)
+     ============================================================ */
+  .cv-document {
+    background: #fff;
+    color: #1a1a2e;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    font-size: 13px;
+    line-height: 1.55;
+    min-height: 600px;
+  }
+  .cv-document.classic { font-family: Georgia, 'Times New Roman', serif; }
+  .cv-document.modern  { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  .cv-doc-header {
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+  }
+  .cv-doc-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--deep);
+    margin-bottom: 4px;
+    line-height: 1.1;
+  }
+  .cv-doc-title {
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .cv-doc-contact {
+    font-size: 11px;
+    color: #555;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .cv-doc-section {
+    margin-bottom: 16px;
+  }
+  .cv-doc-section-title {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(232,93,38,0.2);
+    padding-bottom: 3px;
+  }
+  .cv-doc-summary { font-size: 12.5px; line-height: 1.6; color: #333; }
+  .cv-doc-entry { margin-bottom: 10px; }
+  .cv-doc-entry-title { font-weight: 700; font-size: 13px; }
+  .cv-doc-entry-meta { font-size: 11px; color: #666; margin-bottom: 2px; }
+  .cv-doc-entry-desc { font-size: 12px; color: #444; line-height: 1.5; }
+  .cv-doc-skills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .cv-doc-skill {
+    background: #f0ede6;
+    color: var(--deep);
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* ============================================================
+     ÖVNINGAR-VYN
+     ============================================================ */
+  .ov-hero {
+    text-align: center;
+    padding: 16px 0 36px;
+  }
+  .ov-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .ov-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .ov-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .ov-card {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 22px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+  .ov-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.18);
+    transform: translateY(-2px);
+  }
+  .ov-card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-bottom: 14px;
+    background: rgba(255,255,255,0.06);
+  }
+  .ov-card-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .ov-card-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+  .ov-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+  }
+  .ov-card-pct {
+    color: var(--accent2);
+    font-weight: 800;
+  }
+
+  /* Övning-detaljvyn */
+  .ov-back {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 0;
+    margin-bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ov-back:hover { color: #fff; }
+
+  .lesson-card, .quiz-card {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 14px;
+  }
+  .lesson-title { font-size: 18px; font-weight: 800; margin-bottom: 12px; }
+  .lesson-text { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.85); white-space: pre-wrap; }
+  .lesson-deep {
+    margin-top: 14px;
+    padding: 14px;
+    background: rgba(62,180,137,0.07);
+    border-left: 3px solid var(--accent2);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.6;
+  }
+
+  .quiz-q { font-weight: 700; font-size: 15px; margin-bottom: 12px; }
+  .quiz-opt {
+    display: block;
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: rgba(255,255,255,0.85);
+    font-family: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: all 0.12s;
+  }
+  .quiz-opt:hover { background: rgba(255,255,255,0.08); }
+  .quiz-opt.correct { background: rgba(62,180,137,0.15); border-color: var(--accent2); }
+  .quiz-opt.wrong { background: rgba(239,68,68,0.15); border-color: #ef4444; }
+
+  /* ============================================================
+     INSTÄLLNINGAR-MODAL
+     ============================================================ */
+  #settingsModal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  #settingsModal.open { display: flex; }
+  .settings-content {
+    background: #1e2545;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 28px;
+    width: 460px;
+    max-width: 90vw;
+  }
+  .settings-content h3 { margin-bottom: 18px; font-size: 18px; }
+  .settings-content label { display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 6px; font-weight: 700; }
+  .settings-hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 6px; }
+
+  /* ============================================================
+     TOAST
+     ============================================================ */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--accent2);
+    color: #fff;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 2000;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    max-width: 380px;
+    text-align: center;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.error { background: #ef4444; }
+
+  /* ============================================================
+     MOBIL-FALLBACK (visas om JS-redirect misslyckas)
+     ============================================================ */
+  @media (max-width: 1023px) {
+    body::before {
+      content: 'Öppna mobilversionen — desktop kräver minst 1024px bredd.';
+      display: block;
+      padding: 40px;
+      text-align: center;
+      color: #fff;
+    }
+    #sidebar, #main, #settingsModal { display: none !important; }
+  }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 32px 20px;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+  }
+
+  /* AI-laddningsoverlay */
+  #aiLoader {
+    position: fixed; inset: 0;
+    background: rgba(10,12,28,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 1500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #fff;
+  }
+  #aiLoader.show { display: flex; }
+  .ai-spinner {
+    width: 48px; height: 48px;
+    border: 4px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-loader-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .ai-loader-sub { font-size: 13px; color: rgba(255,255,255,0.6); }
+
+  /* Login-overlay */
+  #loginOverlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .login-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 40px;
+    width: 420px;
+    max-width: 100%;
+    backdrop-filter: blur(20px);
+  }
+  .login-title {
+    font-family: Georgia, serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent3);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .login-title span { color: #fff; }
+  .login-sub {
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN-OVERLAY
+     ============================================================ -->
+<div id="loginOverlay" style="display:none;">
+  <div class="login-box">
+    <div class="login-title">CV<span>matchen</span></div>
+    <div class="login-sub">Logga in för att fortsätta</div>
+
+    <input type="email" id="loginEmail" class="cv-input" placeholder="Din e-postadress" style="margin-bottom:14px;">
+
+    <button class="btn btn-primary" onclick="loginMagicLink()" style="margin-bottom:10px;">
+      ✉️ Skicka inloggningslänk
+    </button>
+
+    <button class="btn btn-secondary" onclick="loginMicrosoft()" style="width:100%; margin-bottom:14px;">
+      🪟 Logga in med Microsoft
+    </button>
+
+    <div style="text-align:center; font-size:11px; color:rgba(255,255,255,0.4); margin-top:18px;">
+      Använder samma konto som mobilversionen
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SIDOFÄLT
+     ============================================================ -->
+<aside id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-logo">📋</div>
+    <div>
+      <div class="sb-brand-text">CV<span>matchen</span></div>
+      <div class="sb-brand-sub">Desktop</div>
+    </div>
+  </div>
+
+  <nav class="sb-nav">
+    <button class="sb-tab active" data-view="hej" onclick="switchView('hej')">
+      <span class="sb-tab-icon">👋</span>
+      <span>Hej</span>
+    </button>
+    <button class="sb-tab" data-view="cv" onclick="switchView('cv')">
+      <span class="sb-tab-icon">📄</span>
+      <span>CV</span>
+    </button>
+    <button class="sb-tab" data-view="ovningar" onclick="switchView('ovningar')">
+      <span class="sb-tab-icon">🏋️</span>
+      <span>Övningar</span>
+    </button>
+  </nav>
+
+  <div class="sb-divider"></div>
+
+  <div class="sb-foot">
+    <button class="sb-tab" onclick="openSettings()">
+      <span class="sb-tab-icon">⚙️</span>
+      <span>Inställningar</span>
+    </button>
+  </div>
+
+  <div class="sb-user">
+    <div class="sb-user-name" id="sbUserName">—</div>
+    <button onclick="logout()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;padding:0;">
+      Logga ut
+    </button>
+  </div>
+</aside>
+
+<!-- ============================================================
+     HUVUDYTA
+     ============================================================ -->
+<main id="main">
+
+  <!-- ===== HEJ-VYN ===== -->
+  <section class="view active" id="view-hej">
+    <div class="hej-hero">
+      <div class="hej-icon">👋</div>
+      <div class="hej-title">CV<span>matchen</span></div>
+      <div class="hej-sub">
+        Bygg ett proffsigt CV med AI på 15 minuter och träna dig på
+        jobbintervjuer och presentationsteknik.
+      </div>
+    </div>
+
+    <div class="hej-cards">
+      <div class="hej-card cv" onclick="switchView('cv')">
+        <div class="hej-card-icon">📄</div>
+        <div class="hej-card-body">
+          <div class="hej-card-title">Bygg ditt CV</div>
+          <div class="hej-card-desc">
+            Fyll i din info — AI skriver profiltext, föreslår kompetenser och
+            hjälper dig med arbetsuppgifter. Spara &amp; dela som PDF.
+          </div>
+        </div>
+      </div>
+
+      <div class="hej-card train" onclick="switchView('ovningar')">
+        <div class="hej-card-icon">🏋️</div>
+        <div class="hej-card-body">
+          <div class="hej-card-title">Övningar</div>
+          <div class="hej-card-desc">
+            Träna jobbsökning, CV-skrivning och presentationsteknik med
+            interaktiva lektioner och quiz.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CV-VYN ===== -->
+  <section class="view" id="view-cv">
+    <div class="cv-layout">
+      <div class="cv-edit-panel">
+        <!-- Steg-indikator -->
+        <div class="cv-steps">
+          <button class="cv-step active" data-step="profil" onclick="cvSwitchStep('profil')">Profil</button>
+          <button class="cv-step" data-step="jobb" onclick="cvSwitchStep('jobb')">Jobb &amp; Utb</button>
+          <button class="cv-step" data-step="mer" onclick="cvSwitchStep('mer')">Mer</button>
+          <button class="cv-step" data-step="text" onclick="cvSwitchStep('text')">Text</button>
+          <button class="cv-step" data-step="visa" onclick="cvSwitchStep('visa')">Visa</button>
+        </div>
+
+        <!-- Stegens innehåll -->
+        <div class="cv-step-content" id="step-profil">
+          <div class="cv-section">
+            <div class="cv-section-title">Personuppgifter</div>
+            <input type="text" class="cv-input" id="cv-name" placeholder="Ditt fullständiga namn" oninput="cvUpdate('name', this.value)">
+            <input type="text" class="cv-input" id="cv-title" placeholder="Yrkestitel (t.ex. Lärarvikarie)" oninput="cvUpdate('title', this.value)">
+            <div class="cv-row">
+              <input type="email" class="cv-input" id="cv-email" placeholder="E-postadress" oninput="cvUpdate('email', this.value)">
+              <input type="tel" class="cv-input" id="cv-phone" placeholder="Telefonnummer" oninput="cvUpdate('phone', this.value)">
+            </div>
+          </div>
+        </div>
+
+        <div class="cv-step-content" id="step-jobb" style="display:none;">
+          <div class="cv-section">
+            <div class="cv-section-title">Arbetslivserfarenhet</div>
+            <div id="jobsList"></div>
+            <button class="btn btn-ghost" onclick="cvAddJob()">+ Lägg till jobb</button>
+          </div>
+
+          <div class="cv-section">
+            <div class="cv-section-title">Utbildning</div>
+            <div id="eduList"></div>
+            <button class="btn btn-ghost" onclick="cvAddEdu()">+ Lägg till utbildning</button>
+          </div>
+        </div>
+
+        <div class="cv-step-content" id="step-mer" style="display:none;">
+          <div class="cv-section">
+            <div class="cv-section-title">Kompetenser</div>
+            <div class="chip-grid" id="skillsChips"></div>
+            <div class="btn-row">
+              <input type="text" class="cv-input" id="newSkill" placeholder="t.ex. Kundservice" style="flex:1; margin-bottom:0;" onkeydown="if(event.key==='Enter'){cvAddSkill();}">
+              <button class="btn btn-secondary" onclick="cvAddSkill()" style="flex:0 0 auto;">Lägg till</button>
+              <button class="btn btn-ai" onclick="cvAiSkills()" style="flex:0 0 auto;">✨ AI</button>
+            </div>
+          </div>
+
+          <div class="cv-section">
+            <div class="cv-section-title">Språk</div>
+            <div class="check-grid" id="languagesGrid"></div>
+          </div>
+
+          <div class="cv-section">
+            <div class="cv-section-title">Körkort</div>
+            <div class="check-grid" id="licensesGrid"></div>
+          </div>
+        </div>
+
+        <div class="cv-step-content" id="step-text" style="display:none;">
+          <div class="cv-section">
+            <div class="cv-section-title">Profiltext</div>
+            <textarea class="cv-textarea" id="cv-summary" placeholder="Skriv en kort presentation om dig själv..." rows="8" oninput="cvUpdate('summary', this.value)"></textarea>
+            <div class="btn-row">
+              <button class="btn btn-secondary" onclick="cvClearSummary()">🗑️ Rensa</button>
+              <button class="btn btn-ai" onclick="cvAiSummary()">✨ AI-förslag</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cv-step-content" id="step-visa" style="display:none;">
+          <div class="cv-section">
+            <div class="cv-section-title">Mall</div>
+            <div class="template-grid" id="templateGrid"></div>
+          </div>
+
+          <div class="cv-section">
+            <div class="cv-section-title">Spara &amp; exportera</div>
+            <div class="save-actions">
+              <button class="btn btn-primary" onclick="cvSaveAndStore()">💾 Spara CV</button>
+              <button class="btn btn-accent" onclick="cvExportPDF()">📥 Exportera PDF</button>
+            </div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:12px; text-align:center;">
+              CV:t sparas både lokalt och i molnet — synlig på mobil också.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live-förhandsgranskning -->
+      <div class="cv-preview-panel">
+        <div class="cv-document classic" id="cvDocument">
+          <!-- Renderas av JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ÖVNINGAR-VYN ===== -->
+  <section class="view" id="view-ovningar">
+    <div id="ov-home">
+      <div class="ov-hero">
+        <div class="ov-title">🏋️ Övningar</div>
+        <div class="ov-sub">
+          Träna jobbsökning, CV-skrivning och presentationsteknik med
+          interaktiva lektioner och quiz.
+        </div>
+      </div>
+      <div class="ov-grid" id="ovGrid"></div>
+    </div>
+
+    <div id="ov-detail" style="display:none;"></div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     INSTÄLLNINGAR-MODAL
+     ============================================================ -->
+<div id="settingsModal">
+  <div class="settings-content">
+    <h3>⚙️ Inställningar</h3>
+
+    <label for="apiKeyInput">Anthropic API-nyckel (för AI-funktioner)</label>
+    <input type="password" id="apiKeyInput" class="cv-input" placeholder="sk-ant-...">
+    <div class="settings-hint">Sparas lokalt i din webbläsare.</div>
+
+    <div class="btn-row" style="margin-top:24px;">
+      <button class="btn btn-secondary" onclick="closeSettings()">Stäng</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     AI-LADDARE
+     ============================================================ -->
+<div id="aiLoader">
+  <div class="ai-spinner"></div>
+  <div class="ai-loader-title" id="aiLoaderTitle">Laddar...</div>
+  <div class="ai-loader-sub" id="aiLoaderSub"></div>
+</div>
+
+<!-- ============================================================
+     TOAST
+     ============================================================ -->
+<div id="toast"></div>
+
+<script src="desktop-app.js"></script>
+</body>
+</html>
