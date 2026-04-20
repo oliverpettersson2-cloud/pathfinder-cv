@@ -230,6 +230,11 @@
     window.authUserId = auth.userId || null;
     window.authAccessToken = auth.accessToken || null;
     authCurrentEmail = auth.email;
+
+    // Synka från molnet i bakgrunden så data är up-to-date även efter page reload
+    if (auth.userId && auth.accessToken) {
+      loadAllFromSupabase(auth.userId, auth.accessToken).catch(() => {});
+    }
     return true;
   }
 
@@ -381,8 +386,8 @@
     }
   };
 
-  // ── Spara login-state + gå till onboarding eller klar-steg ─
-  function authSetLoggedIn(email, isNew, userId, accessToken) {
+  // ── Spara login-state + ladda från moln innan onboarding-beslut ─
+  async function authSetLoggedIn(email, isNew, userId, accessToken) {
     safeSet(AUTH_STORAGE_KEY, JSON.stringify({
       email: email,
       loggedIn: true,
@@ -400,10 +405,23 @@
     const pfEmail = document.getElementById('pfUserEmail');
     if (pfEmail) pfEmail.textContent = email;
 
+    // Försök ladda befintliga data från molnet INNAN vi beslutar onboarding.
+    // Gör att användare inte behöver fylla i namn igen i inkognito / ny enhet.
+    let hasCloudData = false;
+    if (userId && accessToken) {
+      showAiLoader('Hämtar din data...', 'Synkar CV från molnet');
+      try {
+        hasCloudData = await loadAllFromSupabase(userId, accessToken);
+      } catch(e) {
+        console.error('loadAll failed:', e);
+      }
+      hideAiLoader();
+    }
+
     document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
 
-    // Kolla om det är en ny användare genom att se om namn saknas i cvData
-    const needsOnboarding = isNew && !cvData.name;
+    // Ny användare = inkomna från verify_otp OCH inget namn lokalt/moln
+    const needsOnboarding = isNew && !cvData.name && !hasCloudData;
 
     if (needsOnboarding) {
       const onbEmail = document.getElementById('onbEmail');
@@ -415,6 +433,65 @@
       if (wel) wel.textContent = 'Du är inloggad som ' + email;
       const s3 = document.getElementById('authStep3');
       if (s3) s3.classList.add('active');
+    }
+  }
+
+  // Ladda all användardata från Supabase — matchar mobilens loadAllFromSupabase
+  async function loadAllFromSupabase(userId, accessToken) {
+    try {
+      const resp = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'load_all', accessToken, userId })
+      });
+      const result = await resp.json();
+      if (!result || result.error) return false;
+
+      let foundSomething = false;
+
+      // CV-huvuddata
+      if (result.cv && typeof result.cv === 'object') {
+        cvData = Object.assign(createEmptyCV(), result.cv);
+        ['jobs','education','languages','certifications','licenses','references','skills'].forEach(k => {
+          if (!Array.isArray(cvData[k])) cvData[k] = [];
+        });
+        saveCVLocal();
+        if (typeof loadCVIntoForm === 'function') loadCVIntoForm();
+        if (typeof renderJobs === 'function') renderJobs();
+        if (typeof renderEducation === 'function') renderEducation();
+        if (typeof renderSkillsChips === 'function') renderSkillsChips();
+        if (typeof renderLanguages === 'function') renderLanguages();
+        if (typeof renderLicenses === 'function') renderLicenses();
+        if (typeof renderPreview === 'function') renderPreview();
+        if (cvData.name) foundSomething = true;
+      }
+
+      // Sparade CV:n
+      if (Array.isArray(result.savedCvs)) {
+        safeSet(SAVED_CVS_KEY, JSON.stringify(result.savedCvs));
+      }
+      // Matchade CV:n
+      if (Array.isArray(result.matchedCvs)) {
+        safeSet(MATCHED_CVS_KEY, JSON.stringify(result.matchedCvs));
+      }
+      // Övningsprogress
+      if (result.progress && typeof result.progress === 'object') {
+        safeSet(TRAINING_PROGRESS_KEY, JSON.stringify(result.progress));
+        trainingProgress = result.progress;
+      }
+      // Sparade utbildningar
+      if (Array.isArray(result.savedEdu)) {
+        safeSet('pf_saved_edu', JSON.stringify(result.savedEdu));
+      }
+      // Jobbdagbok
+      if (Array.isArray(result.jobDiary)) {
+        safeSet('pathfinder_job_diary', JSON.stringify(result.jobDiary));
+      }
+
+      return foundSomething;
+    } catch(e) {
+      console.error('loadAllFromSupabase error:', e);
+      return false;
     }
   }
 
@@ -665,8 +742,13 @@
     if (stepContent) stepContent.style.display = 'block';
 
     // Render step-specific content
+    if (step === 'profil') { if (typeof syncPhotoUI === 'function') syncPhotoUI(); }
     if (step === 'jobb') { renderJobs(); renderEducation(); }
-    if (step === 'mer')  { renderSkillsChips(); renderLanguages(); renderLicenses(); }
+    if (step === 'mer')  {
+      renderSkillsChips(); renderLanguages(); renderLicenses();
+      if (typeof renderCerts === 'function') renderCerts();
+      if (typeof renderRefs === 'function')  renderRefs();
+    }
     if (step === 'visa') { renderTemplates(); }
 
     renderPreview();
@@ -711,6 +793,13 @@
     document.getElementById('cv-email').value   = cvData.email   || '';
     document.getElementById('cv-phone').value   = cvData.phone   || '';
     document.getElementById('cv-summary').value = cvData.summary || '';
+    // Säkerställ arrays som kan saknas i äldre data
+    if (!Array.isArray(cvData.certifications)) cvData.certifications = [];
+    if (!Array.isArray(cvData.references))     cvData.references     = [];
+    // Synka foto/cert/ref-UI om de finns
+    if (typeof syncPhotoUI === 'function') syncPhotoUI();
+    if (typeof renderCerts === 'function') renderCerts();
+    if (typeof renderRefs  === 'function') renderRefs();
   }
 
   // ============================================================
@@ -723,14 +812,18 @@
       return;
     }
     list.innerHTML = cvData.jobs.map((j, i) => {
-      const period = (j.startYear || '') + '–' + (j.endYear || 'nu');
+      const period = formatJobPeriod(j) || ((j.startYear || '') + '–' + (j.endYear || 'nu'));
       const loc = j.location ? ' · ' + escape(j.location) : '';
+      const descs = [j.desc1, j.desc2, j.desc3].filter(Boolean);
+      const descHtml = descs.length
+        ? `<div class="item-card-desc">${descs.map(d => '• ' + escape(d)).join('<br>')}</div>`
+        : (j.desc ? `<div class="item-card-desc">${escape(j.desc)}</div>` : '');
       return `
       <div class="item-card">
         <div class="item-card-body">
           <div class="item-card-title">${escape(j.title || 'Utan titel')}</div>
           <div class="item-card-meta">${escape(j.company || '')} · ${escape(period)}${loc}</div>
-          ${j.desc ? `<div class="item-card-desc">${escape(j.desc)}</div>` : ''}
+          ${descHtml}
         </div>
         <div class="item-actions">
           <button class="icon-btn" onclick="cvEditJob(${i})" title="Redigera">✎</button>
@@ -746,30 +839,47 @@
       list.innerHTML = '<div class="empty">Ingen utbildning tillagd än</div>';
       return;
     }
-    list.innerHTML = cvData.education.map((e, i) => `
+    list.innerHTML = cvData.education.map((e, i) => {
+      const from = formatPeriod(e.startMonth, e.startYear);
+      const to = (e.ongoing || e.endYear === 'Pågående' || e.endYear === 'nu') ? 'nu' : formatPeriod(e.endMonth, e.endYear);
+      const period = (from || to) ? (from || '') + '–' + (to || '') : '';
+      const school = e.schoolName || e.school || '';
+      const form = e.schoolForm ? ' · ' + escape(e.schoolForm) : '';
+      return `
       <div class="item-card">
         <div class="item-card-body">
           <div class="item-card-title">${escape(e.degree || 'Utan titel')}</div>
-          <div class="item-card-meta">${escape(e.school || '')} · ${escape(e.startYear || '')}–${escape(e.endYear || '')}</div>
+          <div class="item-card-meta">${escape(school)}${period ? ' · ' + escape(period) : ''}${form}</div>
         </div>
         <div class="item-actions">
           <button class="icon-btn" onclick="cvEditEdu(${i})" title="Redigera">✎</button>
           <button class="icon-btn danger" onclick="cvDeleteEdu(${i})" title="Ta bort">✕</button>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 
   // ============================================================
-  // CV: JOBB — riktig modal (ingen native prompt)
+  // CV: JOBB — riktig modal matchande mobilen
   // ============================================================
-  window.cvAddJob = function() {
-    openJobModal();
-  };
+  const MONTHS = ['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
 
-  window.cvEditJob = function(i) {
-    openJobModal(i);
-  };
+  // Fyll år-dropdowns (40 år tillbaka + 10 framåt)
+  function populateYearDropdowns() {
+    const now = new Date().getFullYear();
+    const options = ['<option value="">År</option>'];
+    for (let y = now + 5; y >= now - 50; y--) {
+      options.push(`<option value="${y}">${y}</option>`);
+    }
+    const html = options.join('');
+    ['jobStartYear','jobEndYear','eduStartYear','eduEndYear'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    });
+  }
+
+  window.cvAddJob = function() { openJobModal(); };
+  window.cvEditJob = function(i) { openJobModal(i); };
 
   window.cvDeleteJob = function(i) {
     if (!confirm('Ta bort detta jobb?')) return;
@@ -781,26 +891,35 @@
   };
 
   window.openJobModal = function(idx) {
+    populateYearDropdowns();
     const modal = document.getElementById('jobModal');
     const isEdit = (typeof idx === 'number' && idx >= 0);
-    const title = document.getElementById('jobModalTitle');
     modal.dataset.editIdx = isEdit ? String(idx) : '-1';
-    if (title) title.textContent = isEdit ? 'Redigera arbetslivserfarenhet' : 'Lägg till arbetslivserfarenhet';
+    document.getElementById('jobModalTitle').textContent = isEdit ? 'Redigera arbetslivserfarenhet' : 'Lägg till arbetslivserfarenhet';
 
     const e = isEdit ? (cvData.jobs[idx] || {}) : {};
+
     document.getElementById('jobTitle').value    = e.title    || '';
     document.getElementById('jobCompany').value  = e.company  || '';
     document.getElementById('jobLocation').value = e.location || '';
-    document.getElementById('jobStartYear').value= e.startYear || '';
 
-    const ongoing = (e.endYear === 'nu' || e.endYear === 'Pågående' || e.ongoing === true);
+    document.getElementById('jobStartMonth').value = e.startMonth || '';
+    document.getElementById('jobStartYear').value  = e.startYear  || '';
+
+    // Pågående: backward-compat med 'nu' / 'Pågående' / ongoing:true
+    const ongoing = (e.ongoing === true || e.endYear === 'nu' || e.endYear === 'Pågående');
     document.getElementById('jobOngoing').checked = !!ongoing;
-    const endInput = document.getElementById('jobEndYear');
-    endInput.value = ongoing ? '' : (e.endYear || '');
-    endInput.disabled = !!ongoing;
-    endInput.style.opacity = ongoing ? '0.4' : '1';
+    document.getElementById('jobEndMonth').value = ongoing ? '' : (e.endMonth || '');
+    document.getElementById('jobEndYear').value  = ongoing ? '' : (e.endYear  || '');
+    toggleJobOngoing(document.getElementById('jobOngoing'));
 
-    document.getElementById('jobDesc').value = e.desc || '';
+    // Arbetsuppgifter (backward-compat: gammal data kan ha bara `desc`)
+    const desc1 = e.desc1 != null ? e.desc1 : (e.desc ? String(e.desc).split('\n')[0] || '' : '');
+    const desc2 = e.desc2 != null ? e.desc2 : (e.desc ? String(e.desc).split('\n')[1] || '' : '');
+    const desc3 = e.desc3 != null ? e.desc3 : (e.desc ? String(e.desc).split('\n')[2] || '' : '');
+    document.getElementById('jobDesc1').value = desc1;
+    document.getElementById('jobDesc2').value = desc2;
+    document.getElementById('jobDesc3').value = desc3;
 
     modal.classList.add('open');
     setTimeout(() => document.getElementById('jobTitle').focus(), 100);
@@ -811,50 +930,46 @@
   };
 
   window.toggleJobOngoing = function(cb) {
-    const endInput = document.getElementById('jobEndYear');
+    const m = document.getElementById('jobEndMonth');
+    const y = document.getElementById('jobEndYear');
     if (cb.checked) {
-      endInput.value = '';
-      endInput.disabled = true;
-      endInput.style.opacity = '0.4';
+      m.value = ''; y.value = '';
+      m.disabled = true; y.disabled = true;
+      m.style.opacity = '0.4'; y.style.opacity = '0.4';
     } else {
-      endInput.disabled = false;
-      endInput.style.opacity = '1';
+      m.disabled = false; y.disabled = false;
+      m.style.opacity = '1'; y.style.opacity = '1';
     }
   };
 
-  window.saveJobFromModal = function() {
-    const title     = document.getElementById('jobTitle').value.trim();
-    const company   = document.getElementById('jobCompany').value.trim();
-    const location  = document.getElementById('jobLocation').value.trim();
-    const startYear = document.getElementById('jobStartYear').value.trim();
-    const ongoing   = document.getElementById('jobOngoing').checked;
-    const endYearIn = document.getElementById('jobEndYear').value.trim();
-    const desc      = document.getElementById('jobDesc').value.trim();
+  window.clearJobDesc = function() {
+    document.getElementById('jobDesc1').value = '';
+    document.getElementById('jobDesc2').value = '';
+    document.getElementById('jobDesc3').value = '';
+  };
 
-    if (!title) {
-      toast('Fyll i jobbtitel', 'error');
-      document.getElementById('jobTitle').focus();
-      return;
-    }
-    if (!company) {
-      toast('Fyll i företag', 'error');
-      document.getElementById('jobCompany').focus();
-      return;
-    }
-    if (!startYear) {
-      toast('Fyll i startår', 'error');
-      document.getElementById('jobStartYear').focus();
-      return;
-    }
+  window.saveJobFromModal = function() {
+    const title      = document.getElementById('jobTitle').value.trim();
+    const company    = document.getElementById('jobCompany').value.trim();
+    const location   = document.getElementById('jobLocation').value.trim();
+    const startMonth = document.getElementById('jobStartMonth').value;
+    const startYear  = document.getElementById('jobStartYear').value;
+    const ongoing    = document.getElementById('jobOngoing').checked;
+    const endMonth   = ongoing ? '' : document.getElementById('jobEndMonth').value;
+    const endYear    = ongoing ? 'Pågående' : document.getElementById('jobEndYear').value;
+    const desc1      = document.getElementById('jobDesc1').value.trim();
+    const desc2      = document.getElementById('jobDesc2').value.trim();
+    const desc3      = document.getElementById('jobDesc3').value.trim();
+
+    if (!title)   { toast('Fyll i jobbtitel', 'error'); document.getElementById('jobTitle').focus(); return; }
+    if (!company) { toast('Fyll i företag',   'error'); document.getElementById('jobCompany').focus(); return; }
 
     const job = {
-      title: title,
-      company: company,
-      location: location,
-      startYear: startYear,
-      endYear: ongoing ? 'nu' : (endYearIn || ''),
-      ongoing: ongoing,
-      desc: desc
+      title, company, location,
+      startMonth, startYear,
+      endMonth, endYear,
+      ongoing,
+      desc1, desc2, desc3
     };
 
     const idx = parseInt(document.getElementById('jobModal').dataset.editIdx);
@@ -868,19 +983,101 @@
     renderPreview();
     markStepDone('jobb');
     closeJobModal();
-    toast('✅ ' + (idx >= 0 ? 'Uppdaterat' : 'Lagt till'));
+    toast('✅ ' + (idx >= 0 ? 'Uppdaterat' : 'Arbetslivserfarenhet sparad'));
+  };
+
+  // ── AI Autofyll för arbetsuppgifter (matchar mobilens aiAutofillJobDesc) ──
+  window.aiAutofillJobDesc = async function() {
+    const title    = document.getElementById('jobTitle').value.trim();
+    const company  = document.getElementById('jobCompany').value.trim();
+    const location = document.getElementById('jobLocation').value.trim();
+    const startY   = document.getElementById('jobStartYear').value.trim();
+    const endY     = document.getElementById('jobEndYear').value.trim();
+
+    if (!title) {
+      toast('⚠️ Skriv in en jobbtitel först', 'error');
+      return;
+    }
+
+    // Räkna dubbletter med samma titel → AI ska generera unika meningar
+    const existingWithSameTitle = (cvData.jobs || []).filter(j =>
+      j.title && j.title.toLowerCase().trim() === title.toLowerCase().trim()
+    );
+    const duplicateCount = existingWithSameTitle.length;
+    const allExistingTasks = (cvData.jobs || [])
+      .flatMap(j => [j.desc1, j.desc2, j.desc3].filter(Boolean));
+
+    const periodStr = startY ? (startY + (endY ? '–' + endY : '–nu')) : '';
+
+    const uniquenessInstruction = duplicateCount > 0
+      ? `OBS: Det finns redan ${duplicateCount} jobb med titeln "${title}". Arbetsuppgifterna MÅSTE vara helt annorlunda. Fokusera på ${company ? company + ':s specifika miljö' : 'en annan aspekt av rollen'}.`
+      : '';
+
+    const forbiddenList = allExistingTasks.length > 0
+      ? '\n\nFöljande meningar finns REDAN — använd INTE dessa eller liknande:\n' +
+        allExistingTasks.map((t, i) => (i+1) + '. ' + t).join('\n')
+      : '';
+
+    const prompt = [
+      'Skriv 3 korta, konkreta arbetsuppgiftsmeningar på svenska för:',
+      'Titel: ' + title,
+      company  ? 'Arbetsgivare: ' + company  : '',
+      location ? 'Ort: ' + location          : '',
+      periodStr ? 'Period: ' + periodStr     : '',
+      uniquenessInstruction,
+      forbiddenList,
+      '',
+      'Regler:',
+      '- Varje mening unik och specifik för denna arbetsplats',
+      '- Börja varje mening med ett starkt verb (Ansvarade, Ledde, Utvecklade, Samordnade)',
+      '- Inga generiska fraser',
+      '- Svenska, professionell ton',
+      '',
+      'Svara BARA med JSON: {"arbetsuppgifter": ["mening1", "mening2", "mening3"]}'
+    ].filter(Boolean).join('\n');
+
+    const btn = document.getElementById('jobAutofillBtn');
+    const originalText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ AI genererar...'; }
+    showAiLoader('Genererar arbetsuppgifter...', 'AI skriver unika meningar');
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 400,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      if (!response.ok) throw new Error('API-fel: ' + response.status);
+      const data = await response.json();
+      const rawText = (data.content && data.content[0] && data.content[0].text || '').trim().replace(/```json|```/g, '').trim();
+      let parsed;
+      try { parsed = JSON.parse(rawText); } catch(e) { parsed = { arbetsuppgifter: [] }; }
+
+      const tasks = parsed.arbetsuppgifter || [];
+      if (tasks[0]) document.getElementById('jobDesc1').value = tasks[0];
+      if (tasks[1]) document.getElementById('jobDesc2').value = tasks[1];
+      if (tasks[2]) document.getElementById('jobDesc3').value = tasks[2];
+
+      hideAiLoader();
+      toast('✨ AI-förslag klara!');
+      logEvent('ai_cv_analysis', { context: 'job_autofill' });
+    } catch(e) {
+      hideAiLoader();
+      toast('AI-fel: ' + (e.message || 'okänt'), 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = originalText || '✨ AI Autofyll'; }
+    }
   };
 
   // ============================================================
-  // CV: UTBILDNING — riktig modal
+  // CV: UTBILDNING — riktig modal matchande mobilen
   // ============================================================
-  window.cvAddEdu = function() {
-    openEduModal();
-  };
-
-  window.cvEditEdu = function(i) {
-    openEduModal(i);
-  };
+  window.cvAddEdu = function() { openEduModal(); };
+  window.cvEditEdu = function(i) { openEduModal(i); };
 
   window.cvDeleteEdu = function(i) {
     if (!confirm('Ta bort denna utbildning?')) return;
@@ -892,17 +1089,24 @@
   };
 
   window.openEduModal = function(idx) {
+    populateYearDropdowns();
     const modal = document.getElementById('eduModal');
     const isEdit = (typeof idx === 'number' && idx >= 0);
-    const title = document.getElementById('eduModalTitle');
     modal.dataset.editIdx = isEdit ? String(idx) : '-1';
-    if (title) title.textContent = isEdit ? 'Redigera utbildning' : 'Lägg till utbildning';
+    document.getElementById('eduModalTitle').textContent = isEdit ? 'Redigera utbildning' : 'Lägg till utbildning';
 
     const e = isEdit ? (cvData.education[idx] || {}) : {};
-    document.getElementById('eduDegree').value   = e.degree    || '';
-    document.getElementById('eduSchool').value   = e.school    || '';
-    document.getElementById('eduStartYear').value= e.startYear || '';
-    document.getElementById('eduEndYear').value  = e.endYear   || '';
+    document.getElementById('eduDegree').value     = e.degree     || '';
+    document.getElementById('eduSchoolName').value = e.schoolName || e.school || '';
+    document.getElementById('eduSchoolForm').value = e.schoolForm || '';
+    document.getElementById('eduStartMonth').value = e.startMonth || '';
+    document.getElementById('eduStartYear').value  = e.startYear  || '';
+
+    const ongoing = (e.ongoing === true || e.endYear === 'Pågående' || e.endYear === 'nu');
+    document.getElementById('eduOngoing').checked = !!ongoing;
+    document.getElementById('eduEndMonth').value = ongoing ? '' : (e.endMonth || '');
+    document.getElementById('eduEndYear').value  = ongoing ? '' : (e.endYear  || '');
+    toggleEduOngoing(document.getElementById('eduOngoing'));
 
     modal.classList.add('open');
     setTimeout(() => document.getElementById('eduDegree').focus(), 100);
@@ -912,24 +1116,41 @@
     document.getElementById('eduModal').classList.remove('open');
   };
 
+  window.toggleEduOngoing = function(cb) {
+    const m = document.getElementById('eduEndMonth');
+    const y = document.getElementById('eduEndYear');
+    if (cb.checked) {
+      m.value = ''; y.value = '';
+      m.disabled = true; y.disabled = true;
+      m.style.opacity = '0.4'; y.style.opacity = '0.4';
+    } else {
+      m.disabled = false; y.disabled = false;
+      m.style.opacity = '1'; y.style.opacity = '1';
+    }
+  };
+
   window.saveEduFromModal = function() {
-    const degree    = document.getElementById('eduDegree').value.trim();
-    const school    = document.getElementById('eduSchool').value.trim();
-    const startYear = document.getElementById('eduStartYear').value.trim();
-    const endYear   = document.getElementById('eduEndYear').value.trim();
+    const degree     = document.getElementById('eduDegree').value.trim();
+    const schoolName = document.getElementById('eduSchoolName').value.trim();
+    const schoolForm = document.getElementById('eduSchoolForm').value;
+    const startMonth = document.getElementById('eduStartMonth').value;
+    const startYear  = document.getElementById('eduStartYear').value;
+    const ongoing    = document.getElementById('eduOngoing').checked;
+    const endMonth   = ongoing ? '' : document.getElementById('eduEndMonth').value;
+    const endYear    = ongoing ? 'Pågående' : document.getElementById('eduEndYear').value;
 
-    if (!degree) {
-      toast('Fyll i examen/utbildning', 'error');
-      document.getElementById('eduDegree').focus();
-      return;
-    }
-    if (!school) {
-      toast('Fyll i skola', 'error');
-      document.getElementById('eduSchool').focus();
-      return;
-    }
+    if (!degree)     { toast('Fyll i examen/utbildning', 'error'); document.getElementById('eduDegree').focus(); return; }
+    if (!schoolName) { toast('Fyll i skola',             'error'); document.getElementById('eduSchoolName').focus(); return; }
 
-    const edu = { degree, school, startYear, endYear };
+    const edu = {
+      degree,
+      schoolName,
+      school: schoolName, // alias för backward-compat med preview
+      schoolForm,
+      startMonth, startYear,
+      endMonth, endYear,
+      ongoing
+    };
 
     const idx = parseInt(document.getElementById('eduModal').dataset.editIdx);
     if (idx >= 0 && cvData.education[idx]) {
@@ -942,7 +1163,7 @@
     renderPreview();
     markStepDone('jobb');
     closeEduModal();
-    toast('✅ ' + (idx >= 0 ? 'Uppdaterat' : 'Lagt till'));
+    toast('✅ ' + (idx >= 0 ? 'Uppdaterat' : 'Utbildning sparad'));
   };
 
   // Stäng modal vid klick på backdrop
@@ -955,10 +1176,276 @@
   // Escape-tangent stänger öppen modal
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-      const openModals = document.querySelectorAll('.edit-modal.open');
-      openModals.forEach(m => m.classList.remove('open'));
+      document.querySelectorAll('.edit-modal.open').forEach(m => m.classList.remove('open'));
     }
   });
+
+  // Hjälpare: formatera period för visning
+  function formatPeriod(month, year) {
+    if (!year) return '';
+    return month ? (month + ' ' + year) : year;
+  }
+  function formatJobPeriod(j) {
+    const from = formatPeriod(j.startMonth, j.startYear);
+    const toYear = (j.ongoing || j.endYear === 'Pågående' || j.endYear === 'nu') ? 'nu' : (j.endYear || '');
+    const toMonth = (j.ongoing || j.endYear === 'Pågående' || j.endYear === 'nu') ? '' : (j.endMonth || '');
+    const to = (toYear === 'nu') ? 'nu' : formatPeriod(toMonth, toYear);
+    if (!from && !to) return '';
+    return (from || '') + ' – ' + (to || '');
+  }
+  window.formatJobPeriod = formatJobPeriod;
+
+  // ============================================================
+  // PROFILBILD
+  // ============================================================
+  window.handlePhotoUpload = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Filstorleks-kontroll (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast('Bilden är för stor (max 5MB)', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      cvData.photoData = e.target.result;
+      const img = document.getElementById('profilePhoto');
+      const ph  = document.getElementById('photoPreviewPlaceholder');
+      img.src = cvData.photoData;
+      img.style.display = 'block';
+      if (ph) ph.style.display = 'none';
+      const removeBtn = document.getElementById('removePhotoBtn');
+      if (removeBtn) removeBtn.disabled = false;
+      saveCVLocal();
+      renderPreview();
+      toast('✅ Profilbild sparad');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.removeProfilePhoto = function() {
+    cvData.photoData = null;
+    const img = document.getElementById('profilePhoto');
+    const ph  = document.getElementById('photoPreviewPlaceholder');
+    const upload = document.getElementById('photoUpload');
+    if (img) { img.src = ''; img.style.display = 'none'; }
+    if (ph)  ph.style.display = '';
+    if (upload) upload.value = '';
+    const removeBtn = document.getElementById('removePhotoBtn');
+    if (removeBtn) removeBtn.disabled = true;
+    saveCVLocal();
+    renderPreview();
+    toast('🗑️ Profilbild borttagen');
+  };
+
+  window.setShowPhoto = function(show) {
+    cvData.showPhoto = !!show;
+    const yes = document.getElementById('photoYesBtn');
+    const no  = document.getElementById('photoNoBtn');
+    const sec = document.getElementById('photoUploadSection');
+    if (yes) yes.classList.toggle('active', !!show);
+    if (no)  no.classList.toggle('active', !show);
+    if (sec) sec.style.display = show ? 'block' : 'none';
+    saveCVLocal();
+    renderPreview();
+  };
+
+  function syncPhotoUI() {
+    // Kör när cvData laddats in (form init eller moln-synk)
+    const show = cvData.showPhoto === true;
+    const yes = document.getElementById('photoYesBtn');
+    const no  = document.getElementById('photoNoBtn');
+    const sec = document.getElementById('photoUploadSection');
+    if (yes) yes.classList.toggle('active', show);
+    if (no)  no.classList.toggle('active', !show);
+    if (sec) sec.style.display = show ? 'block' : 'none';
+
+    const img = document.getElementById('profilePhoto');
+    const ph  = document.getElementById('photoPreviewPlaceholder');
+    const removeBtn = document.getElementById('removePhotoBtn');
+    if (cvData.photoData) {
+      if (img) { img.src = cvData.photoData; img.style.display = 'block'; }
+      if (ph)  ph.style.display = 'none';
+      if (removeBtn) removeBtn.disabled = false;
+    } else {
+      if (img) { img.src = ''; img.style.display = 'none'; }
+      if (ph)  ph.style.display = '';
+      if (removeBtn) removeBtn.disabled = true;
+    }
+  }
+  window.syncPhotoUI = syncPhotoUI;
+
+  // ============================================================
+  // CERTIFIKAT
+  // ============================================================
+  window.openCertModal = function(idx) {
+    const modal = document.getElementById('certModal');
+    const isEdit = (typeof idx === 'number' && idx >= 0);
+    modal.dataset.editIdx = isEdit ? String(idx) : '-1';
+    document.getElementById('certModalTitle').textContent = isEdit ? 'Redigera certifikat' : 'Lägg till certifikat';
+
+    const c = isEdit ? (cvData.certifications[idx] || {}) : {};
+    document.getElementById('certName').value   = c.name   || '';
+    document.getElementById('certIssuer').value = c.issuer || '';
+    document.getElementById('certDate').value   = c.date   || '';
+
+    modal.classList.add('open');
+    setTimeout(() => document.getElementById('certName').focus(), 100);
+  };
+
+  window.closeCertModal = function() {
+    document.getElementById('certModal').classList.remove('open');
+  };
+
+  window.saveCertFromModal = function() {
+    const name   = document.getElementById('certName').value.trim();
+    const issuer = document.getElementById('certIssuer').value.trim();
+    const date   = document.getElementById('certDate').value.trim();
+
+    if (!name)   { toast('Fyll i certifikatets namn', 'error'); document.getElementById('certName').focus(); return; }
+    if (!issuer) { toast('Fyll i utfärdare',         'error'); document.getElementById('certIssuer').focus(); return; }
+
+    const cert = { name, issuer, date };
+    const idx = parseInt(document.getElementById('certModal').dataset.editIdx);
+    if (!Array.isArray(cvData.certifications)) cvData.certifications = [];
+    if (idx >= 0 && cvData.certifications[idx]) {
+      cvData.certifications[idx] = cert;
+    } else {
+      cvData.certifications.push(cert);
+    }
+    saveCVLocal();
+    renderCerts();
+    renderPreview();
+    closeCertModal();
+    toast('✅ ' + (idx >= 0 ? 'Uppdaterat' : 'Certifikat sparat'));
+  };
+
+  window.cvDeleteCert = function(i) {
+    if (!confirm('Ta bort detta certifikat?')) return;
+    cvData.certifications.splice(i, 1);
+    saveCVLocal();
+    renderCerts();
+    renderPreview();
+  };
+
+  function renderCerts() {
+    const list = document.getElementById('certsList');
+    if (!list) return;
+    if (!Array.isArray(cvData.certifications) || !cvData.certifications.length) {
+      list.innerHTML = '<div class="empty">Inga certifikat tillagda än</div>';
+      return;
+    }
+    list.innerHTML = cvData.certifications.map((c, i) => `
+      <div class="item-card">
+        <div class="item-card-body">
+          <div class="item-card-title">${escape(c.name || 'Utan namn')}</div>
+          <div class="item-card-meta">${escape(c.issuer || '')}${c.date ? ' · ' + escape(c.date) : ''}</div>
+        </div>
+        <div class="item-actions">
+          <button class="icon-btn" onclick="openCertModal(${i})" title="Redigera">✎</button>
+          <button class="icon-btn danger" onclick="cvDeleteCert(${i})" title="Ta bort">✕</button>
+        </div>
+      </div>`).join('');
+  }
+  window.renderCerts = renderCerts;
+
+  // ============================================================
+  // REFERENSER
+  // ============================================================
+  window.openRefModal = function(idx) {
+    const modal = document.getElementById('refModal');
+    const isEdit = (typeof idx === 'number' && idx >= 0);
+    modal.dataset.editIdx = isEdit ? String(idx) : '-1';
+    document.getElementById('refModalTitle').textContent = isEdit ? 'Redigera referens' : 'Lägg till referens';
+
+    const r = isEdit ? (cvData.references[idx] || {}) : {};
+    document.getElementById('refName').value  = r.name  || '';
+    document.getElementById('refTitle').value = r.title || '';
+    document.getElementById('refEmail').value = r.email || '';
+    document.getElementById('refPhone').value = r.phone || '';
+
+    modal.classList.add('open');
+    setTimeout(() => document.getElementById('refName').focus(), 100);
+  };
+
+  window.closeRefModal = function() {
+    document.getElementById('refModal').classList.remove('open');
+  };
+
+  window.saveRefFromModal = function() {
+    const name  = document.getElementById('refName').value.trim();
+    const title = document.getElementById('refTitle').value.trim();
+    const email = document.getElementById('refEmail').value.trim();
+    const phone = document.getElementById('refPhone').value.trim();
+
+    if (!name)  { toast('Fyll i namn',  'error'); document.getElementById('refName').focus(); return; }
+    if (!title) { toast('Fyll i titel', 'error'); document.getElementById('refTitle').focus(); return; }
+
+    const ref = { name, title, email, phone };
+    const idx = parseInt(document.getElementById('refModal').dataset.editIdx);
+    if (!Array.isArray(cvData.references)) cvData.references = [];
+    if (idx >= 0 && cvData.references[idx]) {
+      cvData.references[idx] = ref;
+    } else {
+      cvData.references.push(ref);
+    }
+    // Om man lägger till en referens, slå automatiskt av "på begäran"
+    if (cvData.refOnRequest) {
+      cvData.refOnRequest = false;
+      const cb = document.getElementById('refOnRequestCheck');
+      if (cb) cb.checked = false;
+    }
+    saveCVLocal();
+    renderRefs();
+    renderPreview();
+    closeRefModal();
+    toast('✅ ' + (idx >= 0 ? 'Uppdaterat' : 'Referens sparad'));
+  };
+
+  window.cvDeleteRef = function(i) {
+    if (!confirm('Ta bort denna referens?')) return;
+    cvData.references.splice(i, 1);
+    saveCVLocal();
+    renderRefs();
+    renderPreview();
+  };
+
+  window.toggleRefOnRequest = function(checked) {
+    cvData.refOnRequest = !!checked;
+    saveCVLocal();
+    renderPreview();
+  };
+
+  function renderRefs() {
+    const list = document.getElementById('refsList');
+    if (!list) return;
+    const cb = document.getElementById('refOnRequestCheck');
+    if (cb) cb.checked = !!cvData.refOnRequest;
+
+    if (!Array.isArray(cvData.references) || !cvData.references.length) {
+      list.innerHTML = cvData.refOnRequest
+        ? '<div class="empty">Referenser lämnas på begäran</div>'
+        : '<div class="empty">Inga referenser tillagda än</div>';
+      return;
+    }
+    list.innerHTML = cvData.references.map((r, i) => {
+      const contact = [r.email, r.phone].filter(Boolean).join(' · ');
+      return `
+      <div class="item-card">
+        <div class="item-card-body">
+          <div class="item-card-title">${escape(r.name || 'Utan namn')}</div>
+          <div class="item-card-meta">${escape(r.title || '')}${contact ? ' · ' + escape(contact) : ''}</div>
+        </div>
+        <div class="item-actions">
+          <button class="icon-btn" onclick="openRefModal(${i})" title="Redigera">✎</button>
+          <button class="icon-btn danger" onclick="cvDeleteRef(${i})" title="Ta bort">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  window.renderRefs = renderRefs;
 
   // ============================================================
   // CV: SKILLS
@@ -1181,14 +1668,20 @@
     doc.className = 'cv-document ' + (cvData.template || 'classic');
 
     const html = [];
-    // Header
-    html.push('<div class="cv-doc-header">');
+    // Header — med valfri profilbild
+    const hasPhoto = cvData.showPhoto === true && !!cvData.photoData;
+    html.push('<div class="cv-doc-header"' + (hasPhoto ? ' style="display:flex;align-items:center;gap:20px;"' : '') + '>');
+    if (hasPhoto) {
+      html.push('<img src="' + cvData.photoData + '" alt="Profilbild" style="width:88px;height:88px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.15);">');
+      html.push('<div style="flex:1;">');
+    }
     html.push('<div class="cv-doc-name">' + escape(cvData.name || 'Ditt namn') + '</div>');
     if (cvData.title) html.push('<div class="cv-doc-title">' + escape(cvData.title) + '</div>');
     const contact = [];
     if (cvData.email) contact.push('✉ ' + escape(cvData.email));
     if (cvData.phone) contact.push('📞 ' + escape(cvData.phone));
     if (contact.length) html.push('<div class="cv-doc-contact">' + contact.join('') + '</div>');
+    if (hasPhoto) html.push('</div>');
     html.push('</div>');
 
     // Summary
@@ -1204,11 +1697,19 @@
       html.push('<div class="cv-doc-section">');
       html.push('<div class="cv-doc-section-title">Arbetslivserfarenhet</div>');
       cvData.jobs.forEach(j => {
+        const period = formatJobPeriod(j) || ((j.startYear || '') + '–' + (j.endYear || 'nu'));
         const loc = j.location ? ' · ' + escape(j.location) : '';
+        const descs = [j.desc1, j.desc2, j.desc3].filter(Boolean);
         html.push('<div class="cv-doc-entry">');
         html.push('<div class="cv-doc-entry-title">' + escape(j.title || '') + '</div>');
-        html.push('<div class="cv-doc-entry-meta">' + escape(j.company || '') + ' · ' + escape(j.startYear || '') + '–' + escape(j.endYear || 'nu') + loc + '</div>');
-        if (j.desc) html.push('<div class="cv-doc-entry-desc">' + escape(j.desc) + '</div>');
+        html.push('<div class="cv-doc-entry-meta">' + escape(j.company || '') + ' · ' + escape(period) + loc + '</div>');
+        if (descs.length) {
+          html.push('<ul class="cv-doc-entry-desc" style="margin:4px 0 0 16px; padding:0;">');
+          descs.forEach(d => html.push('<li>' + escape(d) + '</li>'));
+          html.push('</ul>');
+        } else if (j.desc) {
+          html.push('<div class="cv-doc-entry-desc">' + escape(j.desc) + '</div>');
+        }
         html.push('</div>');
       });
       html.push('</div>');
@@ -1219,9 +1720,14 @@
       html.push('<div class="cv-doc-section">');
       html.push('<div class="cv-doc-section-title">Utbildning</div>');
       cvData.education.forEach(e => {
+        const from = formatPeriod(e.startMonth, e.startYear);
+        const to = (e.ongoing || e.endYear === 'Pågående' || e.endYear === 'nu') ? 'nu' : formatPeriod(e.endMonth, e.endYear);
+        const period = (from || to) ? (from || '') + '–' + (to || '') : '';
+        const school = e.schoolName || e.school || '';
+        const form = e.schoolForm ? ' (' + escape(e.schoolForm) + ')' : '';
         html.push('<div class="cv-doc-entry">');
         html.push('<div class="cv-doc-entry-title">' + escape(e.degree || '') + '</div>');
-        html.push('<div class="cv-doc-entry-meta">' + escape(e.school || '') + ' · ' + escape(e.startYear || '') + '–' + escape(e.endYear || '') + '</div>');
+        html.push('<div class="cv-doc-entry-meta">' + escape(school) + form + (period ? ' · ' + escape(period) : '') + '</div>');
         html.push('</div>');
       });
       html.push('</div>');
@@ -1250,8 +1756,42 @@
     // Licenses
     if (cvData.licenses.length) {
       html.push('<div class="cv-doc-section">');
-      html.push('<div class="cv-doc-section-title">Körkort & certifikat</div>');
+      html.push('<div class="cv-doc-section-title">Körkort</div>');
       html.push('<div>' + cvData.licenses.map(escape).join(', ') + '</div>');
+      html.push('</div>');
+    }
+
+    // Certifikat
+    if (Array.isArray(cvData.certifications) && cvData.certifications.length) {
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Certifikat</div>');
+      cvData.certifications.forEach(c => {
+        const meta = [c.issuer, c.date].filter(Boolean).map(escape).join(' · ');
+        html.push('<div class="cv-doc-entry">');
+        html.push('<div class="cv-doc-entry-title">' + escape(c.name || '') + '</div>');
+        if (meta) html.push('<div class="cv-doc-entry-meta">' + meta + '</div>');
+        html.push('</div>');
+      });
+      html.push('</div>');
+    }
+
+    // Referenser
+    const hasRefs = Array.isArray(cvData.references) && cvData.references.length;
+    if (hasRefs || cvData.refOnRequest) {
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Referenser</div>');
+      if (hasRefs) {
+        cvData.references.forEach(r => {
+          const contact = [r.email, r.phone].filter(Boolean).map(escape).join(' · ');
+          html.push('<div class="cv-doc-entry">');
+          html.push('<div class="cv-doc-entry-title">' + escape(r.name || '') + '</div>');
+          if (r.title) html.push('<div class="cv-doc-entry-meta">' + escape(r.title) + '</div>');
+          if (contact) html.push('<div class="cv-doc-entry-meta" style="opacity:0.85;">' + contact + '</div>');
+          html.push('</div>');
+        });
+      } else {
+        html.push('<div class="cv-doc-entry-meta" style="font-style:italic;">Lämnas på begäran</div>');
+      }
       html.push('</div>');
     }
 
