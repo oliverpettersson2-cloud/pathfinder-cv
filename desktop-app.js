@@ -5037,41 +5037,96 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const cvDoc = document.getElementById('cvDocument');
 
       // Klona för att rendera fritt utan layout-begränsningar
-      // Padding 32px (≈12mm i A4) ger naturlig marginal inuti dokumentet
-      // Yttre PDF-margin sätts till 0 så headerns bakgrund kan fylla hela bredden
       const clone = cvDoc.cloneNode(true);
       clone.style.cssText = 'position:absolute; left:-9999px; top:0; width:794px; padding:0; background:#fff; color:#1a1a2e; font-size:13px; line-height:1.5; border-radius:0; box-shadow:none; overflow:hidden;';
       document.body.appendChild(clone);
 
       await new Promise(r => setTimeout(r, 400));
 
+      // ─────────────────────────────────────────────────────────────
+      // STEG 1: KARTLÄGG SÄKRA BRYTPUNKTER
+      // En säker brytpunkt är toppen av en .cv-section (rubrik följer med sitt
+      // innehåll) eller en .cv-entry (hel jobbpost hålls intakt). Vi samlar
+      // Y-koordinaten i clone-koordinatsystemet för varje sådant element.
+      // ─────────────────────────────────────────────────────────────
+      const cloneRect = clone.getBoundingClientRect();
+      const safePointsDomPx = [];
+      clone.querySelectorAll('.cv-section, .cv-entry').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const y = Math.round(rect.top - cloneRect.top);
+        if (y > 0) safePointsDomPx.push(y);
+      });
+      // Dedupe + sortera stigande
+      const uniqueDomPoints = [...new Set(safePointsDomPx)].sort((a, b) => a - b);
+
+      // ─────────────────────────────────────────────────────────────
+      // STEG 2: RENDERA TILL CANVAS
+      // ─────────────────────────────────────────────────────────────
+      const scale = 2;
       const canvas = await html2canvas(clone, {
-        scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false,
+        scale: scale, useCORS: true, backgroundColor: '#ffffff', logging: false,
         width: 794, windowHeight: clone.scrollHeight
       });
+
+      // Konvertera brytpunkter till canvas-pixlar (skalade)
+      const canvasBreakPoints = uniqueDomPoints.map(p => p * scale);
 
       document.body.removeChild(clone);
 
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
       const pageW = 210, pageH = 297, margin = 0;
       const imgW = pageW - margin * 2;
-      const imgH = canvas.height * imgW / canvas.width;
-
-      // Slice till flera sidor om för långt
       const contentH = pageH - margin * 2;
-      let y = 0;
+      const pageHpx = (contentH * canvas.width) / imgW;
+
+      const imgH = canvas.height * imgW / canvas.width;
       const fullImgData = canvas.toDataURL('image/jpeg', 0.92);
 
       if (imgH <= contentH) {
+        // Allt får plats på en sida
         pdf.addImage(fullImgData, 'JPEG', margin, margin, imgW, imgH);
       } else {
-        // Multi-page slicing
-        const pageHpx = (contentH * canvas.width) / imgW;
+        // ─────────────────────────────────────────────────────────
+        // STEG 3: SMART MULTI-PAGE SLICING
+        // Bryt vid närmaste säkra brytpunkt (rubrik/post-start) istället
+        // för vid fast höjd. Regler:
+        //   - Aldrig mitt i en .cv-entry
+        //   - Aldrig en ensam rubrik (break FÖRE .cv-section håller ihop)
+        //   - OK att bryta mellan två .cv-entry i samma sektion
+        // ─────────────────────────────────────────────────────────
         let srcY = 0;
         let pageNum = 0;
-        while (srcY < canvas.height) {
+        const MIN_PAGE_CONTENT = 50; // undviker oändlig loop om brytpunkt ligger direkt vid srcY
+
+        while (srcY < canvas.height - 1) {
+          const theoreticalEnd = srcY + pageHpx;
+          let pageEnd;
+
+          if (theoreticalEnd >= canvas.height) {
+            // Sista sidan — ta resten
+            pageEnd = canvas.height;
+          } else {
+            // Hitta största säkra brytpunkt som är:
+            //   - tillräckligt efter srcY (inte bara en pixel senare)
+            //   - före eller vid teoretisk sid-slut
+            const validBreaks = canvasBreakPoints.filter(
+              p => p > srcY + MIN_PAGE_CONTENT && p <= theoreticalEnd
+            );
+            if (validBreaks.length > 0) {
+              // Välj LARGEST — packa så mycket som möjligt på sidan
+              pageEnd = validBreaks[validBreaks.length - 1];
+            } else {
+              // Ingen säker brytpunkt inom rimligt avstånd → hård brytning.
+              // Händer bara om en enskild post är större än en A4-sida.
+              pageEnd = theoreticalEnd;
+              console.warn('[PDF] Ingen säker brytpunkt hittad för sida ' + (pageNum + 1) + ', hårdbryts');
+            }
+          }
+
+          const sliceH = pageEnd - srcY;
+
           if (pageNum > 0) pdf.addPage();
-          const sliceH = Math.min(pageHpx, canvas.height - srcY);
+
           const tmp = document.createElement('canvas');
           tmp.width = canvas.width;
           tmp.height = sliceH;
@@ -5082,8 +5137,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           const sliceImg = tmp.toDataURL('image/jpeg', 0.92);
           const sliceMm = (sliceH / canvas.width) * imgW;
           pdf.addImage(sliceImg, 'JPEG', margin, margin, imgW, sliceMm);
-          srcY += sliceH;
+
+          srcY = pageEnd;
           pageNum++;
+
+          // Säkerhet: avbryt om något gått fel och vi loopar i evighet
+          if (pageNum > 20) {
+            console.error('[PDF] Abort: >20 sidor — fel i pagineringen');
+            break;
+          }
         }
       }
 
