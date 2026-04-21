@@ -2639,17 +2639,28 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const i = CV_STEP_ORDER.indexOf(currentStep);
     const backBtn = document.getElementById('cvStepNavBack');
     const nextBtn = document.getElementById('cvStepNavNext');
+    const nav = document.getElementById('cvStepNav');
     if (backBtn) {
-      backBtn.disabled = (i <= 0);
-      const prev = i > 0 ? CV_STEP_ORDER[i - 1] : '';
+      const hasPrev = i > 0;
+      backBtn.style.display = hasPrev ? '' : 'none';
+      const prev = hasPrev ? CV_STEP_ORDER[i - 1] : '';
       const labels = { profil:'Profil', jobb:'Jobb & Utb', mer:'Mer', text:'Text', visa:'Visa' };
       backBtn.textContent = prev ? '← ' + labels[prev] : '← Tillbaka';
     }
     if (nextBtn) {
-      nextBtn.disabled = (i >= CV_STEP_ORDER.length - 1);
-      const next = (i >= 0 && i < CV_STEP_ORDER.length - 1) ? CV_STEP_ORDER[i + 1] : '';
+      const hasNext = (i >= 0 && i < CV_STEP_ORDER.length - 1);
+      // Dölj helt på sista steget (Visa) istället för disabled
+      nextBtn.style.display = hasNext ? '' : 'none';
+      const next = hasNext ? CV_STEP_ORDER[i + 1] : '';
       const labels = { profil:'Profil', jobb:'Jobb & Utb', mer:'Mer', text:'Text', visa:'Visa' };
       nextBtn.textContent = next ? labels[next] + ' →' : 'Nästa →';
+    }
+    // Om både är dolda → dölj hela navigationsraden
+    if (nav) {
+      const anyVisible = (backBtn && backBtn.style.display !== 'none') || (nextBtn && nextBtn.style.display !== 'none');
+      nav.style.display = anyVisible ? '' : 'none';
+      // På sista steget: om bara tillbaka syns, centrera den vänster
+      nav.style.justifyContent = (nextBtn && nextBtn.style.display === 'none') ? 'flex-start' : 'space-between';
     }
   }
 
@@ -4785,17 +4796,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       if (langs.length) {
         html.push('<div class="cv-doc-section">');
         html.push('<div class="cv-doc-section-title">Språk</div>');
-        html.push('<div class="cv-doc-lang-list">');
-        langs.forEach(l => {
-          const lvl = l.level || 'Flytande';
-          html.push(
-            '<div class="cv-doc-lang-item" data-level="' + escapeAttr(lvl) + '">' +
-              '<span class="cv-doc-lang-dot"></span>' +
-              '<span class="cv-doc-lang-name">' + escape(l.name) + '</span>' +
-              '<span class="cv-doc-lang-level">' + escape(lvl) + '</span>' +
-            '</div>'
-          );
-        });
+        html.push('<div class="cv-doc-lang-inline">');
+        html.push(
+          langs.map(l => {
+            const lvl = l.level || 'Flytande';
+            return '<span class="cv-doc-lang-entry">' +
+              escape(l.name) + ' – <em>' + escape(lvl) + '</em>' +
+            '</span>';
+          }).join('<span class="cv-doc-lang-sep">·</span>')
+        );
         html.push('</div>');
         html.push('</div>');
       }
