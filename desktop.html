@@ -299,15 +299,19 @@
     top: 0;
     max-height: calc(100vh - 60px);
     overflow-y: auto;
+    padding: 2px;  /* 2-3mm luft mellan panel-kant och CV-dokument */
   }
 
-  /* CV-stegindikator (5 flikar) */
+  /* CV-stegindikator — premium pill design med nummer */
   .cv-steps {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     margin-bottom: 28px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    padding-bottom: 0;
+    padding: 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    position: relative;
   }
   .cv-step {
     flex: 1;
@@ -317,18 +321,115 @@
     font-family: inherit;
     font-size: 13px;
     font-weight: 700;
-    padding: 12px 8px;
+    padding: 11px 10px;
     cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    position: relative;
+    letter-spacing: -0.1px;
   }
-  .cv-step:hover { color: rgba(255,255,255,0.85); }
+  .cv-step::before {
+    content: attr(data-step-num);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    font-size: 11px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.5);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .cv-step:hover {
+    color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.04);
+  }
   .cv-step.active {
-    color: var(--accent2);
-    border-bottom-color: var(--accent2);
+    color: #fff;
+    background: linear-gradient(135deg, rgba(62,180,137,0.25), rgba(62,180,137,0.15));
+    box-shadow: 0 0 0 1px rgba(62,180,137,0.35), 0 4px 12px rgba(62,180,137,0.2);
   }
-  .cv-step.done { color: rgba(62,180,137,0.7); }
-  .cv-step.done::after { content: ' ✓'; }
+  .cv-step.active::before {
+    background: var(--accent2);
+    color: #fff;
+  }
+  .cv-step.done {
+    color: var(--accent2);
+  }
+  .cv-step.done::before {
+    content: '✓';
+    background: rgba(62,180,137,0.2);
+    color: var(--accent2);
+    font-size: 13px;
+  }
+  .cv-step.done.active::before {
+    background: var(--accent2);
+    color: #fff;
+  }
+
+  /* Step-navigation (tillbaka/nästa längst ner) */
+  .cv-step-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .cv-step-nav-back {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1.5px solid rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 11px 22px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: -0.1px;
+  }
+  .cv-step-nav-back:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.6);
+    transform: translateX(-2px);
+  }
+  .cv-step-nav-back:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .cv-step-nav-next {
+    background: linear-gradient(135deg, var(--accent2), #2d9970);
+    border: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 11px 26px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 12px rgba(62,180,137,0.25);
+    letter-spacing: -0.1px;
+  }
+  .cv-step-nav-next:hover {
+    transform: translateX(2px);
+    box-shadow: 0 6px 16px rgba(62,180,137,0.35);
+  }
+  .cv-step-nav-next:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
 
   /* CV-formulär */
   .cv-section { margin-bottom: 28px; }
@@ -1728,12 +1829,22 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: all 0.15s;
+    transition: all 0.2s ease;
   }
   .matcha-cv-title-btn:hover {
     background: rgba(62,180,137,0.08);
     border-color: var(--accent2);
     color: var(--accent2);
+  }
+  .matcha-cv-title-btn.active {
+    background: linear-gradient(135deg, var(--accent2), #2d9970);
+    border: 2px solid var(--accent2);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(62,180,137,0.35);
+  }
+  .matcha-cv-title-btn.active:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(62,180,137,0.45);
   }
 
   /* ============================================================
@@ -2642,11 +2753,11 @@
       <div class="cv-edit-panel">
         <!-- Steg-indikator -->
         <div class="cv-steps">
-          <button class="cv-step active" data-step="profil" onclick="cvSwitchStep('profil')">Profil</button>
-          <button class="cv-step" data-step="jobb" onclick="cvSwitchStep('jobb')">Jobb &amp; Utb</button>
-          <button class="cv-step" data-step="mer" onclick="cvSwitchStep('mer')">Mer</button>
-          <button class="cv-step" data-step="text" onclick="cvSwitchStep('text')">Text</button>
-          <button class="cv-step" data-step="visa" onclick="cvSwitchStep('visa')">Visa</button>
+          <button class="cv-step active" data-step="profil" data-step-num="1" onclick="cvSwitchStep('profil')">Profil</button>
+          <button class="cv-step" data-step="jobb" data-step-num="2" onclick="cvSwitchStep('jobb')">Jobb &amp; Utb</button>
+          <button class="cv-step" data-step="mer" data-step-num="3" onclick="cvSwitchStep('mer')">Mer</button>
+          <button class="cv-step" data-step="text" data-step-num="4" onclick="cvSwitchStep('text')">Text</button>
+          <button class="cv-step" data-step="visa" data-step-num="5" onclick="cvSwitchStep('visa')">Visa</button>
         </div>
 
         <!-- Stegens innehåll -->
@@ -2750,7 +2861,10 @@
         <div class="cv-step-content" id="step-visa" style="display:none;">
           <div class="cv-section">
             <div class="cv-section-title">Mall</div>
-            <div class="template-grid" id="templateGrid"></div>
+            <select class="cv-input" id="templateSelect" onchange="cvSelectTemplate(this.value)" style="margin-bottom: 10px;"></select>
+            <div style="font-size:11px; color: rgba(255,255,255,0.4); line-height:1.5;">
+              Välj en av 10 mallar — förhandsvisningen uppdateras direkt till höger.
+            </div>
           </div>
 
           <div class="cv-section">
@@ -2763,6 +2877,12 @@
               CV:t sparas både lokalt och i molnet — synlig på mobil också.
             </div>
           </div>
+        </div>
+
+        <!-- Step-navigation: Tillbaka (röd) + Nästa (grön) -->
+        <div class="cv-step-nav" id="cvStepNav">
+          <button type="button" class="cv-step-nav-back" id="cvStepNavBack" onclick="cvStepBack()">← Tillbaka</button>
+          <button type="button" class="cv-step-nav-next" id="cvStepNavNext" onclick="cvStepNext()">Nästa →</button>
         </div>
       </div>
 
@@ -3305,13 +3425,22 @@
   <div class="settings-content">
     <h3>⚙️ Inställningar</h3>
 
-    <label for="apiKeyInput">Anthropic API-nyckel (för AI-funktioner)</label>
-    <input type="password" id="apiKeyInput" class="cv-input" placeholder="sk-ant-...">
-    <div class="settings-hint">Sparas lokalt i din webbläsare.</div>
+    <div style="background: rgba(62,180,137,0.08); border: 1px solid rgba(62,180,137,0.25); border-radius: 12px; padding: 16px 18px; margin-bottom: 18px;">
+      <div style="font-size: 13px; font-weight: 800; color: var(--accent2); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+        <span>🤖</span> AI fungerar automatiskt
+      </div>
+      <div style="font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.6;">
+        Du behöver inte konfigurera någon API-nyckel — alla AI-funktioner (autofyll, kompetenser, profiltext, matchning) körs via samma konto som mobilen. Logga bara in så synkas allt.
+      </div>
+    </div>
 
-    <div class="btn-row" style="margin-top:24px;">
-      <button class="btn btn-secondary" onclick="closeSettings()">Stäng</button>
-      <button class="btn btn-primary" onclick="saveApiKey()">Spara</button>
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px; margin-bottom: 4px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 8px;">Version</div>
+      <div style="font-size: 12px; color: rgba(255,255,255,0.6);">CVmatchen Desktop · by PathfinderAI</div>
+    </div>
+
+    <div class="btn-row" style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="closeSettings()" style="width:100%;">Stäng</button>
     </div>
   </div>
 </div>
