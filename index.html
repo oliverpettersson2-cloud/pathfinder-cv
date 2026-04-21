@@ -5341,6 +5341,10 @@
         if (!cvData.skills) cvData.skills = [];
         if (!cvData.licenses) cvData.licenses = [];
         if (cvData.refOnRequest === undefined) cvData.refOnRequest = false;
+
+        // Auto-sortera jobb och utbildning kronologiskt (nyaste/pågående överst)
+        if (typeof sortJobsByDate === 'function') sortJobsByDate();
+        if (typeof sortEducationByDate === 'function') sortEducationByDate();
       }
       
       // Uppdatera alltid DOM-fälten (oavsett om data är sparad eller ej)
@@ -5469,6 +5473,45 @@
       modal.classList.add('active');
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // KRONOLOGISK SORTERING — nyaste/pågående överst
+    // (matchar desktop-implementationen)
+    // ═══════════════════════════════════════════════════════════
+    const MOB_MONTH_MAP = { Jan:1, Feb:2, Mar:3, Apr:4, Maj:5, Jun:6, Jul:7, Aug:8, Sep:9, Okt:10, Nov:11, Dec:12 };
+
+    function entryEndWeight(e) {
+      if (!e) return 0;
+      const isOngoing = (e.ongoing === true || e.endYear === 'Pågående' || e.endYear === 'nu' || !e.endYear);
+      if (isOngoing) return Infinity;
+      const y = parseInt(e.endYear, 10) || 0;
+      const m = MOB_MONTH_MAP[e.endMonth] || 0;
+      return y * 100 + m;
+    }
+    function entryStartWeight(e) {
+      if (!e) return 0;
+      const y = parseInt(e.startYear, 10) || 0;
+      const m = MOB_MONTH_MAP[e.startMonth] || 0;
+      return y * 100 + m;
+    }
+    function sortJobsByDate() {
+      if (!Array.isArray(cvData.jobs)) return;
+      cvData.jobs.sort((a, b) => {
+        const ae = entryEndWeight(a), be = entryEndWeight(b);
+        if (ae !== be) return be - ae;
+        return entryStartWeight(b) - entryStartWeight(a);
+      });
+    }
+    function sortEducationByDate() {
+      if (!Array.isArray(cvData.education)) return;
+      cvData.education.sort((a, b) => {
+        const ae = entryEndWeight(a), be = entryEndWeight(b);
+        if (ae !== be) return be - ae;
+        return entryStartWeight(b) - entryStartWeight(a);
+      });
+    }
+    window.sortJobsByDate = sortJobsByDate;
+    window.sortEducationByDate = sortEducationByDate;
+
     function saveJob() {
       const idx = parseInt(document.getElementById('jobModal').dataset.editIdx);
       
@@ -5490,7 +5533,8 @@
       } else {
         cvData.jobs.push(job);
       }
-      
+      if (typeof sortJobsByDate === 'function') sortJobsByDate();
+
       saveData();
       renderJobs();
       updatePreview();
@@ -5607,7 +5651,8 @@
       } else {
         cvData.education.push(edu);
       }
-      
+      if (typeof sortEducationByDate === 'function') sortEducationByDate();
+
       saveData();
       renderEducation();
       updatePreview();
