@@ -2354,6 +2354,11 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // VIEW SWITCHING
   // ============================================================
   window.switchView = function(view) {
+    // Städa upp ev. pågående intervju-session när vi lämnar intervju-vyn
+    if (currentView === 'intervju' && view !== 'intervju' && typeof window.ivCleanup === 'function') {
+      try { window.ivCleanup(); } catch(e) {}
+    }
+
     currentView = view;
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.sb-tab').forEach(t => t.classList.remove('active'));
@@ -2371,6 +2376,11 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     }
     if (view === 'matcha') {
       if (typeof renderMatchaView === 'function') renderMatchaView();
+    }
+    if (view === 'intervju') {
+      if (typeof window.ivInit === 'function') {
+        try { window.ivInit(); } catch(e) { console.warn('Intervju init fail:', e); }
+      }
     }
     if (view === 'ovningar') {
       currentTrainCat = null;
@@ -2398,6 +2408,11 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       el.style.display = 'none';
     }
   }
+
+  // AI-SYV (Utbilda dig) — tills modulen portas från mobilen visar vi en toast.
+  window.hejOpenAiSyv = function() {
+    toast('🎓 AI-SYV kommer snart till desktop — använd mobilen så länge.', 'info');
+  };
 
   // ============================================================
   // CV: STEP SWITCHING
