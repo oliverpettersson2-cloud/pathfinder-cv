@@ -40,8 +40,16 @@
   ];
 
   const TEMPLATES = [
-    { id: 'classic', name: 'Klassisk', icon: '📜' },
-    { id: 'modern',  name: 'Modern',   icon: '✨' },
+    { id: 'classic',     name: 'Klassisk',          icon: '📋' },
+    { id: 'modern',      name: 'Modern',            icon: '✨' },
+    { id: 'template-3',  name: 'Modern Blå/Grön',   icon: '🎨' },
+    { id: 'template-4',  name: 'Modern Lila/Cyan',  icon: '💫' },
+    { id: 'template-5',  name: 'Minimalistisk',     icon: '⚪' },
+    { id: 'template-6',  name: 'Traditionell 1',    icon: '📄' },
+    { id: 'template-7',  name: 'Traditionell 2',    icon: '📑' },
+    { id: 'template-8',  name: 'Modern Kort',       icon: '🎯' },
+    { id: 'template-9',  name: 'Två-kolumn',        icon: '🌟' },
+    { id: 'template-10', name: 'Färgskatt',         icon: '🎨' },
   ];
 
   // Träningsmoduler — komprimerad version för desktop
@@ -2382,6 +2390,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         try { window.ivInit(); } catch(e) { console.warn('Intervju init fail:', e); }
       }
     }
+    if (view === 'aisyv') {
+      // Alltid börja på AI-SYV startsidan (inte fastna i tidigare chat)
+      if (typeof window.showHome === 'function') {
+        try { window.showHome(); } catch(e) { console.warn('AI-SYV showHome fail:', e); }
+      }
+      if (typeof window.syvUpdateSavedBtn === 'function') {
+        try { window.syvUpdateSavedBtn(); } catch(e) {}
+      }
+    }
     if (view === 'ovningar') {
       currentTrainCat = null;
       renderTrainingHome();
@@ -2408,11 +2425,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       el.style.display = 'none';
     }
   }
-
-  // AI-SYV (Utbilda dig) — tills modulen portas från mobilen visar vi en toast.
-  window.hejOpenAiSyv = function() {
-    toast('🎓 AI-SYV kommer snart till desktop — använd mobilen så länge.', 'info');
-  };
 
   // ============================================================
   // CV: STEP SWITCHING
