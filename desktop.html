@@ -912,33 +912,25 @@
     font-weight: 600;
   }
 
-  /* Språk i CV: snygg list-layout med färg-dot per nivå */
-  .cv-doc-lang-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .cv-doc-lang-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  /* Språk i CV: inline-flöde "Svenska – Modersmål · Engelska – Flytande" */
+  .cv-doc-lang-inline {
     font-size: 12.5px;
     color: #333;
+    line-height: 1.9;
   }
-  .cv-doc-lang-dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .cv-doc-lang-entry {
+    font-weight: 600;
+    color: var(--deep);
+    white-space: nowrap;
   }
-  .cv-doc-lang-item[data-level="Modersmål"] .cv-doc-lang-dot { background: #f0c040; }
-  .cv-doc-lang-item[data-level="Flytande"] .cv-doc-lang-dot { background: #3eb489; }
-  .cv-doc-lang-item[data-level="Grundläggande"] .cv-doc-lang-dot { background: #38bdf8; }
-  .cv-doc-lang-name { font-weight: 700; color: var(--deep); }
-  .cv-doc-lang-level {
-    font-size: 11px;
-    color: #777;
-    margin-left: auto;
+  .cv-doc-lang-entry em {
+    font-weight: 400;
     font-style: italic;
+    color: #666;
+  }
+  .cv-doc-lang-sep {
+    margin: 0 10px;
+    color: #bbb;
   }
 
   /* Körkort som pill-chips */
@@ -3100,7 +3092,7 @@
           <div class="cv-section">
             <div class="cv-section-title">Spara &amp; exportera</div>
             <div class="save-actions">
-              <button class="btn btn-primary" onclick="cvSaveAndStore()">💾 Spara CV</button>
+              <button class="btn btn-primary" onclick="cvSaveAndStore()">👤 Spara till profil</button>
               <button class="btn btn-accent" onclick="cvExportPDF()">📥 Exportera PDF</button>
             </div>
             <div style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:12px; text-align:center;">
