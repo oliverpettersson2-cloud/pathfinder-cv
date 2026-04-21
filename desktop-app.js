@@ -2340,17 +2340,20 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // SETTINGS
   // ============================================================
   window.openSettings = function() {
-    document.getElementById('apiKeyInput').value = safeGet(API_KEY_STORAGE) || '';
+    // apiKeyInput är borttagen — AI går via backend-proxy, inte egen nyckel
+    const keyInput = document.getElementById('apiKeyInput');
+    if (keyInput) keyInput.value = safeGet(API_KEY_STORAGE) || '';
     document.getElementById('settingsModal').classList.add('open');
   };
   window.closeSettings = function() {
     document.getElementById('settingsModal').classList.remove('open');
   };
   window.saveApiKey = function() {
-    const key = document.getElementById('apiKeyInput').value.trim();
-    if (key) {
-      safeSet(API_KEY_STORAGE, key);
-      toast('API-nyckel sparad');
+    // Legacy stub — API-nyckel används inte längre (backend hanterar AI)
+    const keyInput = document.getElementById('apiKeyInput');
+    if (keyInput) {
+      const key = keyInput.value.trim();
+      if (key) safeSet(API_KEY_STORAGE, key);
     }
     closeSettings();
   };
@@ -2450,7 +2453,41 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     renderPreview();
     markStepDone(step);
+    updateStepNav();
+
+    // Skrolla upp till toppen av edit-panelen
+    const panel = document.querySelector('.cv-edit-panel');
+    if (panel) panel.scrollTop = 0;
   };
+
+  const CV_STEP_ORDER = ['profil', 'jobb', 'mer', 'text', 'visa'];
+
+  window.cvStepBack = function() {
+    const i = CV_STEP_ORDER.indexOf(currentStep);
+    if (i > 0) cvSwitchStep(CV_STEP_ORDER[i - 1]);
+  };
+  window.cvStepNext = function() {
+    const i = CV_STEP_ORDER.indexOf(currentStep);
+    if (i >= 0 && i < CV_STEP_ORDER.length - 1) cvSwitchStep(CV_STEP_ORDER[i + 1]);
+  };
+
+  function updateStepNav() {
+    const i = CV_STEP_ORDER.indexOf(currentStep);
+    const backBtn = document.getElementById('cvStepNavBack');
+    const nextBtn = document.getElementById('cvStepNavNext');
+    if (backBtn) {
+      backBtn.disabled = (i <= 0);
+      const prev = i > 0 ? CV_STEP_ORDER[i - 1] : '';
+      const labels = { profil:'Profil', jobb:'Jobb & Utb', mer:'Mer', text:'Text', visa:'Visa' };
+      backBtn.textContent = prev ? '← ' + labels[prev] : '← Tillbaka';
+    }
+    if (nextBtn) {
+      nextBtn.disabled = (i >= CV_STEP_ORDER.length - 1);
+      const next = (i >= 0 && i < CV_STEP_ORDER.length - 1) ? CV_STEP_ORDER[i + 1] : '';
+      const labels = { profil:'Profil', jobb:'Jobb & Utb', mer:'Mer', text:'Text', visa:'Visa' };
+      nextBtn.textContent = next ? labels[next] + ' →' : 'Nästa →';
+    }
+  }
 
   function markStepDone(step) {
     // En enkel "done"-indikator: profilen är ifylld om name+title finns
@@ -3682,6 +3719,9 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
   window.matchaSearchDebounce = function() {
     clearTimeout(matchaSearchDebounceT);
+    // Avaktivera CV-titel-knappen när användaren skriver egen sökterm
+    document.querySelectorAll('.matcha-cv-title-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.matcha-quick-chip').forEach(c => c.classList.remove('active'));
     matchaSearchDebounceT = setTimeout(matchaDoSearch, 350);
   };
 
@@ -3697,6 +3737,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const chipQ = chip.getAttribute('onclick') || '';
       if (chipQ.includes("'" + query + "'")) chip.classList.add('active');
     });
+    // Avaktivera CV-titel-knappen eftersom användaren valt annan strategi
+    document.querySelectorAll('.matcha-cv-title-btn').forEach(b => b.classList.remove('active'));
 
     if (query) {
       matchaDoSearch();
@@ -3718,6 +3760,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const input = document.getElementById('matchaSearch');
     if (input) input.value = title;
     document.querySelectorAll('.matcha-quick-chip').forEach(c => c.classList.remove('active'));
+    // Markera CV-titel-knappen som aktiv
+    document.querySelectorAll('.matcha-cv-title-btn').forEach(b => b.classList.add('active'));
     matchaDoSearch();
     toast('🎯 Söker efter: ' + title);
   };
@@ -4308,16 +4352,14 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // CV: TEMPLATES
   // ============================================================
   function renderTemplates() {
-    const grid = document.getElementById('templateGrid');
-    if (!grid) return;
-    grid.innerHTML = TEMPLATES.map(t =>
-      '<div class="template-card ' + (cvData.template === t.id ? 'active' : '') + '"' +
-      ' style="--tpl-color: ' + t.color + ';"' +
-      ' onclick="cvSelectTemplate(\'' + t.id + '\')">' +
-        '<div class="template-card-icon">' + t.icon + '</div>' +
-        '<div class="template-card-name">' + t.name + '</div>' +
-      '</div>'
+    const sel = document.getElementById('templateSelect');
+    if (!sel) return;
+    sel.innerHTML = TEMPLATES.map(t =>
+      '<option value="' + t.id + '"' + (cvData.template === t.id ? ' selected' : '') + '>' +
+        t.icon + '  ' + t.name +
+      '</option>'
     ).join('');
+    sel.value = cvData.template || 'classic';
   }
 
   window.cvSelectTemplate = function(id) {
