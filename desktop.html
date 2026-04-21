@@ -588,6 +588,16 @@
     gap: 6px;
     margin-bottom: 12px;
   }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+    min-height: 8px;
+  }
+  .chip-row:empty {
+    display: none;
+  }
   .chip {
     background: rgba(62,180,137,0.12);
     border: 1.5px solid rgba(62,180,137,0.3);
@@ -610,6 +620,155 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 11px;
     cursor: pointer;
+  }
+
+  /* Språk-chip med nivå — färg per nivå */
+  .lang-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.15s;
+  }
+  .lang-chip:hover { transform: translateY(-1px); }
+  .lang-chip-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .lang-chip-level {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.75;
+    letter-spacing: 0.3px;
+  }
+  /* 🟡 Modersmål */
+  .lang-chip[data-level="Modersmål"] {
+    background: rgba(240, 192, 64, 0.12);
+    border-color: rgba(240, 192, 64, 0.4);
+    color: #f0c040;
+  }
+  .lang-chip[data-level="Modersmål"] .lang-chip-dot { background: #f0c040; }
+  /* 🟢 Flytande */
+  .lang-chip[data-level="Flytande"] {
+    background: rgba(62, 180, 137, 0.12);
+    border-color: rgba(62, 180, 137, 0.4);
+    color: #3eb489;
+  }
+  .lang-chip[data-level="Flytande"] .lang-chip-dot { background: #3eb489; }
+  /* 🔵 Grundläggande */
+  .lang-chip[data-level="Grundläggande"] {
+    background: rgba(56, 189, 248, 0.12);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+  }
+  .lang-chip[data-level="Grundläggande"] .lang-chip-dot { background: #38bdf8; }
+
+  /* Picker-modal (språk + körkort) */
+  .picker-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .picker-modal.open { display: flex; }
+  .picker-content {
+    background: #1e2545;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 24px;
+    width: 480px;
+    max-width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .picker-title {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  .picker-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 14px;
+  }
+  .picker-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    cursor: pointer;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    transition: all 0.15s;
+  }
+  .picker-option:hover {
+    background: rgba(62,180,137,0.08);
+    border-color: rgba(62,180,137,0.35);
+  }
+  .picker-option.selected {
+    background: rgba(62,180,137,0.15);
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+  .picker-option-check {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .picker-option.selected .picker-option-check {
+    background: var(--accent2);
+    border-color: var(--accent2);
+  }
+  .picker-option.selected .picker-option-check::before { content: '✓'; color: #fff; font-weight: 800; }
+  .picker-level-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .picker-level-btn {
+    padding: 14px 8px;
+    border-radius: 12px;
+    border: 2px solid;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    transition: all 0.15s;
+  }
+  .picker-level-btn:hover { transform: translateY(-2px); }
+  .picker-level-btn[data-level="Modersmål"] {
+    background: rgba(240, 192, 64, 0.1);
+    border-color: rgba(240, 192, 64, 0.4);
+    color: #f0c040;
+  }
+  .picker-level-btn[data-level="Flytande"] {
+    background: rgba(62, 180, 137, 0.1);
+    border-color: rgba(62, 180, 137, 0.4);
+    color: #3eb489;
+  }
+  .picker-level-btn[data-level="Grundläggande"] {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
   }
 
   .check-grid {
@@ -751,6 +910,52 @@
     border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
+  }
+
+  /* Språk i CV: snygg list-layout med färg-dot per nivå */
+  .cv-doc-lang-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cv-doc-lang-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: #333;
+  }
+  .cv-doc-lang-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .cv-doc-lang-item[data-level="Modersmål"] .cv-doc-lang-dot { background: #f0c040; }
+  .cv-doc-lang-item[data-level="Flytande"] .cv-doc-lang-dot { background: #3eb489; }
+  .cv-doc-lang-item[data-level="Grundläggande"] .cv-doc-lang-dot { background: #38bdf8; }
+  .cv-doc-lang-name { font-weight: 700; color: var(--deep); }
+  .cv-doc-lang-level {
+    font-size: 11px;
+    color: #777;
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  /* Körkort som pill-chips */
+  .cv-doc-license-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .cv-doc-license-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #f0ede6;
+    color: var(--deep);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid rgba(26,26,46,0.12);
   }
 
   /* ============================================================
@@ -2836,12 +3041,14 @@
 
           <div class="cv-section">
             <div class="cv-section-title">Språk</div>
-            <div class="check-grid" id="languagesGrid"></div>
+            <div class="chip-row" id="languagesChips"></div>
+            <button class="btn btn-ghost" onclick="openLanguagePicker()" style="margin-top: 4px;">+ Lägg till språk</button>
           </div>
 
           <div class="cv-section">
             <div class="cv-section-title">Körkort</div>
-            <div class="check-grid" id="licensesGrid"></div>
+            <div class="chip-row" id="licensesChips"></div>
+            <button class="btn btn-ghost" onclick="openLicensePicker()" style="margin-top: 4px;">+ Lägg till körkort</button>
           </div>
 
           <div class="cv-section">
@@ -3428,6 +3635,56 @@
     <div class="edit-modal-buttons">
       <button class="btn btn-secondary" onclick="closeRefModal()">Avbryt</button>
       <button class="btn btn-primary" onclick="saveRefFromModal()">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SPRÅK-PICKER (väljer språk → väljer nivå)
+     ============================================================ -->
+<div id="languagePicker" class="picker-modal">
+  <div class="picker-content">
+    <div class="picker-title">Lägg till språk</div>
+    <div class="picker-sub">Klicka på ett språk för att välja nivå.</div>
+    <div id="languagePickerList"></div>
+    <div style="margin-top: 16px; text-align: right;">
+      <button class="btn btn-secondary" onclick="closeLanguagePicker()">Stäng</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nivå-väljare som öppnas efter språk-val -->
+<div id="languageLevelPicker" class="picker-modal">
+  <div class="picker-content" style="width: 420px;">
+    <div class="picker-title" id="languageLevelTitle">Välj nivå</div>
+    <div class="picker-sub">Hur bra behärskar du språket?</div>
+    <div class="picker-level-row">
+      <button class="picker-level-btn" data-level="Modersmål" onclick="setLanguageLevel('Modersmål')">
+        🟡<br>Modersmål
+      </button>
+      <button class="picker-level-btn" data-level="Flytande" onclick="setLanguageLevel('Flytande')">
+        🟢<br>Flytande
+      </button>
+      <button class="picker-level-btn" data-level="Grundläggande" onclick="setLanguageLevel('Grundläggande')">
+        🔵<br>Grundläggande
+      </button>
+    </div>
+    <div style="text-align: right;">
+      <button class="btn btn-secondary" onclick="closeLanguageLevelPicker()">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     KÖRKORT-PICKER
+     ============================================================ -->
+<div id="licensePicker" class="picker-modal">
+  <div class="picker-content">
+    <div class="picker-title">Välj körkort &amp; licenser</div>
+    <div class="picker-sub">Kryssa i de körkort du har.</div>
+    <div id="licensePickerList"></div>
+    <div style="margin-top: 16px; text-align: right;">
+      <button class="btn btn-primary" onclick="closeLicensePicker()">Klar</button>
     </div>
   </div>
 </div>
