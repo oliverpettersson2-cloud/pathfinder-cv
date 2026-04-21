@@ -721,6 +721,9 @@
       cvSwitchStep(currentStep);
       renderPreview();
     }
+    if (view === 'matcha') {
+      if (typeof renderMatchaView === 'function') renderMatchaView();
+    }
     if (view === 'ovningar') {
       renderTrainingHome();
     }
@@ -1446,6 +1449,507 @@
     }).join('');
   }
   window.renderRefs = renderRefs;
+
+  // ============================================================
+  // MATCHA — 3-stegs flow (Välj CV → Sök jobb → AI-matcha)
+  // ============================================================
+  let matchaCurrentStep    = 1;
+  let matchaSelectedCvId   = null;          // id från pathfinder_saved_cvs, eller 'current' för pågående
+  let matchaSelectedAds    = [];            // valda jobbannonser (max 3)
+  let matchaSearchQ        = '';
+  let matchaOrtFilter      = 'all';
+  let matchaTidFilter      = '';
+  let matchaSearchOffset   = 0;
+  let matchaSearchDebounceT = null;
+
+  const MATCHA_ORT = {
+    all: '',
+    skane: 'Skåne',
+    hbg: 'Helsingborg',
+    sthlm: 'Stockholm',
+    gbg: 'Göteborg',
+    malmo: 'Malmö',
+    uppsala: 'Uppsala',
+    linkoping: 'Linköping'
+  };
+
+  // ── Entry point från switchView('matcha') ─────────────────
+  function renderMatchaView() {
+    // Återgå alltid till steg 1 vid intåg
+    matchaSwitchStep(1);
+    renderMatchaCvGrid();
+  }
+  window.renderMatchaView = renderMatchaView;
+
+  // ── Stegnavigering ────────────────────────────────────────
+  window.matchaSwitchStep = function(n) {
+    // Validering
+    if (n === 2 && !matchaSelectedCvId) {
+      toast('Välj ett CV först', 'error');
+      return;
+    }
+    if (n === 3 && matchaSelectedAds.length === 0) {
+      toast('Välj minst en annons först', 'error');
+      return;
+    }
+
+    matchaCurrentStep = n;
+    document.querySelectorAll('.matcha-step').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.matcha-tab').forEach(t => t.classList.remove('active'));
+    const stepEl = document.getElementById('matchaStep' + n);
+    const tabEl  = document.getElementById('matchaTab' + n);
+    if (stepEl) stepEl.classList.add('active');
+    if (tabEl)  tabEl.classList.add('active');
+
+    // Enable/disable tabs
+    document.getElementById('matchaTab2').disabled = !matchaSelectedCvId;
+    document.getElementById('matchaTab3').disabled = matchaSelectedAds.length === 0;
+
+    if (n === 2) {
+      updateMatchaStickyBar();
+    }
+    if (n === 3) {
+      matchaRunAiForAllAds();
+    }
+  };
+
+  // ── STEG 1: Välj CV ───────────────────────────────────────
+  function renderMatchaCvGrid() {
+    const grid = document.getElementById('matchaCvGrid');
+    if (!grid) return;
+    const saved = pfGetSaved();
+
+    // Inkludera pågående CV som första alternativ om det har namn
+    const cards = [];
+    if (cvData.name) {
+      cards.push({
+        id: 'current',
+        title: (cvData.title || 'Pågående CV'),
+        meta: cvData.name + (cvData.jobs.length ? ' · ' + cvData.jobs.length + ' jobb' : ''),
+        isCurrent: true
+      });
+    }
+    saved.forEach(cv => {
+      cards.push({
+        id: cv.id,
+        title: cv.title || 'Utan titel',
+        meta: ((cv.data && cv.data.name) || '') + ' · sparat ' + (pfFormatDate(cv.savedAt) || ''),
+        isCurrent: false
+      });
+    });
+
+    if (!cards.length) {
+      grid.innerHTML = `
+        <div class="pf-empty" style="grid-column: 1 / -1;">
+          <div class="pf-empty-icon">📄</div>
+          <div class="pf-empty-text">Du har inga CV:n ännu.<br>Bygg ett CV först så kan du matcha det mot jobb.</div>
+          <button class="pf-empty-cta" onclick="switchView('cv')">Bygg ditt första CV →</button>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = cards.map(c => `
+      <div class="matcha-cv-card ${matchaSelectedCvId === c.id ? 'selected' : ''}"
+           onclick="matchaSelectCv('${c.id}')">
+        <div class="matcha-cv-card-title">${escape(c.title)}</div>
+        <div class="matcha-cv-card-meta">${escape(c.meta)}</div>
+      </div>`).join('');
+
+    // Om inget är valt och det finns kort, välj första automatiskt
+    if (!matchaSelectedCvId && cards.length === 1) {
+      matchaSelectCv(cards[0].id);
+    }
+  }
+
+  window.matchaSelectCv = function(id) {
+    matchaSelectedCvId = id;
+    renderMatchaCvGrid();
+    document.getElementById('matchaToStep2Btn').disabled = false;
+    document.getElementById('matchaTab2').disabled = false;
+  };
+
+  // Returnerar { name, title, summary, jobs, education, skills } för valt CV
+  function matchaGetSelectedCVData() {
+    if (matchaSelectedCvId === 'current') return cvData;
+    const saved = pfGetSaved();
+    const found = saved.find(c => c.id === matchaSelectedCvId);
+    return (found && found.data) || cvData;
+  }
+
+  // ── STEG 2: Sök på Platsbanken/Jobtech ────────────────────
+  window.matchaSetOrt = function(val) {
+    matchaOrtFilter = val;
+    if (matchaSearchQ) matchaDoSearch();
+  };
+  window.matchaSetTid = function(val) {
+    matchaTidFilter = val;
+    if (matchaSearchQ) matchaDoSearch();
+  };
+
+  window.matchaSearchDebounce = function() {
+    clearTimeout(matchaSearchDebounceT);
+    matchaSearchDebounceT = setTimeout(matchaDoSearch, 350);
+  };
+
+  window.matchaDoSearch = async function() {
+    const input = document.getElementById('matchaSearch');
+    const rawQ = (input && input.value || '').trim();
+    const resultsEl = document.getElementById('matchaSearchResults');
+    const skeleton  = document.getElementById('matchaSkeleton');
+    const visaFler  = document.getElementById('matchaVisaFler');
+
+    if (rawQ.length < 2) {
+      if (resultsEl) resultsEl.innerHTML = '';
+      if (skeleton)  skeleton.style.display = 'none';
+      if (visaFler)  visaFler.style.display = 'none';
+      return;
+    }
+
+    const locSuffix = MATCHA_ORT[matchaOrtFilter] ? ' ' + MATCHA_ORT[matchaOrtFilter] : '';
+    matchaSearchQ = rawQ + locSuffix;
+    matchaSearchOffset = 0;
+
+    if (skeleton)  skeleton.style.display = 'block';
+    if (resultsEl) resultsEl.innerHTML = '';
+    if (visaFler)  visaFler.style.display = 'none';
+
+    logEvent('job_search', { query: rawQ, source: 'jobtech' });
+
+    try {
+      const data = await matchaFetchJobtech(matchaSearchQ, 0);
+      if (skeleton) skeleton.style.display = 'none';
+      const hits = data.hits || [];
+      const total = (data.total && data.total.value) || 0;
+
+      if (!hits.length) {
+        resultsEl.innerHTML = '<div class="matcha-skeleton">Inga annonser hittades. Prova ett annat sökord.</div>';
+        return;
+      }
+
+      resultsEl.innerHTML =
+        `<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:10px;">
+          Visar ${hits.length} av ${total} annonser · ${escape(MATCHA_ORT[matchaOrtFilter] || 'Hela Sverige')}
+        </div>`;
+
+      hits.forEach(hit => resultsEl.appendChild(matchaBuildJobCard(hit)));
+      matchaSearchOffset = hits.length;
+      if (visaFler) visaFler.style.display = matchaSearchOffset < total ? 'block' : 'none';
+    } catch(e) {
+      console.error('Sökfel:', e);
+      if (skeleton)  skeleton.style.display = 'none';
+      if (resultsEl) resultsEl.innerHTML = '<div class="matcha-skeleton" style="color:#ff8fa3;">Kunde inte hämta annonser just nu. Försök igen om en stund.</div>';
+    }
+  };
+
+  window.matchaVisaFler = async function() {
+    const visaFlerEl = document.getElementById('matchaVisaFler');
+    const btn = visaFlerEl && visaFlerEl.querySelector('button');
+    if (btn) { btn.disabled = true; btn.textContent = 'Hämtar...'; }
+    try {
+      const data = await matchaFetchJobtech(matchaSearchQ, matchaSearchOffset);
+      const hits = data.hits || [];
+      const total = (data.total && data.total.value) || 0;
+      const resultsEl = document.getElementById('matchaSearchResults');
+      hits.forEach(hit => resultsEl.appendChild(matchaBuildJobCard(hit)));
+      matchaSearchOffset += hits.length;
+      if (matchaSearchOffset >= total) visaFlerEl.style.display = 'none';
+    } catch(e) {
+      toast('Kunde inte hämta fler annonser', 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Visa fler annonser'; }
+    }
+  };
+
+  async function matchaFetchJobtech(q, offset) {
+    let url = 'https://jobsearch.api.jobtechdev.se/search?q=' + encodeURIComponent(q) + '&limit=20&offset=' + offset;
+    if (matchaTidFilter) url += '&working-hours-type=' + encodeURIComponent(matchaTidFilter);
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Jobtech API-fel');
+    return resp.json();
+  }
+
+  // Bygg ett jobbkort
+  function matchaBuildJobCard(hit) {
+    const title   = hit.headline || 'Okänd titel';
+    const company = (hit.employer && hit.employer.name) || 'Okänd arbetsgivare';
+    const muni    = (hit.workplace_address && hit.workplace_address.municipality) || '';
+    const url     = hit.webpage_url || '';
+    const initials = company.split(' ').slice(0,2).map(w => (w[0] || '')).join('').toUpperCase() || '?';
+    const [bg, fg] = matchaAvatarColor(company);
+
+    const card = document.createElement('div');
+    card.className = 'matcha-job-card';
+    if (matchaSelectedAds.find(a => a.id === hit.id)) card.classList.add('selected');
+
+    const isPicked = !!matchaSelectedAds.find(a => a.id === hit.id);
+    const pickIdx  = matchaSelectedAds.findIndex(a => a.id === hit.id);
+
+    card.innerHTML = `
+      <div class="matcha-job-head">
+        <div class="matcha-job-avatar" style="background:${bg};color:${fg};">${initials}</div>
+        <div class="matcha-job-info">
+          <div class="matcha-job-title">${escape(title)}</div>
+          <div class="matcha-job-meta">
+            <span>🏢 ${escape(company)}</span>
+            ${muni ? `<span>📍 ${escape(muni)}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="matcha-job-actions">
+        <button class="matcha-job-btn ${isPicked ? 'picked' : 'pick'}"
+                data-hitid="${escape(hit.id)}">
+          ${isPicked ? '✓ Vald (' + (pickIdx+1) + '/3)' : '+ Välj jobb'}
+        </button>
+        ${url ? `<a class="matcha-job-btn link" href="${escape(url)}" target="_blank" rel="noopener">Läs annons ↗</a>` : ''}
+      </div>
+    `;
+
+    const pickBtn = card.querySelector('.matcha-job-btn');
+    if (pickBtn) {
+      pickBtn.addEventListener('click', function(ev) {
+        ev.stopPropagation();
+        matchaToggleAd(hit);
+      });
+    }
+
+    return card;
+  }
+
+  function matchaAvatarColor(name) {
+    const colors = [
+      ['rgba(62,180,137,0.2)',  '#3eb489'],
+      ['rgba(124,58,237,0.2)',  '#c4b5fd'],
+      ['rgba(240,192,64,0.2)',  '#f0c040'],
+      ['rgba(232,93,38,0.2)',   '#e85d26'],
+      ['rgba(59,130,246,0.2)',  '#93c5fd'],
+    ];
+    let hash = 0;
+    for (let i = 0; i < (name || '').length; i++) hash = (hash + name.charCodeAt(i)) % colors.length;
+    return colors[hash];
+  }
+
+  window.matchaToggleAd = function(hit) {
+    const idx = matchaSelectedAds.findIndex(a => a.id === hit.id);
+    if (idx >= 0) {
+      matchaSelectedAds.splice(idx, 1);
+    } else if (matchaSelectedAds.length >= 3) {
+      toast('Max 3 annonser åt gången', 'error');
+      return;
+    } else {
+      matchaSelectedAds.push(hit);
+    }
+    updateMatchaStickyBar();
+    // Re-render för att uppdatera button-state
+    matchaDoSearchFromCache();
+  };
+
+  function matchaDoSearchFromCache() {
+    // Uppdatera pick-buttons på alla kort utan att göra nytt API-anrop
+    const cards = document.querySelectorAll('#matchaSearchResults .matcha-job-card');
+    cards.forEach(card => {
+      const btn = card.querySelector('.matcha-job-btn[data-hitid]');
+      if (!btn) return;
+      const hitId = btn.getAttribute('data-hitid');
+      const idx = matchaSelectedAds.findIndex(a => String(a.id) === hitId);
+      const isPicked = idx >= 0;
+      btn.className = 'matcha-job-btn ' + (isPicked ? 'picked' : 'pick');
+      btn.textContent = isPicked ? ('✓ Vald (' + (idx+1) + '/3)') : '+ Välj jobb';
+      card.classList.toggle('selected', isPicked);
+    });
+  }
+
+  function updateMatchaStickyBar() {
+    const bar = document.getElementById('matchaStickyBar');
+    const cnt = document.getElementById('matchaStickyCount');
+    if (!bar) return;
+    if (matchaSelectedAds.length) {
+      bar.style.display = 'flex';
+      if (cnt) cnt.textContent = matchaSelectedAds.length + '/3 valda';
+    } else {
+      bar.style.display = 'none';
+    }
+    const tab3 = document.getElementById('matchaTab3');
+    if (tab3) tab3.disabled = matchaSelectedAds.length === 0;
+  }
+
+  // ── STEG 3: AI-matchning ──────────────────────────────────
+  async function matchaRunAiForAllAds() {
+    const container = document.getElementById('matchaAdsContainer');
+    if (!container) return;
+
+    // Rendera skelett-kort för alla valda annonser först
+    container.innerHTML = matchaSelectedAds.map(hit => {
+      const company = (hit.employer && hit.employer.name) || '';
+      return `
+        <div class="matcha-ad-result" id="matchaAdResult_${escape(String(hit.id))}">
+          <div class="matcha-ad-result-head">
+            <div style="flex:1;">
+              <div style="font-size: 15px; font-weight: 800; color: #fff;">${escape(hit.headline || '')}</div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px;">${escape(company)}</div>
+            </div>
+            ${hit.webpage_url ? `<a class="matcha-job-btn link" href="${escape(hit.webpage_url)}" target="_blank" rel="noopener" style="flex-shrink:0;">Läs annons ↗</a>` : ''}
+          </div>
+          <div class="matcha-skeleton" id="matchaAdLoading_${escape(String(hit.id))}">
+            ✨ AI analyserar nyckelord och skriver 3 profiltexter...
+          </div>
+          <div id="matchaAdBody_${escape(String(hit.id))}" style="display:none;"></div>
+        </div>
+      `;
+    }).join('');
+
+    // Kör matchning i sekvens (inte parallellt) för att spara API-quota
+    for (const hit of matchaSelectedAds) {
+      await matchaRunAiForAd(hit);
+    }
+  }
+
+  async function matchaRunAiForAd(hit) {
+    const loadEl = document.getElementById('matchaAdLoading_' + hit.id);
+    const bodyEl = document.getElementById('matchaAdBody_' + hit.id);
+    if (!loadEl || !bodyEl) return;
+
+    const selectedCV = matchaGetSelectedCVData();
+    const role    = hit.headline || '';
+    const company = (hit.employer && hit.employer.name) || '';
+    const adText  = (hit.description && hit.description.text) || '';
+
+    const cvSummary = [
+      selectedCV.name    ? 'Namn: '     + selectedCV.name    : '',
+      selectedCV.title   ? 'Yrke: '     + selectedCV.title   : '',
+      selectedCV.summary ? 'Profil: '   + selectedCV.summary : '',
+      selectedCV.jobs && selectedCV.jobs.length
+        ? 'Jobb: ' + selectedCV.jobs.map(j => j.title + (j.company ? ' hos ' + j.company : '')).join(', ')
+        : '',
+      selectedCV.education && selectedCV.education.length
+        ? 'Utbildning: ' + selectedCV.education.map(e => (e.degree || '') + (e.school || e.schoolName ? ' vid ' + (e.school || e.schoolName) : '')).join('; ')
+        : '',
+      selectedCV.skills && selectedCV.skills.length
+        ? 'Kompetenser: ' + selectedCV.skills.join(', ')
+        : ''
+    ].filter(Boolean).join('\n');
+
+    const prompt = 'CV:\n' + cvSummary +
+      '\n\nSoker: ' + role + ' hos ' + company +
+      (adText ? '\nAnnonsinfo: ' + adText.substring(0, 800) : '') +
+      '\n\nSvara med JSON: {"keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1", "alt2", "alt3"]}' +
+      '\n\nAlternativen ska vara personliga profiltexter (3-5 meningar) riktade mot ' + company + ' och rollen som ' + role +
+      '. Texterna ska vara i TVA stycken separerade med \\n\\n. Stycke 1 (3-4 meningar): bakgrund och styrkor. Stycke 2 (3-4 meningar): motivation och bidrag — avsluta ALLTID med: "Jag ser fram emot att berätta mer om mig sjalv pa en intervju, bli en del av ert team eller fa hora mer om ert foretag och jobbmojligheterna." Tre vinklar: 1) erfarenhetsfokus, 2) motivationsfokus, 3) kompetens och resultat. Max 6 keywords.';
+
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1500,
+          system: 'Du ar en CV-expert. Svara ALLTID med giltig JSON och inget annat.',
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      if (!resp.ok) throw new Error('API-fel ' + resp.status);
+      const data = await resp.json();
+      const raw = (data.content && data.content[0] && data.content[0].text) || '{}';
+      const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+      renderMatchaAiResult(hit, parsed);
+      logEvent('cv_matched', { role: role, company: company });
+    } catch(err) {
+      console.error('AI-match fel:', err);
+      loadEl.style.color = '#ff8fa3';
+      loadEl.textContent = '❌ AI kunde inte matcha just nu. Försök igen om en stund.';
+    }
+  }
+
+  function renderMatchaAiResult(hit, parsed) {
+    const loadEl = document.getElementById('matchaAdLoading_' + hit.id);
+    const bodyEl = document.getElementById('matchaAdBody_' + hit.id);
+    if (loadEl) loadEl.style.display = 'none';
+    if (!bodyEl) return;
+
+    const keywords     = parsed.keywords     || [];
+    const alternatives = parsed.alternatives || [];
+
+    // Spara alts globalt så knappen kan hämta dem
+    if (!window._matchaAlts) window._matchaAlts = {};
+    window._matchaAlts[hit.id] = alternatives;
+
+    const labels = ['🎯 Erfarenhetsfokus', '💫 Motivationsfokus', '⭐ Kompetens & resultat'];
+
+    bodyEl.style.display = 'block';
+    bodyEl.innerHTML = `
+      ${keywords.length ? `
+        <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
+          Nyckelord i annonsen
+        </div>
+        <div class="matcha-keywords">
+          ${keywords.map(k => {
+            const status = (k.status || 'partial').toLowerCase();
+            const icon = status === 'match' ? '✓ ' : status === 'partial' ? '◐ ' : '✕ ';
+            return `<span class="matcha-kw ${escape(status)}">${icon}${escape(k.word || '')}</span>`;
+          }).join('')}
+        </div>
+      ` : ''}
+
+      <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
+        Välj en profiltext att använda
+      </div>
+      ${alternatives.map((text, i) => `
+        <div class="matcha-alt">
+          <div class="matcha-alt-title">${escape(labels[i] || 'Alternativ ' + (i+1))}</div>
+          <div class="matcha-alt-text">${escape(text)}</div>
+          <button class="matcha-alt-btn" onclick="matchaApplyText('${escape(String(hit.id))}', ${i})">
+            ✨ Använd denna text
+          </button>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  window.matchaApplyText = function(hitId, altIdx) {
+    const alts = window._matchaAlts && window._matchaAlts[hitId];
+    if (!alts || !alts[altIdx]) {
+      toast('Kunde inte hitta texten', 'error');
+      return;
+    }
+    const text = alts[altIdx];
+    const hit  = matchaSelectedAds.find(a => String(a.id) === String(hitId));
+
+    // Applicera på pågående CV
+    cvData.summary = text;
+    const summaryEl = document.getElementById('cv-summary');
+    if (summaryEl) summaryEl.value = text;
+    saveCVLocal();
+    renderPreview();
+
+    // Spara som matchat CV (14 dagars TTL)
+    const jobTitle = (hit && hit.headline) || cvData.title || 'Okänt yrke';
+    const matchTitle = 'Matchat CV – ' + jobTitle;
+    const snapshot = {
+      id: 'match_' + Date.now(),
+      title: matchTitle,
+      savedAt: Date.now(),
+      jobUrl: (hit && hit.webpage_url) || '',
+      company: (hit && hit.employer && hit.employer.name) || '',
+      adText: (hit && hit.description && hit.description.text) || '',
+      _hit: hit ? JSON.parse(JSON.stringify(hit)) : null,
+      data: JSON.parse(JSON.stringify(cvData))
+    };
+    const mlist = pfGetMatched();
+    const ei = mlist.findIndex(c => c.title === matchTitle);
+    if (ei >= 0) mlist[ei] = snapshot;
+    else mlist.unshift(snapshot);
+    pfPutMatched(mlist);
+
+    logEvent('cv_saved_from_match', {
+      title: matchTitle,
+      role: (hit && hit.headline) || '',
+      company: (hit && hit.employer && hit.employer.name) || ''
+    });
+
+    toast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil');
+  };
+
+  // ──────────────────────────────────────────────────────────
 
   // ============================================================
   // CV: SKILLS
