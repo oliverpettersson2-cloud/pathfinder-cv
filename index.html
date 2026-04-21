@@ -6858,8 +6858,10 @@ ${styleTexts}
       if (hash && hash.includes('access_token')) {
         const params = new URLSearchParams(hash.replace('#', '?'));
         const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token') || '';
+        const expiresIn = parseInt(params.get('expires_in') || '3600', 10);
         if (accessToken) {
-          authHandleMagicLinkRedirect(accessToken);
+          authHandleMagicLinkRedirect(accessToken, refreshToken, expiresIn);
           window.history.replaceState({}, document.title, window.location.pathname);
           return; // splash hides inside authHandleMagicLinkRedirect
         }
@@ -6874,6 +6876,8 @@ ${styleTexts}
             window.authAccessToken = user.accessToken || null;
             // Redan inloggad — hoppa direkt till appen utan mellanskärm
             authSetLoggedInSilent(user.email, user.userId, user.accessToken);
+            // Trigga token-refresh i bakgrunden om nära expiry
+            setTimeout(() => { if (typeof ensureFreshToken === 'function') ensureFreshToken().catch(() => {}); }, 1500);
             return;
           }
         } catch(e) {}
@@ -6882,7 +6886,7 @@ ${styleTexts}
       document.getElementById('authOverlay').classList.remove('hidden');
     }
 
-    async function authHandleMagicLinkRedirect(accessToken) {
+    async function authHandleMagicLinkRedirect(accessToken, refreshToken, expiresIn) {
       try {
         const resp = await fetch('/api/supabase', {
           method: 'POST',
@@ -6893,7 +6897,7 @@ ${styleTexts}
         const email = data.email || data.user?.email || '';
         const userId = data.id || data.user?.id || '';
         if (email) {
-          authSetLoggedIn(email, false, userId, accessToken);
+          authSetLoggedIn(email, false, userId, accessToken, refreshToken || '', expiresIn || 3600);
           document.getElementById('authOverlay').classList.add('hidden');
           setNavStep(2);
           showLoginSplash(email);
@@ -7125,7 +7129,9 @@ ${styleTexts}
 
         const userId = data.user?.id || '';
         const accessToken = data.access_token || '';
-        authSetLoggedIn(authCurrentEmail, true, userId, accessToken);
+        const refreshToken = data.refresh_token || '';
+        const expiresIn = data.expires_in || 3600;
+        authSetLoggedIn(authCurrentEmail, true, userId, accessToken, refreshToken, expiresIn);
 
       } catch(e) {
         errEl.textContent = e.message || 'Felaktig eller utgången kod. Försök igen.';
@@ -7139,12 +7145,118 @@ ${styleTexts}
       btn.innerHTML = 'Verifiera kod';
     }
 
-    function authSetLoggedIn(email, isNew, userId, accessToken) {
+    // ═══════════════════════════════════════════════════════════
+    // JWT-hantering: auto-refresh + 401-handling
+    // (matchar desktop-implementationen)
+    // ═══════════════════════════════════════════════════════════
+    let _mobRefreshInFlight = null;
+    async function ensureFreshToken() {
+      const raw = pfRead(AUTH_STORAGE_KEY);
+      if (!raw) return null;
+      let auth;
+      try { auth = JSON.parse(raw); } catch(e) { return null; }
+      if (!auth || !auth.accessToken) return null;
+
+      // Ingen expiry-info → backward-compat, anta giltig
+      if (!auth.expiresAt) return auth.accessToken;
+
+      const now = Date.now();
+      const FIVE_MIN = 5 * 60 * 1000;
+      if (auth.expiresAt - now > FIVE_MIN) return auth.accessToken;
+
+      if (!auth.refreshToken) {
+        await handleAuthExpired();
+        return null;
+      }
+      if (_mobRefreshInFlight) return _mobRefreshInFlight;
+
+      _mobRefreshInFlight = (async () => {
+        try {
+          const r = await fetch('/api/supabase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'refresh_token', refreshToken: auth.refreshToken })
+          });
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok || !data.access_token) throw new Error(data.error || 'refresh failed');
+          const expiresIn = data.expires_in || 3600;
+          const updated = Object.assign({}, auth, {
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token || auth.refreshToken,
+            expiresAt: Date.now() + (expiresIn * 1000)
+          });
+          pfStore(AUTH_STORAGE_KEY, JSON.stringify(updated));
+          window.authAccessToken = data.access_token;
+          return data.access_token;
+        } catch(e) {
+          console.warn('Mobile token refresh failed:', e);
+          await handleAuthExpired();
+          return null;
+        } finally {
+          _mobRefreshInFlight = null;
+        }
+      })();
+      return _mobRefreshInFlight;
+    }
+    window.ensureFreshToken = ensureFreshToken;
+
+    async function handleAuthExpired() {
+      try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch(e) {}
+      window.authUserId = null;
+      window.authAccessToken = null;
+      if (typeof toast === 'function') {
+        toast('Sessionen har gått ut — logga in igen');
+      }
+      setTimeout(() => {
+        const overlay = document.getElementById('authOverlay');
+        if (overlay) overlay.classList.remove('hidden');
+        if (typeof setNavStep === 'function') setNavStep(1);
+      }, 150);
+    }
+    window.handleAuthExpired = handleAuthExpired;
+
+    // Central helper för alla auth-requiring Supabase-anrop.
+    // Auto-refreshar token + hanterar 401 → re-login.
+    async function sbCall(body) {
+      const token = await ensureFreshToken();
+      if (!token) return { error: 'not_authenticated' };
+      const mergedBody = Object.assign({}, body, { accessToken: token });
+      try {
+        const r = await fetch('/api/supabase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mergedBody)
+        });
+        if (r.status === 401) {
+          await handleAuthExpired();
+          return { error: 'unauthorized' };
+        }
+        const result = await r.json().catch(() => ({}));
+        if (result && result.error && String(result.error).toLowerCase().includes('unauthoriz')) {
+          await handleAuthExpired();
+        }
+        return result || {};
+      } catch(e) {
+        console.warn('sbCall fail:', e);
+        return { error: 'network' };
+      }
+    }
+    window.sbCall = sbCall;
+
+    // Schemalagd token-refresh var 45:e minut så användaren aldrig kickas ut
+    setInterval(() => {
+      ensureFreshToken().catch(() => {});
+    }, 45 * 60 * 1000);
+
+    function authSetLoggedIn(email, isNew, userId, accessToken, refreshToken, expiresIn) {
+      const expiresAt = expiresIn ? Date.now() + (expiresIn * 1000) : null;
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
         userId: userId || null,
         accessToken: accessToken || null,
+        refreshToken: refreshToken || null,
+        expiresAt: expiresAt,
         createdAt: Date.now()
       }));
 
