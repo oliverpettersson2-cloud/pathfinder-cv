@@ -1827,6 +1827,9 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         if (l && typeof l === 'object' && l.name) return { name: l.name, level: l.level || 'Flytande' };
         return null;
       }).filter(Boolean);
+      // Auto-sortera jobb och utbildning kronologiskt (nyaste/pågående överst)
+      if (typeof sortJobsByDate === 'function') sortJobsByDate();
+      if (typeof sortEducationByDate === 'function') sortEducationByDate();
     } catch(e) {
       console.error('Kunde inte ladda CV', e);
     }
@@ -2907,6 +2910,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     } else {
       cvData.jobs.push(job);
     }
+    sortJobsByDate();
     saveCVLocal();
     renderJobs();
     renderPreview();
@@ -3087,6 +3091,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     } else {
       cvData.education.push(edu);
     }
+    sortEducationByDate();
     saveCVLocal();
     renderEducation();
     renderPreview();
@@ -3120,6 +3125,48 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     return (from || '') + ' – ' + (to || '');
   }
   window.formatJobPeriod = formatJobPeriod;
+
+  // ============================================================
+  // KRONOLOGISK SORTERING — nyaste/pågående överst
+  // ============================================================
+  const MONTH_MAP = { Jan:1, Feb:2, Mar:3, Apr:4, Maj:5, Jun:6, Jul:7, Aug:8, Sep:9, Okt:10, Nov:11, Dec:12 };
+
+  // Returnerar en numerisk "sort-vikt" där högre = nyare
+  // Pågående/ongoing jobb = Infinity (hamnar alltid överst)
+  function entryEndWeight(e) {
+    if (!e) return 0;
+    const isOngoing = (e.ongoing === true || e.endYear === 'Pågående' || e.endYear === 'nu' || !e.endYear);
+    if (isOngoing) return Infinity;
+    const y = parseInt(e.endYear, 10) || 0;
+    const m = MONTH_MAP[e.endMonth] || 0;
+    return y * 100 + m;
+  }
+  // Fallback om två har samma slutdatum → sortera på start (nyaste start först)
+  function entryStartWeight(e) {
+    if (!e) return 0;
+    const y = parseInt(e.startYear, 10) || 0;
+    const m = MONTH_MAP[e.startMonth] || 0;
+    return y * 100 + m;
+  }
+
+  function sortJobsByDate() {
+    if (!Array.isArray(cvData.jobs)) return;
+    cvData.jobs.sort((a, b) => {
+      const ae = entryEndWeight(a), be = entryEndWeight(b);
+      if (ae !== be) return be - ae;            // senast avslutat överst
+      return entryStartWeight(b) - entryStartWeight(a); // tie: senaste start överst
+    });
+  }
+  function sortEducationByDate() {
+    if (!Array.isArray(cvData.education)) return;
+    cvData.education.sort((a, b) => {
+      const ae = entryEndWeight(a), be = entryEndWeight(b);
+      if (ae !== be) return be - ae;
+      return entryStartWeight(b) - entryStartWeight(a);
+    });
+  }
+  window.sortJobsByDate = sortJobsByDate;
+  window.sortEducationByDate = sortEducationByDate;
 
   // ============================================================
   // PROFILBILD
