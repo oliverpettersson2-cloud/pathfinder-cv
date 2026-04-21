@@ -4755,9 +4755,13 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   function renderPreview() {
     const doc = document.getElementById('cvDocument');
     if (!doc) return;
-    // Mall-klass: "cv-classic" / "cv-minimal" / "cv-template-3" etc. (matchar mobilen)
+    // Mall-klass: alla mallar prefixas med "cv-" för att matcha mobilens CSS
+    //   classic    → cv-classic
+    //   minimal    → cv-minimal
+    //   template-3 → cv-template-3
+    //   template-N → cv-template-N
     const tpl = cvData.template || 'classic';
-    const tplClass = (tpl === 'classic' || tpl === 'minimal') ? ('cv-' + tpl) : tpl;
+    const tplClass = 'cv-' + tpl;
     doc.className = 'cv-document ' + tplClass;
 
     const html = [];
