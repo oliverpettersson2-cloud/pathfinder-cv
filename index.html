@@ -9594,10 +9594,42 @@ pr:['Vilka digitala kompetenser saknar jag för [yrke]?','Bygg min digitala karr
 
 ];
 
-// Task data
+// Task data — tilldelade från handläggare (Supabase) + lokala fallback-uppgifter
 var TASKS_KEY='cvmtasks4';
-function getTasks(){try{var t=JSON.parse(localStorage.getItem(TASKS_KEY));return t&&t.length?t:dfTasks()}catch(e){return dfTasks()}}
-function saveTasks(t){try{localStorage.setItem(TASKS_KEY,JSON.stringify(t))}catch(e){}}
+var _assignedTasksCache = []; // Senaste hämtade från Supabase (my_tasks)
+
+// Lokala uppgifter (sparas i localStorage, används om inte inloggad)
+function getLocalTasks(){try{var t=JSON.parse(localStorage.getItem(TASKS_KEY));return t&&t.length?t:dfTasks()}catch(e){return dfTasks()}}
+function saveLocalTasks(t){try{localStorage.setItem(TASKS_KEY,JSON.stringify(t))}catch(e){}}
+
+// Huvudfunktion som rendering använder — returnerar alla uppgifter (Supabase + lokala)
+function getTasks(){
+  var assigned = (_assignedTasksCache || []).map(function(t){
+    var isDone = t.status === 'completed';
+    var tag = t.category ? String(t.category).toUpperCase() : 'HANDLÄGGARE';
+    var tc = t.type === 'timed' ? '#c4b5fd' : (t.type === 'auto' ? '#3eb489' : '#f0c040');
+    return {
+      id: 'assigned_' + t.id,         // prefix så vi kan skilja från lokala
+      _supabaseId: t.id,               // original-id för backend-anrop
+      _assigned: true,                 // markör för toggleTask
+      title: t.title || 'Uppgift',
+      desc: t.description || '',
+      tag: tag,
+      tc: tc,
+      done: isDone
+    };
+  });
+  var local = getLocalTasks();
+  // Tilldelade först, sen lokala
+  return assigned.concat(local);
+}
+
+// Behåll saveTasks för bakåtkompat — sparar bara lokala, tilldelade syncas via backend
+function saveTasks(t){
+  var local = (t || []).filter(function(x){ return !x._assigned; });
+  saveLocalTasks(local);
+}
+
 function dfTasks(){return[
 {id:'t1',title:'Slutför Intro-modulerna',desc:'Gör alla 3 moduler för att låsa upp resten.',tag:'Intro',tc:'#3eb489',done:false},
 {id:'t2',title:'Bygg ditt CV i CVmatchen',desc:'Logga in och bygg ett komplett CV.',tag:'Arbete',tc:'#f87171',done:false},
@@ -9605,6 +9637,26 @@ function dfTasks(){return[
 {id:'t4',title:'Uppdatera din LinkedIn-profil',desc:'Ny profilbild och förbättrad rubrik.',tag:'Digitalt',tc:'#34d399',done:false},
 {id:'t5',title:'Öva din pitch högt',desc:'Repetera tills det sitter naturligt — ca 30 sek.',tag:'Intervju',tc:'#f87171',done:false}
 ]}
+
+// Hämta tilldelade uppgifter från Supabase (/api/supabase action=my_tasks)
+async function loadAssignedTasks(){
+  var uid = window.authUserId;
+  var tok = window.authAccessToken;
+  if (!uid || !tok) { _assignedTasksCache = []; return; }
+  try {
+    var r = await fetch('/api/supabase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'my_tasks', accessToken: tok, userId: uid })
+    });
+    var data = await r.json().catch(function(){return {};});
+    _assignedTasksCache = Array.isArray(data.data) ? data.data : [];
+  } catch(e) {
+    console.error('Kunde inte hämta uppgifter:', e);
+    _assignedTasksCache = [];
+  }
+}
+window.loadAssignedTasks = loadAssignedTasks;
 
 // Category config
 var STUDIER=[
@@ -10311,7 +10363,11 @@ var D={
     document.getElementById('ovnHome').style.display='none';
     var v=document.getElementById('ovnModview');
     v.style.display='block';
-    D.renderTasks();
+    D.renderTasks(); // rendera direkt med cachen
+    // Hämta färsk data i bakgrunden och re-rendera när den kommit
+    if (typeof loadAssignedTasks === 'function') {
+      loadAssignedTasks().then(function(){ D.renderTasks(); });
+    }
   },
 
   renderTasks:function(){
@@ -10332,9 +10388,37 @@ var D={
   },
 
   toggleTask:function(el){
-    var id=el.dataset.tid,tasks=getTasks();
-    tasks=tasks.map(function(t){return t.id===id?Object.assign({},t,{done:!t.done}):t;});
-    saveTasks(tasks);D.renderTasks();
+    var id=el.dataset.tid;
+    var tasks=getTasks();
+    var task=tasks.find(function(t){return t.id===id;});
+    if (!task) return;
+
+    // Admin-tilldelad uppgift: anropa complete_task via backend
+    if (task._assigned && task._supabaseId) {
+      if (task.done) return; // redan klar, kan inte ångra backend-completion
+      var uid = window.authUserId, tok = window.authAccessToken;
+      if (!uid || !tok) return;
+      fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'complete_task',
+          accessToken: tok,
+          userId: uid,
+          taskId: task._supabaseId
+        })
+      }).then(function(r){
+        if (r.ok) return loadAssignedTasks();
+      }).then(function(){ D.renderTasks(); }).catch(function(e){
+        console.error('Kunde inte slutföra uppgift:', e);
+      });
+      return;
+    }
+
+    // Lokal uppgift: toggla i localStorage som förr
+    tasks = tasks.map(function(t){return t.id===id?Object.assign({},t,{done:!t.done}):t;});
+    saveTasks(tasks);
+    D.renderTasks();
   },
 
   addTask:function(){
