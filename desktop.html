@@ -287,6 +287,16 @@
     grid-template-columns: minmax(420px, 1fr) minmax(520px, 680px);
     gap: 32px;
     align-items: flex-start;
+    transition: grid-template-columns 0.3s ease;
+  }
+  /* När vi INTE är på Visa-steget: göm preview och låt edit-panelen ta full bredd */
+  #view-cv .cv-layout.preview-hidden {
+    grid-template-columns: 1fr;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  #view-cv .cv-layout.preview-hidden .cv-preview-panel {
+    display: none;
   }
   .cv-edit-panel {
     background: rgba(255,255,255,0.03);
@@ -331,6 +341,10 @@
     gap: 7px;
     position: relative;
     letter-spacing: -0.1px;
+    white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .cv-step::before {
     content: attr(data-step-num);
