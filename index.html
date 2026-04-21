@@ -268,6 +268,21 @@
       font-size: 14px;
     }
 
+    /* Global fallback för ALLA native option-element
+       så dropdown-listan alltid har läsbar text (svart på vitt) */
+    option {
+      background: #ffffff !important;
+      color: #1a1a2e !important;
+      padding: 8px !important;
+    }
+    option:hover,
+    option:focus,
+    option:active,
+    option:checked {
+      background: #e8f0fe !important;
+      color: #1a1a2e !important;
+    }
+
     select.form-input option:checked {
       background: linear-gradient(#2563eb, #2563eb);
       background-color: #2563eb;
@@ -11828,22 +11843,6 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 <script>
 // ── TRÄNING HUB CONTROLLER ──
 (function(){
-  // VERSION MARKER — lät dig verifiera i devtools/Safari console
-  console.log('%c[CVmatchen] Training hub v9 (Microsoft OAuth backend) loaded ✓','background:#3eb489;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;');
-  window.__CVMATCHEN_VERSION = 'TRAINING-HUB-v9';
-
-  // ── VIP-DEBUG: aktivera intervju-debugpanel för super-admin ──
-  // Kollar om inloggad email matchar VIP-listan. Aktivera BARA för dessa.
-  // Vanliga användare ser aldrig debug-panelen.
-  try {
-    var VIP_EMAILS = ['oliver.pettersson2@gmail.com'];
-    var authData = JSON.parse(localStorage.getItem('pathfinder_auth') || '{}');
-    if (authData && authData.email && VIP_EMAILS.indexOf(authData.email) !== -1) {
-      window.IV_DEBUG = true;
-      console.log('%c[CVmatchen] VIP-läge aktiverat (debug-panel för intervju)','background:#f0c040;color:#000;padding:2px 8px;border-radius:4px;font-weight:700;');
-    }
-  } catch(e) {}
-
   // Hjälpfunktion — räkna total procent för hela övningsappen
   // (Introgruppen + alla kategorier sammanvägt)
   function computeOvnPct() {
