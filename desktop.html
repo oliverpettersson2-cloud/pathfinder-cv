@@ -494,6 +494,22 @@
     opacity: 0.4;
     cursor: not-allowed;
   }
+
+  /* Global fallback för ALLA native option-element (utanför cv-input)
+     så dropdown-listan alltid har läsbar text. Använder mörkt tema
+     som matchar appens färgprofil. */
+  option {
+    background: #1e2545 !important;
+    color: #ffffff !important;
+    padding: 8px !important;
+  }
+  option:hover,
+  option:focus,
+  option:active,
+  option:checked {
+    background: #2a3556 !important;
+    color: #ffffff !important;
+  }
   .cv-textarea { resize: vertical; min-height: 110px; line-height: 1.6; font-size: 14px; }
   .cv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .cv-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
