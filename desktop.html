@@ -3341,6 +3341,20 @@
       transform: translateY(-2px);
       border-color: rgba(255,255,255,0.25) !important;
     }
+
+    /* 🔒 När AI:n svarar — dimma chips och förhindra klick */
+    .edu-chat-locked .chat-chip,
+    .edu-chat-locked [onclick*="sendMessage"],
+    .edu-chat-locked [data-quick-reply] {
+      opacity: 0.4 !important;
+      pointer-events: none !important;
+      cursor: not-allowed !important;
+      transition: opacity 0.2s;
+    }
+    .edu-chat-locked #edu-input {
+      opacity: 0.6;
+      pointer-events: none;
+    }
   </style>
 
   <!-- ===== ÖVNINGAR-VYN ===== -->
@@ -3732,6 +3746,7 @@
   var eduCurrentView = null;
   var eduData = null; // laddas från /api/utbildningar
   var EDU_SAVED_KEY = 'cvmatchen_edu_saved';
+  var isSending = false; // 🔒 Lås för att förhindra parallella frågor
 
   // Ladda utbildningsdata
   async function loadEduData() {
@@ -4050,10 +4065,14 @@
 
   async function sendMessage(text) {
     if (!text || !text.trim()) return;
+    if (isSending) return; // 🔒 Förhindra parallella frågor innan svar kommit
+    isSending = true;
+
     var inp = document.getElementById('edu-input');
     var btn = document.getElementById('edu-send');
     if (inp) { inp.value = ''; inp.style.height = 'auto'; }
     if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+    setChatLocked(true); // dimmar chips + inputfält
 
     addUser(text);
     showTyping();
@@ -4074,8 +4093,19 @@
       hideTyping(); addBot(reply);
     } catch(e) {
       hideTyping(); addBot('Kunde inte ansluta.\n\n>>Forsok igen\n>>Tillbaka till start');
+    } finally {
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      setChatLocked(false);
+      isSending = false;
     }
-    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  }
+
+  // Hjälpare för att låsa/låsa upp chatten visuellt
+  function setChatLocked(locked) {
+    var chat = document.getElementById('edu-chat');
+    if (!chat) return;
+    if (locked) chat.classList.add('edu-chat-locked');
+    else chat.classList.remove('edu-chat-locked');
   }
 
   function showChat(viewKey) {
