@@ -1193,6 +1193,61 @@
     font-size: 13px;
   }
 
+  /* Snabbsök-chips */
+  .matcha-quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 12px;
+  }
+  .matcha-quick-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
+  }
+  .matcha-quick-chip:hover {
+    background: rgba(62,180,137,0.1);
+    border-color: rgba(62,180,137,0.4);
+    color: var(--accent2);
+  }
+  .matcha-quick-chip.active {
+    background: rgba(62,180,137,0.15);
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+  .matcha-cv-title-btn {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    background: rgba(255,255,255,0.04);
+    border: 2px dashed rgba(62,180,137,0.4);
+    color: rgba(62,180,137,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s;
+  }
+  .matcha-cv-title-btn:hover {
+    background: rgba(62,180,137,0.08);
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
   /* ============================================================
      TOAST
      ============================================================ */
@@ -1650,6 +1705,196 @@
     border-color: var(--accent2);
     color: var(--accent2);
   }
+
+  /* ============================================================
+     UPPGIFTER FRÅN HANDLÄGGARE
+     ============================================================ */
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .task-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    transition: all 0.15s;
+  }
+  .task-card:hover {
+    border-color: rgba(240,192,64,0.35);
+    background: rgba(240,192,64,0.04);
+  }
+  .task-card.done {
+    opacity: 0.55;
+    border-color: rgba(62,180,137,0.3);
+    background: rgba(62,180,137,0.04);
+  }
+  .task-card.done .task-title {
+    text-decoration: line-through;
+    color: rgba(255,255,255,0.5);
+  }
+  .task-card.overdue {
+    border-color: rgba(239,68,68,0.4);
+    background: rgba(239,68,68,0.04);
+  }
+  .task-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: transparent;
+    background: transparent;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.15s;
+    cursor: default;
+  }
+  .task-card.done .task-check {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #fff;
+  }
+  .task-body { flex: 1; min-width: 0; }
+  .task-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .task-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    white-space: pre-wrap;
+  }
+  .task-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .task-tag {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: rgba(240,192,64,0.12);
+    color: var(--accent3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .task-tag.timed   { background: rgba(124,58,237,0.15); color: #c4b5fd; }
+  .task-tag.auto    { background: rgba(62,180,137,0.15); color: var(--accent2); }
+  .task-tag.manual  { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+  .task-deadline {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 600;
+  }
+  .task-deadline.soon { color: var(--accent3); }
+  .task-deadline.over { color: #ff8fa3; font-weight: 800; }
+  .task-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .task-btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .task-btn.primary {
+    background: var(--accent2);
+    color: #fff;
+  }
+  .task-btn.primary:hover:not(:disabled) { filter: brightness(1.1); }
+  .task-btn.secondary {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.75);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .task-btn.secondary:hover { background: rgba(255,255,255,0.1); }
+  .task-btn.active {
+    background: rgba(240,192,64,0.15);
+    color: var(--accent3);
+    border: 1px solid var(--accent3);
+  }
+  .task-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .task-timer {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent3);
+    padding: 4px 10px;
+    background: rgba(240,192,64,0.1);
+    border-radius: 6px;
+    letter-spacing: 1px;
+  }
+  .task-progress {
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .task-progress-fill {
+    height: 100%;
+    background: var(--accent2);
+    transition: width 0.3s;
+  }
+  .task-section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    font-size: 11px;
+    font-weight: 800;
+    color: #ff8fa3;
+    margin-left: 8px;
+  }
+  .task-empty {
+    padding: 36px 20px;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.02);
+    border: 2px dashed rgba(255,255,255,0.08);
+    border-radius: 14px;
+  }
+  .task-empty-icon { font-size: 42px; margin-bottom: 10px; opacity: 0.5; }
+
+  /* Sidebar-badge för uppgifter */
+  .sb-tab-badge {
+    margin-left: auto;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    border-radius: 10px;
+    padding: 1px 7px;
+    min-width: 18px;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -1765,10 +2010,12 @@
     <button class="sb-tab" data-view="ovningar" onclick="switchView('ovningar')">
       <span class="sb-tab-icon">🏋️</span>
       <span>Övningar</span>
+      <span class="sb-tab-badge" id="sbOvningarBadge" style="display:none;">0</span>
     </button>
     <button class="sb-tab" data-view="profil" onclick="switchView('profil')">
       <span class="sb-tab-icon">👤</span>
       <span>Profil</span>
+      <span class="sb-tab-badge" id="sbProfilBadge" style="display:none;">0</span>
     </button>
   </nav>
 
@@ -2022,7 +2269,28 @@
           <option value="">⏰ Alla anställningar</option>
           <option value="FULL_TIME">Heltid</option>
           <option value="PART_TIME">Deltid</option>
+          <option value="TEMPORARY">Timanställning</option>
         </select>
+      </div>
+
+      <!-- Snabbsök: branschchips (matchar mobilen) -->
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 8px;">⚡ Snabbsök</div>
+        <div class="matcha-quick-chips">
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('')">🌐 Alla jobb</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('lager logistik')">📦 Lager &amp; logistik</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('vård omsorg undersköterska')">🤝 Vård &amp; omsorg</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('bygg anläggning')">🏗️ Bygg &amp; anläggning</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('städ service')">🧹 Städ &amp; service</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('restaurang kök')">🍽️ Restaurang &amp; kök</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('butik handel')">🛒 Butik &amp; handel</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('industri tillverkning')">🏭 Industri</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('administration kontor')">📋 Administration</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('transport chaufför')">🚚 Transport</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('barn förskola skola')">👶 Barn &amp; skola</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('it utvecklare')">💻 IT &amp; tech</button>
+        </div>
+        <button class="matcha-cv-title-btn" onclick="matchaSearchByCvTitle()">🎯 Sök jobb som matchar min CV-titel</button>
       </div>
 
       <div id="matchaSkeleton" class="matcha-skeleton" style="display:none;">
@@ -2084,6 +2352,15 @@
           Logga ut
         </button>
       </div>
+    </div>
+
+    <!-- Uppgifter från handläggare -->
+    <div class="pf-section" id="pfTasksSection">
+      <div class="pf-section-head">
+        <div class="pf-section-title">✅ Uppgifter från handläggare</div>
+        <div class="pf-section-count" id="pfTasksCount">0</div>
+      </div>
+      <div id="pfTasksList" class="task-list"></div>
     </div>
 
     <!-- Mina CV -->
