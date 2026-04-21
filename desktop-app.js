@@ -2106,6 +2106,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         if (typeof renderLanguages === 'function') renderLanguages();
         if (typeof renderLicenses === 'function') renderLicenses();
         if (typeof renderPreview === 'function') renderPreview();
+        if (typeof renderHejView === 'function') renderHejView();
         if (cvData.name) foundSomething = true;
       }
 
@@ -2175,6 +2176,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     f('cv-phone', phone);
 
     renderPreview();
+    if (typeof renderHejView === 'function') renderHejView();
     hideAuthOverlay();
     toast('✅ Välkommen ' + firstName + '!');
     switchView('cv');
@@ -2360,6 +2362,9 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const tabEl = document.querySelector('.sb-tab[data-view="' + view + '"]');
     if (tabEl) tabEl.classList.add('active');
 
+    if (view === 'hej') {
+      renderHejView();
+    }
     if (view === 'cv') {
       cvSwitchStep(currentStep);
       renderPreview();
@@ -2376,6 +2381,23 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       renderProfilView();
     }
   };
+
+  // ============================================================
+  // HEJ-VYN: personlig hälsning
+  // ============================================================
+  function renderHejView() {
+    const el = document.getElementById('hejGreet');
+    if (!el) return;
+    const name = (cvData && cvData.name ? String(cvData.name).trim() : '');
+    if (name) {
+      const firstName = name.split(/\s+/)[0];
+      el.textContent = 'Hej ' + firstName + ' 👋';
+      el.style.display = 'block';
+    } else {
+      el.textContent = '';
+      el.style.display = 'none';
+    }
+  }
 
   // ============================================================
   // CV: STEP SWITCHING
@@ -5078,6 +5100,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     loadCV();
     loadCVIntoForm();
     renderPreview();
+    renderHejView();
 
     // Steg 1: kolla Microsoft OAuth callback (?ms_token=... eller ?ms_error=...)
     const msHandled = checkMicrosoftCallback();
