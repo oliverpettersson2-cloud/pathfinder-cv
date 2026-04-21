@@ -4749,55 +4749,67 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   };
 
   // ============================================================
-  // CV: PREVIEW (live)
+  // CV: PREVIEW (live) — bygger EXAKT samma DOM som mobilen
+  // så alla 10 mallar funkar pixelperfect.
   // ============================================================
   function renderPreview() {
     const doc = document.getElementById('cvDocument');
     if (!doc) return;
-    doc.className = 'cv-document ' + (cvData.template || 'classic');
+    // Mall-klass: "cv-classic" / "cv-minimal" / "cv-template-3" etc. (matchar mobilen)
+    const tpl = cvData.template || 'classic';
+    const tplClass = (tpl === 'classic' || tpl === 'minimal') ? ('cv-' + tpl) : tpl;
+    doc.className = 'cv-document ' + tplClass;
 
     const html = [];
-    // Header — med valfri profilbild
+
+    // ── HEADER ──
     const hasPhoto = cvData.showPhoto === true && !!cvData.photoData;
-    html.push('<div class="cv-doc-header"' + (hasPhoto ? ' style="display:flex;align-items:center;gap:20px;"' : '') + '>');
+    html.push('<div class="cv-header">');
+    // Foto-container finns alltid i DOM (för CSS som stylar header) men döljs om inget foto
+    html.push('<div class="cv-header-photo" style="' + (hasPhoto ? 'display:block;' : 'display:none;') + '">');
     if (hasPhoto) {
-      html.push('<img src="' + cvData.photoData + '" alt="Profilbild" style="width:88px;height:88px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.15);">');
-      html.push('<div style="flex:1;">');
+      html.push('<img src="' + cvData.photoData + '" alt="Foto" style="display:block;">');
     }
-    html.push('<div class="cv-doc-name">' + escape(cvData.name || 'Ditt namn') + '</div>');
-    if (cvData.title) html.push('<div class="cv-doc-title">' + escape(cvData.title) + '</div>');
+    html.push('</div>');
+    // Text-innehåll
+    html.push('<div class="cv-header-content">');
+    html.push('<div class="cv-name">' + escape(cvData.name || 'Ditt namn') + '</div>');
+    if (cvData.title) html.push('<div class="cv-title">' + escape(cvData.title) + '</div>');
     const contact = [];
     if (cvData.email) contact.push('✉ ' + escape(cvData.email));
     if (cvData.phone) contact.push('📞 ' + escape(cvData.phone));
-    if (contact.length) html.push('<div class="cv-doc-contact">' + contact.join('') + '</div>');
-    if (hasPhoto) html.push('</div>');
-    html.push('</div>');
+    if (contact.length) html.push('<div class="cv-contact">' + contact.join(' · ') + '</div>');
+    html.push('</div>'); // end cv-header-content
+    html.push('</div>'); // end cv-header
+
+    // ── BODY ──
+    html.push('<div class="cv-body">');
 
     // Summary
     if (cvData.summary) {
-      html.push('<div class="cv-doc-section">');
-      html.push('<div class="cv-doc-section-title">Profil</div>');
-      html.push('<div class="cv-doc-summary">' + escape(cvData.summary) + '</div>');
+      html.push('<div class="cv-section">');
+      html.push('<div class="cv-section-title">Profil</div>');
+      html.push('<div class="cv-summary">' + escape(cvData.summary) + '</div>');
       html.push('</div>');
     }
 
     // Jobs
     if (cvData.jobs.length) {
-      html.push('<div class="cv-doc-section">');
-      html.push('<div class="cv-doc-section-title">Arbetslivserfarenhet</div>');
+      html.push('<div class="cv-section">');
+      html.push('<div class="cv-section-title">Arbetslivserfarenhet</div>');
       cvData.jobs.forEach(j => {
         const period = formatJobPeriod(j) || ((j.startYear || '') + '–' + (j.endYear || 'nu'));
         const loc = j.location ? ' · ' + escape(j.location) : '';
         const descs = [j.desc1, j.desc2, j.desc3].filter(Boolean);
-        html.push('<div class="cv-doc-entry">');
-        html.push('<div class="cv-doc-entry-title">' + escape(j.title || '') + '</div>');
-        html.push('<div class="cv-doc-entry-meta">' + escape(j.company || '') + ' · ' + escape(period) + loc + '</div>');
+        html.push('<div class="cv-entry">');
+        html.push('<div class="cv-entry-title">' + escape(j.title || '') + '</div>');
+        html.push('<div class="cv-entry-subtitle">' + escape(j.company || '') + ' · ' + escape(period) + loc + '</div>');
         if (descs.length) {
-          html.push('<ul class="cv-doc-entry-desc" style="margin:4px 0 0 16px; padding:0;">');
-          descs.forEach(d => html.push('<li>' + escape(d) + '</li>'));
+          html.push('<ul style="margin:8px 0 0 0; padding-left:16px; font-size:12px; color:#555; line-height:1.6;">');
+          descs.forEach(d => html.push('<li style="margin-bottom:4px;">' + escape(d) + '</li>'));
           html.push('</ul>');
         } else if (j.desc) {
-          html.push('<div class="cv-doc-entry-desc">' + escape(j.desc) + '</div>');
+          html.push('<div style="font-size:12px; color:#555; line-height:1.6; margin-top:6px;">' + escape(j.desc) + '</div>');
         }
         html.push('</div>');
       });
@@ -4806,64 +4818,62 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     // Education
     if (cvData.education.length) {
-      html.push('<div class="cv-doc-section">');
-      html.push('<div class="cv-doc-section-title">Utbildning</div>');
+      html.push('<div class="cv-section">');
+      html.push('<div class="cv-section-title">Utbildning</div>');
       cvData.education.forEach(e => {
         const from = formatPeriod(e.startMonth, e.startYear);
         const to = (e.ongoing || e.endYear === 'Pågående' || e.endYear === 'nu') ? 'nu' : formatPeriod(e.endMonth, e.endYear);
         const period = (from || to) ? (from || '') + '–' + (to || '') : '';
         const school = e.schoolName || e.school || '';
         const form = e.schoolForm ? ' (' + escape(e.schoolForm) + ')' : '';
-        html.push('<div class="cv-doc-entry">');
-        html.push('<div class="cv-doc-entry-title">' + escape(e.degree || '') + '</div>');
-        html.push('<div class="cv-doc-entry-meta">' + escape(school) + form + (period ? ' · ' + escape(period) : '') + '</div>');
+        html.push('<div class="cv-entry">');
+        html.push('<div class="cv-entry-title">' + escape(e.degree || '') + '</div>');
+        html.push('<div class="cv-entry-subtitle">' + escape(school) + form + (period ? ' · ' + escape(period) : '') + '</div>');
         html.push('</div>');
       });
       html.push('</div>');
     }
 
-    // Skills
+    // Skills — chip-stil matchar mobilen
     if (cvData.skills.length) {
-      html.push('<div class="cv-doc-section">');
-      html.push('<div class="cv-doc-section-title">Kompetenser</div>');
-      html.push('<div class="cv-doc-skills">');
+      html.push('<div class="cv-section">');
+      html.push('<div class="cv-section-title">Kompetenser</div>');
+      html.push('<div style="display:flex; flex-wrap:wrap; gap:6px;">');
       cvData.skills.forEach(s => {
-        html.push('<span class="cv-doc-skill">' + escape(s) + '</span>');
+        html.push('<span style="display:inline-block; background:rgba(26,26,46,0.07); border:1px solid rgba(26,26,46,0.15); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600; color:#1a1a2e; letter-spacing:0.2px; white-space:nowrap;">' + escape(s) + '</span>');
       });
       html.push('</div>');
       html.push('</div>');
     }
 
-    // Languages — chip-stil med nivå-färgning (matchar mobilen)
+    // Languages — chip-stil med formatet "Svenska – Modersmål"
     if (cvData.languages.length) {
-      // Normalisera: äldre data kan vara strings
       const langs = cvData.languages.map(l =>
         typeof l === 'string' ? { name: l, level: 'Flytande' } : l
       ).filter(l => l && l.name);
       if (langs.length) {
-        html.push('<div class="cv-doc-section">');
-        html.push('<div class="cv-doc-section-title">Språk</div>');
-        html.push('<div class="cv-doc-lang-inline">');
-        html.push(
-          langs.map(l => {
-            const lvl = l.level || 'Flytande';
-            return '<span class="cv-doc-lang-entry">' +
-              escape(l.name) + ' – <em>' + escape(lvl) + '</em>' +
-            '</span>';
-          }).join('<span class="cv-doc-lang-sep">·</span>')
-        );
+        html.push('<div class="cv-section">');
+        html.push('<div class="cv-section-title">Språk</div>');
+        html.push('<div style="display:flex; flex-wrap:wrap; gap:6px;">');
+        langs.forEach(l => {
+          const lvl = l.level || 'Flytande';
+          html.push('<span style="display:inline-flex; align-items:baseline; gap:4px; background:rgba(26,26,46,0.07); border:1px solid rgba(26,26,46,0.15); border-radius:20px; padding:3px 12px; font-size:11px; color:#1a1a2e; letter-spacing:0.2px; white-space:nowrap;">' +
+            '<strong style="font-weight:700;">' + escape(l.name) + '</strong>' +
+            '<span style="font-weight:500; opacity:0.7; font-style:italic;"> – ' + escape(lvl) + '</span>' +
+          '</span>');
+        });
         html.push('</div>');
         html.push('</div>');
       }
     }
 
-    // Licenses — pill chips (matchar mobilen)
+    // Licenses — chip-stil
     if (cvData.licenses.length) {
-      html.push('<div class="cv-doc-section">');
-      html.push('<div class="cv-doc-section-title">Körkort</div>');
-      html.push('<div class="cv-doc-license-list">');
+      html.push('<div class="cv-section">');
+      html.push('<div class="cv-section-title">Körkort</div>');
+      html.push('<div style="display:flex; flex-wrap:wrap; gap:6px;">');
       cvData.licenses.forEach(lic => {
-        html.push('<span class="cv-doc-license-pill">' + escape(lic) + '</span>');
+        html.push('<span style="display:inline-block; background:rgba(26,26,46,0.07); border:1px solid rgba(26,26,46,0.15); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600; color:#1a1a2e; letter-spacing:0.2px; white-space:nowrap;">' + escape(lic) + '</span>');
       });
       html.push('</div>');
       html.push('</div>');
@@ -4871,13 +4881,13 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     // Certifikat
     if (Array.isArray(cvData.certifications) && cvData.certifications.length) {
-      html.push('<div class="cv-doc-section">');
-      html.push('<div class="cv-doc-section-title">Certifikat</div>');
+      html.push('<div class="cv-section">');
+      html.push('<div class="cv-section-title">Certifikat</div>');
       cvData.certifications.forEach(c => {
         const meta = [c.issuer, c.date].filter(Boolean).map(escape).join(' · ');
-        html.push('<div class="cv-doc-entry">');
-        html.push('<div class="cv-doc-entry-title">' + escape(c.name || '') + '</div>');
-        if (meta) html.push('<div class="cv-doc-entry-meta">' + meta + '</div>');
+        html.push('<div class="cv-entry">');
+        html.push('<div class="cv-entry-title">' + escape(c.name || '') + '</div>');
+        if (meta) html.push('<div class="cv-entry-subtitle">' + meta + '</div>');
         html.push('</div>');
       });
       html.push('</div>');
@@ -4886,22 +4896,27 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     // Referenser
     const hasRefs = Array.isArray(cvData.references) && cvData.references.length;
     if (hasRefs || cvData.refOnRequest) {
-      html.push('<div class="cv-doc-section">');
-      html.push('<div class="cv-doc-section-title">Referenser</div>');
-      if (hasRefs) {
+      html.push('<div class="cv-section">');
+      html.push('<div class="cv-section-title">Referenser</div>');
+      if (cvData.refOnRequest && !hasRefs) {
+        html.push('<div style="font-style:italic; color:#666; font-size:12.5px;">Referenser lämnas på begäran</div>');
+      } else if (hasRefs) {
         cvData.references.forEach(r => {
-          const contact = [r.email, r.phone].filter(Boolean).map(escape).join(' · ');
-          html.push('<div class="cv-doc-entry">');
-          html.push('<div class="cv-doc-entry-title">' + escape(r.name || '') + '</div>');
-          if (r.title) html.push('<div class="cv-doc-entry-meta">' + escape(r.title) + '</div>');
-          if (contact) html.push('<div class="cv-doc-entry-meta" style="opacity:0.85;">' + contact + '</div>');
+          const contactLine = [r.email, r.phone].filter(Boolean).map(escape).join(' · ');
+          html.push('<div class="cv-entry">');
+          html.push('<div class="cv-entry-title">' + escape(r.name || '') + '</div>');
+          if (r.title) html.push('<div class="cv-entry-subtitle">' + escape(r.title) + '</div>');
+          if (contactLine) html.push('<div class="cv-entry-subtitle" style="opacity:0.85;">' + contactLine + '</div>');
           html.push('</div>');
         });
-      } else {
-        html.push('<div class="cv-doc-entry-meta" style="font-style:italic;">Lämnas på begäran</div>');
+        if (cvData.refOnRequest) {
+          html.push('<div style="font-style:italic; color:#666; font-size:12px; margin-top:8px;">Ytterligare referenser lämnas på begäran</div>');
+        }
       }
       html.push('</div>');
     }
+
+    html.push('</div>'); // end cv-body
 
     doc.innerHTML = html.join('');
   }
@@ -4973,28 +4988,29 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     showAiLoader('Sparar i molnet...', 'Synkar med dina enheter');
     try {
-      // Spara nuvarande CV-state (action: saveCV — befintlig)
-      const r = await fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'saveCV',
-          accessToken: auth.accessToken,
-          userId: auth.userId,
-          cvData: cvData
-        })
+      // Använd sbCall så token auto-refreshas + 401 hanteras snyggt
+      const result = await sbCall({
+        action: 'saveCV',
+        userId: auth.userId,
+        cvData: cvData
       });
-      // Synka även listan över sparade CV:n
-      sbSync('saved_cvs', pfGetSaved());
+
+      // Synka även listan över sparade CV:n (kan failsafe ignoreras om den funktionen saknas)
+      try { sbSync('saved_cvs', pfGetSaved()); } catch(_) {}
 
       hideAiLoader();
-      if (r.ok) {
+      if (result && !result.error) {
         toast('✅ CV sparat — synligt på alla enheter');
+      } else if (result && result.error === 'not_authenticated') {
+        toast('Sparat lokalt — logga in igen för molnsynk', 'error');
       } else {
+        // Logga vad servern faktiskt returnerade så det går att debugga
+        console.warn('saveCV cloud-fel:', result);
         toast('Sparat lokalt, molnsynk misslyckades', 'error');
       }
     } catch(e) {
       hideAiLoader();
+      console.error('saveCV exception:', e);
       toast('Sparat lokalt, nätverksfel', 'error');
     }
 
