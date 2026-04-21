@@ -3352,6 +3352,13 @@
   <div class="modal" id="jobModal" data-edit-idx="0">
     <div class="modal-content">
       <div class="modal-title">Lägg till arbetsupplevelse</div>
+
+      <!-- Befintliga jobb (visas bara vid "Lägg till", inte vid redigering) -->
+      <div id="jobModalExisting" style="display:none; margin-bottom: 14px; padding: 10px 12px; background: rgba(62,180,137,0.07); border: 1px solid rgba(62,180,137,0.2); border-radius: 10px;">
+        <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #3eb489; margin-bottom: 6px;">Redan tillagda</div>
+        <div id="jobModalExistingList" style="display:flex; flex-direction:column; gap: 4px;"></div>
+      </div>
+
       <input type="text" class="modal-input" id="jobTitle" placeholder="Jobbtitel">
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
@@ -5432,7 +5439,33 @@
       }
       
       const modal = document.getElementById('jobModal');
-      modal.dataset.editIdx = idx ?? -1;
+      const editIdx = (idx !== null && idx >= 0) ? idx : -1;
+      modal.dataset.editIdx = editIdx;
+
+      // Visa befintliga jobb ovanför formuläret — bara vid "Lägg till" när det redan finns andra jobb
+      const existingBox = document.getElementById('jobModalExisting');
+      const existingList = document.getElementById('jobModalExistingList');
+      if (existingBox && existingList) {
+        const otherJobs = (cvData.jobs || []).filter((_, i) => i !== editIdx);
+        if (otherJobs.length > 0) {
+          existingList.innerHTML = otherJobs.map(j => {
+            const startP = j.startMonth && j.startYear ? (j.startMonth + ' ' + j.startYear) : (j.startYear || '');
+            const endP = (j.endYear === 'Pågående') ? 'nu' : (j.endMonth && j.endYear ? (j.endMonth + ' ' + j.endYear) : (j.endYear || ''));
+            const period = (startP && endP) ? (startP + ' – ' + endP) : (startP || endP || '(ingen period)');
+            const label = (j.title || '(ingen titel)') + (j.company ? ' · ' + j.company : '');
+            const safeLabel = label.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const safePeriod = period.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            return '<div style="display:flex; justify-content:space-between; gap:10px; font-size:12px; color:rgba(255,255,255,0.75);">' +
+              '<span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + safeLabel + '</span>' +
+              '<span style="color:#3eb489; font-weight:600; flex-shrink:0;">' + safePeriod + '</span>' +
+            '</div>';
+          }).join('');
+          existingBox.style.display = 'block';
+        } else {
+          existingBox.style.display = 'none';
+        }
+      }
+
       modal.classList.add('active');
     }
 
