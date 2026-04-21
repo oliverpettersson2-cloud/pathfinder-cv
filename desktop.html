@@ -898,6 +898,302 @@
   }
 
   /* ============================================================
+     MATCHA-VY
+     ============================================================ */
+  .matcha-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255,255,255,0.06);
+  }
+  .matcha-tab {
+    flex: 1;
+    padding: 14px 8px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: rgba(255,255,255,0.3);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+    margin-bottom: -2px;
+  }
+  .matcha-tab:hover:not(.active):not(:disabled) { color: rgba(255,255,255,0.6); }
+  .matcha-tab.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent2);
+  }
+  .matcha-tab:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .matcha-step { display: none; }
+  .matcha-step.active { display: block; animation: matchaFade 0.25s ease; }
+  @keyframes matchaFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* CV-val */
+  .matcha-cv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .matcha-cv-card {
+    padding: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .matcha-cv-card:hover {
+    border-color: rgba(62,180,137,0.4);
+    background: rgba(62,180,137,0.05);
+  }
+  .matcha-cv-card.selected {
+    border-color: var(--accent2);
+    background: rgba(62,180,137,0.1);
+  }
+  .matcha-cv-card.selected::after {
+    content: '✓';
+    float: right;
+    color: var(--accent2);
+    font-size: 18px;
+    font-weight: 900;
+  }
+  .matcha-cv-card-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .matcha-cv-card-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* Sök */
+  .matcha-search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .matcha-search-input {
+    flex: 1;
+    padding: 14px 18px;
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    color: #1a1a2e;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+  }
+  .matcha-search-input::placeholder { color: rgba(26,26,46,0.4); }
+  .matcha-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .matcha-filter-select {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(62,180,137,0.08);
+    border: 1.5px solid rgba(62,180,137,0.4);
+    border-radius: 10px;
+    color: var(--accent2);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+  }
+  .matcha-results {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .matcha-job-card {
+    padding: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    transition: all 0.15s;
+  }
+  .matcha-job-card:hover {
+    border-color: rgba(62,180,137,0.3);
+    background: rgba(62,180,137,0.04);
+  }
+  .matcha-job-card.selected {
+    border-color: var(--accent2);
+    background: rgba(62,180,137,0.08);
+  }
+  .matcha-job-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .matcha-job-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .matcha-job-info { flex: 1; min-width: 0; }
+  .matcha-job-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  .matcha-job-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .matcha-job-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .matcha-job-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .matcha-job-btn.pick {
+    background: var(--accent2);
+    color: #fff;
+  }
+  .matcha-job-btn.pick:hover { filter: brightness(1.1); }
+  .matcha-job-btn.picked {
+    background: rgba(62,180,137,0.15);
+    color: var(--accent2);
+    border: 1.5px solid var(--accent2);
+  }
+  .matcha-job-btn.link {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    display: inline-block;
+  }
+  .matcha-job-btn.link:hover { background: rgba(255,255,255,0.1); }
+
+  .matcha-sticky-bar {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to top, var(--bg) 70%, rgba(16,18,35,0.4));
+    padding: 14px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    border-top: 1px solid rgba(62,180,137,0.2);
+  }
+  .matcha-sticky-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent2);
+    flex: 1;
+  }
+
+  /* Steg 3 — AI-resultat */
+  .matcha-ad-result {
+    background: rgba(255,255,255,0.03);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  .matcha-ad-result-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .matcha-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .matcha-kw {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .matcha-kw.match   { background: rgba(62,180,137,0.15); color: var(--accent2); }
+  .matcha-kw.partial { background: rgba(240,192,64,0.15); color: var(--accent3); }
+  .matcha-kw.missing { background: rgba(255,100,100,0.12); color: #ff8fa3; }
+
+  .matcha-alt {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+  .matcha-alt:hover { border-color: rgba(62,180,137,0.3); }
+  .matcha-alt-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .matcha-alt-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+  }
+  .matcha-alt-btn {
+    padding: 8px 16px;
+    background: var(--accent2);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .matcha-alt-btn:hover { filter: brightness(1.1); }
+
+  .matcha-skeleton {
+    padding: 24px;
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+  }
+
+  /* ============================================================
      TOAST
      ============================================================ */
   #toast {
@@ -1462,6 +1758,10 @@
       <span class="sb-tab-icon">📄</span>
       <span>CV</span>
     </button>
+    <button class="sb-tab" data-view="matcha" onclick="switchView('matcha')">
+      <span class="sb-tab-icon">🎯</span>
+      <span>Matcha</span>
+    </button>
     <button class="sb-tab" data-view="ovningar" onclick="switchView('ovningar')">
       <span class="sb-tab-icon">🏋️</span>
       <span>Övningar</span>
@@ -1666,6 +1966,92 @@
           <!-- Renderas av JS -->
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ===== MATCHA-VYN (3-stegs flow: välj CV → sök jobb → matcha AI) ===== -->
+  <section class="view" id="view-matcha">
+    <div class="ov-hero" style="background: linear-gradient(135deg, rgba(62,180,137,0.08), rgba(62,180,137,0.02));">
+      <div class="ov-title">🎯 Matcha mot jobb</div>
+      <div class="ov-sub">
+        Välj ett CV, sök jobbannonser på Platsbanken, och låt AI:n
+        skräddarsy en profiltext för upp till 3 jobb samtidigt.
+      </div>
+    </div>
+
+    <div class="matcha-tabs">
+      <button id="matchaTab1" class="matcha-tab active" onclick="matchaSwitchStep(1)">1 · Välj CV</button>
+      <button id="matchaTab2" class="matcha-tab" onclick="matchaSwitchStep(2)" disabled>2 · Sök jobb</button>
+      <button id="matchaTab3" class="matcha-tab" onclick="matchaSwitchStep(3)" disabled>3 · Matcha med AI</button>
+    </div>
+
+    <!-- STEG 1: Välj CV -->
+    <div id="matchaStep1" class="matcha-step active">
+      <div style="font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 14px;">
+        Välj vilket CV du vill matcha. Du kan alltid byta senare.
+      </div>
+      <div class="matcha-cv-grid" id="matchaCvGrid"></div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" id="matchaToStep2Btn" onclick="matchaSwitchStep(2)" disabled>
+          Gå till sök →
+        </button>
+      </div>
+    </div>
+
+    <!-- STEG 2: Sök jobb (Platsbanken) -->
+    <div id="matchaStep2" class="matcha-step">
+      <div class="matcha-search-bar">
+        <input type="text" class="matcha-search-input" id="matchaSearch"
+          placeholder="Yrke eller nyckelord (t.ex. butiksbiträde, lärare, personalchef)..."
+          oninput="matchaSearchDebounce()"
+          onkeydown="if(event.key==='Enter') matchaDoSearch()">
+      </div>
+
+      <div class="matcha-filters">
+        <select class="matcha-filter-select" id="matchaOrt" onchange="matchaSetOrt(this.value)">
+          <option value="all">📍 Hela Sverige</option>
+          <option value="skane">Skåne</option>
+          <option value="hbg">Helsingborg</option>
+          <option value="sthlm">Stockholm</option>
+          <option value="gbg">Göteborg</option>
+          <option value="malmo">Malmö</option>
+          <option value="uppsala">Uppsala</option>
+          <option value="linkoping">Linköping</option>
+        </select>
+        <select class="matcha-filter-select" id="matchaTid" onchange="matchaSetTid(this.value)">
+          <option value="">⏰ Alla anställningar</option>
+          <option value="6YE1_gAC_R2G">Heltid</option>
+          <option value="947z_JGS_Uk2">Deltid</option>
+        </select>
+      </div>
+
+      <div id="matchaSkeleton" class="matcha-skeleton" style="display:none;">
+        🔍 Söker på Platsbanken...
+      </div>
+      <div id="matchaSearchResults" class="matcha-results"></div>
+      <div id="matchaVisaFler" style="display:none; margin-top: 12px; text-align: center;">
+        <button class="btn btn-secondary" onclick="matchaVisaFler()">Visa fler annonser</button>
+      </div>
+
+      <div class="matcha-sticky-bar" id="matchaStickyBar" style="display:none;">
+        <span class="matcha-sticky-count" id="matchaStickyCount">0/3 valda</span>
+        <button class="btn btn-ghost" onclick="matchaSwitchStep(1)">← Byt CV</button>
+        <button class="btn btn-primary" onclick="matchaSwitchStep(3)">Matcha med AI →</button>
+      </div>
+    </div>
+
+    <!-- STEG 3: AI-matchning -->
+    <div id="matchaStep3" class="matcha-step">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <div>
+          <div style="font-size: 16px; font-weight: 800; color: #fff;">AI matchar ditt CV</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px;" id="matchaStep3Sub">
+            Granskar nyckelord och skriver personliga profiltexter för varje annons.
+          </div>
+        </div>
+        <button class="btn btn-secondary" onclick="matchaSwitchStep(2)">← Tillbaka till sök</button>
+      </div>
+      <div id="matchaAdsContainer"></div>
     </div>
   </section>
 
