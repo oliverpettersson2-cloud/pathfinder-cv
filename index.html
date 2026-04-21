@@ -9602,6 +9602,26 @@ var _assignedTasksCache = []; // Senaste hämtade från Supabase (my_tasks)
 function getLocalTasks(){try{var t=JSON.parse(localStorage.getItem(TASKS_KEY));return t&&t.length?t:dfTasks()}catch(e){return dfTasks()}}
 function saveLocalTasks(t){try{localStorage.setItem(TASKS_KEY,JSON.stringify(t))}catch(e){}}
 
+// Engångsrensning: rensa ut gamla default-checklist-items från localStorage
+// (körs en gång per browser, flaggas sen som klart så det inte tar bort användarens egna tasks)
+(function clearLegacyDefaultTasks(){
+  try {
+    if (localStorage.getItem('cvmtasks4_legacy_cleared')) return;
+    var raw = localStorage.getItem(TASKS_KEY);
+    if (!raw) { localStorage.setItem('cvmtasks4_legacy_cleared','1'); return; }
+    var tasks = JSON.parse(raw);
+    // Endast rensa om det ÄR exakt de gamla 5 defaults (inga nya egna uppgifter)
+    var legacyIds = ['t1','t2','t3','t4','t5'];
+    var isOnlyLegacy = Array.isArray(tasks) && tasks.length > 0 && tasks.every(function(t){
+      return legacyIds.indexOf(t.id) !== -1;
+    });
+    if (isOnlyLegacy) {
+      localStorage.removeItem(TASKS_KEY);
+    }
+    localStorage.setItem('cvmtasks4_legacy_cleared','1');
+  } catch(e) {}
+})();
+
 // Huvudfunktion som rendering använder — returnerar alla uppgifter (Supabase + lokala)
 function getTasks(){
   var assigned = (_assignedTasksCache || []).map(function(t){
@@ -9630,13 +9650,7 @@ function saveTasks(t){
   saveLocalTasks(local);
 }
 
-function dfTasks(){return[
-{id:'t1',title:'Slutför Intro-modulerna',desc:'Gör alla 3 moduler för att låsa upp resten.',tag:'Intro',tc:'#3eb489',done:false},
-{id:'t2',title:'Bygg ditt CV i CVmatchen',desc:'Logga in och bygg ett komplett CV.',tag:'Arbete',tc:'#f87171',done:false},
-{id:'t3',title:'Söka minst 3 jobb i veckan',desc:'Använd Platsbanken, CVmatchen eller LinkedIn.',tag:'Arbete',tc:'#f87171',done:false},
-{id:'t4',title:'Uppdatera din LinkedIn-profil',desc:'Ny profilbild och förbättrad rubrik.',tag:'Digitalt',tc:'#34d399',done:false},
-{id:'t5',title:'Öva din pitch högt',desc:'Repetera tills det sitter naturligt — ca 30 sek.',tag:'Intervju',tc:'#f87171',done:false}
-]}
+function dfTasks(){return[]}
 
 // Hämta tilldelade uppgifter från Supabase (/api/supabase action=my_tasks)
 async function loadAssignedTasks(){
