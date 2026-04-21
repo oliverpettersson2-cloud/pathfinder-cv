@@ -3355,6 +3355,21 @@
       opacity: 0.6;
       pointer-events: none;
     }
+
+    /* 🎨 INTERVJU-MODULEN: dropdown-fix (BRANSCH, kategori etc.)
+       Intervju-modulen laddas från intervju.js/css separat och dess selects
+       ärver inte app-CSS. Tvinga läsbara options. */
+    #view-intervju select option,
+    #trainView-intervju select option {
+      background: #1e2545 !important;
+      color: #ffffff !important;
+      padding: 8px !important;
+    }
+    #view-intervju select option:checked,
+    #trainView-intervju select option:checked {
+      background: #2a3556 !important;
+      color: #ffffff !important;
+    }
   </style>
 
   <!-- ===== ÖVNINGAR-VYN ===== -->
