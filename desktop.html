@@ -284,7 +284,7 @@
      ============================================================ */
   #view-cv .cv-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(440px, 540px);
+    grid-template-columns: minmax(420px, 1fr) minmax(520px, 680px);
     gap: 32px;
     align-items: flex-start;
   }
@@ -357,6 +357,27 @@
   .cv-input:focus, .cv-textarea:focus {
     border-color: var(--accent2);
     background: rgba(255,255,255,0.08);
+  }
+  /* Select-specifikt: native dropdown-options behöver mörk bg + ljus text */
+  select.cv-input {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='%23ffffff88'%3E%3Cpath d='M6 7.5L.5 2 2 .5 6 4.5 10 .5l1.5 1.5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px;
+    padding-right: 28px;
+  }
+  select.cv-input option {
+    background: #1e2545;
+    color: #fff;
+    padding: 8px;
+  }
+  select.cv-input:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
   .cv-textarea { resize: vertical; min-height: 110px; line-height: 1.6; font-size: 14px; }
   .cv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -509,30 +530,45 @@
     margin-top: 20px;
   }
 
-  /* Mall-väljare */
+  /* Mall-väljare — kompakta kort med färghint */
   .template-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
   }
   .template-card {
+    position: relative;
     background: rgba(255,255,255,0.04);
     border: 2px solid rgba(255,255,255,0.08);
     border-radius: 10px;
-    padding: 14px 8px;
+    padding: 8px 6px;
     text-align: center;
     cursor: pointer;
     transition: all 0.15s;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
+    overflow: hidden;
   }
-  .template-card:hover { background: rgba(255,255,255,0.07); }
+  .template-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-1px);
+  }
   .template-card.active {
     border-color: var(--accent2);
-    background: rgba(62,180,137,0.1);
+    background: rgba(62,180,137,0.12);
   }
-  .template-card-icon { font-size: 22px; margin-bottom: 6px; }
+  /* Färgstrimma som matchar malltemat */
+  .template-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: var(--tpl-color, rgba(255,255,255,0.2));
+  }
+  .template-card-icon { font-size: 18px; margin-bottom: 4px; margin-top: 4px; }
+  .template-card-name { font-size: 11px; line-height: 1.3; }
 
   /* ============================================================
      CV-FÖRHANDSGRANSKNING (preview-pane)
@@ -985,6 +1021,32 @@
     .cv-document.template-10 .cv-doc-entry:hover {
       background: #e8f1f7 !important;
       border-left-color: #1e3c72 !important;
+    }
+
+    /* ============================================================
+       KONTAKT-SYNLIGHET för mallar med mörka/färgade headers
+       ============================================================ */
+    .cv-document.template-6 .cv-doc-contact,
+    .cv-document.template-8 .cv-doc-contact,
+    .cv-document.template-9 .cv-doc-contact,
+    .cv-document.template-10 .cv-doc-contact {
+      color: rgba(255, 255, 255, 0.92) !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+    }
+    /* Länkar i kontakt ska ärva samma ljusa färg (email kan bli blå annars) */
+    .cv-document.template-3 .cv-doc-contact a,
+    .cv-document.template-4 .cv-doc-contact a,
+    .cv-document.template-6 .cv-doc-contact a,
+    .cv-document.template-8 .cv-doc-contact a,
+    .cv-document.template-9 .cv-doc-contact a,
+    .cv-document.template-10 .cv-doc-contact a {
+      color: inherit !important;
+      text-decoration: none !important;
+    }
+    /* Garantera att contact syns också som default (om ingen mall-override) */
+    .cv-doc-contact {
+      font-weight: 500;
     }
 
 
@@ -3019,6 +3081,12 @@
   <div class="edit-modal-content">
     <div class="edit-modal-title" id="jobModalTitle">Lägg till arbetslivserfarenhet</div>
 
+    <!-- Befintliga jobb (visas bara vid "Lägg till", inte vid redigering) -->
+    <div id="jobModalExisting" style="display:none; margin-bottom: 16px; padding: 10px 12px; background: rgba(62,180,137,0.06); border: 1px solid rgba(62,180,137,0.18); border-radius: 10px;">
+      <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: var(--accent2); margin-bottom: 6px;">Redan tillagda</div>
+      <div id="jobModalExistingList" style="display:flex; flex-direction:column; gap: 4px;"></div>
+    </div>
+
     <label class="edit-modal-label">Jobbtitel *</label>
     <input type="text" class="cv-input" id="jobTitle" placeholder="t.ex. Butiksbiträde">
 
@@ -3034,7 +3102,7 @@
       <div style="flex:1;">
         <div class="edit-modal-label" style="color: var(--accent2);">Från</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-          <select class="cv-input" id="jobStartMonth" style="margin:0;">
+          <select class="cv-input" id="jobStartMonth" style="margin:0;" onchange="if(this.value)document.getElementById('jobStartYear').focus();">
             <option value="">Månad</option>
             <option value="Jan">Jan</option><option value="Feb">Feb</option>
             <option value="Mar">Mar</option><option value="Apr">Apr</option>
@@ -3043,7 +3111,7 @@
             <option value="Sep">Sep</option><option value="Okt">Okt</option>
             <option value="Nov">Nov</option><option value="Dec">Dec</option>
           </select>
-          <select class="cv-input" id="jobStartYear" style="margin:0;"></select>
+          <select class="cv-input" id="jobStartYear" style="margin:0;" onchange="if(this.value&&!document.getElementById('jobOngoing').checked)document.getElementById('jobEndMonth').focus();"></select>
         </div>
       </div>
 
@@ -3058,7 +3126,7 @@
           </label>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-          <select class="cv-input" id="jobEndMonth" style="margin:0;">
+          <select class="cv-input" id="jobEndMonth" style="margin:0;" onchange="if(this.value)document.getElementById('jobEndYear').focus();">
             <option value="">Månad</option>
             <option value="Jan">Jan</option><option value="Feb">Feb</option>
             <option value="Mar">Mar</option><option value="Apr">Apr</option>
@@ -3067,7 +3135,7 @@
             <option value="Sep">Sep</option><option value="Okt">Okt</option>
             <option value="Nov">Nov</option><option value="Dec">Dec</option>
           </select>
-          <select class="cv-input" id="jobEndYear" style="margin:0;"></select>
+          <select class="cv-input" id="jobEndYear" style="margin:0;" onchange="if(this.value)document.getElementById('jobDesc1').focus();"></select>
         </div>
       </div>
     </div>
