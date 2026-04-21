@@ -845,521 +845,509 @@
   .template-card-name { font-size: 11px; line-height: 1.3; }
 
   /* ============================================================
-     CV-FÖRHANDSGRANSKNING (preview-pane)
+     CV-FÖRHANDSGRANSKNING (preview-pane) — MOBIL-SYNK
+     DOM + CSS är nu identisk med mobilens så alla 10 mallar funkar.
      ============================================================ */
   .cv-document {
     background: #fff;
-    color: #1a1a2e;
     border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    max-width: 720px;
+    width: 100%;
+    overflow: hidden;
+    color: #1a1a2e;
     font-size: 13px;
     line-height: 1.55;
-    min-height: 600px;
   }
-  .cv-document.classic { font-family: Georgia, 'Times New Roman', serif; }
-  .cv-document.modern  { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-  .cv-doc-header {
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 16px;
-    margin-bottom: 18px;
-  }
-  .cv-doc-name {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--deep);
-    margin-bottom: 4px;
-    line-height: 1.1;
-  }
-  .cv-doc-title {
-    font-size: 14px;
-    color: var(--accent);
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-  .cv-doc-contact {
-    font-size: 11px;
-    color: #555;
+
+  .cv-header {
+    background: linear-gradient(135deg, var(--deep) 0%, #252f47 100%);
+    color: #fff;
+    padding: 40px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    align-items: center;
+    gap: 30px;
   }
-  .cv-doc-section {
+
+  .cv-header-photo {
+    flex-shrink: 0;
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+  }
+
+  .cv-classic .cv-header-photo {
+    background: #e85d26 !important;
+  }
+
+  .cv-minimal .cv-header-photo {
+    background: #e0ddd6 !important;
+  }
+
+  /* ===== TEMPLATE 3: MODERN BLÅ/GRÖN ===== */
+  .cv-template-3 .cv-header-photo {
+    background: linear-gradient(135deg, #4285F4 0%, #34A853 100%) !important;
+  }
+
+  /* ===== TEMPLATE 4: MODERN LILA/CYAN ===== */
+  .cv-template-4 .cv-header-photo {
+    background: linear-gradient(135deg, #AA66FF 0%, #00E5FF 100%) !important;
+  }
+
+  .cv-header-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .cv-header-content {
+    flex: 1;
+  }
+
+  .cv-name {
+    font-family: 'Georgia', serif;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #fff;
+  }
+
+  .cv-title {
+    font-size: 18px;
+    color: var(--accent3);
+    font-weight: 600;
     margin-bottom: 16px;
   }
-  .cv-doc-section-title {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
+
+  .cv-contact {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .cv-body {
+    padding: 40px;
+  }
+
+  .cv-section {
+    margin-bottom: 32px;
+  }
+
+  .cv-section-title {
+    font-size: 12px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 8px;
-    border-bottom: 1px solid rgba(232,93,38,0.2);
-    padding-bottom: 3px;
-  }
-  .cv-doc-summary { font-size: 12.5px; line-height: 1.6; color: #333; }
-  .cv-doc-entry { margin-bottom: 10px; }
-  .cv-doc-entry-title { font-weight: 700; font-size: 13px; }
-  .cv-doc-entry-meta { font-size: 11px; color: #666; margin-bottom: 2px; }
-  .cv-doc-entry-desc { font-size: 12px; color: #444; line-height: 1.5; }
-  .cv-doc-skills { display: flex; flex-wrap: wrap; gap: 5px; }
-  .cv-doc-skill {
-    background: #f0ede6;
-    color: var(--deep);
-    padding: 3px 9px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  /* Språk i CV: inline-flöde "Svenska – Modersmål · Engelska – Flytande" */
-  .cv-doc-lang-inline {
-    font-size: 12.5px;
-    color: #333;
-    line-height: 1.9;
-  }
-  .cv-doc-lang-entry {
-    font-weight: 600;
-    color: var(--deep);
-    white-space: nowrap;
-  }
-  .cv-doc-lang-entry em {
-    font-weight: 400;
-    font-style: italic;
-    color: #666;
-  }
-  .cv-doc-lang-sep {
-    margin: 0 10px;
-    color: #bbb;
-  }
-
-  /* Körkort som pill-chips */
-  .cv-doc-license-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .cv-doc-license-pill {
-    display: inline-block;
-    padding: 4px 10px;
-    background: #f0ede6;
-    color: var(--deep);
-    border-radius: 999px;
-    font-size: 11px;
     font-weight: 700;
-    border: 1px solid rgba(26,26,46,0.12);
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+
+  .cv-summary {
+    font-size: 13px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 24px;
+  }
+
+  .cv-entry {
+    margin-bottom: 20px;
+  }
+
+  .cv-entry-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--deep);
+  }
+
+  .cv-entry-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 4px 0 8px;
   }
 
   /* ============================================================
-     CV-MALLAR — portade från mobilen (template-3..10 + minimal)
+     MALLAR — importerade från mobilen orörda (lägger till !important
+     där mobilen hade det för att överskriva bas-reglerna ovan)
      ============================================================ */
 
-    /* ===== TEMPLATE 3: MODERN BLÅ/GRÖN DESIGN ===== */
-    .cv-document.template-3 .cv-doc-header {
-      background: linear-gradient(135deg, #4285F4 0%, #34A853 100%) !important;
-      color: #fff !important;
-      padding: 40px 40px !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 20px !important;
-      border-bottom: 3px solid #34A853 !important;
-    }
+  /* ===== CLASSIC ===== */
+  .cv-classic .cv-header {
+    background: #fff !important;
+    color: #1a1a2e !important;
+    border-bottom: 3px solid #e85d26 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    text-align: left !important;
+  }
+  .cv-classic .cv-header-content { flex: 1 !important; }
+  .cv-classic .cv-name { font-size: 32px !important; margin-bottom: 4px !important; color: #1a1a2e !important; }
+  .cv-classic .cv-title { font-size: 16px !important; color: #e85d26 !important; margin-bottom: 8px !important; }
+  .cv-classic .cv-contact { color: #555 !important; }
 
-    .cv-document.template-3 .cv-doc-header-content {
-      flex: 1 !important;
-    }
+  /* ===== MINIMAL ===== */
+  .cv-minimal .cv-header {
+    background: #fff !important;
+    color: #1a1a2e !important;
+    padding: 20px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    border-bottom: 1px solid #e0ddd6 !important;
+  }
+  .cv-minimal .cv-header-content { flex: 1 !important; }
+  .cv-minimal .cv-name { font-size: 28px !important; margin-bottom: 2px !important; font-weight: 600 !important; color: #1a1a2e !important; }
+  .cv-minimal .cv-title { font-size: 14px !important; color: #666 !important; margin-bottom: 8px !important; font-weight: normal !important; }
+  .cv-minimal .cv-contact { color: #666 !important; }
+  .cv-minimal .cv-section-title {
+    color: #1a1a2e !important;
+    border-bottom: 1px solid #ddd !important;
+    font-size: 11px !important;
+  }
 
-    .cv-document.template-3 .cv-doc-name {
-      font-size: 36px !important;
-      font-weight: 700 !important;
-      margin-bottom: 6px !important;
-      color: #fff !important;
-      letter-spacing: -0.5px !important;
-    }
+  /* ===== TEMPLATE 3: MODERN BLÅ/GRÖN ===== */
+  .cv-template-3 .cv-header {
+    background: linear-gradient(135deg, #4285F4 0%, #34A853 100%) !important;
+    color: #fff !important;
+    padding: 40px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    border-bottom: 3px solid #34A853 !important;
+  }
+  .cv-template-3 .cv-header-content { flex: 1 !important; }
+  .cv-template-3 .cv-name {
+    font-size: 36px !important;
+    font-weight: 700 !important;
+    margin-bottom: 6px !important;
+    color: #fff !important;
+    letter-spacing: -0.5px !important;
+  }
+  .cv-template-3 .cv-title {
+    font-size: 16px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    margin-bottom: 10px !important;
+    font-weight: 600 !important;
+  }
+  .cv-template-3 .cv-contact {
+    font-size: 12px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+  .cv-template-3 .cv-section-title {
+    color: #4285F4 !important;
+    border-bottom: 3px solid #34A853 !important;
+    font-size: 12px !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 14px !important;
+  }
+  .cv-template-3 .cv-entry {
+    border-left: 3px solid #34A853 !important;
+    padding-left: 12px !important;
+    margin-bottom: 16px !important;
+  }
 
-    .cv-document.template-3 .cv-doc-title {
-      font-size: 16px !important;
-      color: rgba(255, 255, 255, 0.95) !important;
-      margin-bottom: 10px !important;
-      font-weight: 600 !important;
-    }
+  /* ===== TEMPLATE 4: MODERN LILA/CYAN ===== */
+  .cv-template-4 .cv-header {
+    background: linear-gradient(135deg, #AA66FF 0%, #00E5FF 100%) !important;
+    color: #fff !important;
+    padding: 40px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    border-bottom: 3px solid #7c3aed !important;
+  }
+  .cv-template-4 .cv-header-content { flex: 1 !important; }
+  .cv-template-4 .cv-name {
+    font-size: 38px !important;
+    font-weight: 800 !important;
+    margin-bottom: 6px !important;
+    color: #fff !important;
+    letter-spacing: -1px !important;
+  }
+  .cv-template-4 .cv-title {
+    font-size: 16px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    margin-bottom: 10px !important;
+    font-weight: 600 !important;
+  }
+  .cv-template-4 .cv-contact {
+    font-size: 12px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+  .cv-template-4 .cv-section-title {
+    background: linear-gradient(90deg, #AA66FF 0%, #00E5FF 100%);
+    color: #fff !important;
+    padding: 8px 16px !important;
+    margin-bottom: 14px !important;
+    border: none !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+    letter-spacing: 1.5px !important;
+  }
+  .cv-template-4 .cv-entry {
+    border-left: 4px solid #7c3aed !important;
+    padding-left: 14px !important;
+    margin-bottom: 16px !important;
+    background: #faf8ff !important;
+    padding: 12px 12px 12px 14px !important;
+    border-radius: 4px !important;
+  }
+  .cv-template-4 .cv-entry:hover { background: #f3efff !important; }
 
-    .cv-document.template-3 .cv-doc-contact {
-      font-size: 12px !important;
-      color: rgba(255, 255, 255, 0.85) !important;
-    }
+  /* ===== TEMPLATE 5: MINIMALISTISK ===== */
+  .cv-template-5 .cv-header {
+    background: #fff !important;
+    color: #1a1a2e !important;
+    padding: 30px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    border-bottom: 1px solid #e0ddd6 !important;
+  }
+  .cv-template-5 .cv-header-photo {
+    background: #e0ddd6 !important;
+    border: 2px solid #f0ede6 !important;
+  }
+  .cv-template-5 .cv-name {
+    font-size: 32px !important;
+    font-weight: 300 !important;
+    color: #1a1a2e !important;
+    letter-spacing: 1px !important;
+    margin-bottom: 4px !important;
+  }
+  .cv-template-5 .cv-title {
+    font-size: 14px !important;
+    color: #666 !important;
+    font-weight: normal !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 8px !important;
+  }
+  .cv-template-5 .cv-contact { color: #666 !important; font-size: 11px !important; }
+  .cv-template-5 .cv-section-title {
+    color: #1a1a2e !important;
+    border-bottom: 1px solid #ddd !important;
+    font-size: 11px !important;
+    letter-spacing: 2px !important;
+    font-weight: 400 !important;
+  }
+  .cv-template-5 .cv-entry {
+    border-left: none !important;
+    padding-left: 0 !important;
+    margin-bottom: 14px !important;
+    background: transparent !important;
+  }
+  .cv-template-5 .cv-entry-title {
+    font-weight: 500 !important;
+    font-size: 13px !important;
+  }
+  .cv-template-5 .cv-entry-subtitle {
+    color: #888 !important;
+    font-style: italic !important;
+  }
 
-    .cv-document.template-3 .cv-doc-section-title {
-      color: #4285F4 !important;
-      border-bottom: 3px solid #34A853 !important;
-      font-size: 12px !important;
-      padding-bottom: 8px !important;
-      margin-bottom: 14px !important;
-    }
+  /* ===== TEMPLATE 6: TRADITIONELL ===== */
+  .cv-template-6 .cv-header {
+    background: #2c3e50 !important;
+    color: #fff !important;
+    padding: 28px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    border-bottom: 3px double #fff !important;
+  }
+  .cv-template-6 .cv-header-photo {
+    background: #34495e !important;
+    border: 2px solid #fff !important;
+  }
+  .cv-template-6 .cv-name {
+    font-family: Georgia, serif !important;
+    font-size: 32px !important;
+    color: #fff !important;
+  }
+  .cv-template-6 .cv-title {
+    font-family: Georgia, serif !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-style: italic !important;
+  }
+  .cv-template-6 .cv-contact {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+  .cv-template-6 .cv-section-title {
+    color: #2c3e50 !important;
+    border-bottom: 2px solid #2c3e50 !important;
+    font-family: Georgia, serif !important;
+    font-size: 13px !important;
+    letter-spacing: 1px !important;
+  }
 
-    .cv-document.template-3 .cv-doc-entry {
-      border-left: 4px solid #34A853 !important;
-      padding-left: 14px !important;
-    }
+  /* ===== TEMPLATE 7: KREATIV ===== */
+  .cv-template-7 .cv-header {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%) !important;
+    color: #fff !important;
+    padding: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    position: relative !important;
+  }
+  .cv-template-7 .cv-header-photo {
+    background: #fff !important;
+    border: 4px solid #fff !important;
+  }
+  .cv-template-7 .cv-name {
+    font-size: 36px !important;
+    font-weight: 800 !important;
+    color: #fff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  }
+  .cv-template-7 .cv-title {
+    color: #fff !important;
+    font-weight: 600 !important;
+  }
+  .cv-template-7 .cv-contact {
+    color: rgba(255, 255, 255, 0.95) !important;
+  }
+  .cv-template-7 .cv-section-title {
+    color: #FF6B6B !important;
+    border-bottom: 3px dashed #FFE66D !important;
+    font-weight: 800 !important;
+  }
 
-    /* ===== TEMPLATE 4: MODERN LILA/CYAN DESIGN ===== */
-    .cv-document.template-4 .cv-doc-header {
-      background: linear-gradient(135deg, #AA66FF 0%, #00E5FF 100%) !important;
-      color: #fff !important;
-      padding: 40px 40px !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 20px !important;
-      border-bottom: 3px solid #00E5FF !important;
-      box-shadow: 0 8px 32px rgba(170, 102, 255, 0.2) !important;
-    }
+  /* ===== TEMPLATE 8: MODERN KORT ===== */
+  .cv-template-8 .cv-header {
+    background: linear-gradient(135deg, #ec4899 0%, #f97316 100%) !important;
+    color: #fff !important;
+    padding: 36px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+  }
+  .cv-template-8 .cv-header-photo {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border: 3px solid #fff !important;
+    border-radius: 50% !important;
+  }
+  .cv-template-8 .cv-name {
+    font-size: 34px !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+  }
+  .cv-template-8 .cv-title {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 500 !important;
+  }
+  .cv-template-8 .cv-contact {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+  .cv-template-8 .cv-section-title {
+    color: #ec4899 !important;
+    border-bottom: 2px solid #ec4899 !important;
+  }
+  .cv-template-8 .cv-entry {
+    background: #fef3f7 !important;
+    border-left: 3px solid #ec4899 !important;
+    padding: 10px 12px !important;
+    margin-bottom: 12px !important;
+    border-radius: 4px !important;
+  }
 
-    .cv-document.template-4 .cv-doc-header-content {
-      flex: 1 !important;
-    }
+  /* ===== TEMPLATE 9: TVÅ-KOLUMN ===== */
+  .cv-template-9 .cv-header {
+    background: #1e293b !important;
+    color: #fff !important;
+    padding: 30px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+  }
+  .cv-template-9 .cv-header-photo {
+    background: #334155 !important;
+    border: 2px solid #475569 !important;
+  }
+  .cv-template-9 .cv-name {
+    font-size: 32px !important;
+    color: #fff !important;
+  }
+  .cv-template-9 .cv-title {
+    color: #cbd5e1 !important;
+  }
+  .cv-template-9 .cv-contact {
+    color: #94a3b8 !important;
+  }
+  .cv-template-9 .cv-section-title {
+    color: #1e293b !important;
+    border-bottom: 2px solid #64748b !important;
+    font-size: 11px !important;
+  }
 
-    .cv-document.template-4 .cv-doc-name {
-      font-size: 36px !important;
-      font-weight: 700 !important;
-      margin-bottom: 6px !important;
-      color: #fff !important;
-      letter-spacing: -0.5px !important;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
-    }
+  /* ===== TEMPLATE 10: FÄRGSKATT ===== */
+  .cv-template-10 .cv-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    color: #fff !important;
+    padding: 34px 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+  }
+  .cv-template-10 .cv-header-photo {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 3px solid rgba(255, 255, 255, 0.4) !important;
+  }
+  .cv-template-10 .cv-name {
+    font-size: 34px !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px !important;
+  }
+  .cv-template-10 .cv-title {
+    font-size: 15px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    margin-bottom: 10px !important;
+  }
+  .cv-template-10 .cv-contact {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+  .cv-template-10 .cv-section-title {
+    background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+    color: #fff !important;
+    padding: 8px 12px !important;
+    margin-bottom: 12px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    border: none !important;
+    font-weight: 700 !important;
+  }
+  .cv-template-10 .cv-entry {
+    background: #f3f7fb !important;
+    border-left: 4px solid #2a5298 !important;
+    padding-left: 14px !important;
+    margin-bottom: 12px !important;
+    padding: 12px 12px 12px 14px !important;
+    border-radius: 4px !important;
+  }
+  .cv-template-10 .cv-entry:hover {
+    background: #e8f1f7 !important;
+    border-left-color: #1e3c72 !important;
+  }
 
-    .cv-document.template-4 .cv-doc-title {
-      font-size: 16px !important;
-      color: rgba(255, 255, 255, 0.95) !important;
-      margin-bottom: 10px !important;
-      font-weight: 600 !important;
-    }
-
-    .cv-document.template-4 .cv-doc-contact {
-      font-size: 12px !important;
-      color: rgba(255, 255, 255, 0.85) !important;
-    }
-
-    .cv-document.template-4 .cv-doc-section-title {
-      background: linear-gradient(90deg, #AA66FF 0%, #00E5FF 100%);
-      -webkit-background-clip: text !important;
-      -webkit-text-fill-color: transparent !important;
-      background-clip: text !important;
-      border-bottom: 2px solid rgba(170, 102, 255, 0.3) !important;
-      font-size: 12px !important;
-      padding-bottom: 8px !important;
-      margin-bottom: 14px !important;
-      font-weight: 700 !important;
-    }
-
-    .cv-document.template-4 .cv-doc-entry {
-      border-left: 4px solid #AA66FF !important;
-      border-radius: 4px !important;
-      padding-left: 14px !important;
-      background: rgba(170, 102, 255, 0.05) !important;
-    }
-
-    .cv-document.template-4 .cv-doc-entry:hover {
-      background: rgba(0, 229, 255, 0.08) !important;
-      border-left-color: #00E5FF !important;
-      box-shadow: 0 0 15px rgba(0, 229, 255, 0.2) !important;
-    }
-
-    /* ===== TEMPLATE 5: MINIMALISTISK ===== */
-    .cv-document.template-5 .cv-doc-header {
-      background: #fff !important;
-      color: #000 !important;
-      padding: 30px 40px !important;
-      border-bottom: 1px solid #e0e0e0 !important;
-    }
-
-    .cv-document.template-5 .cv-doc-header-photo {
-      background: #f5f5f5 !important;
-    }
-
-    .cv-document.template-5 .cv-doc-name {
-      font-size: 28px !important;
-      font-weight: 400 !important;
-      letter-spacing: 1px !important;
-      margin-bottom: 4px !important;
-      color: #000 !important;
-    }
-
-    .cv-document.template-5 .cv-doc-title {
-      font-size: 12px !important;
-      color: #666 !important;
-      font-weight: normal !important;
-      margin-bottom: 8px !important;
-      letter-spacing: 0.5px !important;
-    }
-
-    .cv-document.template-5 .cv-doc-section-title {
-      font-size: 11px !important;
-      color: #000 !important;
-      border-bottom: 1px solid #e0e0e0 !important;
-      margin-bottom: 12px !important;
-      padding-bottom: 6px !important;
-      text-transform: uppercase !important;
-      letter-spacing: 1px !important;
-      font-weight: 500 !important;
-    }
-
-    .cv-document.template-5 .cv-doc-entry {
-      margin-bottom: 12px !important;
-      border: none !important;
-    }
-
-    .cv-document.template-5 .cv-doc-entry-title {
-      font-size: 13px !important;
-      color: #000 !important;
-      margin-bottom: 2px !important;
-      font-weight: 500 !important;
-    }
-
-    .cv-document.template-5 .cv-doc-entry-meta {
-      font-size: 11px !important;
-      color: #888 !important;
-      margin-bottom: 2px !important;
-    }
-
-    /* ===== TEMPLATE 6: TRADITIONELL 1 (TVÅ-KOLUMN) ===== */
-    .cv-document.template-6 .cv-doc-header {
-      background: #1a1a2e !important;
-      color: #fff !important;
-      padding: 35px 40px !important;
-      border-bottom: 5px solid #2d2d44 !important;
-    }
-
-    .cv-document.template-6 .cv-doc-header-photo {
-      background: #2d2d44 !important;
-    }
-
-    .cv-document.template-6 .cv-doc-name {
-      font-size: 32px !important;
-      font-weight: 700 !important;
-      margin-bottom: 4px !important;
-      color: #fff !important;
-    }
-
-    .cv-document.template-6 .cv-doc-title {
-      font-size: 14px !important;
-      color: #aaa !important;
-      margin-bottom: 8px !important;
-      font-weight: normal !important;
-    }
-
-    .cv-document.template-6 .cv-doc-section-title {
-      color: #1a1a2e !important;
-      border-bottom: 2px solid #1a1a2e !important;
-      font-size: 11px !important;
-      padding-bottom: 6px !important;
-      margin-bottom: 12px !important;
-    }
-
-    .cv-document.template-6 .cv-doc-entry {
-      border-left: 3px solid #1a1a2e !important;
-      padding-left: 12px !important;
-      margin-bottom: 10px !important;
-    }
-
-    /* ===== TEMPLATE 7: TRADITIONELL 2 (KLASSISK) ===== */
-    .cv-document.template-7 .cv-doc-header {
-      background: #fff !important;
-      color: #1a1a2e !important;
-      padding: 30px 40px !important;
-      border-bottom: 2px solid #d4af37 !important;
-    }
-
-    .cv-document.template-7 .cv-doc-header-photo {
-      background: #f0f0f0 !important;
-    }
-
-    .cv-document.template-7 .cv-doc-name {
-      font-size: 30px !important;
-      font-weight: 600 !important;
-      margin-bottom: 4px !important;
-      color: #1a1a2e !important;
-      font-family: Georgia, serif !important;
-    }
-
-    .cv-document.template-7 .cv-doc-title {
-      font-size: 14px !important;
-      color: #d4af37 !important;
-      margin-bottom: 8px !important;
-      font-weight: 600 !important;
-    }
-
-    .cv-document.template-7 .cv-doc-section-title {
-      color: #1a1a2e !important;
-      border-bottom: 2px solid #d4af37 !important;
-      font-size: 12px !important;
-      padding-bottom: 6px !important;
-      margin-bottom: 12px !important;
-      font-weight: 700 !important;
-    }
-
-    .cv-document.template-7 .cv-doc-entry {
-      border: none !important;
-      margin-bottom: 10px !important;
-    }
-
-    /* ===== TEMPLATE 8: MODERN KORT-DESIGN ===== */
-    .cv-document.template-8 .cv-doc-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-      color: #fff !important;
-      padding: 35px 40px !important;
-      border-radius: 8px 8px 0 0 !important;
-    }
-
-    .cv-document.template-8 .cv-doc-header-photo {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    }
-
-    .cv-document.template-8 .cv-doc-name {
-      font-size: 32px !important;
-      font-weight: 700 !important;
-      margin-bottom: 6px !important;
-      color: #fff !important;
-    }
-
-    .cv-document.template-8 .cv-doc-title {
-      font-size: 15px !important;
-      color: rgba(255, 255, 255, 0.9) !important;
-      margin-bottom: 8px !important;
-    }
-
-    .cv-document.template-8 .cv-doc-section-title {
-      background: #667eea !important;
-      color: #fff !important;
-      padding: 8px 12px !important;
-      margin-bottom: 12px !important;
-      border-radius: 4px !important;
-      font-size: 12px !important;
-      border: none !important;
-    }
-
-    .cv-document.template-8 .cv-doc-entry {
-      background: #f8f9ff !important;
-      padding: 12px 14px !important;
-      border-radius: 4px !important;
-      margin-bottom: 10px !important;
-      border: 1px solid #e0e3ff !important;
-    }
-
-    /* ===== TEMPLATE 9: MODERN TVÅ-KOLUMN ===== */
-    .cv-document.template-9 .cv-doc-header {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-      color: #fff !important;
-      padding: 40px 40px !important;
-    }
-
-    .cv-document.template-9 .cv-doc-header-photo {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-    }
-
-    .cv-document.template-9 .cv-doc-name {
-      font-size: 36px !important;
-      font-weight: 700 !important;
-      margin-bottom: 6px !important;
-      color: #fff !important;
-    }
-
-    .cv-document.template-9 .cv-doc-title {
-      font-size: 16px !important;
-      color: rgba(255, 255, 255, 0.95) !important;
-      margin-bottom: 10px !important;
-    }
-
-    .cv-document.template-9 .cv-doc-section-title {
-      color: #f5576c !important;
-      border-bottom: 3px solid #f5576c !important;
-      font-size: 12px !important;
-      padding-bottom: 8px !important;
-      margin-bottom: 14px !important;
-      font-weight: 700 !important;
-    }
-
-    .cv-document.template-9 .cv-doc-entry {
-      border-left: 4px solid #f093fb !important;
-      padding-left: 14px !important;
-      margin-bottom: 12px !important;
-      padding-bottom: 8px !important;
-      border-bottom: 1px solid #f0f0f0 !important;
-    }
-
-    /* ===== TEMPLATE 10: MODERN FÄRGSKATT ===== */
-    .cv-document.template-10 .cv-doc-header {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7aa8d1 100%) !important;
-      color: #fff !important;
-      padding: 40px 40px !important;
-    }
-
-    .cv-document.template-10 .cv-doc-header-photo {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7aa8d1 100%) !important;
-    }
-
-    .cv-document.template-10 .cv-doc-name {
-      font-size: 34px !important;
-      font-weight: 700 !important;
-      margin-bottom: 6px !important;
-      color: #fff !important;
-    }
-
-    .cv-document.template-10 .cv-doc-title {
-      font-size: 15px !important;
-      color: rgba(255, 255, 255, 0.95) !important;
-      margin-bottom: 10px !important;
-    }
-
-    .cv-document.template-10 .cv-doc-section-title {
-      background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
-      color: #fff !important;
-      padding: 8px 12px !important;
-      margin-bottom: 12px !important;
-      border-radius: 4px !important;
-      font-size: 12px !important;
-      border: none !important;
-      font-weight: 700 !important;
-    }
-
-    .cv-document.template-10 .cv-doc-entry {
-      background: #f3f7fb !important;
-      border-left: 4px solid #2a5298 !important;
-      padding-left: 14px !important;
-      margin-bottom: 12px !important;
-      padding: 12px 12px 12px 14px !important;
-      border-radius: 4px !important;
-    }
-
-    .cv-document.template-10 .cv-doc-entry:hover {
-      background: #e8f1f7 !important;
-      border-left-color: #1e3c72 !important;
-    }
-
-    /* ============================================================
-       KONTAKT-SYNLIGHET för mallar med mörka/färgade headers
-       ============================================================ */
-    .cv-document.template-6 .cv-doc-contact,
-    .cv-document.template-8 .cv-doc-contact,
-    .cv-document.template-9 .cv-doc-contact,
-    .cv-document.template-10 .cv-doc-contact {
-      color: rgba(255, 255, 255, 0.92) !important;
-      font-size: 12px !important;
-      font-weight: 500 !important;
-    }
-    /* Länkar i kontakt ska ärva samma ljusa färg (email kan bli blå annars) */
-    .cv-document.template-3 .cv-doc-contact a,
-    .cv-document.template-4 .cv-doc-contact a,
-    .cv-document.template-6 .cv-doc-contact a,
-    .cv-document.template-8 .cv-doc-contact a,
-    .cv-document.template-9 .cv-doc-contact a,
-    .cv-document.template-10 .cv-doc-contact a {
-      color: inherit !important;
-      text-decoration: none !important;
-    }
-    /* Garantera att contact syns också som default (om ingen mall-override) */
-    .cv-doc-contact {
-      font-weight: 500;
-    }
+  /* ============================================================
+     SPECIAL: kontakt-synlighet för mörka headers
+     ============================================================ */
+  .cv-template-6 .cv-contact a,
+  .cv-template-8 .cv-contact a,
+  .cv-template-9 .cv-contact a,
+  .cv-template-10 .cv-contact a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
 
 
 
@@ -3110,7 +3098,7 @@
 
       <!-- Live-förhandsgranskning -->
       <div class="cv-preview-panel">
-        <div class="cv-document classic" id="cvDocument">
+        <div class="cv-document cv-classic" id="cvDocument">
           <!-- Renderas av JS -->
         </div>
       </div>
