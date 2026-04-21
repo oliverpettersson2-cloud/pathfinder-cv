@@ -40,16 +40,16 @@
   ];
 
   const TEMPLATES = [
-    { id: 'classic',     name: 'Klassisk',          icon: '📋' },
-    { id: 'modern',      name: 'Modern',            icon: '✨' },
-    { id: 'template-3',  name: 'Modern Blå/Grön',   icon: '🎨' },
-    { id: 'template-4',  name: 'Modern Lila/Cyan',  icon: '💫' },
-    { id: 'template-5',  name: 'Minimalistisk',     icon: '⚪' },
-    { id: 'template-6',  name: 'Traditionell 1',    icon: '📄' },
-    { id: 'template-7',  name: 'Traditionell 2',    icon: '📑' },
-    { id: 'template-8',  name: 'Modern Kort',       icon: '🎯' },
-    { id: 'template-9',  name: 'Två-kolumn',        icon: '🌟' },
-    { id: 'template-10', name: 'Färgskatt',         icon: '🎨' },
+    { id: 'classic',     name: 'Klassisk',          icon: '📋', color: '#e85d26' },
+    { id: 'modern',      name: 'Modern',            icon: '✨', color: '#3eb489' },
+    { id: 'template-3',  name: 'Modern Blå/Grön',   icon: '🎨', color: '#4285F4' },
+    { id: 'template-4',  name: 'Modern Lila/Cyan',  icon: '💫', color: '#7c3aed' },
+    { id: 'template-5',  name: 'Minimalistisk',     icon: '⚪', color: '#888888' },
+    { id: 'template-6',  name: 'Traditionell 1',    icon: '📄', color: '#1a1a2e' },
+    { id: 'template-7',  name: 'Traditionell 2',    icon: '📑', color: '#374151' },
+    { id: 'template-8',  name: 'Modern Kort',       icon: '🎯', color: '#ec4899' },
+    { id: 'template-9',  name: 'Två-kolumn',        icon: '🌟', color: '#10b981' },
+    { id: 'template-10', name: 'Färgskatt',         icon: '🎨', color: '#f59e0b' },
   ];
 
   // Träningsmoduler — komprimerad version för desktop
@@ -2594,6 +2594,26 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     modal.dataset.editIdx = isEdit ? String(idx) : '-1';
     document.getElementById('jobModalTitle').textContent = isEdit ? 'Redigera arbetslivserfarenhet' : 'Lägg till arbetslivserfarenhet';
 
+    // Visa befintliga jobb ovanför formuläret — bara vid "Lägg till" när det redan finns jobb
+    const existingBox = document.getElementById('jobModalExisting');
+    const existingList = document.getElementById('jobModalExistingList');
+    if (existingBox && existingList) {
+      const otherJobs = (cvData.jobs || []).filter((_, i) => i !== idx);
+      if (otherJobs.length > 0) {
+        existingList.innerHTML = otherJobs.map(j => {
+          const period = formatJobPeriod(j) || '(ingen period)';
+          const label = (j.title || '(ingen titel)') + (j.company ? ' · ' + j.company : '');
+          return '<div style="display:flex; justify-content:space-between; gap:10px; font-size:12px; color:rgba(255,255,255,0.75);">' +
+            '<span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + escape(label) + '</span>' +
+            '<span style="color:var(--accent2); font-weight:600; flex-shrink:0;">' + escape(period) + '</span>' +
+          '</div>';
+        }).join('');
+        existingBox.style.display = 'block';
+      } else {
+        existingBox.style.display = 'none';
+      }
+    }
+
     const e = isEdit ? (cvData.jobs[idx] || {}) : {};
 
     document.getElementById('jobTitle').value    = e.title    || '';
@@ -2864,11 +2884,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   };
 
   // Stäng modal vid klick på backdrop
-  document.addEventListener('click', function(e) {
-    if (e.target && e.target.classList && e.target.classList.contains('edit-modal')) {
-      e.target.classList.remove('open');
-    }
-  });
+  // Bakåtkompat: backdrop-click stänger INTE modalen — endast Spara/Avbryt/Escape.
+  // (tidigare fanns en click-handler som stängde vid klick utanför, men det förstörde UX)
 
   // Escape-tangent stänger öppen modal
   document.addEventListener('keydown', function(e) {
@@ -4108,24 +4125,40 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
   window.cvAiSkills = async function() {
     const title = (cvData.title || document.getElementById('cv-title').value || '').trim();
-    if (!title) {
-      toast('Skriv in en jobbtitel först (Profil-fliken)', 'error');
+    const jobs = (cvData.jobs || []);
+
+    if (!title && !jobs.length) {
+      toast('Fyll i en jobbtitel (Profil) eller lägg till minst ett jobb först', 'error');
       return;
     }
-    showAiLoader('Hämtar kompetenser...', 'AI tänker ut passande kompetenser för "' + title + '"');
+
+    // Bygg en sammanfattning av CV-kontext för AI:n
+    const jobSummary = jobs.slice(0, 5).map(j => {
+      const bullets = [j.desc1, j.desc2, j.desc3].filter(Boolean).join(' | ');
+      return '- ' + (j.title || '') + (j.company ? ' på ' + j.company : '') + (bullets ? ': ' + bullets : '');
+    }).join('\n');
+
+    const educationSummary = (cvData.education || []).slice(0, 3).map(e =>
+      '- ' + (e.degree || '') + (e.schoolName || e.school ? ' (' + (e.schoolName || e.school) + ')' : '')
+    ).join('\n');
+
+    showAiLoader('Hämtar kompetenser...', 'AI analyserar dina jobb och utbildning');
     try {
+      const userContent =
+        'Baserat på följande CV, föreslå 6 relevanta yrkeskompetenser. Basera dig FRÄMST på användarens faktiska arbetslivserfarenhet — inte bara yrkestiteln.\n\n' +
+        (title ? 'Önskad/nuvarande yrkestitel: ' + title + '\n\n' : '') +
+        (jobSummary ? 'Arbetslivserfarenhet:\n' + jobSummary + '\n\n' : '') +
+        (educationSummary ? 'Utbildning:\n' + educationSummary + '\n\n' : '') +
+        'Ge 6 konkreta yrkeskompetenser (1-3 ord vardera) som direkt matchar jobberfarenheten ovan. Välj kompetenser som framgår TYDLIGT av arbetsuppgifterna. Svara ENBART med JSON: {"kompetenser": ["k1","k2","k3","k4","k5","k6"]}';
+
       const r = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 300,
-          system: 'Du är en CV-expert. Svara ALLTID med giltig JSON och inget annat.',
-          messages: [{
-            role: 'user',
-            content: 'Generera 6 konkreta yrkeskompetenser på svenska för yrket: ' + title +
-              '. Korta (1-3 ord), konkreta. Svara ENBART med JSON: {"kompetenser": ["k1","k2","k3","k4","k5","k6"]}'
-          }]
+          system: 'Du är en CV-expert. Svara ALLTID med giltig JSON och inget annat. Basera kompetenser på användarens faktiska arbetslivserfarenhet.',
+          messages: [{ role: 'user', content: userContent }]
         })
       });
       if (!r.ok) throw new Error('API-fel ' + r.status);
@@ -4210,32 +4243,46 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   window.cvAiSummary = async function() {
     const name = cvData.name || '';
     const title = cvData.title || '';
-    const skills = cvData.skills.join(', ');
-    const job = cvData.jobs[0] ? `${cvData.jobs[0].title} på ${cvData.jobs[0].company}` : '';
+    const skills = (cvData.skills || []).join(', ');
+    const jobs = (cvData.jobs || []);
+    const education = (cvData.education || []);
 
-    if (!title) {
-      toast('Skriv in en jobbtitel först (Profil-fliken)', 'error');
+    if (!title && !jobs.length) {
+      toast('Fyll i en jobbtitel (Profil) eller lägg till minst ett jobb först', 'error');
       return;
     }
 
-    showAiLoader('Skriver profiltext...', 'AI bygger en personlig presentation');
+    // Bygg ett detaljerat kontext av alla jobb
+    const jobSummary = jobs.slice(0, 5).map(j => {
+      const bullets = [j.desc1, j.desc2, j.desc3].filter(Boolean).join(' | ');
+      return '- ' + (j.title || '') + (j.company ? ' på ' + j.company : '') +
+             (j.startYear ? ' (' + j.startYear + (j.endYear ? '–' + j.endYear : '') + ')' : '') +
+             (bullets ? ': ' + bullets : '');
+    }).join('\n');
+
+    const educationSummary = education.slice(0, 3).map(e =>
+      '- ' + (e.degree || '') + (e.schoolName || e.school ? ' (' + (e.schoolName || e.school) + ')' : '')
+    ).join('\n');
+
+    showAiLoader('Skriver profiltext...', 'AI bygger en personlig presentation baserat på din bakgrund');
     try {
+      const userContent =
+        'Skriv en professionell CV-profiltext (3-5 meningar, max 80 ord) på svenska. Basera texten FRÄMST på personens faktiska arbetslivserfarenhet — inte bara yrkestiteln.\n\n' +
+        'Namn: ' + (name || '(okänt)') + '\n' +
+        (title ? 'Önskad/nuvarande yrkestitel: ' + title + '\n' : '') +
+        (jobSummary ? '\nArbetslivserfarenhet:\n' + jobSummary + '\n' : '') +
+        (educationSummary ? '\nUtbildning:\n' + educationSummary + '\n' : '') +
+        (skills ? '\nKompetenser: ' + skills + '\n' : '') +
+        '\nReturnera ENBART profiltexten, inga rubriker, inga bullets, ingen markdown. Gör den personlig och specifik — nämn konkreta styrkor som framgår av erfarenheterna ovan.';
+
       const r = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 600,
-          system: 'Du skriver professionella, personliga CV-profiltexter på svenska. Aldrig generiska.',
-          messages: [{
-            role: 'user',
-            content: 'Skriv en professionell profiltext (3-5 meningar, max 80 ord) för ett CV.\n\n' +
-              'Namn: ' + (name || '(okänt)') + '\n' +
-              'Yrkestitel: ' + title + '\n' +
-              (job    ? 'Senaste jobb: ' + job + '\n' : '') +
-              (skills ? 'Kompetenser: ' + skills + '\n' : '') +
-              '\nReturnera ENBART profiltexten, inga rubriker, inga bullets, ingen markdown.'
-          }]
+          system: 'Du skriver professionella, personliga CV-profiltexter på svenska. Basera alltid texten på personens faktiska arbetslivserfarenhet. Aldrig generiska.',
+          messages: [{ role: 'user', content: userContent }]
         })
       });
       if (!r.ok) throw new Error('API-fel ' + r.status);
@@ -4262,12 +4309,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // ============================================================
   function renderTemplates() {
     const grid = document.getElementById('templateGrid');
-    grid.innerHTML = TEMPLATES.map(t => `
-      <div class="template-card ${cvData.template === t.id ? 'active' : ''}" onclick="cvSelectTemplate('${t.id}')">
-        <div class="template-card-icon">${t.icon}</div>
-        <div>${t.name}</div>
-      </div>
-    `).join('');
+    if (!grid) return;
+    grid.innerHTML = TEMPLATES.map(t =>
+      '<div class="template-card ' + (cvData.template === t.id ? 'active' : '') + '"' +
+      ' style="--tpl-color: ' + t.color + ';"' +
+      ' onclick="cvSelectTemplate(\'' + t.id + '\')">' +
+        '<div class="template-card-icon">' + t.icon + '</div>' +
+        '<div class="template-card-name">' + t.name + '</div>' +
+      '</div>'
+    ).join('');
   }
 
   window.cvSelectTemplate = function(id) {
@@ -4531,8 +4581,10 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const cvDoc = document.getElementById('cvDocument');
 
       // Klona för att rendera fritt utan layout-begränsningar
+      // Padding 32px (≈12mm i A4) ger naturlig marginal inuti dokumentet
+      // Yttre PDF-margin sätts till 0 så headerns bakgrund kan fylla hela bredden
       const clone = cvDoc.cloneNode(true);
-      clone.style.cssText = 'position:absolute; left:-9999px; top:0; width:794px; padding:48px; background:#fff; color:#1a1a2e; font-size:13px; line-height:1.5; border-radius:0; box-shadow:none;';
+      clone.style.cssText = 'position:absolute; left:-9999px; top:0; width:794px; padding:0; background:#fff; color:#1a1a2e; font-size:13px; line-height:1.5; border-radius:0; box-shadow:none; overflow:hidden;';
       document.body.appendChild(clone);
 
       await new Promise(r => setTimeout(r, 400));
@@ -4545,7 +4597,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       document.body.removeChild(clone);
 
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-      const pageW = 210, pageH = 297, margin = 10;
+      const pageW = 210, pageH = 297, margin = 0;
       const imgW = pageW - margin * 2;
       const imgH = canvas.height * imgW / canvas.width;
 
