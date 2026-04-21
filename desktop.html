@@ -17,6 +17,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+<!-- Intervjuträning-modul (samma som mobilen — lazy-initieras av switchView) -->
+<link rel="stylesheet" href="intervju.css">
+<script src="intervju.js" defer></script>
+
 <style>
   :root {
     --bg: #f5f2eb;
@@ -236,10 +240,12 @@
     font-size: 26px;
     flex-shrink: 0;
   }
-  .hej-card.cv      .hej-card-icon { background: rgba(62,180,137,0.12);  border: 1.5px solid rgba(62,180,137,0.3); }
-  .hej-card.matcha  .hej-card-icon { background: rgba(232,93,38,0.15);   border: 1.5px solid rgba(232,93,38,0.35); }
-  .hej-card.train   .hej-card-icon { background: rgba(240,192,64,0.10);  border: 1.5px solid rgba(240,192,64,0.28); }
-  .hej-card.profil  .hej-card-icon { background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.15); }
+  .hej-card.cv       .hej-card-icon { background: rgba(62,180,137,0.12);  border: 1.5px solid rgba(62,180,137,0.3); }
+  .hej-card.matcha   .hej-card-icon { background: rgba(232,93,38,0.15);   border: 1.5px solid rgba(232,93,38,0.35); }
+  .hej-card.aisyv    .hej-card-icon { background: rgba(124,58,237,0.10);  border: 1.5px solid rgba(124,58,237,0.28); }
+  .hej-card.intervju .hej-card-icon { background: rgba(244,114,182,0.12); border: 1.5px solid rgba(244,114,182,0.32); }
+  .hej-card.train    .hej-card-icon { background: rgba(240,192,64,0.10);  border: 1.5px solid rgba(240,192,64,0.28); }
+  .hej-card.profil   .hej-card-icon { background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.15); }
   .hej-card-body { flex: 1; min-width: 0; }
   .hej-card-head {
     display: flex;
@@ -252,10 +258,12 @@
     font-weight: 800;
     letter-spacing: -0.2px;
   }
-  .hej-card.cv      .hej-card-title { color: var(--accent2); }
-  .hej-card.matcha  .hej-card-title { color: var(--accent);  }
-  .hej-card.train   .hej-card-title { color: var(--accent3); }
-  .hej-card.profil  .hej-card-title { color: #fff; }
+  .hej-card.cv       .hej-card-title { color: var(--accent2); }
+  .hej-card.matcha   .hej-card-title { color: var(--accent);  }
+  .hej-card.aisyv    .hej-card-title { color: #a78bfa; }
+  .hej-card.intervju .hej-card-title { color: #f472b6; }
+  .hej-card.train    .hej-card-title { color: var(--accent3); }
+  .hej-card.profil   .hej-card-title { color: #fff; }
   .hej-card-arrow {
     font-size: 18px;
     color: rgba(255,255,255,0.25);
@@ -2038,6 +2046,10 @@
       <span class="sb-tab-icon">🎯</span>
       <span>Matcha</span>
     </button>
+    <button class="sb-tab" data-view="intervju" onclick="switchView('intervju')">
+      <span class="sb-tab-icon">🎤</span>
+      <span>Intervju</span>
+    </button>
     <button class="sb-tab" data-view="ovningar" onclick="switchView('ovningar')">
       <span class="sb-tab-icon">🏋️</span>
       <span>Övningar</span>
@@ -2109,6 +2121,34 @@
           <div class="hej-card-desc">
             Sök bland riktiga annonser från Platsbanken. AI anpassar ditt CV och
             skriver en personlig profiltext för varje jobb.
+          </div>
+        </div>
+      </div>
+
+      <div class="hej-card aisyv" onclick="hejOpenAiSyv()">
+        <div class="hej-card-icon">🎓</div>
+        <div class="hej-card-body">
+          <div class="hej-card-head">
+            <div class="hej-card-title">Utbilda dig</div>
+            <span class="hej-card-arrow">›</span>
+          </div>
+          <div class="hej-card-desc">
+            Din AI-vägledare för utbildning — kopplad mot Familjen Helsingborg
+            och Skolverket. Fråga om kurser, yrkesvägar och jobbchanser.
+          </div>
+        </div>
+      </div>
+
+      <div class="hej-card intervju" onclick="switchView('intervju')">
+        <div class="hej-card-icon">🎤</div>
+        <div class="hej-card-body">
+          <div class="hej-card-head">
+            <div class="hej-card-title">Intervjuträning</div>
+            <span class="hej-card-arrow">›</span>
+          </div>
+          <div class="hej-card-desc">
+            Öva på vanliga intervjufrågor med AI-feedback. Träna rösten,
+            strukturen och självförtroendet inför skarpa intervjuer.
           </div>
         </div>
       </div>
@@ -2386,6 +2426,13 @@
         <button class="btn btn-secondary" onclick="matchaSwitchStep(2)">← Tillbaka till sök</button>
       </div>
       <div id="matchaAdsContainer"></div>
+    </div>
+  </section>
+
+  <!-- ===== INTERVJUTRÄNING-VYN (modulen bygger sitt eget UI i #trainView-intervju) ===== -->
+  <section class="view" id="view-intervju">
+    <div id="trainView-intervju" class="train-view train-view--active">
+      <!-- intervju.js injicerar sitt UI här vid första öppning -->
     </div>
   </section>
 
