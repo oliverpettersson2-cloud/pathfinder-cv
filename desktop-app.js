@@ -2441,6 +2441,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const stepContent = document.getElementById('step-' + step);
     if (stepContent) stepContent.style.display = 'block';
 
+    // Göm preview på alla steg utom Visa — edit-panelen tar då hela bredden
+    const layout = document.querySelector('#view-cv .cv-layout');
+    if (layout) {
+      layout.classList.toggle('preview-hidden', step !== 'visa');
+    }
+
     // Render step-specific content
     if (step === 'profil') { if (typeof syncPhotoUI === 'function') syncPhotoUI(); }
     if (step === 'jobb') { renderJobs(); renderEducation(); }
@@ -2458,6 +2464,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     // Skrolla upp till toppen av edit-panelen
     const panel = document.querySelector('.cv-edit-panel');
     if (panel) panel.scrollTop = 0;
+    // Skrolla även vyn till toppen
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const CV_STEP_ORDER = ['profil', 'jobb', 'mer', 'text', 'visa'];
