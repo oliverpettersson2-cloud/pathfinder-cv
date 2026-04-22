@@ -4298,7 +4298,22 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       return;
     }
 
-    container.innerHTML = '';
+    // Pedagogisk intro-ruta — påminner användaren om vikten av att antingen
+    // läsa annonsen igen eller matcha CV:t. Syns bara innan första matchningen.
+    const introHtml =
+      '<div id="matchaStep3Intro" style="background:rgba(62,180,137,0.08);border:1.5px solid rgba(62,180,137,0.3);border-radius:14px;padding:16px 18px;margin-bottom:18px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
+          '<span style="font-size:22px;">💡</span>' +
+          '<span style="font-size:14px;font-weight:800;color:#3eb489;">Innan du matchar — två tips</span>' +
+        '</div>' +
+        '<div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">' +
+          '🔍 <strong style="color:#fff;">Läs igenom annonsen noga</strong> först — vilka ord och krav lyfter de fram? Klicka <em style="color:#3eb489;">Läs annons ↗</em> på kortet för att öppna den.<br><br>' +
+          '✨ <strong style="color:#fff;">Matcha sedan ditt CV</strong> — AI:n skriver tre personliga profiltexter som lyfter fram just det som passar jobbet.<br><br>' +
+          '<span style="color:rgba(255,255,255,0.5);font-size:12px;">Ett anpassat CV ökar dina chanser <strong style="color:#3eb489;">markant</strong> — generiska ansökningar sorteras ofta bort direkt.</span>' +
+        '</div>' +
+      '</div>';
+
+    container.innerHTML = introHtml;
 
     matchaSelectedAds.forEach((hit, i) => {
       const title   = hit.headline || '';
