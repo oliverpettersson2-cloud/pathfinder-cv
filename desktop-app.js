@@ -4431,28 +4431,31 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         genBtn.onmouseleave = () => { genBtn.style.transform = ''; genBtn.style.boxShadow = ''; };
         genBtn.onclick = (e) => {
           e.stopPropagation();
-          // Dimma andra kort medan denna jobbar
-          const allSections = document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]');
-          allSections.forEach(s => {
-            if (s.dataset.adId !== adId) {
-              s.style.opacity = '0.2';
-              s.style.pointerEvents = 'none';
-            }
-          });
-          matchaRunAiForAd(hit).finally(() => {
-            // "Visa alla annonser"-knapp efteråt
-            const existingReset = document.getElementById('matchaResetFocus');
-            if (!existingReset) {
-              const resetBtn = document.createElement('button');
-              resetBtn.id = 'matchaResetFocus';
-              resetBtn.textContent = '← Visa alla annonser';
-              resetBtn.style.cssText = 'display:block;margin:0 auto 16px;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;padding:7px 14px;border-radius:20px;cursor:pointer;font-family:inherit;';
-              resetBtn.onclick = () => {
-                allSections.forEach(s => { s.style.opacity = ''; s.style.pointerEvents = ''; });
-                resetBtn.remove();
-              };
-              container.parentNode.insertBefore(resetBtn, container);
-            }
+          // Visa pedagogisk modal "Har du läst annonsen?" INNAN AI körs
+          // (matchar mobilens UX exakt)
+          matchShowReadAnnonsModal(hit, () => {
+            // Callback när användaren bekräftat → kör AI-matchning
+            const allSections = document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]');
+            allSections.forEach(s => {
+              if (s.dataset.adId !== adId) {
+                s.style.opacity = '0.2';
+                s.style.pointerEvents = 'none';
+              }
+            });
+            matchaRunAiForAd(hit).finally(() => {
+              const existingReset = document.getElementById('matchaResetFocus');
+              if (!existingReset) {
+                const resetBtn = document.createElement('button');
+                resetBtn.id = 'matchaResetFocus';
+                resetBtn.textContent = '← Visa alla annonser';
+                resetBtn.style.cssText = 'display:block;margin:0 auto 16px;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;padding:7px 14px;border-radius:20px;cursor:pointer;font-family:inherit;';
+                resetBtn.onclick = () => {
+                  allSections.forEach(s => { s.style.opacity = ''; s.style.pointerEvents = ''; });
+                  resetBtn.remove();
+                };
+                container.parentNode.insertBefore(resetBtn, container);
+              }
+            });
           });
         };
       }
@@ -4624,6 +4627,60 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   function matchHideHourglassOverlay() {
     const o = document.getElementById('_matchHourglass');
     if (o) o.remove();
+  }
+
+  // Pedagogisk "Har du läst annonsen?"-modal — visas INNAN AI-matchning
+  // startar. Samma UX som mobilen: 3 val (läs annons / matcha / gå tillbaka).
+  function matchShowReadAnnonsModal(hit, onConfirmed) {
+    const existing = document.getElementById('_matchaReadConfirm');
+    if (existing) existing.remove();
+
+    const annonsUrl = (hit && hit.webpage_url) || '';
+
+    const modal = document.createElement('div');
+    modal.id = '_matchaReadConfirm';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);padding:20px;';
+
+    modal.innerHTML =
+      '<div style="background:#1e2440;border-radius:20px;padding:32px 28px;width:100%;max-width:460px;border:1.5px solid rgba(255,255,255,0.1);box-shadow:0 20px 60px rgba(0,0,0,0.6);">' +
+        '<div style="font-size:44px;text-align:center;margin-bottom:14px;">🧐</div>' +
+        '<div style="font-size:20px;font-weight:900;color:#fff;text-align:center;margin-bottom:10px;">Har du läst annonsen?</div>' +
+        '<div style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.7;margin-bottom:26px;">' +
+          'Det är viktigt att du vet om jobbet faktiskt passar dig och dina kompetenser — innan AI skriver din profiltext. Vill du läsa annonsen igen?' +
+        '</div>' +
+
+        // 1. Läs annonsen först (grön) - bara om URL finns
+        (annonsUrl
+          ? '<a href="' + escape(annonsUrl) + '" target="_blank" rel="noopener" ' +
+            'style="display:block;width:100%;padding:15px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">' +
+            '🔗 Läs annonsen först</a>'
+          : '') +
+
+        // 2. Ja, matcha med AI (lila)
+        '<button id="_matchaReadJa" ' +
+          'style="width:100%;padding:15px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:16px;">' +
+          '✨ Ja, matcha mitt CV med AI</button>' +
+
+        // 3. Gå tillbaka (liten röd outline)
+        '<button id="_matchaReadNej" ' +
+          'style="display:block;margin:0 auto;padding:9px 22px;background:none;border:1.5px solid rgba(232,93,38,0.5);color:rgba(232,93,38,0.85);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">' +
+          '← Gå tillbaka</button>' +
+      '</div>';
+
+    document.body.appendChild(modal);
+
+    document.getElementById('_matchaReadJa').onclick = function() {
+      modal.remove();
+      if (typeof onConfirmed === 'function') onConfirmed();
+    };
+
+    document.getElementById('_matchaReadNej').onclick = function() {
+      modal.remove();
+    };
+
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) modal.remove();
+    });
   }
 
   async function matchaRunAiForAd(hit) {
@@ -4906,9 +4963,37 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       return;
     }
 
-    // Visa pedagogisk "Sparat!"-modal istället för bara en toast
+    // Visa pedagogisk "Sparat!"-modal — fyll i dynamiska fält först
     const savedModal = document.getElementById('matchaSavedModal');
     if (savedModal) {
+      // Räknar-pill: "CV 1/3" eller "CV 2/3 · VIP 👑"
+      const counter = document.getElementById('matchaSavedCounter');
+      if (counter) {
+        const count = matchedToday();
+        const vip = matchIsVIP();
+        counter.textContent = vip
+          ? 'CV ' + count + '/∞ · VIP 👑'
+          : 'CV ' + count + '/3 idag';
+        counter.style.display = 'inline-block';
+      }
+
+      // Jobbtitel
+      const jobTitleEl = document.getElementById('matchaSavedJobTitle');
+      if (jobTitleEl) jobTitleEl.textContent = jobTitle;
+
+      // Limit-note (3/dag-påminnelse, eller dagens kvot)
+      const noteEl = document.getElementById('matchaSavedLimitNote');
+      if (noteEl) {
+        const left = 3 - matchedToday();
+        if (matchIsVIP()) {
+          noteEl.textContent = '👑 VIP — ingen dagsgräns för dig.';
+        } else if (left > 0) {
+          noteEl.innerHTML = '🎯 Du har <strong style="color:#fff;">' + left + ' matchning' + (left === 1 ? '' : 'ar') + '</strong> kvar idag. Räknaren nollställs vid midnatt.';
+        } else {
+          noteEl.innerHTML = '🌙 Du har använt dagens alla 3 matchningar. Räknaren nollställs vid midnatt.';
+        }
+      }
+
       savedModal.style.display = 'flex';
     } else {
       toast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil');
