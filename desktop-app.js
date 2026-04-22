@@ -4114,6 +4114,40 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const isPicked = !!matchaSelectedAds.find(a => a.id === hit.id);
     const pickIdx  = matchaSelectedAds.findIndex(a => a.id === hit.id);
 
+    // ── Bygg chips-HTML (arbetstid, anställningstyp, körkort, lön, varaktighet) ──
+    // Identiskt med steg 3 för konsistent UX
+    const chips = [];
+    const chipBase = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin:2px;color:rgba(255,255,255,0.7);';
+    const chipBg = 'rgba(255,255,255,0.07)';
+    const chipBgWarn = 'rgba(240,192,64,0.25)';
+
+    const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
+    if (hoursType) chips.push(`<span style="${chipBase}background:${chipBg};">⏱ ${escape(hoursType)}</span>`);
+
+    const empType = (hit.employment_type && hit.employment_type.label) || '';
+    if (empType) chips.push(`<span style="${chipBase}background:${chipBg};">📋 ${escape(empType)}</span>`);
+
+    const licRequired = hit.driving_license_required;
+    const licTypes = (hit.driving_license || []).map(l => l.label).filter(Boolean).join(', ');
+    if (licRequired) {
+      chips.push(`<span style="${chipBase}background:${chipBgWarn};">🚗 Körkort krävs${licTypes ? ': ' + escape(licTypes) : ''}</span>`);
+    } else if (licRequired === false) {
+      chips.push(`<span style="${chipBase}background:${chipBg};">🚗 Inget körkort</span>`);
+    }
+
+    const salDesc = hit.salary_description || '';
+    const salType = (hit.salary_type && hit.salary_type.label) || '';
+    chips.push(`<span style="${chipBase}background:${chipBg};">💰 ${escape(salDesc.substring(0, 40) || salType || 'Lön ej uppgiven')}</span>`);
+
+    const duration = (hit.duration && hit.duration.label) || '';
+    if (duration && duration !== 'Tillsvidare') {
+      chips.push(`<span style="${chipBase}background:${chipBg};">📅 ${escape(duration)}</span>`);
+    }
+
+    const chipsHtml = chips.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;margin-bottom:4px;">${chips.join('')}</div>`
+      : '';
+
     card.innerHTML = `
       <div class="matcha-job-head">
         <div class="matcha-job-avatar" style="background:${bg};color:${fg};">${initials}</div>
@@ -4125,6 +4159,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           </div>
         </div>
       </div>
+      ${chipsHtml}
       <div class="matcha-job-actions">
         <button class="matcha-job-btn ${isPicked ? 'picked' : 'pick'}"
                 data-hitid="${escape(hit.id)}">
@@ -4434,11 +4469,11 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     ].filter(Boolean).join('\n');
 
     const prompt = 'CV:\n' + cvSummary +
-      '\n\nSoker: ' + role + ' hos ' + company +
+      '\n\nSöker: ' + role + ' hos ' + company +
       (adText ? '\nAnnonsinfo: ' + adText.substring(0, 800) : '') +
       '\n\nSvara med JSON: {"keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1", "alt2", "alt3"]}' +
       '\n\nAlternativen ska vara personliga profiltexter (3-5 meningar) riktade mot ' + company + ' och rollen som ' + role +
-      '. Texterna ska vara i TVA stycken separerade med \\n\\n. Stycke 1 (3-4 meningar): bakgrund och styrkor. Stycke 2 (3-4 meningar): motivation och bidrag — avsluta ALLTID med: "Jag ser fram emot att berätta mer om mig sjalv pa en intervju, bli en del av ert team eller fa hora mer om ert foretag och jobbmojligheterna." Tre vinklar: 1) erfarenhetsfokus, 2) motivationsfokus, 3) kompetens och resultat. Max 6 keywords.';
+      '. Texterna ska vara i TVÅ stycken separerade med \\n\\n. Stycke 1 (3-4 meningar): bakgrund och styrkor. Stycke 2 (3-4 meningar): motivation och bidrag — avsluta ALLTID med: "Jag ser fram emot att berätta mer om mig själv på en intervju, bli en del av ert team eller få höra mer om ert företag och jobbmöjligheterna." Tre vinklar: 1) erfarenhetsfokus, 2) motivationsfokus, 3) kompetens och resultat. Max 6 keywords.';
 
     try {
       const resp = await fetch('/api/chat', {
