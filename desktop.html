@@ -3274,7 +3274,7 @@
         <div class="matcha-quick-chips">
           <button class="matcha-quick-chip" onclick="matchaQuickSearch('')">🌐 Alla jobb</button>
           <button class="matcha-quick-chip" onclick="matchaQuickSearch('lager logistik')">📦 Lager &amp; logistik</button>
-          <button class="matcha-quick-chip" onclick="matchaQuickSearch('vård omsorg undersköterska')">🤝 Vård &amp; omsorg</button>
+          <button class="matcha-quick-chip" onclick="matchaQuickSearch('vård omsorg')">🤝 Vård &amp; omsorg</button>
           <button class="matcha-quick-chip" onclick="matchaQuickSearch('bygg anläggning')">🏗️ Bygg &amp; anläggning</button>
           <button class="matcha-quick-chip" onclick="matchaQuickSearch('städ service')">🧹 Städ &amp; service</button>
           <button class="matcha-quick-chip" onclick="matchaQuickSearch('restaurang kök')">🍽️ Restaurang &amp; kök</button>
@@ -4398,5 +4398,41 @@
 
 
 <script src="desktop-app.js"></script>
+
+<!-- Matcha-modaler (pedagogiska: frågar vad användaren vill göra härnäst) -->
+
+<!-- 1. Modal efter att ett jobb valts i steg 2 -->
+<div id="matchaAddedModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);padding:20px;backdrop-filter:blur(4px);" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#1e2440;border-radius:20px;padding:32px 28px;max-width:460px;width:100%;border:1.5px solid rgba(62,180,137,0.25);box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div id="matchaAddedEmoji" style="font-size:42px;text-align:center;margin-bottom:16px;">✨</div>
+    <div id="matchaAddedTitle" style="font-size:20px;font-weight:800;color:#fff;text-align:center;margin-bottom:14px;"></div>
+    <div id="matchaAddedBody" style="font-size:14px;color:rgba(255,255,255,0.75);text-align:center;line-height:1.7;margin-bottom:26px;"></div>
+    <button onclick="matchaGoToStep3()" style="width:100%;padding:15px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;transition:transform 0.15s,box-shadow 0.15s;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 14px rgba(62,180,137,0.35)';" onmouseleave="this.style.transform='';this.style.boxShadow='';">
+      ✨ Matcha nu
+    </button>
+    <button onclick="document.getElementById('matchaAddedModal').style.display='none';" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
+      Fortsätt söka jobb
+    </button>
+  </div>
+</div>
+
+<!-- 2. Modal efter att en profiltext valts i steg 3 -->
+<div id="matchaSavedModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);padding:20px;backdrop-filter:blur(4px);" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#1e2440;border-radius:20px;padding:32px 28px;max-width:460px;width:100%;border:1.5px solid rgba(62,180,137,0.25);box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="font-size:42px;text-align:center;margin-bottom:16px;">🎉</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;text-align:center;margin-bottom:14px;">Ditt matchade CV är sparat!</div>
+    <div style="font-size:14px;color:rgba(255,255,255,0.75);text-align:center;line-height:1.7;margin-bottom:22px;">
+      Profiltexten är nu inlagd i ditt CV och sparad som ett matchat CV under <strong style="color:#3eb489;">👤 Profil</strong>.<br><br>
+      <span style="color:rgba(255,255,255,0.5);font-size:13px;">💡 Du kan göra fler matchningar mot andra jobb — varje matchning sparas separat så du kan jämföra och välja den starkaste.</span>
+    </div>
+    <button onclick="document.getElementById('matchaSavedModal').style.display='none'; if(window.switchView) switchView('profil');" style="width:100%;padding:15px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+      👤 Se mina matchade CV:n
+    </button>
+    <button onclick="document.getElementById('matchaSavedModal').style.display='none';" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">
+      Fortsätt matcha fler jobb
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
