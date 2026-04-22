@@ -46,10 +46,12 @@
     { id: 'template-4',  name: 'Modern Lila/Cyan',  icon: '💫', color: '#7c3aed' },
     { id: 'template-5',  name: 'Minimalistisk',     icon: '⚪', color: '#888888' },
     { id: 'template-6',  name: 'Traditionell 1',    icon: '📄', color: '#1a1a2e' },
-    { id: 'template-7',  name: 'Traditionell 2',    icon: '📑', color: '#374151' },
+    { id: 'template-7',  name: 'Traditionell 2',    icon: '📑', color: '#d4af37' },
     { id: 'template-8',  name: 'Modern Kort',       icon: '🎯', color: '#ec4899' },
     { id: 'template-9',  name: 'Två-kolumn',        icon: '🌟', color: '#10b981' },
     { id: 'template-10', name: 'Färgskatt',         icon: '🎨', color: '#f59e0b' },
+    { id: 'template-11', name: 'Traditionell 3',    icon: '📜', color: '#8b1a1a' },
+    { id: 'template-12', name: 'Traditionell 4',    icon: '📃', color: '#0f766e' },
   ];
 
   // Träningsmoduler — komprimerad version för desktop
@@ -3893,7 +3895,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       updateMatchaStickyBar();
     }
     if (n === 3) {
-      matchaRunAiForAllAds();
+      matchaRenderStep3Cards();
     }
   };
 
@@ -4200,41 +4202,216 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     if (tab3) tab3.disabled = matchaSelectedAds.length === 0;
   }
 
-  // ── STEG 3: AI-matchning ──────────────────────────────────
-  async function matchaRunAiForAllAds() {
+  // ── STEG 3: Rendera annons-kort med chips + manuell "Matcha"-knapp ──
+  // Matchar mobilens UX: användaren ser kort med all metadata (chips för
+  // arbetstid, körkort, lön etc.), klickar "Matcha mot CV" per kort, och
+  // får loading-state med timglas medan AI:n jobbar.
+  function matchaRenderStep3Cards() {
     const container = document.getElementById('matchaAdsContainer');
     if (!container) return;
 
-    // Rendera skelett-kort för alla valda annonser först
-    container.innerHTML = matchaSelectedAds.map(hit => {
-      const company = (hit.employer && hit.employer.name) || '';
-      return `
-        <div class="matcha-ad-result" id="matchaAdResult_${escape(String(hit.id))}">
-          <div class="matcha-ad-result-head">
-            <div style="flex:1;">
-              <div style="font-size: 15px; font-weight: 800; color: #fff;">${escape(hit.headline || '')}</div>
-              <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px;">${escape(company)}</div>
-            </div>
-            ${hit.webpage_url ? `<a class="matcha-job-btn link" href="${escape(hit.webpage_url)}" target="_blank" rel="noopener" style="flex-shrink:0;">Läs annons ↗</a>` : ''}
-          </div>
-          <div class="matcha-skeleton" id="matchaAdLoading_${escape(String(hit.id))}">
-            ✨ AI analyserar nyckelord och skriver 3 profiltexter...
-          </div>
-          <div id="matchaAdBody_${escape(String(hit.id))}" style="display:none;"></div>
-        </div>
-      `;
-    }).join('');
-
-    // Kör matchning i sekvens (inte parallellt) för att spara API-quota
-    for (const hit of matchaSelectedAds) {
-      await matchaRunAiForAd(hit);
+    if (!matchaSelectedAds.length) {
+      container.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:13px;">Välj annonser i steg 2 först</div>';
+      return;
     }
+
+    container.innerHTML = '';
+
+    matchaSelectedAds.forEach((hit, i) => {
+      const title   = hit.headline || '';
+      const company = (hit.employer && hit.employer.name) || '';
+      const muni    = (hit.workplace_address && hit.workplace_address.municipality) || '';
+      const url     = hit.webpage_url || '';
+      const adId    = String(hit.id);
+
+      const section = document.createElement('div');
+      section.className = 'matcha-ad-card-s3';
+      section.dataset.adId = adId;
+      section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:16px;margin-bottom:16px;transition:all 0.2s;';
+
+      // ── Header rad: "Annons X av Y" + ta bort-knapp ──
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;';
+      const hdrLabel = document.createElement('div');
+      hdrLabel.style.cssText = 'font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.6);';
+      hdrLabel.textContent = 'Annons ' + (i + 1) + ' av ' + matchaSelectedAds.length;
+      const rmBtn = document.createElement('button');
+      rmBtn.innerHTML = '✕ Ta bort';
+      rmBtn.style.cssText = 'background:rgba(220,50,50,0.25);border:1.5px solid rgba(220,50,50,0.6);color:#ff6b6b;font-size:11px;font-weight:800;cursor:pointer;padding:4px 10px;border-radius:8px;line-height:1;letter-spacing:0.3px;font-family:inherit;';
+      rmBtn.onclick = () => matchaRemoveAdS3(adId);
+      hdr.appendChild(hdrLabel);
+      hdr.appendChild(rmBtn);
+      section.appendChild(hdr);
+
+      // ── Titel + bolag/ort ──
+      const titleEl = document.createElement('div');
+      titleEl.style.cssText = 'font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;';
+      titleEl.textContent = title;
+      section.appendChild(titleEl);
+
+      const metaEl = document.createElement('div');
+      metaEl.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.45);';
+      metaEl.textContent = company + (muni ? ' · ' + muni : '');
+      section.appendChild(metaEl);
+
+      // ── Chips med metadata-symboler (matchar mobilens design) ──
+      function makeChip(label, color) {
+        const c = document.createElement('span');
+        c.style.cssText = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin:2px;background:' + (color || 'rgba(255,255,255,0.07)') + ';color:rgba(255,255,255,0.7);';
+        c.textContent = label;
+        return c;
+      }
+
+      const chipsRow = document.createElement('div');
+      chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;';
+
+      // ⏱ Arbetstid (heltid/deltid)
+      const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
+      if (hoursType) chipsRow.appendChild(makeChip('⏱ ' + hoursType));
+
+      // 📋 Anställningstyp
+      const empType = (hit.employment_type && hit.employment_type.label) || '';
+      if (empType) chipsRow.appendChild(makeChip('📋 ' + empType));
+
+      // 🚗 Körkort
+      const licRequired = hit.driving_license_required;
+      const licTypes = (hit.driving_license || []).map(l => l.label).filter(Boolean).join(', ');
+      if (licRequired) {
+        chipsRow.appendChild(makeChip('🚗 Körkort krävs' + (licTypes ? ': ' + licTypes : ''), 'rgba(240,192,64,0.25)'));
+      } else if (licRequired === false) {
+        chipsRow.appendChild(makeChip('🚗 Inget körkort'));
+      }
+
+      // 💰 Lön
+      const salDesc = hit.salary_description || '';
+      const salType = (hit.salary_type && hit.salary_type.label) || '';
+      chipsRow.appendChild(makeChip('💰 ' + (salDesc.substring(0, 40) || salType || 'Lön ej uppgiven')));
+
+      // 📅 Varaktighet (om annan än Tillsvidare)
+      const duration = (hit.duration && hit.duration.label) || '';
+      if (duration && duration !== 'Tillsvidare') chipsRow.appendChild(makeChip('📅 ' + duration));
+
+      if (chipsRow.children.length) section.appendChild(chipsRow);
+
+      // ── Annonstext-snippet ──
+      const rawDesc = (hit.description && hit.description.text) || '';
+      const adSnippet = rawDesc.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 140);
+      if (adSnippet) {
+        const snipEl = document.createElement('div');
+        snipEl.style.cssText = 'margin-top:10px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;';
+        snipEl.textContent = adSnippet + (rawDesc.length > 140 ? '…' : '');
+        section.appendChild(snipEl);
+      }
+
+      // ── Läs annons-länk ──
+      if (url) {
+        const readLink = document.createElement('a');
+        readLink.href = url;
+        readLink.target = '_blank';
+        readLink.rel = 'noopener';
+        readLink.onclick = (e) => e.stopPropagation();
+        readLink.style.cssText = 'display:inline-block;margin-top:10px;font-size:11px;font-weight:700;color:#3eb489;text-decoration:none;padding:6px 12px;border:1px solid rgba(62,180,137,0.4);border-radius:8px;background:rgba(62,180,137,0.08);';
+        readLink.textContent = 'Läs annons ↗';
+        section.appendChild(readLink);
+      }
+
+      // ── "Matcha mot CV"-knapp (eller "redan matchad"-badge) ──
+      const extrasDiv = document.createElement('div');
+      extrasDiv.id = 'matchaExtras_' + adId;
+
+      const alreadyMatched = matchaIsAdAlreadyMatched(hit);
+      const genBtn = document.createElement('button');
+      if (alreadyMatched) {
+        genBtn.textContent = '✅ CV redan matchat mot detta jobb';
+        genBtn.disabled = true;
+        genBtn.style.cssText = 'margin-top:14px;width:100%;padding:13px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);color:#3eb489;font-size:13px;font-weight:700;border-radius:10px;cursor:default;font-family:inherit;opacity:0.8;';
+      } else {
+        genBtn.id = 'matchaGenBtn_' + adId;
+        genBtn.textContent = '✨ Matcha mot CV';
+        genBtn.style.cssText = 'margin-top:14px;width:100%;padding:13px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;transition:transform 0.15s, box-shadow 0.15s;';
+        genBtn.onmouseenter = () => { genBtn.style.transform = 'translateY(-1px)'; genBtn.style.boxShadow = '0 4px 12px rgba(108,92,231,0.3)'; };
+        genBtn.onmouseleave = () => { genBtn.style.transform = ''; genBtn.style.boxShadow = ''; };
+        genBtn.onclick = (e) => {
+          e.stopPropagation();
+          // Dimma andra kort medan denna jobbar
+          const allSections = document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]');
+          allSections.forEach(s => {
+            if (s.dataset.adId !== adId) {
+              s.style.opacity = '0.2';
+              s.style.pointerEvents = 'none';
+            }
+          });
+          matchaRunAiForAd(hit).finally(() => {
+            // "Visa alla annonser"-knapp efteråt
+            const existingReset = document.getElementById('matchaResetFocus');
+            if (!existingReset) {
+              const resetBtn = document.createElement('button');
+              resetBtn.id = 'matchaResetFocus';
+              resetBtn.textContent = '← Visa alla annonser';
+              resetBtn.style.cssText = 'display:block;margin:0 auto 16px;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;padding:7px 14px;border-radius:20px;cursor:pointer;font-family:inherit;';
+              resetBtn.onclick = () => {
+                allSections.forEach(s => { s.style.opacity = ''; s.style.pointerEvents = ''; });
+                resetBtn.remove();
+              };
+              container.parentNode.insertBefore(resetBtn, container);
+            }
+          });
+        };
+      }
+      extrasDiv.appendChild(genBtn);
+      section.appendChild(extrasDiv);
+
+      // ── Loading-state (timglas, dold tills click) ──
+      const loadingEl = document.createElement('div');
+      loadingEl.id = 'matchaAdLoading_' + adId;
+      loadingEl.className = 'matcha-skeleton';
+      loadingEl.style.cssText = 'display:none;margin-top:14px;padding:20px;background:rgba(108,92,231,0.08);border:1.5px solid rgba(108,92,231,0.3);border-radius:12px;text-align:center;color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;';
+      loadingEl.innerHTML = '<span style="display:inline-block;animation:matchaHourglassSpin 2s linear infinite;font-size:24px;">⏳</span><div style="margin-top:8px;">AI analyserar och skriver 3 profiltexter...</div>';
+      section.appendChild(loadingEl);
+
+      // ── Resultat-container (dold tills AI:n returnerat) ──
+      const resultDiv = document.createElement('div');
+      resultDiv.id = 'matchaAdBody_' + adId;
+      resultDiv.style.cssText = 'display:none;margin-top:14px;';
+      section.appendChild(resultDiv);
+
+      container.appendChild(section);
+    });
+  }
+
+  // Ta bort en annons från step 3-listan
+  function matchaRemoveAdS3(adId) {
+    matchaSelectedAds = matchaSelectedAds.filter(a => String(a.id) !== String(adId));
+    matchaRenderStep3Cards();
+    updateMatchaStickyBar();
+    if (!matchaSelectedAds.length) {
+      // Tillbaka till step 2 om inga annonser kvar
+      window.matchaSwitchTab(2);
+    }
+  }
+
+  // Kollar om hit redan finns som "matchat CV" i sparade
+  function matchaIsAdAlreadyMatched(hit) {
+    if (!hit) return false;
+    const list = pfGetSaved();
+    return list.some(c => {
+      if (!c || c.id.indexOf('match_') !== 0) return false;
+      const sameUrl = c.jobUrl && hit.webpage_url && c.jobUrl === hit.webpage_url;
+      const sameTitle = c._hit && hit.headline && c._hit.headline === hit.headline
+        && (c._hit.employer && hit.employer && c._hit.employer.name === hit.employer.name);
+      return sameUrl || sameTitle;
+    });
   }
 
   async function matchaRunAiForAd(hit) {
     const loadEl = document.getElementById('matchaAdLoading_' + hit.id);
     const bodyEl = document.getElementById('matchaAdBody_' + hit.id);
+    const genBtn = document.getElementById('matchaGenBtn_' + hit.id);
     if (!loadEl || !bodyEl) return;
+
+    // Visa timglas-loading, dölj knappen
+    loadEl.style.display = 'block';
+    if (genBtn) genBtn.style.display = 'none';
 
     const selectedCV = matchaGetSelectedCVData();
     const role    = hit.headline || '';
@@ -4279,12 +4456,19 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const raw = (data.content && data.content[0] && data.content[0].text) || '{}';
       const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
+      // Dölj loading + visa resultat
+      loadEl.style.display = 'none';
       renderMatchaAiResult(hit, parsed);
       logEvent('cv_matched', { role: role, company: company });
     } catch(err) {
       console.error('AI-match fel:', err);
       loadEl.style.color = '#ff8fa3';
-      loadEl.textContent = '❌ AI kunde inte matcha just nu. Försök igen om en stund.';
+      loadEl.innerHTML = '<span style="font-size:24px;">❌</span><div style="margin-top:8px;">AI kunde inte matcha just nu. Försök igen om en stund.</div>';
+      // Återställ knappen så användaren kan försöka igen
+      if (genBtn) {
+        genBtn.style.display = '';
+        genBtn.textContent = '🔄 Försök igen';
+      }
     }
   }
 
