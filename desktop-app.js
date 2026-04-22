@@ -3896,6 +3896,10 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     }
     if (n === 3) {
       matchaRenderStep3Cards();
+      // Uppdatera röd dagsgräns-banner
+      if (typeof matchUpdateDagsBanner === 'function') {
+        setTimeout(matchUpdateDagsBanner, 50);
+      }
     }
   };
 
@@ -4217,7 +4221,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   function matchaShowAddedModal(count) {
     if (count === 3) {
       toast('✨ 3 av 3 jobb valda — tar dig till matcha-steget!');
-      setTimeout(() => window.matchaSwitchTab(3), 1200);
+      setTimeout(() => window.matchaSwitchStep(3), 1200);
       return;
     }
 
@@ -4249,7 +4253,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   window.matchaGoToStep3 = function() {
     const modal = document.getElementById('matchaAddedModal');
     if (modal) modal.style.display = 'none';
-    setTimeout(() => window.matchaSwitchTab(3), 50);
+    setTimeout(() => window.matchaSwitchStep(3), 50);
   };
 
   function matchaDoSearchFromCache() {
@@ -4465,7 +4469,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     updateMatchaStickyBar();
     if (!matchaSelectedAds.length) {
       // Tillbaka till step 2 om inga annonser kvar
-      window.matchaSwitchTab(2);
+      window.matchaSwitchStep(2);
     }
   }
 
@@ -4482,18 +4486,150 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     });
   }
 
+  // ═════════════════════════════════════════════════════
+  // DAGSGRÄNS — max 3 matchade CV per dag (resetar midnatt)
+  // ═════════════════════════════════════════════════════
+  const MATCH_VIP_EMAILS = ['oliver.pettersson2@gmail.com'];
+
+  function matchIsVIP() {
+    try {
+      const auth = JSON.parse(localStorage.getItem('pathfinder_auth') || '{}');
+      return MATCH_VIP_EMAILS.indexOf(auth.email) !== -1;
+    } catch(e) { return false; }
+  }
+
+  function matchedToday() {
+    const idag = new Date().toDateString();
+    try {
+      return (pfGetMatched() || [])
+        .filter(c => new Date(c.savedAt).toDateString() === idag).length;
+    } catch(e) { return 0; }
+  }
+
+  function matchTimeLeft() {
+    const m = new Date(); m.setHours(24, 0, 0, 0);
+    const d = m - new Date();
+    return Math.floor(d / 3600000) + ' tim ' + Math.floor((d % 3600000) / 60000) + ' min';
+  }
+
+  // Visa "Dagsgränsen nådd" modal (när man försöker matcha efter 3 idag)
+  function matchShowBlockModal() {
+    const existing = document.getElementById('_matchBlockModal');
+    if (existing) existing.remove();
+    const m = document.createElement('div');
+    m.id = '_matchBlockModal';
+    m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);padding:20px;backdrop-filter:blur(4px);';
+    m.innerHTML =
+      '<div style="background:#1e2440;border-radius:20px;padding:32px 28px;max-width:440px;width:100%;border:2px solid rgba(232,93,38,0.4);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">' +
+        '<div style="font-size:48px;margin-bottom:14px;">🔒</div>' +
+        '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:10px;">Dagsgränsen nådd</div>' +
+        '<div style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:10px;">Du har redan matchat <strong style="color:#fff;">3 CV idag</strong>. Nya matcher öppnar vid midnatt.</div>' +
+        '<div style="font-size:13px;color:rgba(232,93,38,0.85);margin-bottom:24px;font-weight:600;">⏰ ' + matchTimeLeft() + ' kvar</div>' +
+        '<button onclick="document.getElementById(\'_matchBlockModal\').remove()" style="width:100%;padding:14px;background:#e85d26;border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Stäng</button>' +
+      '</div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  }
+
+  // Visa "Sista matchen!" modal (när man just matchat sin 3:e)
+  function matchShowLimitReachedModal() {
+    const existing = document.getElementById('_matchLimitModal');
+    if (existing) existing.remove();
+    const m = document.createElement('div');
+    m.id = '_matchLimitModal';
+    m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);padding:20px;backdrop-filter:blur(4px);';
+    m.innerHTML =
+      '<div style="background:#1e2440;border-radius:20px;padding:32px 28px;max-width:460px;width:100%;border-top:4px solid #e85d26;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">' +
+        '<div style="font-size:52px;margin-bottom:14px;">🌙</div>' +
+        '<div style="font-size:21px;font-weight:900;color:#fff;margin-bottom:10px;">Du har matchat 3 CV idag!</div>' +
+        '<div style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:12px;">Bra jobbat — max antal matcher nådd för idag. 💪<br>Nya matcher öppnar vid midnatt.</div>' +
+        '<div style="font-size:13px;color:rgba(232,93,38,0.85);margin-bottom:24px;font-weight:600;">⏰ ' + matchTimeLeft() + ' kvar</div>' +
+        '<button onclick="document.getElementById(\'_matchLimitModal\').remove()" style="width:100%;padding:14px;background:#e85d26;border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Okej, ses imorgon! 👋</button>' +
+      '</div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  }
+
+  // Röd banner i steg 3: "X av 3 matcher kvar idag"
+  function matchUpdateDagsBanner() {
+    const step3 = document.getElementById('matchaStep3');
+    if (!step3 || !step3.classList.contains('active')) return;
+
+    const count = matchedToday();
+    const left  = 3 - count;
+    const vip   = matchIsVIP();
+
+    let banner = document.getElementById('_matchDagsBanner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = '_matchDagsBanner';
+      step3.insertBefore(banner, step3.firstChild);
+    }
+
+    if (vip) { banner.style.display = 'none'; return; }
+
+    banner.style.cssText =
+      'display:flex;align-items:center;justify-content:space-between;gap:12px;' +
+      'background:' + (left === 0 ? 'rgba(232,93,38,0.18)' : 'rgba(232,93,38,0.1)') + ';' +
+      'border:2px solid ' + (left === 0 ? '#e85d26' : 'rgba(232,93,38,0.4)') + ';' +
+      'border-radius:12px;padding:12px 16px;margin-bottom:16px;';
+    banner.innerHTML =
+      '<div>' +
+        '<div style="font-size:14px;font-weight:900;color:#e85d26;margin-bottom:3px;">' +
+          (left === 0 ? '🔒 Inga matcher kvar idag' : '🎯 ' + left + ' av 3 matcher kvar idag') +
+        '</div>' +
+        '<div style="font-size:12px;color:rgba(255,255,255,0.45);">Resetar om ' + matchTimeLeft() + '</div>' +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0;">' +
+        '<div style="font-size:22px;font-weight:900;color:' + (left === 0 ? '#e85d26' : '#fff') + ';">' + count + '/3</div>' +
+        '<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;">MATCHER</div>' +
+      '</div>';
+  }
+  window.matchUpdateDagsBanner = matchUpdateDagsBanner;
+
+  // Stor fullskärms-timglas overlay (inga klick igenom)
+  function matchShowHourglassOverlay(role) {
+    const existing = document.getElementById('_matchHourglass');
+    if (existing) existing.remove();
+    const o = document.createElement('div');
+    o.id = '_matchHourglass';
+    o.style.cssText = 'position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;background:rgba(10,12,28,0.85);backdrop-filter:blur(6px);pointer-events:all;';
+    o.innerHTML =
+      '<div style="background:#1e2440;border:1.5px solid rgba(108,92,231,0.35);border-radius:24px;padding:40px 36px;max-width:420px;width:calc(100% - 40px);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.6);">' +
+        '<div style="font-size:68px;margin-bottom:20px;animation:matchaHourglassSpin 2.5s linear infinite;display:inline-block;">⏳</div>' +
+        '<div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:10px;">AI skriver 3 profiltexter</div>' +
+        '<div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:8px;">riktade mot <strong style="color:#f0c040;">' + (role || 'ditt jobb') + '</strong></div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Det tar oftast 10-20 sekunder.<br>Stäng inte fönstret.</div>' +
+      '</div>';
+    document.body.appendChild(o);
+    // Blockera alla klick bakåt
+    o.addEventListener('click', e => e.stopPropagation());
+  }
+
+  function matchHideHourglassOverlay() {
+    const o = document.getElementById('_matchHourglass');
+    if (o) o.remove();
+  }
+
   async function matchaRunAiForAd(hit) {
     const loadEl = document.getElementById('matchaAdLoading_' + hit.id);
     const bodyEl = document.getElementById('matchaAdBody_' + hit.id);
     const genBtn = document.getElementById('matchaGenBtn_' + hit.id);
     if (!loadEl || !bodyEl) return;
 
-    // Visa timglas-loading, dölj knappen
+    // Blockera om dagsgränsen redan nådd (och ej VIP)
+    if (!matchIsVIP() && matchedToday() >= 3) {
+      matchShowBlockModal();
+      return;
+    }
+
+    // Visa inline-loading + stor overlay med timglas (blockerar klick)
     loadEl.style.display = 'block';
     if (genBtn) genBtn.style.display = 'none';
+    const role = hit.headline || '';
+    matchShowHourglassOverlay(role);
 
     const selectedCV = matchaGetSelectedCVData();
-    const role    = hit.headline || '';
     const company = (hit.employer && hit.employer.name) || '';
     const adText  = (hit.description && hit.description.text) || '';
 
@@ -4554,12 +4690,14 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const raw = (data.content && data.content[0] && data.content[0].text) || '{}';
       const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
-      // Dölj loading + visa resultat
+      // Dölj loading + overlay + visa resultat
       loadEl.style.display = 'none';
+      matchHideHourglassOverlay();
       renderMatchaAiResult(hit, parsed);
       logEvent('cv_matched', { role: role, company: company });
     } catch(err) {
       console.error('AI-match fel:', err);
+      matchHideHourglassOverlay();
       loadEl.style.color = '#ff8fa3';
       loadEl.innerHTML = '<span style="font-size:24px;">❌</span><div style="margin-top:8px;">AI kunde inte matcha just nu. Försök igen om en stund.</div>';
       // Återställ knappen så användaren kan försöka igen
@@ -4578,44 +4716,131 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     const keywords     = parsed.keywords     || [];
     const alternatives = parsed.alternatives || [];
+    const role         = hit.headline || '';
 
-    // Spara alts globalt så knappen kan hämta dem
+    // Spara alts globalt så klick kan hämta dem
     if (!window._matchaAlts) window._matchaAlts = {};
     window._matchaAlts[hit.id] = alternatives;
 
     const labels = ['🎯 Erfarenhetsfokus', '💫 Motivationsfokus', '⭐ Kompetens & resultat'];
+    const accents     = ['#3eb489',                  '#f0c040',                  '#a78bfa'];
+    const borderCols  = ['rgba(62,180,137,0.4)',     'rgba(240,192,64,0.35)',    'rgba(124,58,237,0.4)'];
+    const bgCols      = ['rgba(62,180,137,0.07)',    'rgba(240,192,64,0.07)',    'rgba(124,58,237,0.07)'];
+
+    let html = '';
+
+    // Keywords-rad (om vi fick nyckelord från AI:n)
+    if (keywords.length) {
+      html += '<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Nyckelord i annonsen</div>';
+      html += '<div class="matcha-keywords" style="margin-bottom:18px;">';
+      keywords.forEach(k => {
+        const status = (k.status || 'partial').toLowerCase();
+        const icon = status === 'match' ? '✓ ' : status === 'partial' ? '◐ ' : '✕ ';
+        html += '<span class="matcha-kw ' + escape(status) + '">' + icon + escape(k.word || '') + '</span>';
+      });
+      html += '</div>';
+    }
+
+    // Rubrik (matchar mobilen)
+    html += '<div style="text-align:center;margin-bottom:20px;">';
+    html += '<div style="font-size:24px;margin-bottom:8px;">✨</div>';
+    html += '<div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:6px;">AI har skrivit 3 profiltexter åt dig!</div>';
+    html += '<div style="font-size:13px;color:rgba(255,255,255,0.55);font-weight:600;margin-bottom:4px;">som matchar <span style="color:#f0c040;">' + escape(role) + '</span></div>';
+    html += '<div style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.6;">Klicka på ett alternativ för att välja det</div>';
+    html += '</div>';
+
+    // Profiltext-kort (hela kortet klickbart)
+    alternatives.forEach((text, ai) => {
+      html += '<div id="matchaCard_' + escape(String(hit.id)) + '_' + ai + '" ' +
+              'style="cursor:pointer;background:' + bgCols[ai] + ';border:2px solid ' + borderCols[ai] + ';border-radius:16px;padding:18px;margin-bottom:14px;transition:all 0.15s;">';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">';
+      html += '<span style="font-size:16px;">📋</span>';
+      html += '<span style="font-size:12px;font-weight:800;letter-spacing:0.5px;color:' + accents[ai] + ';">' + escape(labels[ai] || 'Alternativ ' + (ai + 1)) + '</span>';
+      html += '</div>';
+      // Bevara stycke-brytningar med white-space: pre-wrap
+      html += '<div style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.88);white-space:pre-wrap;">' + escape(text) + '</div>';
+      html += '</div>';
+    });
+
+    // "Se matchningarna igen"-knapp (visar tillbaka annonskortet + andra kort)
+    html += '<button id="matchaBack_' + escape(String(hit.id)) + '" ' +
+            'style="width:100%;padding:12px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;font-family:inherit;margin-top:4px;">' +
+            '← Tillbaka till alla annonser</button>';
 
     bodyEl.style.display = 'block';
-    bodyEl.innerHTML = `
-      ${keywords.length ? `
-        <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
-          Nyckelord i annonsen
-        </div>
-        <div class="matcha-keywords">
-          ${keywords.map(k => {
-            const status = (k.status || 'partial').toLowerCase();
-            const icon = status === 'match' ? '✓ ' : status === 'partial' ? '◐ ' : '✕ ';
-            return `<span class="matcha-kw ${escape(status)}">${icon}${escape(k.word || '')}</span>`;
-          }).join('')}
-        </div>
-      ` : ''}
+    bodyEl.innerHTML = html;
 
-      <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
-        Välj en profiltext att använda
-      </div>
-      ${alternatives.map((text, i) => `
-        <div class="matcha-alt">
-          <div class="matcha-alt-title">${escape(labels[i] || 'Alternativ ' + (i+1))}</div>
-          <div class="matcha-alt-text">${escape(text)}</div>
-          <button class="matcha-alt-btn" onclick="matchaApplyText('${escape(String(hit.id))}', ${i})">
-            ✨ Använd denna text
-          </button>
-        </div>
-      `).join('')}
-    `;
+    setTimeout(() => { bodyEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+
+    // "Tillbaka till alla annonser" — återställ vyn
+    const backBtn = document.getElementById('matchaBack_' + hit.id);
+    if (backBtn) {
+      backBtn.onclick = () => {
+        const section = bodyEl.closest('[data-ad-id]');
+        if (section) {
+          Array.from(section.children).forEach(c => { c.style.display = ''; });
+          bodyEl.style.display = 'none';
+          bodyEl.innerHTML = '';
+        }
+        // Återställ opacity på andra kort
+        document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]').forEach(s => {
+          s.style.opacity = ''; s.style.pointerEvents = '';
+        });
+        const reset = document.getElementById('matchaResetFocus');
+        if (reset) reset.remove();
+      };
+    }
+
+    // Klick på kort → bekräftelse-overlay (som mobilen)
+    alternatives.forEach((text, ai) => {
+      const card = document.getElementById('matchaCard_' + hit.id + '_' + ai);
+      if (!card) return;
+      card.onmouseenter = () => {
+        card.style.transform = 'translateY(-2px)';
+        card.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)';
+      };
+      card.onmouseleave = () => {
+        card.style.transform = '';
+        card.style.boxShadow = '';
+      };
+      card.onclick = () => matchShowConfirmOverlay(hit, ai, accents[ai]);
+    });
+  }
+
+  // Bekräftelse-overlay som dyker upp när användaren klickar ett profiltext-kort
+  // (matchar mobilens UX: "Välj denna profiltext?" → Ja/Nej)
+  function matchShowConfirmOverlay(hit, altIdx, accent) {
+    const existing = document.getElementById('_matchConfirmOverlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = '_matchConfirmOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99990;background:rgba(10,12,28,0.88);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.innerHTML =
+      '<div style="background:#1e2440;border:1.5px solid ' + (accent || 'rgba(62,180,137,0.35)') + ';border-radius:20px;padding:32px 28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,0.6);">' +
+        '<div style="font-size:44px;text-align:center;margin-bottom:14px;">✨</div>' +
+        '<div style="font-size:19px;font-weight:900;color:#fff;text-align:center;margin-bottom:10px;">Välj denna profiltext?</div>' +
+        '<div style="font-size:13px;color:rgba(255,255,255,0.55);text-align:center;line-height:1.7;margin-bottom:24px;">Den läggs direkt in i ditt CV. Ett matchat CV sparas under <strong style="color:#fff;">👤 Profil</strong> och kan redigeras efteråt.</div>' +
+        '<button class="_conf-ja" style="width:100%;padding:15px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">✅ Ja, välj denna</button>' +
+        '<button class="_conf-nej" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">Nej, visa alternativen igen</button>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    overlay.querySelector('._conf-nej').onclick = () => overlay.remove();
+    overlay.querySelector('._conf-ja').onclick = () => {
+      overlay.remove();
+      window.matchaApplyText(String(hit.id), altIdx);
+    };
   }
 
   window.matchaApplyText = function(hitId, altIdx) {
+    // Blockera om dagsgränsen nådd (ej VIP)
+    if (!matchIsVIP() && matchedToday() >= 3) {
+      matchShowBlockModal();
+      return;
+    }
+
     const alts = window._matchaAlts && window._matchaAlts[hitId];
     if (!alts || !alts[altIdx]) {
       toast('Kunde inte hitta texten', 'error');
@@ -4655,6 +4880,16 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       role: (hit && hit.headline) || '',
       company: (hit && hit.employer && hit.employer.name) || ''
     });
+
+    // Uppdatera dagsbanner direkt så nya räknaren syns
+    setTimeout(matchUpdateDagsBanner, 100);
+
+    // Om detta var 3:e matchen idag — visa "Sista matchen!"-modal istället
+    // för standard "Sparat!"-modalen
+    if (!matchIsVIP() && matchedToday() >= 3) {
+      setTimeout(matchShowLimitReachedModal, 600);
+      return;
+    }
 
     // Visa pedagogisk "Sparat!"-modal istället för bara en toast
     const savedModal = document.getElementById('matchaSavedModal');
