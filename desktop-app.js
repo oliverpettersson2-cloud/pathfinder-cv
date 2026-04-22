@@ -4197,15 +4197,59 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const idx = matchaSelectedAds.findIndex(a => a.id === hit.id);
     if (idx >= 0) {
       matchaSelectedAds.splice(idx, 1);
+      updateMatchaStickyBar();
+      matchaDoSearchFromCache();
     } else if (matchaSelectedAds.length >= 3) {
       toast('Max 3 annonser åt gången', 'error');
       return;
     } else {
       matchaSelectedAds.push(hit);
+      updateMatchaStickyBar();
+      matchaDoSearchFromCache();
+      // Visa pedagogisk modal: "Matcha nu eller fortsätt söka?"
+      matchaShowAddedModal(matchaSelectedAds.length);
     }
-    updateMatchaStickyBar();
-    // Re-render för att uppdatera button-state
-    matchaDoSearchFromCache();
+  };
+
+  // Modal som dyker upp när ett jobb lagts till — frågar om användaren
+  // vill matcha direkt eller fortsätta söka fler jobb. Skippar vid 3/3
+  // (då går vi automatiskt vidare till steg 3 efter kort paus).
+  function matchaShowAddedModal(count) {
+    if (count === 3) {
+      toast('✨ 3 av 3 jobb valda — tar dig till matcha-steget!');
+      setTimeout(() => window.matchaSwitchTab(3), 1200);
+      return;
+    }
+
+    const modal = document.getElementById('matchaAddedModal');
+    const emoji = document.getElementById('matchaAddedEmoji');
+    const title = document.getElementById('matchaAddedTitle');
+    const body  = document.getElementById('matchaAddedBody');
+    if (!modal) return;
+
+    if (count === 1) {
+      emoji.textContent = '✨';
+      title.textContent = '1 av 3 jobb valda!';
+      body.innerHTML =
+        'Nu har du två val:<br><br>' +
+        '<strong style="color:#3eb489;">Matcha direkt</strong> — AI skriver tre skräddarsydda profiltexter för just detta jobb.<br><br>' +
+        '<strong style="color:#f0c040;">Fortsätt söka</strong> — lägg till upp till 2 jobb till och matcha alla i samma sving. Bra om du söker brett.';
+    } else {
+      emoji.textContent = '✨✨';
+      title.textContent = '2 av 3 jobb valda!';
+      body.innerHTML =
+        'Du kan matcha de två redan nu — eller lägga till ett tredje jobb för bredast möjlig matchning.<br><br>' +
+        '<span style="color:rgba(255,255,255,0.45);font-size:12px;">💡 Tips: välj jobb inom samma område — AI:n blir bäst då.</span>';
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  // Används av modalens "Matcha nu"-knapp
+  window.matchaGoToStep3 = function() {
+    const modal = document.getElementById('matchaAddedModal');
+    if (modal) modal.style.display = 'none';
+    setTimeout(() => window.matchaSwitchTab(3), 50);
   };
 
   function matchaDoSearchFromCache() {
@@ -4469,11 +4513,30 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     ].filter(Boolean).join('\n');
 
     const prompt = 'CV:\n' + cvSummary +
-      '\n\nSöker: ' + role + ' hos ' + company +
+      '\n\nJobbet: ' + role + ' hos ' + company +
       (adText ? '\nAnnonsinfo: ' + adText.substring(0, 800) : '') +
-      '\n\nSvara med JSON: {"keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1", "alt2", "alt3"]}' +
-      '\n\nAlternativen ska vara personliga profiltexter (3-5 meningar) riktade mot ' + company + ' och rollen som ' + role +
-      '. Texterna ska vara i TVÅ stycken separerade med \\n\\n. Stycke 1 (3-4 meningar): bakgrund och styrkor. Stycke 2 (3-4 meningar): motivation och bidrag — avsluta ALLTID med: "Jag ser fram emot att berätta mer om mig själv på en intervju, bli en del av ert team eller få höra mer om ert företag och jobbmöjligheterna." Tre vinklar: 1) erfarenhetsfokus, 2) motivationsfokus, 3) kompetens och resultat. Max 6 keywords.';
+      '\n\nSkriv 3 profiltexter som UNDVIKER AI-känsla. Skriv som en riktig människa — personligt, konkret, utan klichéer.' +
+      '\n\n===== SKRIVREGLER =====' +
+      '\n• Använd "jag"-form genomgående' +
+      '\n• Blanda långa och korta meningar — naturligt flöde, inte stel symmetri' +
+      '\n• Minst en mening per text ska börja med ett verb eller en personlig observation ("Efter fem år i...", "Det jag tar med mig från...", "På DSV lärde jag mig att...")' +
+      '\n• Referera till KONKRETA saker från CV:t — företagsnamn, antal år, specifika uppgifter — inte bara abstrakta egenskaper' +
+      '\n• Undvik floskler och klichéer: "driven", "resultatorienterad", "utvecklat en kombination av", "lugnt och metodiskt sätt", "direkt överförbara", "teamplayer", "passion för"' +
+      '\n• Undvik meningar som börjar "Med min erfarenhet av..." eller "Jag är en person som..."' +
+      '\n• Skriv så som en människa pratar till en rekryterare på ett fikapaus — professionellt men äkta' +
+      '\n• Varje text ska kännas unik — inte omskrivning av samma mall' +
+      '\n\n===== FORMAT =====' +
+      '\n• TVÅ stycken per text, separerade med \\n\\n' +
+      '\n• Stycke 1 (3-4 meningar): vad du gjort och vad du tar med dig — konkret och berättande' +
+      '\n• Stycke 2 (3-4 meningar): vad du bidrar med, vad som driver dig — avsluta ALLTID med exakt: "Jag ser fram emot att berätta mer om mig själv på en intervju, bli en del av ert team eller få höra mer om ert företag och jobbmöjligheterna."' +
+      '\n\n===== TRE VINKLAR (en per alternativ) =====' +
+      '\n• Alt 1 (ERFARENHET): börja med en konkret situation från ett tidigare jobb i CV:t' +
+      '\n• Alt 2 (MOTIVATION): börja med vad som fick dig att söka just detta jobb / denna bransch' +
+      '\n• Alt 3 (KOMPETENS & RESULTAT): börja med en kompetens du byggt upp och vad den har lett till' +
+      '\n\n===== SVAR =====' +
+      '\nSvara ENDAST med giltig JSON, inget annat:' +
+      '\n{"keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1-text", "alt2-text", "alt3-text"]}' +
+      '\nMax 6 keywords.';
 
     try {
       const resp = await fetch('/api/chat', {
@@ -4481,8 +4544,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 1500,
-          system: 'Du ar en CV-expert. Svara ALLTID med giltig JSON och inget annat.',
+          max_tokens: 1800,
+          system: 'Du är en svensk CV-coach som hjälper jobbsökare att skriva profiltexter som INTE låter AI-genererade. Din specialitet: mänsklig, konkret, berättande svenska — inte corporate buzzwords. Du undviker ord som "driven", "resultatorienterad", "direkt överförbar", "lugnt och metodiskt", "teamplayer". Istället refererar du till konkreta saker personen gjort, som en vän som hjälper till med brev. Svara ALLTID med giltig JSON och inget annat.',
           messages: [{ role: 'user', content: prompt }]
         })
       });
@@ -4593,7 +4656,13 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       company: (hit && hit.employer && hit.employer.name) || ''
     });
 
-    toast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil');
+    // Visa pedagogisk "Sparat!"-modal istället för bara en toast
+    const savedModal = document.getElementById('matchaSavedModal');
+    if (savedModal) {
+      savedModal.style.display = 'flex';
+    } else {
+      toast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil');
+    }
   };
 
   // ──────────────────────────────────────────────────────────
@@ -4908,22 +4977,30 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     showAiLoader('Skriver profiltext...', 'AI bygger en personlig presentation baserat på din bakgrund');
     try {
       const userContent =
-        'Skriv en professionell CV-profiltext (3-5 meningar, max 80 ord) på svenska. Basera texten FRÄMST på personens faktiska arbetslivserfarenhet — inte bara yrkestiteln.\n\n' +
+        'Skriv en CV-profiltext på svenska i TVÅ stycken separerade med \\n\\n. Text-struktur som i matchade profiltexter — personlig och konkret.\n\n' +
         'Namn: ' + (name || '(okänt)') + '\n' +
         (title ? 'Önskad/nuvarande yrkestitel: ' + title + '\n' : '') +
         (jobSummary ? '\nArbetslivserfarenhet:\n' + jobSummary + '\n' : '') +
         (educationSummary ? '\nUtbildning:\n' + educationSummary + '\n' : '') +
         (skills ? '\nKompetenser: ' + skills + '\n' : '') +
-        '\nKRITISKT: Skriv ALLTID i FÖRSTA PERSON ("Jag har...", "Jag arbetar...", "Min erfarenhet..."). ALDRIG i tredje person ("Oliver har...", "Han arbetar..."). Det är personen själv som presenterar sig.\n\n' +
-        'Returnera ENBART profiltexten, inga rubriker, inga bullets, ingen markdown. Gör den personlig och specifik — nämn konkreta styrkor som framgår av erfarenheterna ovan.';
+        '\n===== SKRIVREGLER =====\n' +
+        '• Skriv i FÖRSTA PERSON ("jag har...", "mitt arbete...")\n' +
+        '• TVÅ stycken, separerade med \\n\\n:\n' +
+        '  - Stycke 1 (3-4 meningar): vad du gjort, vilka konkreta erfarenheter du tar med dig. Referera till FAKTISKA företag och år från CV:t ovan.\n' +
+        '  - Stycke 2 (2-3 meningar): vad du bidrar med och vad som driver dig. Kan avsluta med vad du söker nu eller hur du vill bidra.\n' +
+        '• Blanda långa och korta meningar — naturligt flöde\n' +
+        '• UNDVIK dessa AI-klichéer: "driven", "resultatorienterad", "utvecklat en kombination av", "direkt överförbara", "lugnt och metodiskt", "teamplayer", "passion för", "Med min erfarenhet av...", "Jag är en person som..."\n' +
+        '• Skriv som en människa pratar — professionellt men äkta, som ett brev till en kollega\n' +
+        '• Nämn KONKRETA saker (företagsnamn, antal år, specifika uppgifter) — inte abstrakta egenskaper\n\n' +
+        'Returnera ENBART profiltexten — inga rubriker, inga bullets, ingen markdown, inga inledningsord som "Här är din text:".';
 
       const r = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 600,
-          system: 'Du skriver professionella, personliga CV-profiltexter på svenska. Du skriver ALLTID i FÖRSTA PERSON — aldrig i tredje person. Basera alltid texten på personens faktiska arbetslivserfarenhet. Aldrig generiska.',
+          max_tokens: 800,
+          system: 'Du är en svensk CV-coach som skriver profiltexter som INTE låter AI-genererade. Mänsklig, konkret, berättande svenska — inte corporate buzzwords. Du undviker ord som "driven", "resultatorienterad", "direkt överförbar", "lugnt och metodiskt", "teamplayer". Istället refererar du till konkreta saker personen gjort, som en vän som hjälper till. Alltid i FÖRSTA PERSON. Alltid i TVÅ stycken separerade med dubbel radbrytning.',
           messages: [{ role: 'user', content: userContent }]
         })
       });
