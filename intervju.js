@@ -53,8 +53,10 @@
          'Passar ~80% av frågorna som börjar med "Berätta om en gång då..."' },
     { n: 8, e: '🤔', t: 'Det är okej att tänka innan du svarar',
       d: '"Ska jag fundera en sekund..." är bättre än att rabbla dåligt genomtänkt.' },
-    { n: 9, e: '🔄', t: 'Spegla intervjuarens energinivå',
-      d: 'Lugn → var lugn. Energisk → lyft din energi. Folk anställer de som känns "som oss".' },
+    { n: 9, e: '😊', t: 'Var dig själv — men din bästa version',
+      d: 'Du ska inte spela en roll, utan visa vem du faktiskt är — bara lite mer förberedd och fokuserad. ' +
+         'Var ärlig om dina styrkor OCH om det du vill utvecklas inom. Arbetsgivare anställer människor, inte perfekta robotar. ' +
+         'Äkthet bygger förtroende snabbare än ett polerat skal.' },
     { n: 10, e: '👋', t: 'Avsluta starkt — fråga om nästa steg',
       d: '"När kan jag förvänta mig att höra något?" visar intresse och ger konkret tidslinje.' }
   ];
