@@ -120,33 +120,49 @@
     // som automatiskt:
     //  1. Refreshar token om den är nära expiry (tyst för användaren)
     //  2. Skickar Authorization: Bearer-header (vilket backend kräver)
-    //  3. Hanterar 401 = re-login
+    //
+    // VIKTIGT: Intervju-actions (create_interview_session, add_interview_message,
+    // etc.) är OPTIONELLA på backend — de är bara för historik-loggning.
+    // Om backend inte stödjer dem (eller returnerar 401) ska vi INTE logga ut
+    // användaren — intervjun ska fungera lokalt ändå.
     if (typeof window.sbCall === 'function') {
-      var data = await window.sbCall(payload);
-      if (data && data.error) {
-        throw new Error(data.error);
+      try {
+        var data = await window.sbCall(payload);
+        if (data && data.error) {
+          // Tyst varning men kasta inte error → låt intervjun fortsätta lokalt
+          console.warn('[Intervju] Backend-fel (icke-kritiskt):', data.error);
+          return { _failedSilently: true, error: data.error };
+        }
+        return data || {};
+      } catch (e) {
+        console.warn('[Intervju] sbCall-undantag (icke-kritiskt):', e);
+        return { _failedSilently: true, error: e.message };
       }
-      return data || {};
     }
 
     // Fallback: backend-anrop med Authorization-header om sbCall saknas
-    // (skall inte hända i normalt flöde — men säkerhet om script-ordningen
-    //  är fel eller om intervju.js laddas före main app)
     var auth = getAuth();
     var headers = { 'Content-Type': 'application/json' };
     if (auth.accessToken) {
       headers['Authorization'] = 'Bearer ' + auth.accessToken;
     }
-    var resp = await fetch('/api/supabase', {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(payload)
-    });
-    var data = await resp.json();
-    if (!resp.ok) {
-      throw new Error(data.error || ('HTTP ' + resp.status));
+    try {
+      var resp = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload)
+      });
+      var data = await resp.json();
+      if (!resp.ok) {
+        // Tyst — låt intervjun köra lokalt
+        console.warn('[Intervju] Backend HTTP ' + resp.status + ' (icke-kritiskt)');
+        return { _failedSilently: true, error: data.error || ('HTTP ' + resp.status) };
+      }
+      return data;
+    } catch (e) {
+      console.warn('[Intervju] Network-fel (icke-kritiskt):', e);
+      return { _failedSilently: true, error: e.message };
     }
-    return data;
   }
 
   function showError(msg) {
@@ -481,11 +497,29 @@
       difficulty: input.difficulty || 'medium',
       jobMatchId: input.jobMatchId || null
     });
+
+    // Om backend failar tyst — skapa lokal session så intervjun ändå kan köra
+    if (!r || r._failedSilently || !r.session) {
+      console.warn('[Intervju] Backend skapade ej session — kör lokalt');
+      return {
+        id: 'local_' + Date.now(),
+        _local: true,
+        branch: input.branch,
+        company: input.company || null,
+        role_title: input.roleTitle || null,
+        difficulty: input.difficulty || 'medium',
+        started_at: new Date().toISOString()
+      };
+    }
     return r.session;
   }
 
   async function addMessage(sessionId, role, content) {
     var auth = requireAuth();
+    // Skippa backend-anrop för lokala sessioner (sparar bara i minnet)
+    if (typeof sessionId === 'string' && sessionId.indexOf('local_') === 0) {
+      return { id: 'msg_' + Date.now(), role: role, content: content };
+    }
     var r = await apiSupabase({
       action: 'add_interview_message',
       accessToken: auth.accessToken,
@@ -494,6 +528,10 @@
       role: role,
       content: content
     });
+    if (!r || r._failedSilently) {
+      // Tyst — meddelandet finns ändå i state lokalt
+      return { id: 'msg_' + Date.now(), role: role, content: content };
+    }
     return r.message;
   }
 
@@ -501,6 +539,10 @@
     var auth = requireAuth();
     var startedAt = state.session ? new Date(state.session.started_at).getTime() : Date.now();
     var durSec = Math.round((Date.now() - startedAt) / 1000);
+    // Skippa backend för lokala sessioner
+    if (typeof sessionId === 'string' && sessionId.indexOf('local_') === 0) {
+      return true;
+    }
     await apiSupabase({
       action: 'complete_interview_session',
       accessToken: auth.accessToken,
@@ -518,6 +560,8 @@
     try {
       var auth = getAuth();
       if (!auth.userId || !auth.accessToken) return;
+      // Skippa för lokala sessioner
+      if (typeof sessionId === 'string' && sessionId.indexOf('local_') === 0) return;
       await apiSupabase({
         action: 'complete_interview_session',
         accessToken: auth.accessToken,
@@ -530,6 +574,10 @@
 
   async function saveQuestionRow(sessionId, messageId, text, userAnswer) {
     var auth = requireAuth();
+    // Skippa backend för lokala sessioner
+    if (typeof sessionId === 'string' && sessionId.indexOf('local_') === 0) {
+      return null;
+    }
     var r = await apiSupabase({
       action: 'save_interview_question',
       accessToken: auth.accessToken,
@@ -540,6 +588,7 @@
       userAnswer: userAnswer || null,
       difficulty: state.session ? state.session.difficulty : null
     });
+    if (!r || r._failedSilently) return null;
     return r.savedQuestion;
   }
 
@@ -1184,9 +1233,25 @@
       // Ta bort timglaset INNAN vi lägger till intervjuarens bubbla
       hideThinking();
 
+      // Spara meddelandet i bakgrunden — failar det är det OK, bara förlust av historik
       ivDebug.log('    sparar meddelande i Supabase...');
-      var saved = await addMessage(state.session.id, 'interviewer', clean);
-      ivDebug.log('    ✓ Meddelande sparat');
+      var saved;
+      try {
+        saved = await addMessage(state.session.id, 'interviewer', clean);
+      } catch (saveErr) {
+        ivDebug.log('    ⚠ addMessage failade — fortsätter lokalt');
+        saved = null;
+      }
+      // Garantera att vi har ett message-objekt
+      if (!saved || !saved.role) {
+        saved = {
+          id: 'local_msg_' + Date.now(),
+          role: 'interviewer',
+          content: clean
+        };
+      }
+      ivDebug.log('    ✓ Meddelande hanterat');
+
       // Bifoga options till meddelandet för rendering (sparas inte i DB)
       saved._options = isComplete ? [] : parsed.options;
       state.messages.push(saved);
@@ -1197,18 +1262,24 @@
 
       // AI läser upp svaret (bara texten, inte snabbvalen)
       ivDebug.log('    startar TTS...');
-      await tts.speak(clean);
-      ivDebug.log('    ✓ TTS klart');
+      try {
+        await tts.speak(clean);
+        ivDebug.log('    ✓ TTS klart');
+      } catch (ttsErr) {
+        ivDebug.log('    ⚠ TTS-fel (icke-kritiskt): ' + (ttsErr.message || ttsErr));
+      }
 
       if (isComplete) {
         endInterview();
       }
     } catch (e) {
       ivDebug.log('    ✗ askInterviewerNext kraschade: ' + (e.message || e));
+      showError('AI-fel: ' + (e.message || e));
+    } finally {
+      // ALLTID återställ thinking-status — annars fastnar pillen på "Väntar"
       state.ai.isThinking = false;
       hideThinking();
       updateStatusPill();
-      showError('AI-fel: ' + (e.message || e));
     }
   }
 
@@ -1217,13 +1288,37 @@
     text = text.trim();
 
     try {
-      var saved = await addMessage(state.session.id, 'candidate', text);
+      ivDebug.log('  → submitUserAnswer: "' + text.slice(0,40) + '..."');
+
+      // 1. Spara meddelandet (i molnet om möjligt, annars lokalt)
+      var saved;
+      try {
+        saved = await addMessage(state.session.id, 'candidate', text);
+      } catch (e) {
+        ivDebug.log('    ⚠ addMessage failade — använder lokal fallback');
+        saved = null;
+      }
+      // Säkerställ att vi alltid har ett message-objekt med rätt fält
+      if (!saved || !saved.role) {
+        saved = {
+          id: 'local_msg_' + Date.now(),
+          role: 'candidate',
+          content: text
+        };
+      }
       state.messages.push(saved);
       appendMessage(saved);
 
+      // 2. Be AI om nästa fråga — detta är det viktiga steget
+      ivDebug.log('    → triggar askInterviewerNext()');
       await askInterviewerNext();
     } catch (e) {
+      ivDebug.log('    ✗ submitUserAnswer kraschade: ' + (e.message || e));
       showError('Kunde inte skicka: ' + (e.message || e));
+      // Återställ status-pillen så den inte fastnar på "Väntar"
+      state.ai.isThinking = false;
+      hideThinking();
+      updateStatusPill();
     }
   }
 
