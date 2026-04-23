@@ -2131,6 +2131,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         safeSet('pathfinder_job_diary', JSON.stringify(result.jobDiary));
       }
 
+      // Re-rendera profil-vyn om den är aktiv så nyladdad data visas direkt
+      // (annars ser profilen tom ut eftersom load_all körs fire-and-forget)
+      try {
+        if (typeof currentView !== 'undefined' && currentView === 'profil'
+            && typeof renderProfilView === 'function') {
+          renderProfilView();
+        }
+      } catch(e) { /* tyst — rendering ska aldrig blockera */ }
+
       return foundSomething;
     } catch(e) {
       console.error('loadAllFromSupabase error:', e);
