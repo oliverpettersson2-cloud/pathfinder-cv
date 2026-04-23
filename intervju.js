@@ -63,15 +63,22 @@
 
   // ══════════════════════════════════════════════════════════════
   // DATA: BRANSCHER
+  // Matchar exakt kategorierna på "Matcha" → Steg 2 (snabbsök-chips)
+  // så användaren känner igen sig mellan flödena.
   // ══════════════════════════════════════════════════════════════
   var BRANCHES = [
-    'IT & utveckling', 'Logistik & transport', 'Vård & omsorg',
-    'Ekonomi & finans', 'Försäljning', 'Marknadsföring',
-    'HR & rekrytering', 'Pedagogik & utbildning',
-    'Bygg & anläggning', 'Industri & produktion',
-    'Restaurang & service', 'Handel & detaljhandel',
-    'Kundservice', 'Ingenjör & teknik', 'Juridik',
-    'Annat'
+    '📦 Lager & logistik',
+    '🤝 Vård & omsorg',
+    '🏗️ Bygg & anläggning',
+    '🧹 Städ & service',
+    '🍽️ Restaurang & kök',
+    '🛒 Butik & handel',
+    '🏭 Industri & tillverkning',
+    '📋 Administration & kontor',
+    '🚚 Transport & chaufför',
+    '👶 Barn & skola',
+    '💻 IT & tech',
+    '📚 Annat / Eget val'
   ];
 
   // ══════════════════════════════════════════════════════════════
