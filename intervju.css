@@ -737,3 +737,124 @@
   border-color: rgba(62, 180, 137, 0.35);
   color: #6ee7b7;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Q&A ACCORDION (feedback-vyn — frågor + svar)
+   Tech-feeling: monospace-siffra, chevron-animation, smooth expand
+   ══════════════════════════════════════════════════════════════ */
+
+#trainView-intervju .iv-qa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#trainView-intervju .iv-qa-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+#trainView-intervju .iv-qa-item:hover {
+  border-color: rgba(167, 139, 250, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+#trainView-intervju .iv-qa-item--open {
+  border-color: rgba(167, 139, 250, 0.4);
+  background: rgba(167, 139, 250, 0.05);
+}
+
+#trainView-intervju .iv-qa-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  color: #fff;
+  transition: background 0.15s;
+}
+
+#trainView-intervju .iv-qa-toggle:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+#trainView-intervju .iv-qa-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+  border-radius: 6px;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+#trainView-intervju .iv-qa-item--open .iv-qa-num {
+  background: rgba(167, 139, 250, 0.3);
+  color: #c4b5fd;
+}
+
+#trainView-intervju .iv-qa-question {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+}
+
+#trainView-intervju .iv-qa-chevron {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.35);
+  transition: transform 0.25s ease;
+  transform: rotate(0deg);
+}
+
+#trainView-intervju .iv-qa-item--open .iv-qa-chevron {
+  transform: rotate(180deg);
+  color: #a78bfa;
+}
+
+#trainView-intervju .iv-qa-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  padding: 0 16px;
+  border-top: 1px solid transparent;
+}
+
+#trainView-intervju .iv-qa-item--open .iv-qa-answer {
+  max-height: 800px;
+  padding: 14px 16px 16px;
+  border-top-color: rgba(167, 139, 250, 0.15);
+}
+
+#trainView-intervju .iv-qa-answer-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(62, 180, 137, 0.7);
+  margin-bottom: 6px;
+}
+
+#trainView-intervju .iv-qa-answer-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
