@@ -44,7 +44,13 @@
     { n: 6, e: '❓', t: 'Ställ egna frågor — förbered minst tre',
       d: 'Att inte ha frågor är en röd flagga. Fråga om teamet, utmaningar, hur framgång mäts.' },
     { n: 7, e: '🎯', t: 'Ha två-tre STAR-exempel redo',
-      d: 'Situation, Task, Action, Result. Passar in på 80% av "berätta om en gång..."-frågorna.' },
+      d: 'STAR-metoden hjälper dig strukturera berättelser om din erfarenhet: ' +
+         'S (Situation) = beskriv kort sammanhanget, var var du och när. ' +
+         'T (Task) = vad var din uppgift eller utmaning. ' +
+         'A (Action) = vad DU gjorde konkret — inte teamet, utan du. ' +
+         'R (Result) = vad ledde det till, helst med siffror. ' +
+         'Exempel: "På mitt jobb som lagerarbetare (S) blev det plötsligt akut med en stor order (T). Jag organiserade om vårt arbetslag och tog ansvar för plockningen (A). Vi levererade i tid och fick beröm från kunden (R)." ' +
+         'Passar ~80% av frågorna som börjar med "Berätta om en gång då..."' },
     { n: 8, e: '🤔', t: 'Det är okej att tänka innan du svarar',
       d: '"Ska jag fundera en sekund..." är bättre än att rabbla dåligt genomtänkt.' },
     { n: 9, e: '🔄', t: 'Spegla intervjuarens energinivå',
@@ -979,10 +985,14 @@
   function goToScreen(name) { showScreen(name); }
 
   // ══════════════════════════════════════════════════════════════
-  // TIPS: visas 1 och 1, 5 sekunders tvångsläsning innan "Nästa" blir klickbar
+  // TIPS: visas 1 och 1, tvångsläsning innan "Nästa" blir klickbar
+  // (5s för korta tips, upp till 10s för långa som STAR-metoden)
   // ══════════════════════════════════════════════════════════════
-  var _tipsTimer = null;      // setInterval-id för nedräkningen
-  var _tipsTimeout = null;    // setTimeout-id för när nästa blir klickbar
+  var _tipsTimer = null;
+
+  function clearTipTimers() {
+    if (_tipsTimer) { clearInterval(_tipsTimer); _tipsTimer = null; }
+  }
 
   function renderTips() {
     // Initiera state om första gången
@@ -1027,38 +1037,38 @@
     var nextBtn = $('#ivTipsNextBtn');
     if (nextBtn) {
       var isLast = state.currentTipIdx === TIPS.length - 1;
-      // Börja nedräkning — knappen grå tills 5s gått
+      // Börja nedräkning — knappen grå tills timern är klar.
+      // Normalt 5s, men längre tips (som STAR-exemplet) får lite mer tid.
+      var textLen = (t.d || '').length;
+      var secondsLeft = 5;
+      if (textLen > 300) secondsLeft = 10;      // långa tips (STAR etc.)
+      else if (textLen > 150) secondsLeft = 7;  // medellånga
+      // korta tips → 5s (default)
+
       nextBtn.disabled = true;
       nextBtn.style.opacity = '0.4';
       nextBtn.style.cursor = 'not-allowed';
       nextBtn.style.background = 'rgba(255,255,255,0.08)';
       nextBtn.style.color = 'rgba(255,255,255,0.4)';
 
-      var secondsLeft = 5;
       nextBtn.textContent = 'Läser... ' + secondsLeft + 's';
 
       _tipsTimer = setInterval(function() {
         secondsLeft--;
         if (secondsLeft > 0) {
           nextBtn.textContent = 'Läser... ' + secondsLeft + 's';
+        } else {
+          // Klar
+          clearTipTimers();
+          nextBtn.disabled = false;
+          nextBtn.style.opacity = '1';
+          nextBtn.style.cursor = 'pointer';
+          nextBtn.style.background = '';
+          nextBtn.style.color = '';
+          nextBtn.textContent = isLast ? 'Starta intervjun →' : 'Nästa tips →';
         }
       }, 1000);
-
-      _tipsTimeout = setTimeout(function() {
-        clearTipTimers();
-        nextBtn.disabled = false;
-        nextBtn.style.opacity = '1';
-        nextBtn.style.cursor = 'pointer';
-        nextBtn.style.background = '';   // tillbaka till default grön
-        nextBtn.style.color = '';
-        nextBtn.textContent = isLast ? 'Starta intervjun →' : 'Nästa tips →';
-      }, 5000);
     }
-  }
-
-  function clearTipTimers() {
-    if (_tipsTimer) { clearInterval(_tipsTimer); _tipsTimer = null; }
-    if (_tipsTimeout) { clearTimeout(_tipsTimeout); _tipsTimeout = null; }
   }
 
   function nextTipOrStart() {
