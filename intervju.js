@@ -97,7 +97,18 @@
   }
 
   function getAuth() {
-    // Hämta befintliga CVmatchen-auth-credentials
+    // Hämta auth från lokalStorage (single source of truth) istället för
+    // gamla window.auth* variabler — så vi alltid får senaste/färska token
+    try {
+      var raw = localStorage.getItem('pathfinder_auth');
+      if (raw) {
+        var a = JSON.parse(raw);
+        return {
+          userId: a.userId || window.authUserId || null,
+          accessToken: a.accessToken || window.authAccessToken || null
+        };
+      }
+    } catch(_) {}
     return {
       userId: window.authUserId || null,
       accessToken: window.authAccessToken || null
@@ -105,10 +116,30 @@
   }
 
   async function apiSupabase(payload) {
-    // Wrapper runt /api/supabase - samma pattern som resten av CVmatchen
+    // Använd window.sbCall (definierad i index.html / desktop-app.js)
+    // som automatiskt:
+    //  1. Refreshar token om den är nära expiry (tyst för användaren)
+    //  2. Skickar Authorization: Bearer-header (vilket backend kräver)
+    //  3. Hanterar 401 = re-login
+    if (typeof window.sbCall === 'function') {
+      var data = await window.sbCall(payload);
+      if (data && data.error) {
+        throw new Error(data.error);
+      }
+      return data || {};
+    }
+
+    // Fallback: backend-anrop med Authorization-header om sbCall saknas
+    // (skall inte hända i normalt flöde — men säkerhet om script-ordningen
+    //  är fel eller om intervju.js laddas före main app)
+    var auth = getAuth();
+    var headers = { 'Content-Type': 'application/json' };
+    if (auth.accessToken) {
+      headers['Authorization'] = 'Bearer ' + auth.accessToken;
+    }
     var resp = await fetch('/api/supabase', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(payload)
     });
     var data = await resp.json();
