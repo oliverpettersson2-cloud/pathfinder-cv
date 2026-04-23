@@ -5781,8 +5781,9 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     showAiLoader('Sparar i molnet...', 'Synkar med dina enheter');
     try {
       // Använd sbCall så token auto-refreshas + 401 hanteras snyggt
+      // OBS: action heter 'save_cv' (snake_case) — det är vad backend förstår
       const result = await sbCall({
-        action: 'saveCV',
+        action: 'save_cv',
         userId: auth.userId,
         cvData: cvData
       });
