@@ -2240,13 +2240,18 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const token = await ensureFreshToken();
     if (!token) return { error: 'not_authenticated' };
 
+    // Backend läser access_token från Authorization-header (Bearer).
+    // Vi behåller även accessToken i body för bakåtkompatibilitet.
     const mergedBody = Object.assign({}, body, { accessToken: token });
 
     // Steg 2: gör anropet
     try {
       const r = await fetch('/api/supabase', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
         body: JSON.stringify(mergedBody)
       });
       // 401 = token invalid → tvinga re-login
@@ -2476,17 +2481,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // ACTIVITY LOG
   // ============================================================
   function logEvent(eventType, metadata) {
-    if (!window.authUserId || !window.authAccessToken) return;
-    fetch('/api/supabase', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'log_event',
-        accessToken: window.authAccessToken,
-        userId: window.authUserId,
-        event_type: eventType,
-        metadata: metadata || {}
-      })
+    const auth = getAuth();
+    if (!auth || !auth.accessToken || !auth.userId) return;
+    // Använd sbCall så token auto-refreshas vid expiry (annars failar logging
+    // tyst när token gått ut, vilket gör analytics opålitlig)
+    sbCall({
+      action: 'log_event',
+      userId: auth.userId,
+      event_type: eventType,
+      metadata: metadata || {}
     }).catch(() => {});
   }
 
@@ -3502,16 +3505,17 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       return;
     }
     try {
-      const r = await fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'my_tasks',
-          accessToken: auth.accessToken,
-          userId: auth.userId
-        })
+      // Använd sbCall så token auto-refreshas vid expiry
+      const data = await sbCall({
+        action: 'my_tasks',
+        userId: auth.userId
       });
-      const data = await r.json().catch(() => ({}));
+      if (!data || data.error) {
+        // Fail tyst — kan vara att backend saknar action
+        assignedTasks = [];
+        updateTaskBadges();
+        return;
+      }
       assignedTasks = Array.isArray(data.data) ? data.data : [];
       tasksLoadedOnce = true;
       updateTaskBadges();
@@ -3754,17 +3758,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       return;
     }
     try {
-      const r = await fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'start_task_session',
-          accessToken: auth.accessToken,
-          userId: auth.userId,
-          taskId: taskId
-        })
+      const result = await sbCall({
+        action: 'start_task_session',
+        userId: auth.userId,
+        taskId: taskId
       });
-      if (!r.ok) throw new Error('Backend-fel');
+      if (!result || result.error) throw new Error(result && result.error || 'Backend-fel');
 
       // Starta lokal timer för UI-feedback
       const startAt = Date.now();
@@ -3797,18 +3796,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     delete taskTimers[taskId];
 
     try {
-      const r = await fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'stop_task_session',
-          accessToken: auth.accessToken,
-          userId: auth.userId,
-          taskId: taskId
-        })
+      const data = await sbCall({
+        action: 'stop_task_session',
+        userId: auth.userId,
+        taskId: taskId
       });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error('Backend-fel');
+      if (!data || data.error) throw new Error(data && data.error || 'Backend-fel');
 
       if (data.completed) {
         toast('✅ Uppgift slutförd!');
@@ -3832,17 +3825,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     delete taskTimers[taskId];
 
     try {
-      const r = await fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'complete_task',
-          accessToken: auth.accessToken,
-          userId: auth.userId,
-          taskId: taskId
-        })
+      const result = await sbCall({
+        action: 'complete_task',
+        userId: auth.userId,
+        taskId: taskId
       });
-      if (!r.ok) throw new Error('Backend-fel');
+      if (!result || result.error) throw new Error(result && result.error || 'Backend-fel');
       toast('✅ Uppgift slutförd!');
       logEvent('task_completed', { task_id: taskId });
       await loadMyTasks(true);
@@ -6001,16 +5989,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     if (!auth || !auth.accessToken || !auth.userId) return;
     clearTimeout(_sbSyncTimers[table]);
     _sbSyncTimers[table] = setTimeout(() => {
-      fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'save_table',
-          accessToken: auth.accessToken,
-          userId: auth.userId,
-          table: table,
-          data: data
-        })
+      // sbCall sköter token-refresh + 401-hantering automatiskt
+      sbCall({
+        action: 'save_table',
+        userId: auth.userId,
+        table: table,
+        data: data
       }).catch(() => {});
     }, 1500);
   }
