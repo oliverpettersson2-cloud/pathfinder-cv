@@ -6121,6 +6121,13 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         label: 'Sökta<br>arbeten',
         count: diary.length,
         variant: ''
+      },
+      {
+        id: 'settings',
+        emoji: '⚙️',
+        label: 'Avtal &<br>inställningar',
+        counterText: 'Villkor · GDPR',
+        variant: 'variant-settings'
       }
     ];
 
@@ -6177,10 +6184,11 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       return;
     }
 
-    if (pfActiveTile === 'tasks')   { area.innerHTML = renderProfilTasksDetail(); return; }
-    if (pfActiveTile === 'saved')   { area.innerHTML = renderProfilSavedDetail(); return; }
-    if (pfActiveTile === 'matched') { area.innerHTML = renderProfilMatchedDetail(); return; }
-    if (pfActiveTile === 'diary')   { area.innerHTML = renderProfilDiaryDetail(); return; }
+    if (pfActiveTile === 'tasks')    { area.innerHTML = renderProfilTasksDetail(); return; }
+    if (pfActiveTile === 'saved')    { area.innerHTML = renderProfilSavedDetail(); return; }
+    if (pfActiveTile === 'matched')  { area.innerHTML = renderProfilMatchedDetail(); return; }
+    if (pfActiveTile === 'diary')    { area.innerHTML = renderProfilDiaryDetail(); return; }
+    if (pfActiveTile === 'settings') { area.innerHTML = renderProfilSettingsDetail(); return; }
   }
 
   function renderProfilTasksDetail() {
@@ -6301,6 +6309,162 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     });
     return html;
   }
+
+  // ============================================================
+  // PROFIL: AVTAL & INSTÄLLNINGAR (speglar mobilen)
+  // ============================================================
+  function renderProfilSettingsDetail() {
+    const auth = getAuth();
+    const email = (auth && auth.email) ? auth.email : 'Inte inloggad';
+
+    return (
+      '<div class="pf-detail-header"><div class="pf-detail-title">⚙️ Avtal &amp; inställningar</div></div>' +
+
+      // Visa nuvarande inloggad
+      '<div style="background:rgba(62,180,137,0.07);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:14px 16px;margin-bottom:14px;">' +
+        '<div style="font-size:11px;font-weight:800;color:rgba(62,180,137,0.8);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Inloggad som</div>' +
+        '<div style="font-size:14px;color:#fff;font-weight:600;word-break:break-all;">' + escape(email) + '</div>' +
+      '</div>' +
+
+      // Logga ut (röd)
+      '<div onclick="logout()" class="pf-settings-row" ' +
+        'style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;cursor:pointer;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);margin-bottom:8px;transition:all 0.15s;" ' +
+        'onmouseenter="this.style.background=\'rgba(220,38,38,0.12)\'" ' +
+        'onmouseleave="this.style.background=\'rgba(220,38,38,0.06)\'">' +
+        '<div style="font-size:22px;flex-shrink:0;">🚪</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:700;color:rgba(252,165,165,0.95);">Logga ut</div>' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.4);">Logga ut från ditt konto</div>' +
+        '</div>' +
+        '<span style="font-size:16px;color:rgba(220,38,38,0.3);">›</span>' +
+      '</div>' +
+
+      // Integritetspolicy / GDPR
+      '<div onclick="showPrivacyPolicy()" class="pf-settings-row" ' +
+        'style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);margin-bottom:8px;transition:all 0.15s;" ' +
+        'onmouseenter="this.style.background=\'rgba(255,255,255,0.07)\'" ' +
+        'onmouseleave="this.style.background=\'rgba(255,255,255,0.04)\'">' +
+        '<div style="font-size:22px;flex-shrink:0;">📄</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.85);">Integritetspolicy / GDPR</div>' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.4);">Hur CVmatchen hanterar dina uppgifter</div>' +
+        '</div>' +
+        '<span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>' +
+      '</div>' +
+
+      // Allmänna villkor
+      '<div onclick="showTermsModal()" class="pf-settings-row" ' +
+        'style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);margin-bottom:8px;transition:all 0.15s;" ' +
+        'onmouseenter="this.style.background=\'rgba(255,255,255,0.07)\'" ' +
+        'onmouseleave="this.style.background=\'rgba(255,255,255,0.04)\'">' +
+        '<div style="font-size:22px;flex-shrink:0;">📋</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.85);">Allmänna villkor</div>' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.4);">Användarvillkor för CVmatchen</div>' +
+        '</div>' +
+        '<span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>' +
+      '</div>' +
+
+      // Radera konto (lila)
+      '<div onclick="handleDeleteAccount()" class="pf-settings-row" ' +
+        'style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;cursor:pointer;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.22);margin-bottom:8px;transition:all 0.15s;" ' +
+        'onmouseenter="this.style.background=\'rgba(124,58,237,0.14)\'" ' +
+        'onmouseleave="this.style.background=\'rgba(124,58,237,0.07)\'">' +
+        '<div style="font-size:22px;flex-shrink:0;">🗑️</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:14px;font-weight:700;color:rgba(167,139,250,0.95);">Radera konto</div>' +
+          '<div style="font-size:12px;color:rgba(255,255,255,0.4);">Ta bort ditt konto och all data permanent</div>' +
+        '</div>' +
+        '<span style="font-size:16px;color:rgba(124,58,237,0.3);">›</span>' +
+      '</div>' +
+
+      // Footer
+      '<div style="padding:28px 0 8px;text-align:center;">' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.2);line-height:2;">CVmatchen av PathfinderAI</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.15);">' +
+          '<a href="mailto:info@cvmatchen.com" style="color:rgba(255,255,255,0.3);text-decoration:none;">info@cvmatchen.com</a>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  // Öppna integritetspolicy-modal
+  window.showPrivacyPolicy = function() {
+    const m = document.getElementById('privacyPolicyModal');
+    if (m) m.style.display = 'block';
+  };
+
+  // Öppna allmänna villkor-modal
+  window.showTermsModal = function() {
+    const m = document.getElementById('termsModal');
+    if (m) m.style.display = 'block';
+  };
+
+  // Radera konto med bekräftelse + Supabase-anrop
+  window.handleDeleteAccount = async function() {
+    const auth = getAuth();
+    const email = (auth && auth.email) ? auth.email : 'ditt konto';
+
+    const confirmed = confirm(
+      'Radera konto för: ' + email + '\n\n' +
+      'All data raderas permanent:\n' +
+      '• Ditt konto\n' +
+      '• Sparade CV:n\n' +
+      '• Matcher och jobbdagbok\n' +
+      '• Övningsframsteg\n\n' +
+      'Detta går inte att ångra.\n\n' +
+      'Vill du fortsätta?'
+    );
+    if (!confirmed) return;
+
+    // Dubbel-bekräftelse — be användaren skriva "RADERA"
+    const typed = prompt('Skriv RADERA (med versaler) för att bekräfta:');
+    if (typed !== 'RADERA') {
+      toast('Konto inte raderat', 'error');
+      return;
+    }
+
+    try {
+      // Rensa all lokal data
+      const localKeys = [
+        SAVED_CVS_KEY, MATCHED_CVS_KEY,
+        '_matchaSelectedAds', 'pf_saved_edu', 'pf_diary',
+        'pf_ai_cache', 'cvmovn4',
+        TRAINING_PROGRESS_KEY, STORAGE_KEY,
+        'cvmatchen_edu_saved'
+      ];
+      localKeys.forEach(k => { try { localStorage.removeItem(k); } catch(_) {} });
+
+      // Försök radera serverside (kan saknas — då fortsätter vi ändå)
+      const token = auth && auth.accessToken;
+      if (token) {
+        try {
+          await fetch('/api/delete-account', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            }
+          });
+        } catch(e) { /* tyst — backend kan saknas */ }
+      }
+
+      // Logga ut + rensa auth
+      try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch(_) {}
+      window.authUserId = null;
+      window.authAccessToken = null;
+
+      toast('✅ Konto raderat — du kommer loggas ut');
+
+      // Reload efter 1.5s så användaren ser bekräftelsen
+      setTimeout(() => {
+        window.location.href = window.location.pathname;
+      }, 1500);
+    } catch(err) {
+      console.warn('Delete account error:', err);
+      toast('⚠️ Något gick fel — kontakta info@cvmatchen.com', 'error');
+    }
+  };
 
   // Bakåtkompatibilitet — om något gammalt anropar dessa så finns de fortfarande
   function pfRenderSavedList() {
