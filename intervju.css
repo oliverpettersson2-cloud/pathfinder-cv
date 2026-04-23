@@ -158,6 +158,18 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Låst-variant — knappen ser gråtonad ut men är klickbar (visar modal) */
+#trainView-intervju .iv-btn--locked {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.18) !important;
+  font-weight: 700 !important;
+}
+#trainView-intervju .iv-btn--locked:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
 /* ── TIPS LIST ─────────────────────────────────────────────────── */
 #trainView-intervju .iv-tips-list {
   margin-bottom: 16px;
