@@ -5872,121 +5872,293 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   }
 
   // ── Render ─────────────────────────────────────────────────
+  // Nuvarande aktiv detaljvy: 'saved' | 'matched' | 'diary' | null
+  let pfActiveTile = null;
+
   function renderProfilView() {
     // Email
     const auth = getAuth();
     const pfEmail = document.getElementById('pfUserEmail');
     if (pfEmail) pfEmail.textContent = (auth && auth.email) ? auth.email : 'Inte inloggad';
 
-    // Tasks — rendera direkt om vi redan har data, ladda annars om
-    if (typeof renderTasksInProfil === 'function') renderTasksInProfil();
+    // Tasks — ladda innan vi bygger grid
     if (!tasksLoadedOnce && typeof loadMyTasks === 'function') loadMyTasks(true);
-    // Lätt auto-refresh varje gång profil-vyn öppnas
     else if (typeof loadMyTasks === 'function') loadMyTasks(true);
 
-    pfRenderSavedList();
-    pfRenderMatchedList();
+    renderProfilHub();
+    renderProfilDetail();
   }
 
-  function pfRenderSavedList() {
-    const container = document.getElementById('pfSavedList');
-    const countEl   = document.getElementById('pfSavedCount');
-    if (!container) return;
+  function renderProfilHub() {
+    const grid = document.getElementById('pfHubGrid');
+    if (!grid) return;
 
-    const list = pfGetSaved();
-    if (countEl) {
-      countEl.textContent = list.length + '/' + MAX_SAVED_CVS;
-      countEl.classList.toggle('warn', list.length >= MAX_SAVED_CVS);
+    const saved   = pfGetSaved() || [];
+    const matched = pfMatchedActiveList() || [];
+    const tasks   = (window._myTasks && Array.isArray(window._myTasks)) ? window._myTasks : [];
+    const pendingTasks = tasks.filter(t => !t.done).length;
+    const diary   = (typeof getDiary === 'function') ? (getDiary() || []).filter(e => e.applied) : [];
+
+    // Övningar-procent
+    let ovnPct = 0;
+    if (typeof window.getOvningsPct === 'function') ovnPct = window.getOvningsPct();
+
+    // Sparade utbildningar
+    let eduSaved = [];
+    try { eduSaved = JSON.parse(localStorage.getItem('cvmatchen_edu_saved') || '[]'); } catch(e) {}
+
+    // Dagar kvar för matchade
+    let soonestDays = null;
+    if (matched.length) {
+      soonestDays = Math.min.apply(null, matched.map(pfMatchedDaysLeft));
     }
 
-    if (!list.length) {
-      container.innerHTML =
-        '<div class="pf-empty">' +
-          '<div class="pf-empty-icon">📄</div>' +
-          '<div class="pf-empty-text">Du har inga sparade CV:n än.<br>Bygg ett CV och tryck <strong>Spara CV</strong> för att lägga till det här.</div>' +
-          '<button class="pf-empty-cta" onclick="switchView(\'cv\')">Bygg ditt första CV →</button>' +
+    const tiles = [
+      {
+        id: 'tasks',
+        emoji: '✅',
+        label: 'Uppgifter<br>från handläggare',
+        count: pendingTasks,
+        badge: pendingTasks,
+        variant: ''
+      },
+      {
+        id: 'saved',
+        emoji: '📄',
+        label: 'Mina CV',
+        count: saved.length,
+        max: MAX_SAVED_CVS,
+        variant: ''
+      },
+      {
+        id: 'matched',
+        emoji: '🎯',
+        label: 'Mina matchningar',
+        count: matched.length,
+        badge: matched.length,
+        badgeDays: soonestDays,
+        variant: ''
+      },
+      {
+        id: 'ovningar',
+        emoji: '🏋️',
+        label: 'Övningar',
+        counterText: ovnPct + '% klarat',
+        variant: 'variant-ovningar',
+        clickAction: "switchView('ovningar')"
+      },
+      {
+        id: 'edu',
+        emoji: '🎓',
+        label: 'Sparade<br>utbildningar',
+        count: eduSaved.length,
+        counterText: eduSaved.length > 0 ? eduSaved.length + ' sparad' + (eduSaved.length > 1 ? 'e' : '') : '0 sparade',
+        badge: eduSaved.length,
+        variant: 'variant-utbildningar',
+        clickAction: "switchView('aisyv')"
+      },
+      {
+        id: 'diary',
+        emoji: '💼',
+        label: 'Sökta<br>arbeten',
+        count: diary.length,
+        variant: ''
+      }
+    ];
+
+    grid.innerHTML = tiles.map(t => {
+      const isActive = pfActiveTile === t.id;
+      const activeCls = isActive ? ' active' : '';
+      const clickAttr = t.clickAction ? 'onclick="' + t.clickAction + '"' : 'onclick="pfSetActiveTile(\'' + t.id + '\')"';
+
+      const badgeCorner = (t.badge && t.badge > 0)
+        ? '<div class="pf-hub-tile-red-badge">' + t.badge + '</div>'
+        : '';
+
+      let counter;
+      if (t.counterText) {
+        counter = '<div class="pf-hub-tile-badge-count">' + t.counterText + '</div>';
+      } else {
+        counter = '<div class="pf-hub-tile-badge-count">' + t.count + (t.max ? '/' + t.max : '') + '</div>';
+      }
+
+      let urgent = '';
+      if (t.id === 'matched' && t.badgeDays !== null && t.badgeDays <= 7 && t.count > 0) {
+        urgent = '<div class="pf-hub-tile-urgent">' + t.count + ' ann. försvinner om ' + t.badgeDays + ' dag' + (t.badgeDays === 1 ? '' : 'ar') + '</div>';
+      } else if (t.id === 'matched' && t.count > 0) {
+        urgent = '<div class="pf-hub-tile-subnote">' + t.count + ' aktiv' + (t.count === 1 ? '' : 'a') + '</div>';
+      }
+
+      return '<div class="pf-hub-tile ' + (t.variant || '') + activeCls + '" ' + clickAttr + '>' +
+        badgeCorner +
+        '<div class="pf-hub-tile-emoji">' + t.emoji + '</div>' +
+        '<div class="pf-hub-tile-label">' + t.label + '</div>' +
+        counter +
+        urgent +
         '</div>';
+    }).join('');
+  }
+
+  window.pfSetActiveTile = function(tileId) {
+    // Toggla av om samma tile klickas igen
+    if (pfActiveTile === tileId) {
+      pfActiveTile = null;
+    } else {
+      pfActiveTile = tileId;
+    }
+    renderProfilHub();
+    renderProfilDetail();
+  };
+
+  function renderProfilDetail() {
+    const area = document.getElementById('pfDetailArea');
+    if (!area) return;
+
+    if (!pfActiveTile) {
+      area.innerHTML = '';
       return;
     }
 
-    // Sortera: nyaste först
-    const sorted = list.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    if (pfActiveTile === 'tasks')   { area.innerHTML = renderProfilTasksDetail(); return; }
+    if (pfActiveTile === 'saved')   { area.innerHTML = renderProfilSavedDetail(); return; }
+    if (pfActiveTile === 'matched') { area.innerHTML = renderProfilMatchedDetail(); return; }
+    if (pfActiveTile === 'diary')   { area.innerHTML = renderProfilDiaryDetail(); return; }
+  }
 
-    container.innerHTML = sorted.map(cv => {
+  function renderProfilTasksDetail() {
+    const tasks = (window._myTasks && Array.isArray(window._myTasks)) ? window._myTasks : [];
+    const pending = tasks.filter(t => !t.done);
+
+    let html = '<div class="pf-detail-header"><div class="pf-detail-title">✅ Uppgifter från handläggare</div></div>';
+    if (!pending.length) {
+      html += '<div class="pf-detail-empty"><div class="pf-detail-empty-icon">✅</div>' +
+        '<div class="pf-detail-empty-text">Du har inga uppgifter just nu.<br>Uppgifter från din handläggare dyker upp här.</div></div>';
+    } else {
+      // Delegera till befintliga renderTasksInProfil om den finns — den bygger till pfTasksList
+      // Men eftersom vi ändrat DOM'en, skapa en enkel lista inline
+      html += '<div id="pfTasksList" class="task-list"></div>';
+      setTimeout(() => {
+        if (typeof renderTasksInProfil === 'function') renderTasksInProfil();
+      }, 0);
+    }
+    return html;
+  }
+
+  function renderProfilSavedDetail() {
+    const list = pfGetSaved() || [];
+    let html = '<div class="pf-detail-header"><div class="pf-detail-title">📄 Mina CV (' + list.length + '/' + MAX_SAVED_CVS + ')</div></div>';
+
+    if (!list.length) {
+      html += '<div class="pf-detail-empty"><div class="pf-detail-empty-icon">📄</div>' +
+        '<div class="pf-detail-empty-text">Du har inga sparade CV:n än.<br>Bygg ett CV och tryck <strong>Spara CV</strong>.</div>' +
+        '<button class="pf-empty-cta" onclick="switchView(\'cv\')" style="margin-top:14px;">Bygg ditt första CV →</button></div>';
+      return html;
+    }
+
+    const sorted = list.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    sorted.forEach(cv => {
       const title = escape(cv.title || 'Utan titel');
       const name  = escape((cv.data && cv.data.name) || '');
       const date  = pfFormatDate(cv.savedAt);
-      return `
-        <div class="pf-card">
-          <div class="pf-card-head">
-            <div class="pf-card-icon">📄</div>
-            <div class="pf-card-info">
-              <div class="pf-card-title">${title}</div>
-              <div class="pf-card-meta">${name ? name + ' · ' : ''}${escape(date)}</div>
-            </div>
-          </div>
-          <div class="pf-card-actions">
-            <button class="pf-card-btn primary" onclick="pfOpenSaved('${cv.id}')">Öppna</button>
-            <button class="pf-card-btn" onclick="pfExportSaved('${cv.id}')">📤 PDF</button>
-            <button class="pf-card-btn danger" onclick="pfDeleteSaved('${cv.id}')" title="Ta bort">✕</button>
-          </div>
-        </div>`;
-    }).join('');
+      html += '<div class="pf-detail-card">' +
+        '<div class="pf-detail-card-icon"><span style="color:#f0c040;">CV</span><span style="color:#fff;">m</span></div>' +
+        '<div class="pf-detail-card-info">' +
+          '<div class="pf-detail-card-title">' + title + '</div>' +
+          '<div class="pf-detail-card-meta">' + (name ? name + ' · ' : '') + escape(date) + '</div>' +
+        '</div>' +
+        '<div class="pf-detail-card-actions">' +
+          '<button class="pf-card-btn primary" onclick="pfOpenSaved(\'' + cv.id + '\')">Öppna</button>' +
+          '<button class="pf-card-btn" onclick="pfExportSaved(\'' + cv.id + '\')">📤 PDF</button>' +
+          '<button class="pf-card-btn danger" onclick="pfDeleteSaved(\'' + cv.id + '\')" title="Ta bort">✕</button>' +
+        '</div>' +
+      '</div>';
+    });
+    return html;
   }
 
-  function pfRenderMatchedList() {
-    const container = document.getElementById('pfMatchedList');
-    const countEl   = document.getElementById('pfMatchedCount');
-    if (!container) return;
-
-    // Rensa utgångna i bakgrunden
-    const all = pfGetMatched();
-    const active = pfMatchedActiveList();
-    if (active.length !== all.length) {
-      pfPutMatched(active);
-    }
-
-    if (countEl) countEl.textContent = String(active.length);
+  function renderProfilMatchedDetail() {
+    const active = pfMatchedActiveList() || [];
+    let html = '<div class="pf-detail-header"><div class="pf-detail-title">🎯 Mina matchningar (' + active.length + ')</div></div>';
 
     if (!active.length) {
-      container.innerHTML =
-        '<div class="pf-empty">' +
-          '<div class="pf-empty-icon">🎯</div>' +
-          '<div class="pf-empty-text">Inga matchade CV:n än.<br>Använd <strong>Matcha</strong> för att skräddarsy ett CV mot en jobbannons.<br><span style="font-size:11px;opacity:0.6;">Matchade CV:n sparas i 14 dagar.</span></div>' +
-        '</div>';
-      return;
+      html += '<div class="pf-detail-empty"><div class="pf-detail-empty-icon">🎯</div>' +
+        '<div class="pf-detail-empty-text">Inga matchningar än.<br>Gå till <strong>Matcha</strong> och matcha ditt CV mot ett jobb.<br><span style="font-size:11px;opacity:0.6;">Matchade CV:n sparas i 14 dagar.</span></div></div>';
+      return html;
     }
 
     const sorted = active.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
-
-    container.innerHTML = sorted.map(cv => {
-      const title   = escape(cv.title || 'Utan titel');
+    sorted.forEach((cv, idx) => {
+      const title   = escape(cv.title || 'Utan titel').replace('Matchat CV – ', '');
       const company = escape(cv.company || '');
       const days    = pfMatchedDaysLeft(cv);
-      let badgeCls  = 'ok';
-      if (days <= 3) badgeCls = 'danger';
-      else if (days <= 7) badgeCls = 'warn';
+      const urgent  = days <= 3;
       const jobUrlBtn = cv.jobUrl
-        ? `<a href="${escape(cv.jobUrl)}" target="_blank" rel="noopener" class="pf-card-btn" style="text-decoration:none; text-align:center;" onclick="event.stopPropagation()">↗ Annons</a>`
+        ? '<a href="' + escape(cv.jobUrl) + '" target="_blank" rel="noopener" class="pf-card-btn" style="text-decoration:none;text-align:center;" onclick="event.stopPropagation()">↗ Annons</a>'
         : '';
-      return `
-        <div class="pf-card matched">
-          <div class="pf-card-head">
-            <div class="pf-card-icon">🎯</div>
-            <div class="pf-card-info">
-              <div class="pf-card-title">${title}</div>
-              <div class="pf-card-meta">${company ? company + ' · ' : ''}${pfFormatDate(cv.savedAt)}</div>
-            </div>
-          </div>
-          <div class="pf-card-badge ${badgeCls}">⏳ ${days} dag${days === 1 ? '' : 'ar'} kvar</div>
-          <div class="pf-card-actions">
-            <button class="pf-card-btn primary" onclick="pfOpenMatched('${cv.id}')">Öppna</button>
-            <button class="pf-card-btn" onclick="pfExportMatched('${cv.id}')">📤 PDF</button>
-            ${jobUrlBtn}
-            <button class="pf-card-btn danger" onclick="pfDeleteMatched('${cv.id}')" title="Ta bort">✕</button>
-          </div>
-        </div>`;
-    }).join('');
+
+      html += '<div class="pf-detail-card matched">' +
+        '<div class="pf-detail-card-icon" style="background:rgba(62,180,137,0.18);">🎯</div>' +
+        '<div class="pf-detail-card-info">' +
+          '<div class="pf-detail-card-title">' + title + '</div>' +
+          '<div class="pf-detail-card-meta">' + (company ? company + ' · ' : '') +
+            '<span style="color:' + (urgent ? '#ef4444' : 'rgba(255,255,255,0.45)') + ';">' +
+            days + ' dag' + (days === 1 ? '' : 'ar') + ' kvar</span></div>' +
+        '</div>' +
+        '<div class="pf-detail-card-actions">' +
+          '<button class="pf-card-btn primary" onclick="pfOpenMatched(\'' + cv.id + '\')">Öppna</button>' +
+          '<button class="pf-card-btn" onclick="pfExportMatched(\'' + cv.id + '\')">📤 PDF</button>' +
+          jobUrlBtn +
+          '<button class="pf-card-btn danger" onclick="pfDeleteMatched(\'' + cv.id + '\')" title="Ta bort">✕</button>' +
+        '</div>' +
+      '</div>';
+    });
+    return html;
+  }
+
+  function renderProfilDiaryDetail() {
+    const diary = (typeof getDiary === 'function') ? (getDiary() || []).filter(e => e.applied) : [];
+    let html = '<div class="pf-detail-header"><div class="pf-detail-title">💼 Sökta arbeten (' + diary.length + ')</div></div>';
+
+    if (!diary.length) {
+      html += '<div class="pf-detail-empty"><div class="pf-detail-empty-icon">💼</div>' +
+        '<div class="pf-detail-empty-text">Inga sökta arbeten än.<br>Tryck <strong>"Jag har sökt detta"</strong> i Mina matchningar för att spara ett jobb här.</div></div>';
+      return html;
+    }
+
+    const sorted = diary.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+    sorted.forEach(e => {
+      const title = escape(e.jobTitle || 'Okänt jobb');
+      const comp  = escape(e.company || '');
+      const date  = pfFormatDate(e.savedAt);
+      html += '<div class="pf-detail-card">' +
+        '<div class="pf-detail-card-icon" style="background:rgba(255,255,255,0.08);">💼</div>' +
+        '<div class="pf-detail-card-info">' +
+          '<div class="pf-detail-card-title">' + title + '</div>' +
+          '<div class="pf-detail-card-meta">' + (comp ? comp + ' · ' : '') + 'Sökt ' + escape(date) + '</div>' +
+        '</div>' +
+        (e.jobUrl
+          ? '<a class="pf-card-btn" href="' + escape(e.jobUrl) + '" target="_blank" rel="noopener" style="text-decoration:none;">↗ Annons</a>'
+          : '') +
+      '</div>';
+    });
+    return html;
+  }
+
+  // Bakåtkompatibilitet — om något gammalt anropar dessa så finns de fortfarande
+  function pfRenderSavedList() {
+    // Uppdatera via nya hub:en istället
+    if (typeof renderProfilHub === 'function') renderProfilHub();
+    if (pfActiveTile === 'saved') renderProfilDetail();
+  }
+
+  function pfRenderMatchedList() {
+    // Rensa utgångna
+    const all = pfGetMatched();
+    const active = pfMatchedActiveList();
+    if (active.length !== all.length) pfPutMatched(active);
+
+    if (typeof renderProfilHub === 'function') renderProfilHub();
+    if (pfActiveTile === 'matched') renderProfilDetail();
   }
 
   // ── Actions: Sparade CV ───────────────────────────────────
