@@ -867,15 +867,15 @@
       '  <button class="iv-btn" id="ivStartSetupBtn" style="margin-top:8px">Fortsätt till tips →</button>',
       '</div>',
 
-      // ─── TIPS ─────────────────────────────
+      // ─── TIPS (en i taget med 5s timer) ─────────────────────────────
       '<div class="iv-screen" id="ivScreenTips">',
-      '  <div class="iv-title">10 saker att tänka på</div>',
-      '  <div class="iv-sub">Läs igenom innan intervjun. Bocka av — eller hoppa bara över.</div>',
-      '  <div class="iv-tips-list" id="ivTipsList"></div>',
-      '  <div class="iv-tips-progress" id="ivTipsProgress">Bocka av det du tar med dig</div>',
+      '  <div class="iv-title">Tips inför intervjun</div>',
+      '  <div class="iv-sub" id="ivTipsStepLabel">Läs igenom noga — varje tips visas i 5 sekunder innan du kan gå vidare.</div>',
+      '  <div class="iv-tip-stepper" id="ivTipsStepper"></div>',
+      '  <div class="iv-tips-progress" id="ivTipsProgress">1 av 10</div>',
       '  <div style="display:flex;gap:8px">',
       '    <button class="iv-btn iv-btn--ghost" id="ivTipsBackBtn" style="flex:1">← Tillbaka</button>',
-      '    <button class="iv-btn" id="ivTipsStartBtn" style="flex:2">Starta intervjun →</button>',
+      '    <button class="iv-btn" id="ivTipsNextBtn" disabled style="flex:2;opacity:0.4;cursor:not-allowed;">Väntar 5s...</button>',
       '  </div>',
       '</div>',
 
@@ -964,45 +964,124 @@
       if (!el) return;
       el.classList.toggle('iv-screen--active', s.toLowerCase() === name);
     });
+
+    // När vi kommer till tips → börja om på första tipset + starta timer
+    if (name === 'tips') {
+      state.currentTipIdx = 0;
+      if (typeof renderTips === 'function') renderTips();
+    } else {
+      // Lämnar tips → rensa timers så de inte fortsätter bakgrunds
+      if (typeof clearTipTimers === 'function') clearTipTimers();
+    }
   }
+
+  // Alias för läsbarhet inom tips-stepper
+  function goToScreen(name) { showScreen(name); }
+
+  // ══════════════════════════════════════════════════════════════
+  // TIPS: visas 1 och 1, 5 sekunders tvångsläsning innan "Nästa" blir klickbar
+  // ══════════════════════════════════════════════════════════════
+  var _tipsTimer = null;      // setInterval-id för nedräkningen
+  var _tipsTimeout = null;    // setTimeout-id för när nästa blir klickbar
 
   function renderTips() {
-    var list = $('#ivTipsList');
-    if (!list) return;
-    list.innerHTML = TIPS.map(function(t){
-      var checked = !!state.tipsChecked[t.n];
-      return [
-        '<div class="iv-tip' + (checked ? ' iv-tip--checked' : '') + '" data-tip="' + t.n + '">',
-        '  <div class="iv-tip-emoji">' + t.e + '</div>',
-        '  <div class="iv-tip-body">',
-        '    <div class="iv-tip-num">#' + t.n + '</div>',
-        '    <div class="iv-tip-title">' + escapeHtml(t.t) + '</div>',
-        '    <div class="iv-tip-desc">' + escapeHtml(t.d) + '</div>',
-        '  </div>',
-        '  <div class="iv-tip-check">' + (checked ? '✓' : '') + '</div>',
-        '</div>'
-      ].join('');
-    }).join('');
+    // Initiera state om första gången
+    if (typeof state.currentTipIdx !== 'number') state.currentTipIdx = 0;
 
-    // Bind clicks
-    list.querySelectorAll('.iv-tip').forEach(function(el){
-      el.addEventListener('click', function(){
-        var n = parseInt(el.getAttribute('data-tip'), 10);
-        state.tipsChecked[n] = !state.tipsChecked[n];
-        renderTips();
-        updateTipsProgress();
-      });
-    });
-    updateTipsProgress();
+    var stepper = $('#ivTipsStepper');
+    if (!stepper) return;
+
+    var t = TIPS[state.currentTipIdx];
+    if (!t) return;
+
+    // Rensa gamla timers om användaren navigerar bakåt/framåt
+    clearTipTimers();
+
+    // Rendera nuvarande tips
+    stepper.innerHTML = [
+      '<div class="iv-tip iv-tip--single">',
+      '  <div class="iv-tip-emoji" style="font-size:48px;">' + t.e + '</div>',
+      '  <div class="iv-tip-body" style="text-align:center;">',
+      '    <div class="iv-tip-num" style="font-size:11px;font-weight:800;color:rgba(62,180,137,0.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Tips ' + t.n + ' av ' + TIPS.length + '</div>',
+      '    <div class="iv-tip-title" style="font-size:20px;font-weight:900;color:#fff;margin-bottom:14px;line-height:1.3;">' + escapeHtml(t.t) + '</div>',
+      '    <div class="iv-tip-desc" style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;">' + escapeHtml(t.d) + '</div>',
+      '  </div>',
+      '</div>'
+    ].join('');
+
+    // Progress-indikator (prickar)
+    var progEl = $('#ivTipsProgress');
+    if (progEl) {
+      var dots = '';
+      for (var i = 0; i < TIPS.length; i++) {
+        var cls = 'iv-tip-dot';
+        if (i < state.currentTipIdx) cls += ' iv-tip-dot--done';
+        else if (i === state.currentTipIdx) cls += ' iv-tip-dot--active';
+        dots += '<span class="' + cls + '"></span>';
+      }
+      progEl.innerHTML = '<div style="display:flex;gap:6px;justify-content:center;margin-bottom:6px;">' + dots + '</div>' +
+        '<div>' + (state.currentTipIdx + 1) + ' av ' + TIPS.length + '</div>';
+    }
+
+    // Uppdatera nästa-knappens text beroende på om vi är på sista tipset
+    var nextBtn = $('#ivTipsNextBtn');
+    if (nextBtn) {
+      var isLast = state.currentTipIdx === TIPS.length - 1;
+      // Börja nedräkning — knappen grå tills 5s gått
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+      nextBtn.style.cursor = 'not-allowed';
+      nextBtn.style.background = 'rgba(255,255,255,0.08)';
+      nextBtn.style.color = 'rgba(255,255,255,0.4)';
+
+      var secondsLeft = 5;
+      nextBtn.textContent = 'Läser... ' + secondsLeft + 's';
+
+      _tipsTimer = setInterval(function() {
+        secondsLeft--;
+        if (secondsLeft > 0) {
+          nextBtn.textContent = 'Läser... ' + secondsLeft + 's';
+        }
+      }, 1000);
+
+      _tipsTimeout = setTimeout(function() {
+        clearTipTimers();
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = '1';
+        nextBtn.style.cursor = 'pointer';
+        nextBtn.style.background = '';   // tillbaka till default grön
+        nextBtn.style.color = '';
+        nextBtn.textContent = isLast ? 'Starta intervjun →' : 'Nästa tips →';
+      }, 5000);
+    }
   }
 
-  function updateTipsProgress() {
-    var count = Object.keys(state.tipsChecked).filter(function(k){ return state.tipsChecked[k]; }).length;
-    var p = $('#ivTipsProgress');
-    if (!p) return;
-    if (count === 0) p.textContent = 'Bocka av det du tar med dig';
-    else if (count < 10) p.textContent = count + ' av 10 avbockade';
-    else p.textContent = '✅ Du är redo — lycka till!';
+  function clearTipTimers() {
+    if (_tipsTimer) { clearInterval(_tipsTimer); _tipsTimer = null; }
+    if (_tipsTimeout) { clearTimeout(_tipsTimeout); _tipsTimeout = null; }
+  }
+
+  function nextTipOrStart() {
+    if (state.currentTipIdx < TIPS.length - 1) {
+      state.currentTipIdx++;
+      renderTips();
+    } else {
+      // Sista tipset klart → gå till metod-väljaren
+      clearTipTimers();
+      state.currentTipIdx = 0; // reset för nästa gång
+      goToScreen('method');
+    }
+  }
+
+  function prevTipOrBack() {
+    if (state.currentTipIdx > 0) {
+      state.currentTipIdx--;
+      renderTips();
+    } else {
+      // Första tipset → tillbaka till setup
+      clearTipTimers();
+      goToScreen('setup');
+    }
   }
 
   function updateStatusPill() {
@@ -1369,10 +1448,45 @@
     }
   }
 
+  // Stor overlay som blockerar interaktion under AI-generering
+  function showInterviewLoadingOverlay(title, subtitle) {
+    hideInterviewLoadingOverlay();
+    var overlay = document.createElement('div');
+    overlay.id = '_ivLoadingOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,12,28,0.92);backdrop-filter:blur(8px);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px 20px;text-align:center;';
+    overlay.innerHTML =
+      '<div style="font-size:72px;animation:_ivSpin 1.4s linear infinite;filter:drop-shadow(0 4px 20px rgba(124,58,237,0.4));">⏳</div>' +
+      '<div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:0.3px;max-width:420px;">' + escapeHtml(title || 'AI analyserar...') + '</div>' +
+      '<div style="font-size:14px;color:rgba(255,255,255,0.55);max-width:400px;line-height:1.7;">' + escapeHtml(subtitle || 'Ett ögonblick — detta tar vanligtvis 10-20 sekunder.') + '</div>' +
+      '<div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:16px;letter-spacing:0.5px;">🔒 Klicka inte bort sidan under tiden</div>';
+
+    // CSS-animation för spinner
+    if (!document.getElementById('_ivSpinStyle')) {
+      var s = document.createElement('style');
+      s.id = '_ivSpinStyle';
+      s.textContent = '@keyframes _ivSpin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }';
+      document.head.appendChild(s);
+    }
+
+    document.body.appendChild(overlay);
+  }
+
+  function hideInterviewLoadingOverlay() {
+    var existing = document.getElementById('_ivLoadingOverlay');
+    if (existing) existing.remove();
+  }
+
   async function endInterview() {
     tts.cancel();
     stt.stop();
     showScreen('feedback');
+
+    // Visa stor blockerande overlay medan AI analyserar — förhindrar att
+    // användaren klickar sig vidare innan feedbacken är klar
+    showInterviewLoadingOverlay(
+      'AI-coachen analyserar din intervju',
+      'Vi går igenom dina svar och skriver personlig feedback. Detta tar vanligtvis 10-20 sekunder.'
+    );
 
     // Bygg transkript för feedback
     var transcriptText = state.messages.map(function(m){
@@ -1420,6 +1534,9 @@
       await completeSession(state.session.id, feedback);
     } catch (e) {
       if (fbBox) fbBox.textContent = 'Kunde inte generera feedback: ' + (e.message || e);
+    } finally {
+      // Alltid ta bort overlay — även om AI failar
+      hideInterviewLoadingOverlay();
     }
   }
 
@@ -1429,41 +1546,13 @@
     box.innerHTML = state.messages.map(function(m, i){
       var cls = m.role === 'interviewer' ? 'iv-transcript-item--ai' : 'iv-transcript-item--user';
       var role = m.role === 'interviewer' ? 'Intervjuare' : 'Du';
-      var saveBtn = '';
-      if (m.role === 'interviewer') {
-        var isSaved = !!state.savedMessageIds[m.id];
-        saveBtn = '<button class="iv-save-btn' + (isSaved ? ' iv-save-btn--saved' : '') + '" data-msg="' + m.id + '">' +
-                  (isSaved ? '✓ Sparad' : '⭐ Spara') + '</button>';
-      }
       return [
         '<div class="iv-transcript-item ' + cls + '">',
         '  <div class="iv-transcript-role">' + role + '</div>',
         '  <div class="iv-transcript-text">' + escapeHtml(m.content) + '</div>',
-        saveBtn,
         '</div>'
       ].join('');
     }).join('');
-
-    // Bind spara-knappar
-    box.querySelectorAll('.iv-save-btn').forEach(function(btn){
-      btn.addEventListener('click', async function(){
-        if (btn.classList.contains('iv-save-btn--saved')) return;
-        var msgId = btn.getAttribute('data-msg');
-        var msg = state.messages.find(function(m){ return m.id === msgId; });
-        if (!msg) return;
-        var idx = state.messages.indexOf(msg);
-        var nextAnswer = state.messages[idx + 1];
-        var userAnswer = (nextAnswer && nextAnswer.role === 'candidate') ? nextAnswer.content : null;
-        try {
-          await saveQuestionRow(state.session.id, msg.id, msg.content, userAnswer);
-          state.savedMessageIds[msgId] = true;
-          btn.textContent = '✓ Sparad';
-          btn.classList.add('iv-save-btn--saved');
-        } catch (e) {
-          showError('Kunde inte spara: ' + (e.message || e));
-        }
-      });
-    });
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -1523,13 +1612,17 @@
       showScreen('tips');
     });
 
-    // ─── TIPS ─────────────────────
+    // ─── TIPS (steg-för-steg) ─────────────────
     var tipsBack = $('#ivTipsBackBtn');
-    if (tipsBack) tipsBack.addEventListener('click', function(){ showScreen('setup'); });
-    var tipsStart = $('#ivTipsStartBtn');
-    if (tipsStart) tipsStart.addEventListener('click', function(){
-      ivDebug.log('▶ Tips klara — går till metodväljare');
-      showScreen('method');
+    if (tipsBack) tipsBack.addEventListener('click', function(){
+      // Om vi är på första tipset → tillbaka till setup
+      // Annars → föregående tips
+      if (typeof prevTipOrBack === 'function') prevTipOrBack();
+      else showScreen('setup');
+    });
+    var tipsNext = $('#ivTipsNextBtn');
+    if (tipsNext) tipsNext.addEventListener('click', function(){
+      if (typeof nextTipOrStart === 'function') nextTipOrStart();
     });
 
     // ─── METOD-VÄLJARE ──────────────────
