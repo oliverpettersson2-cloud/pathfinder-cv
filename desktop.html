@@ -2185,38 +2185,222 @@
   #toast.error { background: #ef4444; }
 
   /* ============================================================
-     PROFIL-VYN (sparade & matchade CV:n)
+     PROFIL-VYN (sparade & matchade CV:n) — ny grid-design (speglar mobilen)
      ============================================================ */
-  .pf-hero {
+
+  /* Enkel, ren header — ingen gradient-kvadrat */
+  .pf-header-simple {
+    padding: 8px 0 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 28px;
+  }
+  .pf-header-inner { }
+  .pf-header-title-row {
     display: flex;
     align-items: center;
-    gap: 18px;
-    padding: 8px 0 32px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    margin-bottom: 32px;
+    justify-content: space-between;
+    gap: 16px;
   }
-  .pf-hero-avatar {
-    width: 64px; height: 64px;
-    border-radius: 18px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 30px;
-    flex-shrink: 0;
-  }
-  .pf-hero-text { flex: 1; min-width: 0; }
-  .pf-hero-title {
-    font-size: 22px;
+  .pf-header-title {
+    font-size: 26px;
     font-weight: 800;
-    margin-bottom: 4px;
     color: #fff;
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
   }
-  .pf-hero-sub {
+  .pf-header-sub {
     font-size: 13px;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.45);
     word-break: break-all;
   }
-  .pf-hero-actions { display: flex; gap: 10px; flex-shrink: 0; }
+  .pf-logout-btn {
+    padding: 9px 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .pf-logout-btn:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+  }
 
+  /* Hub-grid (6 fyrkanter i 3 kolumner på desktop, 2 på mindre) */
+  .pf-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 1100px) {
+    .pf-hub-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .pf-hub-tile {
+    position: relative;
+    border-radius: 18px;
+    padding: 22px 16px;
+    cursor: pointer;
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.08);
+    transition: all 0.15s ease;
+  }
+  .pf-hub-tile:hover:not(.disabled) {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.14);
+  }
+  .pf-hub-tile.active {
+    background: rgba(62,180,137,0.12) !important;
+    border-color: #3eb489 !important;
+  }
+  .pf-hub-tile.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    background: rgba(255,255,255,0.03);
+    border-style: dashed;
+  }
+  .pf-hub-tile-emoji {
+    font-size: 36px;
+    margin-bottom: 10px;
+    line-height: 1;
+  }
+  .pf-hub-tile-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .pf-hub-tile.active .pf-hub-tile-label { color: #fff; }
+  .pf-hub-tile-badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.45);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .pf-hub-tile.active .pf-hub-tile-badge-count {
+    background: rgba(62,180,137,0.25);
+    color: #3eb489;
+  }
+  .pf-hub-tile-red-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    border-radius: 12px;
+    padding: 2px 8px;
+    min-width: 22px;
+    text-align: center;
+  }
+  .pf-hub-tile-urgent {
+    font-size: 10px;
+    color: rgba(239,68,68,0.85);
+    margin-top: 8px;
+    font-weight: 700;
+  }
+  .pf-hub-tile-subnote {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 8px;
+  }
+
+  /* Färg-varianter per tile */
+  .pf-hub-tile.variant-ovningar {
+    background: rgba(240,192,64,0.07);
+    border-color: rgba(240,192,64,0.2);
+  }
+  .pf-hub-tile.variant-ovningar .pf-hub-tile-badge-count {
+    background: rgba(240,192,64,0.15);
+    color: #f0c040;
+  }
+  .pf-hub-tile.variant-utbildningar {
+    background: rgba(124,58,237,0.07);
+    border-color: rgba(124,58,237,0.2);
+  }
+  .pf-hub-tile.variant-utbildningar .pf-hub-tile-badge-count {
+    background: rgba(124,58,237,0.15);
+    color: #a78bfa;
+  }
+
+  /* Detaljvy under grid */
+  .pf-detail-area { margin-top: 8px; }
+  .pf-detail-area:empty { display: none; }
+
+  .pf-detail-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255,255,255,0.4);
+  }
+  .pf-detail-empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .pf-detail-empty-text { font-size: 14px; line-height: 1.6; }
+
+  .pf-detail-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pf-detail-card.matched {
+    background: rgba(62,180,137,0.06);
+    border-color: rgba(62,180,137,0.2);
+  }
+  .pf-detail-card-icon {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: rgba(62,180,137,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 900;
+    font-family: Georgia, serif;
+  }
+  .pf-detail-card-info { flex: 1; min-width: 0; }
+  .pf-detail-card-title {
+    font-size: 14px; font-weight: 700; color: #fff;
+    margin-bottom: 3px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pf-detail-card-meta {
+    font-size: 11px; color: rgba(255,255,255,0.45);
+  }
+  .pf-detail-card-actions {
+    display: flex; gap: 6px; flex-shrink: 0;
+  }
+
+  .pf-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .pf-detail-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+
+  /* Bevara gammal .pf-grid för bakåtkomp */
   .pf-section { margin-bottom: 36px; }
   .pf-section-head {
     display: flex;
@@ -3493,45 +3677,24 @@
 
   <!-- ===== PROFIL-VYN (sparade & matchade CV:n) ===== -->
   <section class="view" id="view-profil">
-    <div class="pf-hero">
-      <div class="pf-hero-avatar">👤</div>
-      <div class="pf-hero-text">
-        <div class="pf-hero-title">Min profil</div>
-        <div class="pf-hero-sub" id="pfUserEmail">—</div>
-      </div>
-      <div class="pf-hero-actions">
-        <button class="btn btn-secondary" onclick="logout()" style="font-size:12px;">
-          Logga ut
-        </button>
+    <!-- Enkel, elegant header -->
+    <div class="pf-header-simple">
+      <div class="pf-header-inner">
+        <div class="pf-header-title-row">
+          <div>
+            <div class="pf-header-title">Min profil</div>
+            <div class="pf-header-sub" id="pfUserEmail">—</div>
+          </div>
+          <button class="pf-logout-btn" onclick="logout()">Logga ut</button>
+        </div>
       </div>
     </div>
 
-    <!-- Uppgifter från handläggare -->
-    <div class="pf-section" id="pfTasksSection">
-      <div class="pf-section-head">
-        <div class="pf-section-title">✅ Uppgifter från handläggare</div>
-        <div class="pf-section-count" id="pfTasksCount">0</div>
-      </div>
-      <div id="pfTasksList" class="task-list"></div>
-    </div>
+    <!-- 6 fyrkantsgrid (hub) -->
+    <div id="pfHubGrid" class="pf-hub-grid"></div>
 
-    <!-- Mina CV -->
-    <div class="pf-section">
-      <div class="pf-section-head">
-        <div class="pf-section-title">📄 Mina CV</div>
-        <div class="pf-section-count" id="pfSavedCount">0/3</div>
-      </div>
-      <div id="pfSavedList" class="pf-grid"></div>
-    </div>
-
-    <!-- Mina matchningar -->
-    <div class="pf-section">
-      <div class="pf-section-head">
-        <div class="pf-section-title">🎯 Mina matchningar</div>
-        <div class="pf-section-count" id="pfMatchedCount">0</div>
-      </div>
-      <div id="pfMatchedList" class="pf-grid"></div>
-    </div>
+    <!-- Detaljvy (under grid, dynamiskt innehåll) -->
+    <div id="pfDetailArea" class="pf-detail-area"></div>
   </section>
 
 </main>
