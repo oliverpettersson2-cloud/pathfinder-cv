@@ -6525,10 +6525,39 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     // Steg 4: kör initial token-refresh om det är nära expiry (håller session alltid fräsch)
     setTimeout(() => { ensureFreshToken().catch(() => {}); }, 2000);
 
-    // Steg 5: schemalagt token-refresh var 45:e minut så användaren aldrig blir utkastad
+    // ═══════════════════════════════════════════════════════════════
+    // PROAKTIV BAKGRUNDS-REFRESH (tyst för användaren)
+    // ═══════════════════════════════════════════════════════════════
+    // Tre triggers som tillsammans garanterar att användaren aldrig
+    // märker att token förnyas:
+    //
+    // 1. setInterval var 45:e min — håller token fräsch under aktiv
+    //    användning (default access_token livstid är 1h)
+    // 2. visibilitychange — när användaren kommer tillbaka till fliken
+    //    efter att ha varit borta (webbläsare kan pausa setInterval)
+    // 3. online — när nätverket kommer tillbaka efter avbrott
+    //
+    // Resultat: så länge refresh_token är giltig (30 dagar default,
+    // kan utökas till 1 år i Supabase-inställningar) så behöver
+    // användaren aldrig logga in igen.
+
+    // Primär: var 45:e minut
     setInterval(() => {
       ensureFreshToken().catch(() => {});
     }, 45 * 60 * 1000);
+
+    // Fallback 1: när fliken blir synlig igen
+    // (webbläsare pausar ofta setInterval när fliken är i bakgrunden)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        ensureFreshToken().catch(() => {});
+      }
+    });
+
+    // Fallback 2: när nätverket kommer tillbaka efter avbrott
+    window.addEventListener('online', () => {
+      ensureFreshToken().catch(() => {});
+    });
   });
 
   // Borttagen: gammal magic link-delegation till mobilen — desktop hanterar det själv nu
