@@ -545,9 +545,8 @@
       userId: auth.userId,
       sessionId: sessionId,
       durationSeconds: durSec,
-      overallFeedback: feedback || null,
-      userRating: state.rating,
-      userNotes: ($('#ivNotes') && $('#ivNotes').value) || null
+      overallFeedback: feedback || null
+      // userRating + userNotes borttagna — betyg och anteckningar används inte längre i UI
     });
     return true;
   }
@@ -939,27 +938,16 @@
       '  <div class="iv-title">Intervjun är klar 🎉</div>',
       '  <div class="iv-sub" id="ivFeedbackMeta"></div>',
 
-      '  <h3 style="font-size:14px;color:#a78bfa;margin:8px 0 8px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Feedback från AI-coachen</h3>',
+      '  <h3 style="font-size:14px;color:#a78bfa;margin:16px 0 8px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Feedback från AI-coachen</h3>',
       '  <div class="iv-feedback-box" id="ivFeedbackText">Laddar...</div>',
 
-      '  <h3 style="font-size:14px;color:rgba(255,255,255,0.6);margin:16px 0 8px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Ditt betyg</h3>',
-      '  <div class="iv-rating" id="ivRating">',
-      '    <button class="iv-star" data-star="1">★</button>',
-      '    <button class="iv-star" data-star="2">★</button>',
-      '    <button class="iv-star" data-star="3">★</button>',
-      '    <button class="iv-star" data-star="4">★</button>',
-      '    <button class="iv-star" data-star="5">★</button>',
-      '  </div>',
+      '  <h3 style="font-size:14px;color:rgba(255,255,255,0.6);margin:24px 0 10px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Intervjuns frågor &amp; dina svar</h3>',
+      '  <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:12px;">Tryck på en fråga för att läsa ditt svar.</div>',
+      '  <div id="ivTranscript" class="iv-qa-list"></div>',
 
-      '  <h3 style="font-size:14px;color:rgba(255,255,255,0.6);margin:8px 0 8px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Anteckningar</h3>',
-      '  <textarea class="iv-notes" id="ivNotes" placeholder="Vad vill du komma ihåg till nästa gång?"></textarea>',
-
-      '  <h3 style="font-size:14px;color:rgba(255,255,255,0.6);margin:16px 0 8px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Intervjuns gång — spara frågor att öva på</h3>',
-      '  <div id="ivTranscript"></div>',
-
-      '  <div style="display:flex;gap:8px;margin-top:20px">',
+      '  <div style="display:flex;gap:8px;margin-top:24px">',
       '    <button class="iv-btn iv-btn--ghost" id="ivFbBackBtn" style="flex:1">Tillbaka</button>',
-      '    <button class="iv-btn" id="ivFbSaveBtn" style="flex:1">Spara & stäng</button>',
+      '    <button class="iv-btn" id="ivFbSaveBtn" style="flex:1">Spara &amp; stäng</button>',
       '  </div>',
       '</div>'
     ].join('\n');
@@ -1570,16 +1558,55 @@
   function renderTranscript() {
     var box = $('#ivTranscript');
     if (!box) return;
-    box.innerHTML = state.messages.map(function(m, i){
-      var cls = m.role === 'interviewer' ? 'iv-transcript-item--ai' : 'iv-transcript-item--user';
-      var role = m.role === 'interviewer' ? 'Intervjuare' : 'Du';
+
+    // Para ihop intervjuarens fråga med användarens påföljande svar
+    // så vi får en Q&A-lista istället för en lång blandad ström.
+    var pairs = [];
+    for (var i = 0; i < state.messages.length; i++) {
+      var m = state.messages[i];
+      if (m.role !== 'interviewer') continue;
+      var next = state.messages[i + 1];
+      var answer = (next && next.role === 'candidate') ? next.content : null;
+      pairs.push({ question: m.content, answer: answer });
+    }
+
+    if (!pairs.length) {
+      box.innerHTML = '<div style="color:rgba(255,255,255,0.35);font-size:13px;text-align:center;padding:20px;">Inga frågor att visa.</div>';
+      return;
+    }
+
+    box.innerHTML = pairs.map(function(p, idx) {
+      var qNum = idx + 1;
+      var hasAnswer = !!p.answer;
       return [
-        '<div class="iv-transcript-item ' + cls + '">',
-        '  <div class="iv-transcript-role">' + role + '</div>',
-        '  <div class="iv-transcript-text">' + escapeHtml(m.content) + '</div>',
+        '<div class="iv-qa-item" data-qa-idx="' + idx + '">',
+        '  <button class="iv-qa-toggle" type="button">',
+        '    <span class="iv-qa-num">' + qNum + '</span>',
+        '    <span class="iv-qa-question">' + escapeHtml(p.question) + '</span>',
+        '    <span class="iv-qa-chevron">▾</span>',
+        '  </button>',
+        '  <div class="iv-qa-answer" aria-hidden="true">',
+             (hasAnswer
+                ? '<div class="iv-qa-answer-label">Ditt svar</div>' +
+                  '<div class="iv-qa-answer-text">' + escapeHtml(p.answer) + '</div>'
+                : '<div class="iv-qa-answer-label">Inget svar</div>' +
+                  '<div class="iv-qa-answer-text" style="color:rgba(255,255,255,0.35);font-style:italic;">Du hann inte svara på denna fråga innan intervjun avslutades.</div>'
+             ),
+        '  </div>',
         '</div>'
       ].join('');
     }).join('');
+
+    // Klick-handler: toggla expand/collapse
+    box.querySelectorAll('.iv-qa-toggle').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var item = btn.closest('.iv-qa-item');
+        if (!item) return;
+        var isOpen = item.classList.toggle('iv-qa-item--open');
+        var ans = item.querySelector('.iv-qa-answer');
+        if (ans) ans.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+      });
+    });
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -1756,17 +1783,6 @@
     });
 
     // ─── FEEDBACK ─────────────────
-    var rating = $('#ivRating');
-    if (rating) rating.addEventListener('click', function(e){
-      var t = e.target;
-      if (!t || !t.classList || !t.classList.contains('iv-star')) return;
-      var n = parseInt(t.getAttribute('data-star'), 10);
-      state.rating = n;
-      rating.querySelectorAll('.iv-star').forEach(function(s, i){
-        s.classList.toggle('iv-star--on', i < n);
-      });
-    });
-
     var fbBack = $('#ivFbBackBtn');
     if (fbBack) fbBack.addEventListener('click', function(){
       resetToSetup();
