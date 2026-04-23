@@ -44,12 +44,12 @@
     { n: 6, e: '❓', t: 'Ställ egna frågor — förbered minst tre',
       d: 'Att inte ha frågor är en röd flagga. Fråga om teamet, utmaningar, hur framgång mäts.' },
     { n: 7, e: '🎯', t: 'Ha två-tre STAR-exempel redo',
-      d: 'STAR-metoden hjälper dig strukturera berättelser om din erfarenhet: ' +
-         'S (Situation) = beskriv kort sammanhanget, var var du och när. ' +
-         'T (Task) = vad var din uppgift eller utmaning. ' +
-         'A (Action) = vad DU gjorde konkret — inte teamet, utan du. ' +
-         'R (Result) = vad ledde det till, helst med siffror. ' +
-         'Exempel: "På mitt jobb som lagerarbetare (S) blev det plötsligt akut med en stor order (T). Jag organiserade om vårt arbetslag och tog ansvar för plockningen (A). Vi levererade i tid och fick beröm från kunden (R)." ' +
+      d: 'STAR-metoden hjälper dig strukturera berättelser om din erfarenhet:\n\n' +
+         '• S (Situation) — beskriv kort sammanhanget, var var du och när.\n' +
+         '• T (Task) — vad var din uppgift eller utmaning.\n' +
+         '• A (Action) — vad DU gjorde konkret (inte teamet, utan du).\n' +
+         '• R (Result) — vad ledde det till, helst med siffror.\n\n' +
+         'Exempel: "På mitt jobb som lagerarbetare (S) blev det plötsligt akut med en stor order (T). Jag organiserade om arbetslaget och tog ansvar för plockningen (A). Vi levererade i tid och fick beröm från kunden (R)."\n\n' +
          'Passar ~80% av frågorna som börjar med "Berätta om en gång då..."' },
     { n: 8, e: '🤔', t: 'Det är okej att tänka innan du svarar',
       d: '"Ska jag fundera en sekund..." är bättre än att rabbla dåligt genomtänkt.' },
@@ -873,15 +873,15 @@
       '  <button class="iv-btn" id="ivStartSetupBtn" style="margin-top:8px">Fortsätt till tips →</button>',
       '</div>',
 
-      // ─── TIPS (en i taget med 5s timer) ─────────────────────────────
+      // ─── TIPS (en i taget med timer) ─────────────────────────────
       '<div class="iv-screen" id="ivScreenTips">',
       '  <div class="iv-title">Tips inför intervjun</div>',
-      '  <div class="iv-sub" id="ivTipsStepLabel">Läs igenom noga — varje tips visas i 5 sekunder innan du kan gå vidare.</div>',
+      '  <div class="iv-sub" id="ivTipsStepLabel">Läs igenom noga — varje tips har några sekunders lästid.</div>',
       '  <div class="iv-tip-stepper" id="ivTipsStepper"></div>',
       '  <div class="iv-tips-progress" id="ivTipsProgress">1 av 10</div>',
       '  <div style="display:flex;gap:8px">',
       '    <button class="iv-btn iv-btn--ghost" id="ivTipsBackBtn" style="flex:1">← Tillbaka</button>',
-      '    <button class="iv-btn" id="ivTipsNextBtn" disabled style="flex:2;opacity:0.4;cursor:not-allowed;">Väntar 5s...</button>',
+      '    <button class="iv-btn" id="ivTipsNextBtn" disabled style="flex:2;opacity:0.4;cursor:not-allowed;">Läser...</button>',
       '  </div>',
       '</div>',
 
@@ -1008,13 +1008,20 @@
     clearTipTimers();
 
     // Rendera nuvarande tips
+    // Rendera texten med radbrytningar (\n → <br>) så strukturerade tips
+    // som STAR-metoden blir läsbara. Långa tips vänsterjusteras för bättre
+    // läsbarhet; korta är kvar centrerade.
+    var descHtml = escapeHtml(t.d).replace(/\n/g, '<br>');
+    var isLongTip = (t.d || '').length > 200;
+    var descAlign = isLongTip ? 'left' : 'center';
+
     stepper.innerHTML = [
       '<div class="iv-tip iv-tip--single">',
-      '  <div class="iv-tip-emoji" style="font-size:48px;">' + t.e + '</div>',
-      '  <div class="iv-tip-body" style="text-align:center;">',
-      '    <div class="iv-tip-num" style="font-size:11px;font-weight:800;color:rgba(62,180,137,0.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Tips ' + t.n + ' av ' + TIPS.length + '</div>',
-      '    <div class="iv-tip-title" style="font-size:20px;font-weight:900;color:#fff;margin-bottom:14px;line-height:1.3;">' + escapeHtml(t.t) + '</div>',
-      '    <div class="iv-tip-desc" style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.7;">' + escapeHtml(t.d) + '</div>',
+      '  <div class="iv-tip-emoji" style="font-size:48px;text-align:center;">' + t.e + '</div>',
+      '  <div class="iv-tip-body">',
+      '    <div class="iv-tip-num" style="font-size:11px;font-weight:800;color:rgba(62,180,137,0.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;text-align:center;">Tips ' + t.n + ' av ' + TIPS.length + '</div>',
+      '    <div class="iv-tip-title" style="font-size:20px;font-weight:900;color:#fff;margin-bottom:14px;line-height:1.3;text-align:center;">' + escapeHtml(t.t) + '</div>',
+      '    <div class="iv-tip-desc" style="font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;text-align:' + descAlign + ';">' + descHtml + '</div>',
       '  </div>',
       '</div>'
     ].join('');
@@ -1038,12 +1045,13 @@
     if (nextBtn) {
       var isLast = state.currentTipIdx === TIPS.length - 1;
       // Börja nedräkning — knappen grå tills timern är klar.
-      // Normalt 5s, men längre tips (som STAR-exemplet) får lite mer tid.
+      // Snabbare än tidigare eftersom många användare gör intervjuträning
+      // flera gånger. 3s för korta tips, upp till 7s för STAR-exemplet.
       var textLen = (t.d || '').length;
-      var secondsLeft = 5;
-      if (textLen > 300) secondsLeft = 10;      // långa tips (STAR etc.)
-      else if (textLen > 150) secondsLeft = 7;  // medellånga
-      // korta tips → 5s (default)
+      var secondsLeft = 3;
+      if (textLen > 300) secondsLeft = 7;       // långa tips (STAR etc.)
+      else if (textLen > 150) secondsLeft = 5;  // medellånga
+      // korta tips → 3s (default)
 
       nextBtn.disabled = true;
       nextBtn.style.opacity = '0.4';
