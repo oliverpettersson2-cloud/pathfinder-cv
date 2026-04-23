@@ -75,7 +75,7 @@
     session: null,   // {id, started_at, branch, ...} från Supabase
     messages: [],    // [{id, role, content, ...}]
     phase: 'setup',  // setup | tips | session | feedback
-    inputMode: 'type', // 'speak' | 'type' | 'quick' — hur användaren svarar
+    inputMode: 'speak', // 'speak' | 'type' — hur användaren svarar (snabbval borttagna)
     ai: {
       isSpeaking: false,
       isListening: false,
@@ -414,30 +414,11 @@
       '- Avslöja ALDRIG att du är en AI om inte kandidaten tydligt frågar. Spela rollen.',
       '- Om kandidaten är tyst eller skriver kort: fråga uppmuntrande "Vill du utveckla?" innan du går vidare.',
       '- Håll intervjun till ungefär 8-12 frågor totalt om inget annat sägs.',
+      '- Ställ EN fråga åt gången, kort och tydlig. Inga uppräkningar.',
+      '- Lyssna aktivt: bygg gärna nästa fråga på vad kandidaten just sa.',
       '',
-      'SNABBVAL — INKLUDERA EFTER VARJE FRÅGA',
-      'Efter varje fråga (utom slutliga "Tack"-repliken) ska du inkludera 3 snabbsvar',
-      'som kandidaten kan klicka på istället för att skriva eget. VARIERA kvaliteten:',
-      '- Ett svagt/undvikande/för kort svar (realistiskt men mindre bra)',
-      '- Ett mediokert svar (rimligt men generiskt)',
-      '- Ett starkare svar (konkret, med exempel)',
-      'Använd INGA kvalitetsmarkörer (inga emoji, ingen "Bra svar:" etc) — håll dem neutrala.',
-      'Skriv snabbvalen så kandidaten själv hade kunnat säga dem, i första person.',
-      'Håll varje svar SHORT (1-2 meningar, max ~30 ord).',
-      '',
-      'FORMAT — använd EXAKT denna struktur:',
-      '[Din fråga här, i en eller få meningar]',
-      '',
-      '[OPTIONS]',
-      '1. [första snabbsvaret]',
-      '2. [andra snabbsvaret]',
-      '3. [tredje snabbsvaret]',
-      '[/OPTIONS]',
-      '',
-      'VIKTIGT om OPTIONS-blocket:',
-      '- Ska ALLTID finnas efter varje fråga.',
-      '- Bara ta bort det om intervjun är slut (när du skriver [INTERVIEW_COMPLETE]).',
-      '- Använd exakt "[OPTIONS]" och "[/OPTIONS]" som markörer — case-sensitive.',
+      'FORMAT',
+      'Skriv bara din fråga som en kort, naturlig replik (1-3 meningar). Inga listor, ingen formatering.',
       '',
       'BÖRJA NU med en kort, avslappnad hälsning följd av första småpratsfrågan.',
       'Inte "Välkommen till intervjun" — något mer naturligt.'
@@ -839,17 +820,12 @@
       '    <button type="button" class="iv-method-card" data-method="speak">',
       '      <div class="iv-method-icon">🎤</div>',
       '      <div class="iv-method-title">Röstinspelning</div>',
-      '      <div class="iv-method-desc">Prata som i en riktig intervju. Texten transkriberas automatiskt.</div>',
+      '      <div class="iv-method-desc">Prata som i en riktig intervju. Texten transkriberas automatiskt — bästa träningen för verkligheten.</div>',
       '    </button>',
       '    <button type="button" class="iv-method-card" data-method="type">',
       '      <div class="iv-method-icon">✍️</div>',
       '      <div class="iv-method-title">Skriv fritt</div>',
-      '      <div class="iv-method-desc">Formulera dina egna svar i lugn och ro via tangentbordet.</div>',
-      '    </button>',
-      '    <button type="button" class="iv-method-card" data-method="quick">',
-      '      <div class="iv-method-icon">⚡</div>',
-      '      <div class="iv-method-title">Snabbval</div>',
-      '      <div class="iv-method-desc">Välj mellan 3 föreslagna svar per fråga. Bra om du är osäker.</div>',
+      '      <div class="iv-method-desc">Formulera dina egna svar i lugn och ro via tangentbordet. Bra för att tänka igenom.</div>',
       '    </button>',
       '  </div>',
       '  <button class="iv-btn" id="ivMethodStartBtn" disabled style="margin-top:16px;opacity:0.4">Starta intervjun →</button>',
@@ -1042,12 +1018,11 @@
 
   // ══════════════════════════════════════════════════════════════
   // INPUT-MODE: applicera vald svarsmetod på UI
-  // 'speak' → visa mic-knapp, dölj snabbval
-  // 'type'  → visa textarea, dölj snabbval
-  // 'quick' → dölj input-bar, visa bara snabbval
+  // 'speak' → mic-knapp primärt, textarea som fallback för redigering
+  // 'type'  → bara textarea, dölj mic-knappen
   // ══════════════════════════════════════════════════════════════
   function applyInputMode() {
-    var mode = state.inputMode || 'type';
+    var mode = state.inputMode || 'speak';
     var bar = $('#ivInputBar');
     var mic = $('#ivMicBtn');
     var textarea = $('#ivUserInput');
@@ -1056,34 +1031,20 @@
 
     // Uppdatera header-ikonen som visar nuvarande metod
     if (methodIcon) {
-      methodIcon.textContent = mode === 'speak' ? '🎤' : (mode === 'quick' ? '⚡' : '✍️');
+      methodIcon.textContent = mode === 'speak' ? '🎤' : '✍️';
     }
 
     if (!bar) return;
+    bar.style.display = 'flex';
 
-    if (mode === 'quick') {
-      // Snabbval-läge: dölj hela input-baren, användaren klickar bara på snabbval
-      bar.style.display = 'none';
-      // Om vi precis bytte till quick-mode och senaste meddelandet är från
-      // intervjuaren med snabbval — rendera dem nu
-      var lastMsg = state.messages[state.messages.length - 1];
-      if (lastMsg && lastMsg.role === 'interviewer' && lastMsg._options && lastMsg._options.length) {
-        clearAllQuickOptions();
-        renderQuickOptions(lastMsg._options);
-      }
+    if (mode === 'speak') {
+      // Röst-läge: mic primärt, textarea som fallback för redigering
+      if (mic) mic.style.display = 'flex';
+      if (textarea) textarea.placeholder = 'Tryck 🎤 för att prata (eller skriv)';
     } else {
-      bar.style.display = 'flex';
-      // Bytte FRÅN quick-mode → ta bort eventuella synliga snabbval
-      clearAllQuickOptions();
-      if (mode === 'speak') {
-        // Röst-läge: mic primärt, textarea som fallback för redigering
-        if (mic) mic.style.display = 'flex';
-        if (textarea) textarea.placeholder = 'Tryck 🎤 för att prata (eller skriv)';
-      } else {
-        // type-läge: dölj mic-knappen
-        if (mic) mic.style.display = 'none';
-        if (textarea) textarea.placeholder = 'Skriv ditt svar...';
-      }
+      // Type-läge: dölj mic-knappen
+      if (mic) mic.style.display = 'none';
+      if (textarea) textarea.placeholder = 'Skriv ditt svar...';
     }
   }
 
@@ -1105,9 +1066,6 @@
       '</button>',
       '<button type="button" class="iv-method-card iv-method-card--compact' + (current==='type'?' iv-method-card--active':'') + '" data-method="type">',
       '  <span class="iv-method-icon">✍️</span><span class="iv-method-label">Skriv fritt</span>',
-      '</button>',
-      '<button type="button" class="iv-method-card iv-method-card--compact' + (current==='quick'?' iv-method-card--active':'') + '" data-method="quick">',
-      '  <span class="iv-method-icon">⚡</span><span class="iv-method-label">Snabbval</span>',
       '</button>',
       '<button type="button" class="iv-btn iv-btn--ghost" id="ivMethodDialogClose" style="margin-top:6px">Stäng</button>'
     ].join('');
@@ -1158,11 +1116,6 @@
     var msgs = $('#ivMessages');
     if (!msgs) return;
 
-    // Om intervjuaren svarar — ta bort gamla snabbvals INNAN vi lägger till nya
-    if (msg.role === 'interviewer') {
-      clearAllQuickOptions();
-    }
-
     var wrap = document.createElement('div');
     wrap.className = 'iv-msg' + (msg.role === 'candidate' ? ' iv-msg--user' : '');
 
@@ -1175,22 +1128,10 @@
 
     var bubble = document.createElement('div');
     bubble.className = 'iv-msg-bubble';
-    // Om intervjuaren har snabbval inbakade — visa bara den rena texten i bubblan
-    if (msg.role === 'interviewer' && msg._options) {
-      bubble.textContent = msg.content;  // content är redan den rensade versionen
-    } else {
-      bubble.textContent = msg.content;
-    }
+    bubble.textContent = msg.content;
     wrap.appendChild(bubble);
 
     msgs.appendChild(wrap);
-
-    // Rendera snabbvals-knappar efter intervjuarens meddelande
-    // — men ENBART om användaren valt 'quick' som svarsmetod
-    if (msg.role === 'interviewer' && msg._options && msg._options.length && state.inputMode === 'quick') {
-      renderQuickOptions(msg._options);
-    }
-
     msgs.scrollTop = msgs.scrollHeight;
   }
 
@@ -1220,15 +1161,14 @@
       });
 
       ivDebug.log('    anropar Claude...');
-      var rawText = await callClaude(messages, prompt, { maxOutputTokens: 500 });
+      var rawText = await callClaude(messages, prompt, { maxOutputTokens: 350 });
       ivDebug.log('    ✓ Claude svarade (' + rawText.length + ' tecken)');
 
       var isComplete = rawText.indexOf('[INTERVIEW_COMPLETE]') !== -1;
-      // Först rensa bort [INTERVIEW_COMPLETE], sen parsa [OPTIONS]
-      var withoutComplete = rawText.replace(/\[INTERVIEW_COMPLETE\]/g, '').trim();
-      var parsed = parseOptions(withoutComplete);
-      var clean = parsed.cleanText;
-      ivDebug.log('    → snabbval: ' + parsed.options.length + ' st');
+      // Rensa bort [INTERVIEW_COMPLETE]-markören; resten är frågetexten
+      var clean = rawText.replace(/\[INTERVIEW_COMPLETE\]/g, '').trim();
+      // Bakåtkompat: rensa även gamla [OPTIONS]-block om AI råkar inkludera dem
+      clean = clean.replace(/\[OPTIONS\][\s\S]*?\[\/OPTIONS\]/g, '').trim();
 
       // Ta bort timglaset INNAN vi lägger till intervjuarens bubbla
       hideThinking();
@@ -1252,8 +1192,6 @@
       }
       ivDebug.log('    ✓ Meddelande hanterat');
 
-      // Bifoga options till meddelandet för rendering (sparas inte i DB)
-      saved._options = isComplete ? [] : parsed.options;
       state.messages.push(saved);
       appendMessage(saved);
 
