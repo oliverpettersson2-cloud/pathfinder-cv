@@ -268,21 +268,6 @@
       font-size: 14px;
     }
 
-    /* Global fallback för ALLA native option-element
-       så dropdown-listan alltid har läsbar text (svart på vitt) */
-    option {
-      background: #ffffff !important;
-      color: #1a1a2e !important;
-      padding: 8px !important;
-    }
-    option:hover,
-    option:focus,
-    option:active,
-    option:checked {
-      background: #e8f0fe !important;
-      color: #1a1a2e !important;
-    }
-
     select.form-input option:checked {
       background: linear-gradient(#2563eb, #2563eb);
       background-color: #2563eb;
@@ -7327,11 +7312,16 @@ ${styleTexts}
     async function sbCall(body) {
       const token = await ensureFreshToken();
       if (!token) return { error: 'not_authenticated' };
+      // Backend läser access_token från Authorization-header (Bearer).
+      // Vi behåller även accessToken i body för bakåtkompatibilitet.
       const mergedBody = Object.assign({}, body, { accessToken: token });
       try {
         const r = await fetch('/api/supabase', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
           body: JSON.stringify(mergedBody)
         });
         if (r.status === 401) {
@@ -7350,10 +7340,42 @@ ${styleTexts}
     }
     window.sbCall = sbCall;
 
-    // Schemalagd token-refresh var 45:e minut så användaren aldrig kickas ut
+    // ═══════════════════════════════════════════════════════════════
+    // PROAKTIV BAKGRUNDS-REFRESH (tyst för användaren)
+    // ═══════════════════════════════════════════════════════════════
+    // Tre triggers som tillsammans garanterar att användaren aldrig
+    // märker att token förnyas:
+    //
+    // 1. setInterval var 45:e min — håller token fräsch under aktiv
+    //    användning (default access_token livstid är 1h)
+    // 2. visibilitychange — när användaren kommer tillbaka till fliken
+    //    efter att ha varit borta (webbläsare/iOS pausar setInterval)
+    // 3. online — när nätverket kommer tillbaka efter avbrott
+    //
+    // Resultat: så länge refresh_token är giltig (30 dagar default,
+    // kan utökas till 1 år i Supabase-inställningar) så behöver
+    // användaren aldrig logga in igen.
+
+    // Primär: var 45:e minut
     setInterval(() => {
       ensureFreshToken().catch(() => {});
     }, 45 * 60 * 1000);
+
+    // Fallback 1: när fliken/appen blir synlig igen
+    // (viktigt för mobiler — iOS/Android pausar setInterval när appen
+    //  ligger i bakgrunden, så när användaren kommer tillbaka kan
+    //  token redan ha gått ut)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        ensureFreshToken().catch(() => {});
+      }
+    });
+
+    // Fallback 2: när nätverket kommer tillbaka efter avbrott
+    // (vanligt på mobil — tunnelbana, dåligt täckning, flight mode)
+    window.addEventListener('online', () => {
+      ensureFreshToken().catch(() => {});
+    });
 
     function authSetLoggedIn(email, isNew, userId, accessToken, refreshToken, expiresIn) {
       const expiresAt = expiresIn ? Date.now() + (expiresIn * 1000) : null;
@@ -7401,14 +7423,12 @@ ${styleTexts}
     let _saveDebounceSupabase = null;
     async function saveCVToSupabase() {
       const userId = window.authUserId;
-      const accessToken = window.authAccessToken;
       if (!userId) return;
       try {
-        await fetch('/api/supabase', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'save_cv', accessToken, userId, cvData })
-        });
+        // Använd sbCall så token auto-refreshas + Authorization-header skickas
+        if (typeof window.sbCall === 'function') {
+          await window.sbCall({ action: 'save_cv', userId, cvData });
+        }
       } catch(e) {
       }
     }
@@ -7417,17 +7437,15 @@ ${styleTexts}
     const _sbDebounces = {};
     function _sbSync(table, data) {
       const userId = window.authUserId;
-      const accessToken = window.authAccessToken;
-      if (!userId || !accessToken) return;
+      if (!userId) return;
       clearTimeout(_sbDebounces[table]);
       _sbDebounces[table] = setTimeout(async function() {
         try {
           const action = table === 'ovning_progress' ? 'save_progress' : 'save_table';
-          await fetch('/api/supabase', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, accessToken, userId, table, data })
-          });
+          // Använd sbCall så token auto-refreshas + Authorization-header skickas
+          if (typeof window.sbCall === 'function') {
+            await window.sbCall({ action, userId, table, data });
+          }
         } catch(e) {
         }
       }, 2000);
@@ -7436,12 +7454,11 @@ ${styleTexts}
     // ── Ladda all data från Supabase vid inloggning ───────────────────────
     async function loadAllFromSupabase(userId, accessToken) {
       try {
-        const resp = await fetch('/api/supabase', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'load_all', accessToken, userId })
-        });
-        const result = await resp.json();
+        // Använd sbCall så token auto-refreshas + Authorization-header skickas.
+        // accessToken-paramen ignoreras eftersom sbCall hämtar färsk token själv.
+        const result = (typeof window.sbCall === 'function')
+          ? await window.sbCall({ action: 'load_all', userId })
+          : null;
         if (!result || result.error) return;
 
         // CV-huvuddata
@@ -7573,13 +7590,11 @@ ${styleTexts}
     // ===== AKTIVITETSLOGGNING =====
     function logEvent(event_type, metadata = {}) {
       const userId = window.authUserId;
-      const accessToken = window.authAccessToken;
-      if (!userId || !accessToken) return;
-      fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'log_event', accessToken, userId, event_type, metadata })
-      }).catch(() => {});
+      if (!userId) return;
+      // Använd sbCall så token auto-refreshas + Authorization-header skickas
+      if (typeof window.sbCall === 'function') {
+        window.sbCall({ action: 'log_event', userId, event_type, metadata }).catch(() => {});
+      }
     }
     // ===== SLUT AKTIVITETSLOGGNING =====
 
@@ -9874,15 +9889,13 @@ function dfTasks(){return[]}
 // Hämta tilldelade uppgifter från Supabase (/api/supabase action=my_tasks)
 async function loadAssignedTasks(){
   var uid = window.authUserId;
-  var tok = window.authAccessToken;
-  if (!uid || !tok) { _assignedTasksCache = []; return; }
+  if (!uid) { _assignedTasksCache = []; return; }
   try {
-    var r = await fetch('/api/supabase', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'my_tasks', accessToken: tok, userId: uid })
-    });
-    var data = await r.json().catch(function(){return {};});
+    // Använd sbCall så token auto-refreshas vid expiry + skickar
+    // Authorization: Bearer-header som backend förväntar sig
+    var data = await (typeof window.sbCall === 'function'
+      ? window.sbCall({ action: 'my_tasks', userId: uid })
+      : Promise.resolve({}));
     _assignedTasksCache = Array.isArray(data.data) ? data.data : [];
   } catch(e) {
     console.error('Kunde inte hämta uppgifter:', e);
@@ -10629,19 +10642,18 @@ var D={
     // Admin-tilldelad uppgift: anropa complete_task via backend
     if (task._assigned && task._supabaseId) {
       if (task.done) return; // redan klar, kan inte ångra backend-completion
-      var uid = window.authUserId, tok = window.authAccessToken;
-      if (!uid || !tok) return;
-      fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'complete_task',
-          accessToken: tok,
-          userId: uid,
-          taskId: task._supabaseId
-        })
-      }).then(function(r){
-        if (r.ok) return loadAssignedTasks();
+      var uid = window.authUserId;
+      if (!uid) return;
+      // Använd sbCall så token auto-refreshas + Authorization-header skickas
+      (typeof window.sbCall === 'function'
+        ? window.sbCall({
+            action: 'complete_task',
+            userId: uid,
+            taskId: task._supabaseId
+          })
+        : Promise.resolve({ error: 'no_sbcall' })
+      ).then(function(result){
+        if (result && !result.error) return loadAssignedTasks();
       }).then(function(){ D.renderTasks(); }).catch(function(e){
         console.error('Kunde inte slutföra uppgift:', e);
       });
