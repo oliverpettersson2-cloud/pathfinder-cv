@@ -641,6 +641,8 @@
     rec: null,
     finalText: '',
     supported: false,
+    networkRetries: 0,        // räknare för auto-retry vid network-fel
+    maxNetworkRetries: 2,     // 2 tysta retries innan vi visar fel + fallback
 
     init: function() {
       var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -656,6 +658,8 @@
         updateStatusPill();
       };
       stt.rec.onresult = function(ev) {
+        // Lyckat resultat → nollställ retry-räknare
+        stt.networkRetries = 0;
         var interim = '';
         for (var i = ev.resultIndex; i < ev.results.length; i++) {
           var t = ev.results[i][0].transcript;
@@ -670,24 +674,85 @@
       };
       stt.rec.onerror = function(ev) {
         if (window.ivDebug && ivDebug.log) ivDebug.log('🎤 STT-fel: ' + ev.error);
+        state.ai.isListening = false;
+
         if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
           showError('Mikrofon blockerad. Tillåt mikrofon i webbläsarinställningarna och försök igen.');
-        } else if (ev.error === 'no-speech') {
-          // Tyst — användaren pratade inte, inget fel att visa
-        } else if (ev.error === 'aborted') {
-          // Användaren avbröt — inget fel att visa
-        } else if (ev.error === 'network') {
-          showError('Nätverksfel under röstinspelning. Försök igen.');
-        } else {
-          showError('Mikrofonfel: ' + ev.error);
+          updateStatusPill();
+          return;
         }
-        state.ai.isListening = false;
+        if (ev.error === 'no-speech' || ev.error === 'aborted') {
+          // Tyst — inget fel att visa
+          updateStatusPill();
+          return;
+        }
+        if (ev.error === 'network') {
+          // Auto-retry tyst — Web Speech API kräver internet och Googles servrar
+          // är ibland överbelastade. Försök igen innan vi visar fel.
+          if (stt.networkRetries < stt.maxNetworkRetries) {
+            stt.networkRetries++;
+            if (window.ivDebug && ivDebug.log) {
+              ivDebug.log('🔄 Tyst retry ' + stt.networkRetries + '/' + stt.maxNetworkRetries + ' efter network-fel');
+            }
+            // Visa subtilt återförsök i interim-rutan istället för error
+            var box = $('#ivInterim');
+            if (box) {
+              box.textContent = '🔄 Försöker igen...';
+              box.style.display = 'block';
+            }
+            updateStatusPill();
+            // Vänta 1.5s och försök igen
+            setTimeout(function() {
+              try { stt.rec.start(); }
+              catch(e) {
+                // rec är i invalid state — skapa om
+                stt.init();
+                try { stt.rec.start(); } catch(_) { stt.fallbackToText(); }
+              }
+            }, 1500);
+            return;
+          }
+          // Alla retries misslyckades → fallback till textläge
+          stt.networkRetries = 0;
+          stt.fallbackToText();
+          updateStatusPill();
+          return;
+        }
+        // Övrigt fel
+        showError('Mikrofonfel: ' + ev.error);
         updateStatusPill();
       };
       stt.rec.onend = function() {
         state.ai.isListening = false;
         updateStatusPill();
+        // Rensa "Försöker igen..."-text om den är kvar
+        var box = $('#ivInterim');
+        if (box && box.textContent === '🔄 Försöker igen...') {
+          box.textContent = '';
+          box.style.display = 'none';
+        }
       };
+    },
+
+    // Användaren får meddelande om att röst inte funkar och byts till text
+    fallbackToText: function() {
+      if (window.ivDebug && ivDebug.log) ivDebug.log('🔄 Fallback till textläge');
+      // Rensa interim
+      var box = $('#ivInterim');
+      if (box) { box.textContent = ''; box.style.display = 'none'; }
+
+      // Byt mode → text
+      state.inputMode = 'type';
+      if (typeof applyInputMode === 'function') applyInputMode();
+
+      // Visa förklarande popup
+      showError('🎤 Rösttjänsten är överbelastad just nu — du har bytt till skrivläge. Du kan byta tillbaka senare via ✍️-knappen.');
+
+      // Sätt fokus i textfältet så användaren kan skriva direkt
+      setTimeout(function() {
+        var ta = $('#ivUserInput');
+        if (ta) ta.focus();
+      }, 200);
     },
 
     start: function() {
@@ -696,6 +761,8 @@
         return;
       }
       if (window.ivDebug && ivDebug.log) ivDebug.log('🎤 stt.start() anropad');
+      // Nollställ retry-räknaren vid manuell start (bara auto-retries räknar)
+      stt.networkRetries = 0;
       stt.finalText = '';
       var box = $('#ivInterim');
       if (box) box.style.display = 'none';
