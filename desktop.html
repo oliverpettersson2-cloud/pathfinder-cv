@@ -2336,6 +2336,16 @@
     background: rgba(124,58,237,0.15);
     color: #a78bfa;
   }
+  .pf-hub-tile.variant-settings {
+    background: rgba(148,163,184,0.06);
+    border-color: rgba(148,163,184,0.18);
+  }
+  .pf-hub-tile.variant-settings .pf-hub-tile-badge-count {
+    background: rgba(148,163,184,0.15);
+    color: #cbd5e1;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+  }
 
   /* Detaljvy under grid */
   .pf-detail-area { margin-top: 8px; }
@@ -4613,6 +4623,116 @@
     </div>
 
     <div id="matchaSavedLimitNote" style="font-size:12px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.6;margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     INTEGRITETSPOLICY / GDPR-MODAL
+     ============================================================ -->
+<div id="privacyPolicyModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);overflow-y:auto;padding:24px;">
+  <div style="background:#12172a;border:1.5px solid rgba(255,255,255,0.08);border-radius:18px;padding:32px 28px 40px;max-width:680px;margin:20px auto;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div style="font-size:20px;font-weight:900;color:#fff;">📄 Integritetspolicy</div>
+      <button onclick="document.getElementById('privacyPolicyModal').style.display='none'" style="background:rgba(255,255,255,0.08);border:none;color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:20px;">Senast uppdaterad: april 2026</div>
+
+    <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Personuppgiftsansvarig</div>
+      <p style="margin:0 0 16px;">PathfinderAI (org.nr under registrering), Helsingborg, Sverige.<br>Kontakt: <a href="mailto:info@cvmatchen.com" style="color:#3eb489;">info@cvmatchen.com</a></p>
+      <p style="margin:0 0 20px;">PathfinderAI är personuppgiftsansvarig för CVmatchen — appen du använder för att bygga CV, matcha mot jobb och söka utbildningar.</p>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Vilka uppgifter samlar vi in?</div>
+      <p style="margin:0 0 8px;">CVmatchen samlar in och behandlar följande uppgifter:</p>
+      <ul style="margin:0 0 20px;padding-left:20px;color:rgba(255,255,255,0.65);">
+        <li style="margin-bottom:6px;"><strong style="color:#fff;">E-postadress</strong> — för inloggning via engångskod (OTP) eller magic link</li>
+        <li style="margin-bottom:6px;"><strong style="color:#fff;">CV-innehåll</strong> — namn, kontaktuppgifter, arbetslivserfarenhet, utbildning, kompetenser och profiltext som du fyller i</li>
+        <li style="margin-bottom:6px;"><strong style="color:#fff;">Jobbmatchningsdata</strong> — vilka annonser du väljer att matcha mot</li>
+        <li style="margin-bottom:6px;"><strong style="color:#fff;">Teknisk data</strong> — felloggar och användningsmönster för att förbättra tjänsten</li>
+      </ul>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">3. Ändamål och rättslig grund</div>
+      <ul style="margin:0 0 20px;padding-left:20px;color:rgba(255,255,255,0.65);">
+        <li style="margin-bottom:6px;">Tillhandahålla och förbättra tjänsten <em>(berättigat intresse, avtal)</em></li>
+        <li style="margin-bottom:6px;">Autentisering och kontosäkerhet <em>(avtal)</em></li>
+        <li style="margin-bottom:6px;">AI-genererade profiler och matchningar behandlas av Anthropic via API — inga uppgifter används för träning av AI-modeller</li>
+      </ul>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">4. Tredjeparter och underbiträden</div>
+      <ul style="margin:0 0 20px;padding-left:20px;color:rgba(255,255,255,0.65);">
+        <li style="margin-bottom:6px;"><strong style="color:#fff;">Supabase</strong> — databas och autentisering (EU-region)</li>
+        <li style="margin-bottom:6px;"><strong style="color:#fff;">Anthropic</strong> — AI-generering av profil och matchning (API, inga uppgifter sparas för träning)</li>
+        <li style="margin-bottom:6px;"><strong style="color:#fff;">Resend</strong> — utskick av inloggningskoder via e-post</li>
+        <li style="margin-bottom:6px;"><strong style="color:#fff;">Vercel</strong> — hosting av applikationen</li>
+      </ul>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">5. Lagring och radering</div>
+      <p style="margin:0 0 8px;">Ditt konto och dina uppgifter lagras så länge du använder tjänsten. Du kan när som helst radera ditt konto under <em>Avtal &amp; inställningar</em> i Profil-fliken — all data raderas då omedelbart.</p>
+      <p style="margin:0 0 20px;">CV-data sparas säkert i molnet kopplat till ditt konto. Du kan logga in från vilken enhet som helst och se din data.</p>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">6. Dina rättigheter (GDPR)</div>
+      <p style="margin:0 0 8px;">Enligt GDPR har du rätt att:</p>
+      <ul style="margin:0 0 20px;padding-left:20px;color:rgba(255,255,255,0.65);">
+        <li style="margin-bottom:6px;">Begära tillgång till dina uppgifter (registerutdrag)</li>
+        <li style="margin-bottom:6px;">Rätta felaktiga uppgifter</li>
+        <li style="margin-bottom:6px;">Radera dina uppgifter ("rätten att bli glömd")</li>
+        <li style="margin-bottom:6px;">Invända mot behandling</li>
+        <li style="margin-bottom:6px;">Lämna in klagomål till Integritetsskyddsmyndigheten (IMY)</li>
+      </ul>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Kontakt</div>
+      <p style="margin:0 0 4px;">För frågor om dataskydd, kontakta oss på:</p>
+      <p style="margin:0;"><a href="mailto:info@cvmatchen.com" style="color:#3eb489;">info@cvmatchen.com</a></p>
+
+    </div>
+
+    <button onclick="document.getElementById('privacyPolicyModal').style.display='none'" style="width:100%;margin-top:32px;padding:14px;background:#3eb489;border:none;color:#fff;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Stäng</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     ALLMÄNNA VILLKOR-MODAL
+     ============================================================ -->
+<div id="termsModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);overflow-y:auto;padding:24px;">
+  <div style="background:#12172a;border:1.5px solid rgba(255,255,255,0.08);border-radius:18px;padding:32px 28px 40px;max-width:680px;margin:20px auto;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div style="font-size:20px;font-weight:900;color:#fff;">📋 Allmänna villkor</div>
+      <button onclick="document.getElementById('termsModal').style.display='none'" style="background:rgba(255,255,255,0.08);border:none;color:#fff;font-size:18px;width:36px;height:36px;border-radius:50%;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:20px;">Senast uppdaterad: april 2026</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.8;">
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">1. Tjänsten</div>
+      <p style="margin:0 0 16px;">CVmatchen tillhandahålls av PathfinderAI för CV-skapande, jobbmatchning och utbildningssökning.</p>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">2. Prissättning</div>
+      <p style="margin:0 0 16px;">CVmatchen är en betaltjänst. Kommuner och organisationer upphandlar tjänsten enligt avtal. Privatpersoner debiteras enligt gällande prislista. Kontakta <a href="mailto:info@cvmatchen.com" style="color:#3eb489;">info@cvmatchen.com</a> för prisuppgifter.</p>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">3. AI-innehåll</div>
+      <p style="margin:0 0 16px;">AI-förslag (profiltexter, matchningar, kompetensförslag, intervjufrågor) ska alltid granskas av användaren innan användning. PathfinderAI ansvarar inte för fel i AI-genererat innehåll. Du som användare ansvarar för att verifiera att informationen i ditt CV är korrekt och sanningsenlig.</p>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">4. Användning</div>
+      <p style="margin:0 0 8px;">CVmatchen får användas för:</p>
+      <ul style="margin:0 0 16px;padding-left:20px;color:rgba(255,255,255,0.65);">
+        <li style="margin-bottom:6px;">Skapa egna CV och profiltexter</li>
+        <li style="margin-bottom:6px;">Söka och matcha mot publika jobbannonser</li>
+        <li style="margin-bottom:6px;">Få vägledning kring utbildning och yrkesval</li>
+      </ul>
+      <p style="margin:0 0 16px;">Tjänsten får inte användas för att skapa CV åt andra personer utan deras samtycke, eller för att skicka automatiserade ansökningar till arbetsgivare.</p>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">5. Personuppgifter</div>
+      <p style="margin:0 0 16px;">Vi behandlar dina personuppgifter enligt vår integritetspolicy och GDPR.</p>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">6. Ansvarsbegränsning</div>
+      <p style="margin:0 0 16px;">PathfinderAI ansvarar inte för indirekta skador, utebliven vinst eller följdskador kopplade till användning av tjänsten. Vi garanterar inte att en användare som söker jobb via CVmatchen får anställning.</p>
+
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">7. Ändringar</div>
+      <p style="margin:0;">Vi förbehåller oss rätten att uppdatera dessa villkor. Större ändringar meddelas via e-post.</p>
+
+    </div>
+    <button onclick="document.getElementById('termsModal').style.display='none'" style="width:100%;margin-top:32px;padding:14px;background:#3eb489;border:none;color:#fff;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;font-family:inherit;">Stäng</button>
   </div>
 </div>
 
