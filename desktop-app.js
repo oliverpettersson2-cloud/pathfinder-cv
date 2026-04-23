@@ -2561,6 +2561,17 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     if (view === 'cv') {
       cvSwitchStep(currentStep);
       renderPreview();
+      // Om användaren har sparade CV:n: visa picker så de kan välja vilket
+      // de vill öppna, ta bort eller starta nytt — exakt som mobilen
+      const savedList = pfGetSaved();
+      if (savedList.length > 0 && !window._cvPickerSeenThisVisit) {
+        window._cvPickerSeenThisVisit = true;
+        setTimeout(() => cvShowPicker(), 100);
+      }
+    }
+    // Reset picker-flagg när man lämnar CV-vyn så den dyker upp igen nästa gång
+    if (view !== 'cv') {
+      window._cvPickerSeenThisVisit = false;
     }
     if (view === 'matcha') {
       if (typeof renderMatchaView === 'function') renderMatchaView();
@@ -5571,6 +5582,136 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     doc.innerHTML = html.join('');
   }
+
+  // ============================================================
+  // CV-PICKER: välj bland sparade CV (3 max) eller starta nytt
+  // Speglar mobilens mobShowCVPicker-flow
+  // ============================================================
+  window.cvShowPicker = function() {
+    const existing = document.getElementById('_cvPickerOverlay');
+    if (existing) existing.remove();
+
+    const saved = pfGetSaved();
+    const MAX = MAX_SAVED_CVS;
+
+    // Bygg slots: sparade + tomma "Nytt CV"-slots upp till MAX
+    const slots = [];
+    for (let i = 0; i < MAX; i++) {
+      if (i < saved.length) slots.push({ type: 'saved', cv: saved[i] });
+      else slots.push({ type: 'new' });
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = '_cvPickerOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    const drawer = document.createElement('div');
+    drawer.style.cssText = 'background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 24px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:90vh;overflow-y:auto;';
+
+    drawer.innerHTML =
+      '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:14px;letter-spacing:-0.3px;">📄 Dina CV:n</div>' +
+      '<div style="background:rgba(62,180,137,0.07);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;">' +
+        'Du fyller i namn, jobb och utbildning — <span style="color:#3eb489;font-weight:700;">AI skriver din profiltext</span>, föreslår kompetenser och hjälper med arbetsuppgifter. ' +
+        'Välj bland <span style="color:#3eb489;font-weight:700;">10+ mallar</span> och spara som PDF. ' +
+        'Du kan ha upp till <span style="color:#fff;font-weight:700;">3 olika CV</span> — ett per yrkesroll. ' +
+        'Alla CV sparas under <span style="color:#3eb489;font-weight:700;">👤 Profil</span> och kan öppnas, redigeras eller delas när som helst.' +
+      '</div>';
+
+    const slotsDiv = document.createElement('div');
+    slotsDiv.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+
+    slots.forEach(function(slot) {
+      const row = document.createElement('div');
+      if (slot.type === 'saved') {
+        const cv = slot.cv;
+        const date = cv.savedAt
+          ? new Date(cv.savedAt).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
+          : '';
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;';
+
+        // Öppna-knapp (huvuddelen av raden)
+        const btn = document.createElement('button');
+        btn.style.cssText = 'flex:1;padding:14px 16px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;min-width:0;transition:all 0.15s;';
+        btn.onmouseenter = () => { btn.style.background = 'rgba(62,180,137,0.18)'; };
+        btn.onmouseleave = () => { btn.style.background = 'rgba(62,180,137,0.1)'; };
+        btn.innerHTML =
+          '<div style="width:44px;height:44px;border-radius:12px;background:rgba(62,180,137,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📄</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:14px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escape(cv.title || 'Namnlöst CV') + '</div>' +
+            '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;">' +
+              ((cv.data && cv.data.name) ? escape(cv.data.name) + ' · ' : '') + escape(date) +
+            '</div>' +
+          '</div>' +
+          '<span style="font-size:12px;font-weight:700;color:#3eb489;background:rgba(62,180,137,0.15);border:1px solid rgba(62,180,137,0.3);border-radius:8px;padding:6px 12px;white-space:nowrap;flex-shrink:0;">👁 Öppna</span>';
+        btn.onclick = function() {
+          overlay.remove();
+          if (typeof window.pfOpenSaved === 'function') {
+            window.pfOpenSaved(cv.id);
+          }
+        };
+
+        // Ta bort-knapp
+        const delBtn = document.createElement('button');
+        delBtn.style.cssText = 'flex-shrink:0;width:46px;height:46px;background:rgba(220,38,38,0.1);border:1.5px solid rgba(220,38,38,0.3);border-radius:12px;color:rgba(252,165,165,0.9);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;';
+        delBtn.innerHTML = '🗑';
+        delBtn.title = 'Ta bort detta CV';
+        delBtn.onmouseenter = () => { delBtn.style.background = 'rgba(220,38,38,0.2)'; };
+        delBtn.onmouseleave = () => { delBtn.style.background = 'rgba(220,38,38,0.1)'; };
+        delBtn.onclick = function() {
+          if (!confirm('Ta bort "' + (cv.title || 'CV') + '"?\n\nDetta går inte att ångra.')) return;
+          if (typeof window.pfDeleteSaved === 'function') {
+            window.pfDeleteSaved(cv.id);
+          }
+          overlay.remove();
+          // Visa picker igen så användaren ser uppdaterad lista
+          setTimeout(() => {
+            const stillHas = pfGetSaved().length > 0;
+            if (stillHas) cvShowPicker();
+          }, 100);
+        };
+
+        row.appendChild(btn);
+        row.appendChild(delBtn);
+      } else {
+        // Tomt slot = "Nytt CV"-knapp
+        const btn = document.createElement('button');
+        btn.style.cssText = 'width:100%;padding:14px 16px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;transition:all 0.15s;';
+        btn.onmouseenter = () => { btn.style.background = 'rgba(255,255,255,0.06)'; btn.style.borderColor = 'rgba(255,255,255,0.25)'; };
+        btn.onmouseleave = () => { btn.style.background = 'rgba(255,255,255,0.03)'; btn.style.borderColor = 'rgba(255,255,255,0.15)'; };
+        btn.innerHTML =
+          '<div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">➕</div>' +
+          '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.5);">Skapa nytt CV</div>';
+        btn.onclick = function() {
+          overlay.remove();
+          // Rensa nuvarande arbetsdata för ett rent nytt CV
+          cvData = createEmptyCV();
+          saveCVLocal();
+          loadCVIntoForm();
+          renderJobs(); renderEducation();
+          renderSkillsChips(); renderLanguages(); renderLicenses();
+          renderTemplates();
+          renderPreview();
+          cvSwitchStep('profil');
+          toast('🎯 Nytt CV startat — fyll i informationen');
+        };
+        row.appendChild(btn);
+      }
+      slotsDiv.appendChild(row);
+    });
+
+    drawer.appendChild(slotsDiv);
+
+    // Stäng-knapp
+    const closeBtn = document.createElement('button');
+    closeBtn.style.cssText = 'margin-top:18px;width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;';
+    closeBtn.textContent = 'Stäng — fortsätt med nuvarande CV';
+    closeBtn.onclick = function() { overlay.remove(); };
+    drawer.appendChild(closeBtn);
+
+    overlay.appendChild(drawer);
+    document.body.appendChild(overlay);
+  };
 
   // ============================================================
   // CV: SAVE
