@@ -10,29 +10,13 @@
   // KONSTANTER
   // ============================================================
   const STORAGE_KEY      = 'cvData';
-  const AUTH_STORAGE_KEY = 'pathfinder_auth';
+  const AUTH_STORAGE_KEY = 'cvmatchen_auth';
   const API_KEY_STORAGE  = 'cvmatchen_api_key';
   const TRAINING_PROGRESS_KEY = 'cvmatchen_ovning_progress';
   const SAVED_CVS_KEY    = 'pathfinder_saved_cvs';
   const MATCHED_CVS_KEY  = 'pathfinder_matched_cvs';
   const MATCHED_TTL_MS   = 14 * 24 * 3600 * 1000; // 14 dagar — samma som mobilen
   const MAX_SAVED_CVS    = 3;
-
-  // Engångsmigrering: Om användaren har auth sparad i gamla 'cvmatchen_auth'-nyckeln
-  // (från tidigare desktop-version), flytta över till 'pathfinder_auth' så den
-  // delas med mobilen. Körs en gång vid appstart.
-  try {
-    const oldAuth = localStorage.getItem('cvmatchen_auth');
-    const newAuth = localStorage.getItem('pathfinder_auth');
-    if (oldAuth && !newAuth) {
-      localStorage.setItem('pathfinder_auth', oldAuth);
-      localStorage.removeItem('cvmatchen_auth');
-      console.info('[CVmatchen] Auth migrerat från cvmatchen_auth → pathfinder_auth');
-    } else if (oldAuth && newAuth) {
-      // Båda finns — behåll nyare, radera gamla
-      localStorage.removeItem('cvmatchen_auth');
-    }
-  } catch(e) { /* tyst */ }
 
   const ALL_LANGUAGES = [
     'Svenska', 'Engelska', 'Danska', 'Tyska', 'Franska', 'Spanska',
@@ -56,18 +40,8 @@
   ];
 
   const TEMPLATES = [
-    { id: 'classic',     name: 'Klassisk',          icon: '📋', color: '#e85d26' },
-    { id: 'modern',      name: 'Modern',            icon: '✨', color: '#3eb489' },
-    { id: 'template-3',  name: 'Modern Blå/Grön',   icon: '🎨', color: '#4285F4' },
-    { id: 'template-4',  name: 'Modern Lila/Cyan',  icon: '💫', color: '#7c3aed' },
-    { id: 'template-5',  name: 'Minimalistisk',     icon: '⚪', color: '#888888' },
-    { id: 'template-6',  name: 'Traditionell 1',    icon: '📄', color: '#1a1a2e' },
-    { id: 'template-7',  name: 'Traditionell 2',    icon: '📑', color: '#d4af37' },
-    { id: 'template-8',  name: 'Modern Kort',       icon: '🎯', color: '#ec4899' },
-    { id: 'template-9',  name: 'Två-kolumn',        icon: '🌟', color: '#10b981' },
-    { id: 'template-10', name: 'Färgskatt',         icon: '🎨', color: '#f59e0b' },
-    { id: 'template-11', name: 'Traditionell 3',    icon: '📜', color: '#8b1a1a' },
-    { id: 'template-12', name: 'Traditionell 4',    icon: '📃', color: '#0f766e' },
+    { id: 'classic', name: 'Klassisk', icon: '📜' },
+    { id: 'modern',  name: 'Modern',   icon: '✨' },
   ];
 
   // Träningsmoduler — komprimerad version för desktop
@@ -1839,15 +1813,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       ['jobs','education','languages','certifications','licenses','references','skills'].forEach(k => {
         if (!Array.isArray(cvData[k])) cvData[k] = [];
       });
-      // Normalisera språk: äldre data kan vara strings, vi vill ha {name,level}
-      cvData.languages = cvData.languages.map(l => {
-        if (typeof l === 'string') return { name: l, level: 'Flytande' };
-        if (l && typeof l === 'object' && l.name) return { name: l.name, level: l.level || 'Flytande' };
-        return null;
-      }).filter(Boolean);
-      // Auto-sortera jobb och utbildning kronologiskt (nyaste/pågående överst)
-      if (typeof sortJobsByDate === 'function') sortJobsByDate();
-      if (typeof sortEducationByDate === 'function') sortEducationByDate();
     } catch(e) {
       console.error('Kunde inte ladda CV', e);
     }
@@ -1878,120 +1843,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     try { return JSON.parse(raw); } catch(e) { return null; }
   }
 
-  // ───── TOKEN-REFRESH (håller sessionen vid liv månadsvis) ─────
-  // Returnerar uppdaterat accessToken (från refresh om nödvändigt), eller null vid fel.
-  let _refreshInFlight = null; // dedupe: samtidiga anrop delar samma refresh
-  async function ensureFreshToken() {
-    const auth = getAuth();
-    if (!auth || !auth.accessToken) return null;
-
-    // Ingen expiry-info → anta att token fortfarande är giltig (backward-compat)
-    if (!auth.expiresAt) return auth.accessToken;
-
-    // Giltig med marginal (> 5 min kvar)? Återanvänd
-    const now = Date.now();
-    const FIVE_MIN = 5 * 60 * 1000;
-    if (auth.expiresAt - now > FIVE_MIN) return auth.accessToken;
-
-    // Nära utgång eller utgången → försök refresh
-    if (!auth.refreshToken) {
-      // Ingen refresh_token = sessionen är pre-nivå3, behöver re-login
-      await handleAuthExpired();
-      return null;
-    }
-    // Dedupe: om refresh redan pågår, vänta på den
-    if (_refreshInFlight) return _refreshInFlight;
-
-    _refreshInFlight = (async () => {
-      try {
-        const r = await fetch('/api/supabase', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'refresh_token', refreshToken: auth.refreshToken })
-        });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok || !data.access_token) throw new Error(data.error || 'refresh failed');
-        // Uppdatera lagring
-        const expiresIn = data.expires_in || 3600;
-        const updated = Object.assign({}, auth, {
-          accessToken: data.access_token,
-          refreshToken: data.refresh_token || auth.refreshToken,
-          expiresAt: Date.now() + (expiresIn * 1000)
-        });
-        safeSet(AUTH_STORAGE_KEY, JSON.stringify(updated));
-        window.authAccessToken = data.access_token;
-        return data.access_token;
-      } catch(e) {
-        console.warn('Token refresh failed:', e);
-        await handleAuthExpired();
-        return null;
-      } finally {
-        _refreshInFlight = null;
-      }
-    })();
-    return _refreshInFlight;
-  }
-  window.ensureFreshToken = ensureFreshToken;
-
-  // ───── SESSIONEN HAR GÅTT UT — re-login flow ─────
-  async function handleAuthExpired() {
-    // Rensa auth men behåll CV-data (användaren vill ju bara logga in igen)
-    try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch(e) {}
-    window.authUserId = null;
-    window.authAccessToken = null;
-    toast('Sessionen har gått ut — logga in igen', 'error');
-    setTimeout(() => showAuthOverlay(), 100);
-  }
-  window.handleAuthExpired = handleAuthExpired;
-
-  // ───── MAGIC LINK-REDIRECT HANDLER ─────
-  // När användare klickar magic link hamnar de på /?#access_token=...&refresh_token=...
-  // Parsa, logga in, städa URL.
-  async function handleMagicLinkRedirect() {
-    if (!window.location.hash) return false;
-    const hash = window.location.hash.substring(1); // ta bort '#'
-    if (!hash.includes('access_token=')) return false;
-    const params = new URLSearchParams(hash);
-    const accessToken  = params.get('access_token');
-    const refreshToken = params.get('refresh_token') || '';
-    const expiresIn    = parseInt(params.get('expires_in') || '3600', 10);
-    const error        = params.get('error_description');
-
-    if (error) {
-      toast('Inloggning misslyckades: ' + error, 'error');
-      // Städa URL så inget känsligt ligger kvar
-      history.replaceState(null, '', window.location.pathname + window.location.search);
-      return false;
-    }
-    if (!accessToken) return false;
-
-    // Hämta user-info från Supabase så vi vet vilken email/userId det är
-    showAiLoader('Loggar in...', 'Verifierar magic link');
-    try {
-      const r = await fetch('/api/supabase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get_user', accessToken })
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok || !data.user || !data.user.email) throw new Error(data.error || 'ogiltig länk');
-      const email = data.user.email;
-      const userId = data.user.id;
-      // Rensa URL-hashen innan vi loggar in (säkerhet + rent utseende)
-      history.replaceState(null, '', window.location.pathname + window.location.search);
-      hideAiLoader();
-      await authSetLoggedIn(email, false, userId, accessToken, refreshToken, expiresIn);
-      return true;
-    } catch(e) {
-      hideAiLoader();
-      console.error('Magic link fail:', e);
-      toast('Kunde inte logga in via magic link — pröva OTP istället', 'error');
-      history.replaceState(null, '', window.location.pathname + window.location.search);
-      return false;
-    }
-  }
-  window.handleMagicLinkRedirect = handleMagicLinkRedirect;
-
   function showAuthOverlay() {
     const o = document.getElementById('loginOverlay');
     if (o) o.classList.remove('hidden');
@@ -2020,7 +1871,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     window.authAccessToken = auth.accessToken || null;
     authCurrentEmail = auth.email;
 
-    // Synka från molnet i bakgrunden — sbCall auto-refreshar token om nära expiry
+    // Synka från molnet i bakgrunden så data är up-to-date även efter page reload
     if (auth.userId && auth.accessToken) {
       loadAllFromSupabase(auth.userId, auth.accessToken).catch(() => {});
       if (typeof loadMyTasks === 'function') loadMyTasks(true);
@@ -2157,10 +2008,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
       const userId = (data.user && data.user.id) || '';
       const accessToken = data.access_token || '';
-      const refreshToken = data.refresh_token || '';
-      const expiresIn = data.expires_in || 3600; // Supabase default 1h
       // Mobilen sätter isNew=true vid verify_otp → visar onboarding-steg
-      authSetLoggedIn(authCurrentEmail, true, userId, accessToken, refreshToken, expiresIn);
+      authSetLoggedIn(authCurrentEmail, true, userId, accessToken);
 
     } catch(e) {
       if (errEl) {
@@ -2179,15 +2028,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   };
 
   // ── Spara login-state + ladda från moln innan onboarding-beslut ─
-  async function authSetLoggedIn(email, isNew, userId, accessToken, refreshToken, expiresIn) {
-    const expiresAt = expiresIn ? Date.now() + (expiresIn * 1000) : null;
+  async function authSetLoggedIn(email, isNew, userId, accessToken) {
     safeSet(AUTH_STORAGE_KEY, JSON.stringify({
       email: email,
       loggedIn: true,
       userId: userId || null,
       accessToken: accessToken || null,
-      refreshToken: refreshToken || null,
-      expiresAt: expiresAt,
       createdAt: Date.now()
     }));
     window.authUserId = userId || null;
@@ -2233,51 +2079,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     }
   }
 
-  // ───── CENTRAL API-HELPER: auto-refresh + 401-handling ─────
-  // Använd denna för alla /api/supabase-anrop som behöver auth
-  async function sbCall(body) {
-    // Steg 1: säkerställ fräscht token
-    const token = await ensureFreshToken();
-    if (!token) return { error: 'not_authenticated' };
-
-    // Backend läser access_token från Authorization-header (Bearer).
-    // Vi behåller även accessToken i body för bakåtkompatibilitet.
-    const mergedBody = Object.assign({}, body, { accessToken: token });
-
-    // Steg 2: gör anropet
-    try {
-      const r = await fetch('/api/supabase', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify(mergedBody)
-      });
-      // 401 = token invalid → tvinga re-login
-      if (r.status === 401) {
-        await handleAuthExpired();
-        return { error: 'unauthorized' };
-      }
-      const result = await r.json().catch(() => ({}));
-      // Supabase kan också returnera ok=200 med result.error='unauthorized'
-      if (result && result.error && String(result.error).toLowerCase().includes('unauthoriz')) {
-        await handleAuthExpired();
-      }
-      return result || {};
-    } catch(e) {
-      console.warn('sbCall fail:', e);
-      return { error: 'network' };
-    }
-  }
-  window.sbCall = sbCall;
-
   // Ladda all användardata från Supabase — matchar mobilens loadAllFromSupabase
   async function loadAllFromSupabase(userId, accessToken) {
     try {
-      // Använd sbCall så vi får auto-refresh gratis (accessToken-param ignoreras,
-      // sbCall tar senaste token från getAuth)
-      const result = await sbCall({ action: 'load_all', userId });
+      const resp = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'load_all', accessToken, userId })
+      });
+      const result = await resp.json();
       if (!result || result.error) return false;
 
       let foundSomething = false;
@@ -2296,7 +2106,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         if (typeof renderLanguages === 'function') renderLanguages();
         if (typeof renderLicenses === 'function') renderLicenses();
         if (typeof renderPreview === 'function') renderPreview();
-        if (typeof renderHejView === 'function') renderHejView();
         if (cvData.name) foundSomething = true;
       }
 
@@ -2366,7 +2175,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     f('cv-phone', phone);
 
     renderPreview();
-    if (typeof renderHejView === 'function') renderHejView();
     hideAuthOverlay();
     toast('✅ Välkommen ' + firstName + '!');
     switchView('cv');
@@ -2481,15 +2289,17 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // ACTIVITY LOG
   // ============================================================
   function logEvent(eventType, metadata) {
-    const auth = getAuth();
-    if (!auth || !auth.accessToken || !auth.userId) return;
-    // Använd sbCall så token auto-refreshas vid expiry (annars failar logging
-    // tyst när token gått ut, vilket gör analytics opålitlig)
-    sbCall({
-      action: 'log_event',
-      userId: auth.userId,
-      event_type: eventType,
-      metadata: metadata || {}
+    if (!window.authUserId || !window.authAccessToken) return;
+    fetch('/api/supabase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'log_event',
+        accessToken: window.authAccessToken,
+        userId: window.authUserId,
+        event_type: eventType,
+        metadata: metadata || {}
+      })
     }).catch(() => {});
   }
 
@@ -2520,20 +2330,17 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // SETTINGS
   // ============================================================
   window.openSettings = function() {
-    // apiKeyInput är borttagen — AI går via backend-proxy, inte egen nyckel
-    const keyInput = document.getElementById('apiKeyInput');
-    if (keyInput) keyInput.value = safeGet(API_KEY_STORAGE) || '';
+    document.getElementById('apiKeyInput').value = safeGet(API_KEY_STORAGE) || '';
     document.getElementById('settingsModal').classList.add('open');
   };
   window.closeSettings = function() {
     document.getElementById('settingsModal').classList.remove('open');
   };
   window.saveApiKey = function() {
-    // Legacy stub — API-nyckel används inte längre (backend hanterar AI)
-    const keyInput = document.getElementById('apiKeyInput');
-    if (keyInput) {
-      const key = keyInput.value.trim();
-      if (key) safeSet(API_KEY_STORAGE, key);
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (key) {
+      safeSet(API_KEY_STORAGE, key);
+      toast('API-nyckel sparad');
     }
     closeSettings();
   };
@@ -2545,11 +2352,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // VIEW SWITCHING
   // ============================================================
   window.switchView = function(view) {
-    // Städa upp ev. pågående intervju-session när vi lämnar intervju-vyn
-    if (currentView === 'intervju' && view !== 'intervju' && typeof window.ivCleanup === 'function') {
-      try { window.ivCleanup(); } catch(e) {}
-    }
-
     currentView = view;
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.sb-tab').forEach(t => t.classList.remove('active'));
@@ -2558,40 +2360,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const tabEl = document.querySelector('.sb-tab[data-view="' + view + '"]');
     if (tabEl) tabEl.classList.add('active');
 
-    if (view === 'hej') {
-      renderHejView();
-    }
     if (view === 'cv') {
       cvSwitchStep(currentStep);
       renderPreview();
-      // Om användaren har sparade CV:n: visa picker så de kan välja vilket
-      // de vill öppna, ta bort eller starta nytt — exakt som mobilen
-      const savedList = pfGetSaved();
-      if (savedList.length > 0 && !window._cvPickerSeenThisVisit) {
-        window._cvPickerSeenThisVisit = true;
-        setTimeout(() => cvShowPicker(), 100);
-      }
-    }
-    // Reset picker-flagg när man lämnar CV-vyn så den dyker upp igen nästa gång
-    if (view !== 'cv') {
-      window._cvPickerSeenThisVisit = false;
     }
     if (view === 'matcha') {
       if (typeof renderMatchaView === 'function') renderMatchaView();
-    }
-    if (view === 'intervju') {
-      if (typeof window.ivInit === 'function') {
-        try { window.ivInit(); } catch(e) { console.warn('Intervju init fail:', e); }
-      }
-    }
-    if (view === 'aisyv') {
-      // Alltid börja på AI-SYV startsidan (inte fastna i tidigare chat)
-      if (typeof window.showHome === 'function') {
-        try { window.showHome(); } catch(e) { console.warn('AI-SYV showHome fail:', e); }
-      }
-      if (typeof window.syvUpdateSavedBtn === 'function') {
-        try { window.syvUpdateSavedBtn(); } catch(e) {}
-      }
     }
     if (view === 'ovningar') {
       currentTrainCat = null;
@@ -2602,23 +2376,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       renderProfilView();
     }
   };
-
-  // ============================================================
-  // HEJ-VYN: personlig hälsning
-  // ============================================================
-  function renderHejView() {
-    const el = document.getElementById('hejGreet');
-    if (!el) return;
-    const name = (cvData && cvData.name ? String(cvData.name).trim() : '');
-    if (name) {
-      const firstName = name.split(/\s+/)[0];
-      el.textContent = 'Hej ' + firstName + ' 👋';
-      el.style.display = 'block';
-    } else {
-      el.textContent = '';
-      el.style.display = 'none';
-    }
-  }
 
   // ============================================================
   // CV: STEP SWITCHING
@@ -2632,12 +2389,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const stepContent = document.getElementById('step-' + step);
     if (stepContent) stepContent.style.display = 'block';
 
-    // Göm preview på alla steg utom Visa — edit-panelen tar då hela bredden
-    const layout = document.querySelector('#view-cv .cv-layout');
-    if (layout) {
-      layout.classList.toggle('preview-hidden', step !== 'visa');
-    }
-
     // Render step-specific content
     if (step === 'profil') { if (typeof syncPhotoUI === 'function') syncPhotoUI(); }
     if (step === 'jobb') { renderJobs(); renderEducation(); }
@@ -2650,54 +2401,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     renderPreview();
     markStepDone(step);
-    updateStepNav();
-
-    // Skrolla upp till toppen av edit-panelen
-    const panel = document.querySelector('.cv-edit-panel');
-    if (panel) panel.scrollTop = 0;
-    // Skrolla även vyn till toppen
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const CV_STEP_ORDER = ['profil', 'jobb', 'mer', 'text', 'visa'];
-
-  window.cvStepBack = function() {
-    const i = CV_STEP_ORDER.indexOf(currentStep);
-    if (i > 0) cvSwitchStep(CV_STEP_ORDER[i - 1]);
-  };
-  window.cvStepNext = function() {
-    const i = CV_STEP_ORDER.indexOf(currentStep);
-    if (i >= 0 && i < CV_STEP_ORDER.length - 1) cvSwitchStep(CV_STEP_ORDER[i + 1]);
-  };
-
-  function updateStepNav() {
-    const i = CV_STEP_ORDER.indexOf(currentStep);
-    const backBtn = document.getElementById('cvStepNavBack');
-    const nextBtn = document.getElementById('cvStepNavNext');
-    const nav = document.getElementById('cvStepNav');
-    if (backBtn) {
-      const hasPrev = i > 0;
-      backBtn.style.display = hasPrev ? '' : 'none';
-      const prev = hasPrev ? CV_STEP_ORDER[i - 1] : '';
-      const labels = { profil:'Profil', jobb:'Jobb & Utb', mer:'Mer', text:'Text', visa:'Visa' };
-      backBtn.textContent = prev ? '← ' + labels[prev] : '← Tillbaka';
-    }
-    if (nextBtn) {
-      const hasNext = (i >= 0 && i < CV_STEP_ORDER.length - 1);
-      // Dölj helt på sista steget (Visa) istället för disabled
-      nextBtn.style.display = hasNext ? '' : 'none';
-      const next = hasNext ? CV_STEP_ORDER[i + 1] : '';
-      const labels = { profil:'Profil', jobb:'Jobb & Utb', mer:'Mer', text:'Text', visa:'Visa' };
-      nextBtn.textContent = next ? labels[next] + ' →' : 'Nästa →';
-    }
-    // Om både är dolda → dölj hela navigationsraden
-    if (nav) {
-      const anyVisible = (backBtn && backBtn.style.display !== 'none') || (nextBtn && nextBtn.style.display !== 'none');
-      nav.style.display = anyVisible ? '' : 'none';
-      // På sista steget: om bara tillbaka syns, centrera den vänster
-      nav.style.justifyContent = (nextBtn && nextBtn.style.display === 'none') ? 'flex-start' : 'space-between';
-    }
-  }
 
   function markStepDone(step) {
     // En enkel "done"-indikator: profilen är ifylld om name+title finns
@@ -2841,26 +2545,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     modal.dataset.editIdx = isEdit ? String(idx) : '-1';
     document.getElementById('jobModalTitle').textContent = isEdit ? 'Redigera arbetslivserfarenhet' : 'Lägg till arbetslivserfarenhet';
 
-    // Visa befintliga jobb ovanför formuläret — bara vid "Lägg till" när det redan finns jobb
-    const existingBox = document.getElementById('jobModalExisting');
-    const existingList = document.getElementById('jobModalExistingList');
-    if (existingBox && existingList) {
-      const otherJobs = (cvData.jobs || []).filter((_, i) => i !== idx);
-      if (otherJobs.length > 0) {
-        existingList.innerHTML = otherJobs.map(j => {
-          const period = formatJobPeriod(j) || '(ingen period)';
-          const label = (j.title || '(ingen titel)') + (j.company ? ' · ' + j.company : '');
-          return '<div style="display:flex; justify-content:space-between; gap:10px; font-size:12px; color:rgba(255,255,255,0.75);">' +
-            '<span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + escape(label) + '</span>' +
-            '<span style="color:var(--accent2); font-weight:600; flex-shrink:0;">' + escape(period) + '</span>' +
-          '</div>';
-        }).join('');
-        existingBox.style.display = 'block';
-      } else {
-        existingBox.style.display = 'none';
-      }
-    }
-
     const e = isEdit ? (cvData.jobs[idx] || {}) : {};
 
     document.getElementById('jobTitle').value    = e.title    || '';
@@ -2942,7 +2626,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     } else {
       cvData.jobs.push(job);
     }
-    sortJobsByDate();
     saveCVLocal();
     renderJobs();
     renderPreview();
@@ -3011,7 +2694,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: 400,
           messages: [{ role: 'user', content: prompt }]
         })
@@ -3123,7 +2806,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     } else {
       cvData.education.push(edu);
     }
-    sortEducationByDate();
     saveCVLocal();
     renderEducation();
     renderPreview();
@@ -3133,8 +2815,11 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   };
 
   // Stäng modal vid klick på backdrop
-  // Bakåtkompat: backdrop-click stänger INTE modalen — endast Spara/Avbryt/Escape.
-  // (tidigare fanns en click-handler som stängde vid klick utanför, men det förstörde UX)
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList && e.target.classList.contains('edit-modal')) {
+      e.target.classList.remove('open');
+    }
+  });
 
   // Escape-tangent stänger öppen modal
   document.addEventListener('keydown', function(e) {
@@ -3157,48 +2842,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     return (from || '') + ' – ' + (to || '');
   }
   window.formatJobPeriod = formatJobPeriod;
-
-  // ============================================================
-  // KRONOLOGISK SORTERING — nyaste/pågående överst
-  // ============================================================
-  const MONTH_MAP = { Jan:1, Feb:2, Mar:3, Apr:4, Maj:5, Jun:6, Jul:7, Aug:8, Sep:9, Okt:10, Nov:11, Dec:12 };
-
-  // Returnerar en numerisk "sort-vikt" där högre = nyare
-  // Pågående/ongoing jobb = Infinity (hamnar alltid överst)
-  function entryEndWeight(e) {
-    if (!e) return 0;
-    const isOngoing = (e.ongoing === true || e.endYear === 'Pågående' || e.endYear === 'nu' || !e.endYear);
-    if (isOngoing) return Infinity;
-    const y = parseInt(e.endYear, 10) || 0;
-    const m = MONTH_MAP[e.endMonth] || 0;
-    return y * 100 + m;
-  }
-  // Fallback om två har samma slutdatum → sortera på start (nyaste start först)
-  function entryStartWeight(e) {
-    if (!e) return 0;
-    const y = parseInt(e.startYear, 10) || 0;
-    const m = MONTH_MAP[e.startMonth] || 0;
-    return y * 100 + m;
-  }
-
-  function sortJobsByDate() {
-    if (!Array.isArray(cvData.jobs)) return;
-    cvData.jobs.sort((a, b) => {
-      const ae = entryEndWeight(a), be = entryEndWeight(b);
-      if (ae !== be) return be - ae;            // senast avslutat överst
-      return entryStartWeight(b) - entryStartWeight(a); // tie: senaste start överst
-    });
-  }
-  function sortEducationByDate() {
-    if (!Array.isArray(cvData.education)) return;
-    cvData.education.sort((a, b) => {
-      const ae = entryEndWeight(a), be = entryEndWeight(b);
-      if (ae !== be) return be - ae;
-      return entryStartWeight(b) - entryStartWeight(a);
-    });
-  }
-  window.sortJobsByDate = sortJobsByDate;
-  window.sortEducationByDate = sortEducationByDate;
 
   // ============================================================
   // PROFILBILD
@@ -3398,8 +3041,9 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     }
     // Om man lägger till en referens, slå automatiskt av "på begäran"
     if (cvData.refOnRequest) {
-      // Om användaren lägger till riktig referens, stäng av "på begäran" automatiskt
       cvData.refOnRequest = false;
+      const cb = document.getElementById('refOnRequestCheck');
+      if (cb) cb.checked = false;
     }
     saveCVLocal();
     renderRefs();
@@ -3416,70 +3060,38 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     renderPreview();
   };
 
-  window.toggleRefOnRequest = function() {
-    cvData.refOnRequest = !cvData.refOnRequest;
+  window.toggleRefOnRequest = function(checked) {
+    cvData.refOnRequest = !!checked;
     saveCVLocal();
-    renderRefs();
-    renderPreview();
-    toast(cvData.refOnRequest ? '✅ Referenser lämnas på begäran' : 'Borttagen', cvData.refOnRequest ? 'success' : 'info');
-  };
-
-  window.removeRefOnRequest = function() {
-    cvData.refOnRequest = false;
-    saveCVLocal();
-    renderRefs();
     renderPreview();
   };
 
   function renderRefs() {
     const list = document.getElementById('refsList');
     if (!list) return;
+    const cb = document.getElementById('refOnRequestCheck');
+    if (cb) cb.checked = !!cvData.refOnRequest;
 
-    // Uppdatera knappens active-state
-    const btn = document.getElementById('refOnRequestBtn');
-    if (btn) {
-      if (cvData.refOnRequest) {
-        btn.classList.add('active');
-        btn.textContent = '✓ På begäran';
-      } else {
-        btn.classList.remove('active');
-        btn.textContent = '+ På begäran';
-      }
+    if (!Array.isArray(cvData.references) || !cvData.references.length) {
+      list.innerHTML = cvData.refOnRequest
+        ? '<div class="empty">Referenser lämnas på begäran</div>'
+        : '<div class="empty">Inga referenser tillagda än</div>';
+      return;
     }
-
-    let html = '';
-
-    // Visa "Referenser lämnas på begäran" som ett eget kort (matchar mobilen)
-    if (cvData.refOnRequest) {
-      html += '<div class="ref-on-request-card">' +
-        '<div class="ref-on-request-card-text">✨ Referenser lämnas på begäran</div>' +
-        '<button class="icon-btn danger" onclick="removeRefOnRequest()" title="Ta bort">✕</button>' +
-      '</div>';
-    }
-
-    // Faktiska referenser (kan existera samtidigt som "på begäran")
-    if (Array.isArray(cvData.references) && cvData.references.length) {
-      html += cvData.references.map((r, i) => {
-        const contact = [r.email, r.phone].filter(Boolean).join(' · ');
-        return '<div class="item-card">' +
-          '<div class="item-card-body">' +
-            '<div class="item-card-title">' + escape(r.name || 'Utan namn') + '</div>' +
-            '<div class="item-card-meta">' + escape(r.title || '') + (contact ? ' · ' + escape(contact) : '') + '</div>' +
-          '</div>' +
-          '<div class="item-actions">' +
-            '<button class="icon-btn" onclick="openRefModal(' + i + ')" title="Redigera">✎</button>' +
-            '<button class="icon-btn danger" onclick="cvDeleteRef(' + i + ')" title="Ta bort">✕</button>' +
-          '</div>' +
-        '</div>';
-      }).join('');
-    }
-
-    // Tom state
-    if (!html) {
-      html = '<div class="empty">Inga referenser tillagda än</div>';
-    }
-
-    list.innerHTML = html;
+    list.innerHTML = cvData.references.map((r, i) => {
+      const contact = [r.email, r.phone].filter(Boolean).join(' · ');
+      return `
+      <div class="item-card">
+        <div class="item-card-body">
+          <div class="item-card-title">${escape(r.name || 'Utan namn')}</div>
+          <div class="item-card-meta">${escape(r.title || '')}${contact ? ' · ' + escape(contact) : ''}</div>
+        </div>
+        <div class="item-actions">
+          <button class="icon-btn" onclick="openRefModal(${i})" title="Redigera">✎</button>
+          <button class="icon-btn danger" onclick="cvDeleteRef(${i})" title="Ta bort">✕</button>
+        </div>
+      </div>`;
+    }).join('');
   }
   window.renderRefs = renderRefs;
 
@@ -3505,17 +3117,16 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       return;
     }
     try {
-      // Använd sbCall så token auto-refreshas vid expiry
-      const data = await sbCall({
-        action: 'my_tasks',
-        userId: auth.userId
+      const r = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'my_tasks',
+          accessToken: auth.accessToken,
+          userId: auth.userId
+        })
       });
-      if (!data || data.error) {
-        // Fail tyst — kan vara att backend saknar action
-        assignedTasks = [];
-        updateTaskBadges();
-        return;
-      }
+      const data = await r.json().catch(() => ({}));
       assignedTasks = Array.isArray(data.data) ? data.data : [];
       tasksLoadedOnce = true;
       updateTaskBadges();
@@ -3758,12 +3369,17 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       return;
     }
     try {
-      const result = await sbCall({
-        action: 'start_task_session',
-        userId: auth.userId,
-        taskId: taskId
+      const r = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'start_task_session',
+          accessToken: auth.accessToken,
+          userId: auth.userId,
+          taskId: taskId
+        })
       });
-      if (!result || result.error) throw new Error(result && result.error || 'Backend-fel');
+      if (!r.ok) throw new Error('Backend-fel');
 
       // Starta lokal timer för UI-feedback
       const startAt = Date.now();
@@ -3796,12 +3412,18 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     delete taskTimers[taskId];
 
     try {
-      const data = await sbCall({
-        action: 'stop_task_session',
-        userId: auth.userId,
-        taskId: taskId
+      const r = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'stop_task_session',
+          accessToken: auth.accessToken,
+          userId: auth.userId,
+          taskId: taskId
+        })
       });
-      if (!data || data.error) throw new Error(data && data.error || 'Backend-fel');
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error('Backend-fel');
 
       if (data.completed) {
         toast('✅ Uppgift slutförd!');
@@ -3825,12 +3447,17 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     delete taskTimers[taskId];
 
     try {
-      const result = await sbCall({
-        action: 'complete_task',
-        userId: auth.userId,
-        taskId: taskId
+      const r = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'complete_task',
+          accessToken: auth.accessToken,
+          userId: auth.userId,
+          taskId: taskId
+        })
       });
-      if (!result || result.error) throw new Error(result && result.error || 'Backend-fel');
+      if (!r.ok) throw new Error('Backend-fel');
       toast('✅ Uppgift slutförd!');
       logEvent('task_completed', { task_id: taskId });
       await loadMyTasks(true);
@@ -3910,11 +3537,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       updateMatchaStickyBar();
     }
     if (n === 3) {
-      matchaRenderStep3Cards();
-      // Uppdatera röd dagsgräns-banner
-      if (typeof matchUpdateDagsBanner === 'function') {
-        setTimeout(matchUpdateDagsBanner, 50);
-      }
+      matchaRunAiForAllAds();
     }
   };
 
@@ -3993,9 +3616,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
   window.matchaSearchDebounce = function() {
     clearTimeout(matchaSearchDebounceT);
-    // Avaktivera CV-titel-knappen när användaren skriver egen sökterm
-    document.querySelectorAll('.matcha-cv-title-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.matcha-quick-chip').forEach(c => c.classList.remove('active'));
     matchaSearchDebounceT = setTimeout(matchaDoSearch, 350);
   };
 
@@ -4011,8 +3631,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const chipQ = chip.getAttribute('onclick') || '';
       if (chipQ.includes("'" + query + "'")) chip.classList.add('active');
     });
-    // Avaktivera CV-titel-knappen eftersom användaren valt annan strategi
-    document.querySelectorAll('.matcha-cv-title-btn').forEach(b => b.classList.remove('active'));
 
     if (query) {
       matchaDoSearch();
@@ -4034,8 +3652,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const input = document.getElementById('matchaSearch');
     if (input) input.value = title;
     document.querySelectorAll('.matcha-quick-chip').forEach(c => c.classList.remove('active'));
-    // Markera CV-titel-knappen som aktiv
-    document.querySelectorAll('.matcha-cv-title-btn').forEach(b => b.classList.add('active'));
     matchaDoSearch();
     toast('🎯 Söker efter: ' + title);
   };
@@ -4133,40 +3749,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const isPicked = !!matchaSelectedAds.find(a => a.id === hit.id);
     const pickIdx  = matchaSelectedAds.findIndex(a => a.id === hit.id);
 
-    // ── Bygg chips-HTML (arbetstid, anställningstyp, körkort, lön, varaktighet) ──
-    // Identiskt med steg 3 för konsistent UX
-    const chips = [];
-    const chipBase = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin:2px;color:rgba(255,255,255,0.7);';
-    const chipBg = 'rgba(255,255,255,0.07)';
-    const chipBgWarn = 'rgba(240,192,64,0.25)';
-
-    const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
-    if (hoursType) chips.push(`<span style="${chipBase}background:${chipBg};">⏱ ${escape(hoursType)}</span>`);
-
-    const empType = (hit.employment_type && hit.employment_type.label) || '';
-    if (empType) chips.push(`<span style="${chipBase}background:${chipBg};">📋 ${escape(empType)}</span>`);
-
-    const licRequired = hit.driving_license_required;
-    const licTypes = (hit.driving_license || []).map(l => l.label).filter(Boolean).join(', ');
-    if (licRequired) {
-      chips.push(`<span style="${chipBase}background:${chipBgWarn};">🚗 Körkort krävs${licTypes ? ': ' + escape(licTypes) : ''}</span>`);
-    } else if (licRequired === false) {
-      chips.push(`<span style="${chipBase}background:${chipBg};">🚗 Inget körkort</span>`);
-    }
-
-    const salDesc = hit.salary_description || '';
-    const salType = (hit.salary_type && hit.salary_type.label) || '';
-    chips.push(`<span style="${chipBase}background:${chipBg};">💰 ${escape(salDesc.substring(0, 40) || salType || 'Lön ej uppgiven')}</span>`);
-
-    const duration = (hit.duration && hit.duration.label) || '';
-    if (duration && duration !== 'Tillsvidare') {
-      chips.push(`<span style="${chipBase}background:${chipBg};">📅 ${escape(duration)}</span>`);
-    }
-
-    const chipsHtml = chips.length
-      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;margin-bottom:4px;">${chips.join('')}</div>`
-      : '';
-
     card.innerHTML = `
       <div class="matcha-job-head">
         <div class="matcha-job-avatar" style="background:${bg};color:${fg};">${initials}</div>
@@ -4178,7 +3760,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           </div>
         </div>
       </div>
-      ${chipsHtml}
       <div class="matcha-job-actions">
         <button class="matcha-job-btn ${isPicked ? 'picked' : 'pick'}"
                 data-hitid="${escape(hit.id)}">
@@ -4216,59 +3797,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const idx = matchaSelectedAds.findIndex(a => a.id === hit.id);
     if (idx >= 0) {
       matchaSelectedAds.splice(idx, 1);
-      updateMatchaStickyBar();
-      matchaDoSearchFromCache();
     } else if (matchaSelectedAds.length >= 3) {
       toast('Max 3 annonser åt gången', 'error');
       return;
     } else {
       matchaSelectedAds.push(hit);
-      updateMatchaStickyBar();
-      matchaDoSearchFromCache();
-      // Visa pedagogisk modal: "Matcha nu eller fortsätt söka?"
-      matchaShowAddedModal(matchaSelectedAds.length);
     }
-  };
-
-  // Modal som dyker upp när ett jobb lagts till — frågar om användaren
-  // vill matcha direkt eller fortsätta söka fler jobb. Skippar vid 3/3
-  // (då går vi automatiskt vidare till steg 3 efter kort paus).
-  function matchaShowAddedModal(count) {
-    if (count === 3) {
-      toast('✨ 3 av 3 jobb valda — tar dig till matcha-steget!');
-      setTimeout(() => window.matchaSwitchStep(3), 1200);
-      return;
-    }
-
-    const modal = document.getElementById('matchaAddedModal');
-    const emoji = document.getElementById('matchaAddedEmoji');
-    const title = document.getElementById('matchaAddedTitle');
-    const body  = document.getElementById('matchaAddedBody');
-    if (!modal) return;
-
-    if (count === 1) {
-      emoji.textContent = '✨';
-      title.textContent = '1 av 3 jobb valda!';
-      body.innerHTML =
-        'Nu har du två val:<br><br>' +
-        '<strong style="color:#3eb489;">Matcha direkt</strong> — AI skriver tre skräddarsydda profiltexter för just detta jobb.<br><br>' +
-        '<strong style="color:#f0c040;">Fortsätt söka</strong> — lägg till upp till 2 jobb till och matcha alla i samma sving. Bra om du söker brett.';
-    } else {
-      emoji.textContent = '✨✨';
-      title.textContent = '2 av 3 jobb valda!';
-      body.innerHTML =
-        'Du kan matcha de två redan nu — eller lägga till ett tredje jobb för bredast möjlig matchning.<br><br>' +
-        '<span style="color:rgba(255,255,255,0.45);font-size:12px;">💡 Tips: välj jobb inom samma område — AI:n blir bäst då.</span>';
-    }
-
-    modal.style.display = 'flex';
-  }
-
-  // Används av modalens "Matcha nu"-knapp
-  window.matchaGoToStep3 = function() {
-    const modal = document.getElementById('matchaAddedModal');
-    if (modal) modal.style.display = 'none';
-    setTimeout(() => window.matchaSwitchStep(3), 50);
+    updateMatchaStickyBar();
+    // Re-render för att uppdatera button-state
+    matchaDoSearchFromCache();
   };
 
   function matchaDoSearchFromCache() {
@@ -4300,423 +3837,44 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     if (tab3) tab3.disabled = matchaSelectedAds.length === 0;
   }
 
-  // ── STEG 3: Rendera annons-kort med chips + manuell "Matcha"-knapp ──
-  // Matchar mobilens UX: användaren ser kort med all metadata (chips för
-  // arbetstid, körkort, lön etc.), klickar "Matcha mot CV" per kort, och
-  // får loading-state med timglas medan AI:n jobbar.
-  function matchaRenderStep3Cards() {
+  // ── STEG 3: AI-matchning ──────────────────────────────────
+  async function matchaRunAiForAllAds() {
     const container = document.getElementById('matchaAdsContainer');
     if (!container) return;
 
-    if (!matchaSelectedAds.length) {
-      container.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:13px;">Välj annonser i steg 2 först</div>';
-      return;
-    }
-
-    // Pedagogisk intro-ruta — påminner användaren om vikten av att antingen
-    // läsa annonsen igen eller matcha CV:t. Syns bara innan första matchningen.
-    const introHtml =
-      '<div id="matchaStep3Intro" style="background:rgba(62,180,137,0.08);border:1.5px solid rgba(62,180,137,0.3);border-radius:14px;padding:16px 18px;margin-bottom:18px;">' +
-        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
-          '<span style="font-size:22px;">💡</span>' +
-          '<span style="font-size:14px;font-weight:800;color:#3eb489;">Innan du matchar — två tips</span>' +
-        '</div>' +
-        '<div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">' +
-          '🔍 <strong style="color:#fff;">Läs igenom annonsen noga</strong> först — vilka ord och krav lyfter de fram? Klicka <em style="color:#3eb489;">Läs annons ↗</em> på kortet för att öppna den.<br><br>' +
-          '✨ <strong style="color:#fff;">Matcha sedan ditt CV</strong> — AI:n skriver tre personliga profiltexter som lyfter fram just det som passar jobbet.<br><br>' +
-          '<span style="color:rgba(255,255,255,0.5);font-size:12px;">Ett anpassat CV ökar dina chanser <strong style="color:#3eb489;">markant</strong> — generiska ansökningar sorteras ofta bort direkt.</span>' +
-        '</div>' +
-      '</div>';
-
-    container.innerHTML = introHtml;
-
-    matchaSelectedAds.forEach((hit, i) => {
-      const title   = hit.headline || '';
+    // Rendera skelett-kort för alla valda annonser först
+    container.innerHTML = matchaSelectedAds.map(hit => {
       const company = (hit.employer && hit.employer.name) || '';
-      const muni    = (hit.workplace_address && hit.workplace_address.municipality) || '';
-      const url     = hit.webpage_url || '';
-      const adId    = String(hit.id);
+      return `
+        <div class="matcha-ad-result" id="matchaAdResult_${escape(String(hit.id))}">
+          <div class="matcha-ad-result-head">
+            <div style="flex:1;">
+              <div style="font-size: 15px; font-weight: 800; color: #fff;">${escape(hit.headline || '')}</div>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px;">${escape(company)}</div>
+            </div>
+            ${hit.webpage_url ? `<a class="matcha-job-btn link" href="${escape(hit.webpage_url)}" target="_blank" rel="noopener" style="flex-shrink:0;">Läs annons ↗</a>` : ''}
+          </div>
+          <div class="matcha-skeleton" id="matchaAdLoading_${escape(String(hit.id))}">
+            ✨ AI analyserar nyckelord och skriver 3 profiltexter...
+          </div>
+          <div id="matchaAdBody_${escape(String(hit.id))}" style="display:none;"></div>
+        </div>
+      `;
+    }).join('');
 
-      const section = document.createElement('div');
-      section.className = 'matcha-ad-card-s3';
-      section.dataset.adId = adId;
-      section.style.cssText = 'position:relative;background:rgba(62,180,137,0.06);border:1.5px solid rgba(62,180,137,0.2);border-radius:14px;padding:16px;margin-bottom:16px;transition:all 0.2s;';
-
-      // ── Header rad: "Annons X av Y" + ta bort-knapp ──
-      const hdr = document.createElement('div');
-      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;';
-      const hdrLabel = document.createElement('div');
-      hdrLabel.style.cssText = 'font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(62,180,137,0.6);';
-      hdrLabel.textContent = 'Annons ' + (i + 1) + ' av ' + matchaSelectedAds.length;
-      const rmBtn = document.createElement('button');
-      rmBtn.innerHTML = '✕ Ta bort';
-      rmBtn.style.cssText = 'background:rgba(220,50,50,0.25);border:1.5px solid rgba(220,50,50,0.6);color:#ff6b6b;font-size:11px;font-weight:800;cursor:pointer;padding:4px 10px;border-radius:8px;line-height:1;letter-spacing:0.3px;font-family:inherit;';
-      rmBtn.onclick = () => matchaRemoveAdS3(adId);
-      hdr.appendChild(hdrLabel);
-      hdr.appendChild(rmBtn);
-      section.appendChild(hdr);
-
-      // ── Titel + bolag/ort ──
-      const titleEl = document.createElement('div');
-      titleEl.style.cssText = 'font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;';
-      titleEl.textContent = title;
-      section.appendChild(titleEl);
-
-      const metaEl = document.createElement('div');
-      metaEl.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.45);';
-      metaEl.textContent = company + (muni ? ' · ' + muni : '');
-      section.appendChild(metaEl);
-
-      // ── Chips med metadata-symboler (matchar mobilens design) ──
-      function makeChip(label, color) {
-        const c = document.createElement('span');
-        c.style.cssText = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin:2px;background:' + (color || 'rgba(255,255,255,0.07)') + ';color:rgba(255,255,255,0.7);';
-        c.textContent = label;
-        return c;
-      }
-
-      const chipsRow = document.createElement('div');
-      chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;';
-
-      // ⏱ Arbetstid (heltid/deltid)
-      const hoursType = (hit.working_hours_type && hit.working_hours_type.label) || '';
-      if (hoursType) chipsRow.appendChild(makeChip('⏱ ' + hoursType));
-
-      // 📋 Anställningstyp
-      const empType = (hit.employment_type && hit.employment_type.label) || '';
-      if (empType) chipsRow.appendChild(makeChip('📋 ' + empType));
-
-      // 🚗 Körkort
-      const licRequired = hit.driving_license_required;
-      const licTypes = (hit.driving_license || []).map(l => l.label).filter(Boolean).join(', ');
-      if (licRequired) {
-        chipsRow.appendChild(makeChip('🚗 Körkort krävs' + (licTypes ? ': ' + licTypes : ''), 'rgba(240,192,64,0.25)'));
-      } else if (licRequired === false) {
-        chipsRow.appendChild(makeChip('🚗 Inget körkort'));
-      }
-
-      // 💰 Lön
-      const salDesc = hit.salary_description || '';
-      const salType = (hit.salary_type && hit.salary_type.label) || '';
-      chipsRow.appendChild(makeChip('💰 ' + (salDesc.substring(0, 40) || salType || 'Lön ej uppgiven')));
-
-      // 📅 Varaktighet (om annan än Tillsvidare)
-      const duration = (hit.duration && hit.duration.label) || '';
-      if (duration && duration !== 'Tillsvidare') chipsRow.appendChild(makeChip('📅 ' + duration));
-
-      if (chipsRow.children.length) section.appendChild(chipsRow);
-
-      // ── Annonstext-snippet ──
-      const rawDesc = (hit.description && hit.description.text) || '';
-      const adSnippet = rawDesc.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 140);
-      if (adSnippet) {
-        const snipEl = document.createElement('div');
-        snipEl.style.cssText = 'margin-top:10px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;';
-        snipEl.textContent = adSnippet + (rawDesc.length > 140 ? '…' : '');
-        section.appendChild(snipEl);
-      }
-
-      // ── Läs annons-länk ──
-      if (url) {
-        const readLink = document.createElement('a');
-        readLink.href = url;
-        readLink.target = '_blank';
-        readLink.rel = 'noopener';
-        readLink.onclick = (e) => e.stopPropagation();
-        readLink.style.cssText = 'display:inline-block;margin-top:10px;font-size:11px;font-weight:700;color:#3eb489;text-decoration:none;padding:6px 12px;border:1px solid rgba(62,180,137,0.4);border-radius:8px;background:rgba(62,180,137,0.08);';
-        readLink.textContent = 'Läs annons ↗';
-        section.appendChild(readLink);
-      }
-
-      // ── "Matcha mot CV"-knapp (eller "redan matchad"-badge) ──
-      const extrasDiv = document.createElement('div');
-      extrasDiv.id = 'matchaExtras_' + adId;
-
-      const alreadyMatched = matchaIsAdAlreadyMatched(hit);
-      const genBtn = document.createElement('button');
-      if (alreadyMatched) {
-        genBtn.textContent = '✅ CV redan matchat mot detta jobb';
-        genBtn.disabled = true;
-        genBtn.style.cssText = 'margin-top:14px;width:100%;padding:13px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);color:#3eb489;font-size:13px;font-weight:700;border-radius:10px;cursor:default;font-family:inherit;opacity:0.8;';
-      } else {
-        genBtn.id = 'matchaGenBtn_' + adId;
-        genBtn.textContent = '✨ Matcha mot CV';
-        genBtn.style.cssText = 'margin-top:14px;width:100%;padding:13px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;transition:transform 0.15s, box-shadow 0.15s;';
-        genBtn.onmouseenter = () => { genBtn.style.transform = 'translateY(-1px)'; genBtn.style.boxShadow = '0 4px 12px rgba(108,92,231,0.3)'; };
-        genBtn.onmouseleave = () => { genBtn.style.transform = ''; genBtn.style.boxShadow = ''; };
-        genBtn.onclick = (e) => {
-          e.stopPropagation();
-          // Visa pedagogisk modal "Har du läst annonsen?" INNAN AI körs
-          // (matchar mobilens UX exakt)
-          matchShowReadAnnonsModal(hit, () => {
-            // Callback när användaren bekräftat → kör AI-matchning
-            const allSections = document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]');
-            allSections.forEach(s => {
-              if (s.dataset.adId !== adId) {
-                s.style.opacity = '0.2';
-                s.style.pointerEvents = 'none';
-              }
-            });
-            matchaRunAiForAd(hit).finally(() => {
-              const existingReset = document.getElementById('matchaResetFocus');
-              if (!existingReset) {
-                const resetBtn = document.createElement('button');
-                resetBtn.id = 'matchaResetFocus';
-                resetBtn.textContent = '← Visa alla annonser';
-                resetBtn.style.cssText = 'display:block;margin:0 auto 16px;background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.4);font-size:11px;font-weight:600;padding:7px 14px;border-radius:20px;cursor:pointer;font-family:inherit;';
-                resetBtn.onclick = () => {
-                  allSections.forEach(s => { s.style.opacity = ''; s.style.pointerEvents = ''; });
-                  resetBtn.remove();
-                };
-                container.parentNode.insertBefore(resetBtn, container);
-              }
-            });
-          });
-        };
-      }
-      extrasDiv.appendChild(genBtn);
-      section.appendChild(extrasDiv);
-
-      // ── Loading-state (timglas, dold tills click) ──
-      const loadingEl = document.createElement('div');
-      loadingEl.id = 'matchaAdLoading_' + adId;
-      loadingEl.className = 'matcha-skeleton';
-      loadingEl.style.cssText = 'display:none;margin-top:14px;padding:20px;background:rgba(108,92,231,0.08);border:1.5px solid rgba(108,92,231,0.3);border-radius:12px;text-align:center;color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;';
-      loadingEl.innerHTML = '<span style="display:inline-block;animation:matchaHourglassSpin 2s linear infinite;font-size:24px;">⏳</span><div style="margin-top:8px;">AI analyserar och skriver 3 profiltexter...</div>';
-      section.appendChild(loadingEl);
-
-      // ── Resultat-container (dold tills AI:n returnerat) ──
-      const resultDiv = document.createElement('div');
-      resultDiv.id = 'matchaAdBody_' + adId;
-      resultDiv.style.cssText = 'display:none;margin-top:14px;';
-      section.appendChild(resultDiv);
-
-      container.appendChild(section);
-    });
-  }
-
-  // Ta bort en annons från step 3-listan
-  function matchaRemoveAdS3(adId) {
-    matchaSelectedAds = matchaSelectedAds.filter(a => String(a.id) !== String(adId));
-    matchaRenderStep3Cards();
-    updateMatchaStickyBar();
-    if (!matchaSelectedAds.length) {
-      // Tillbaka till step 2 om inga annonser kvar
-      window.matchaSwitchStep(2);
+    // Kör matchning i sekvens (inte parallellt) för att spara API-quota
+    for (const hit of matchaSelectedAds) {
+      await matchaRunAiForAd(hit);
     }
-  }
-
-  // Kollar om hit redan finns som "matchat CV" i sparade
-  function matchaIsAdAlreadyMatched(hit) {
-    if (!hit) return false;
-    const list = pfGetSaved();
-    return list.some(c => {
-      if (!c || c.id.indexOf('match_') !== 0) return false;
-      const sameUrl = c.jobUrl && hit.webpage_url && c.jobUrl === hit.webpage_url;
-      const sameTitle = c._hit && hit.headline && c._hit.headline === hit.headline
-        && (c._hit.employer && hit.employer && c._hit.employer.name === hit.employer.name);
-      return sameUrl || sameTitle;
-    });
-  }
-
-  // ═════════════════════════════════════════════════════
-  // DAGSGRÄNS — max 3 matchade CV per dag (resetar midnatt)
-  // ═════════════════════════════════════════════════════
-  const MATCH_VIP_EMAILS = ['oliver.pettersson2@gmail.com'];
-
-  function matchIsVIP() {
-    try {
-      const auth = JSON.parse(localStorage.getItem('pathfinder_auth') || '{}');
-      return MATCH_VIP_EMAILS.indexOf(auth.email) !== -1;
-    } catch(e) { return false; }
-  }
-
-  function matchedToday() {
-    const idag = new Date().toDateString();
-    try {
-      return (pfGetMatched() || [])
-        .filter(c => new Date(c.savedAt).toDateString() === idag).length;
-    } catch(e) { return 0; }
-  }
-
-  function matchTimeLeft() {
-    const m = new Date(); m.setHours(24, 0, 0, 0);
-    const d = m - new Date();
-    return Math.floor(d / 3600000) + ' tim ' + Math.floor((d % 3600000) / 60000) + ' min';
-  }
-
-  // Visa "Dagsgränsen nådd" modal (när man försöker matcha efter 3 idag)
-  function matchShowBlockModal() {
-    const existing = document.getElementById('_matchBlockModal');
-    if (existing) existing.remove();
-    const m = document.createElement('div');
-    m.id = '_matchBlockModal';
-    m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);padding:20px;backdrop-filter:blur(4px);';
-    m.innerHTML =
-      '<div style="background:#1e2440;border-radius:20px;padding:32px 28px;max-width:440px;width:100%;border:2px solid rgba(232,93,38,0.4);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">' +
-        '<div style="font-size:48px;margin-bottom:14px;">🔒</div>' +
-        '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:10px;">Dagsgränsen nådd</div>' +
-        '<div style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:10px;">Du har redan matchat <strong style="color:#fff;">3 CV idag</strong>. Nya matcher öppnar vid midnatt.</div>' +
-        '<div style="font-size:13px;color:rgba(232,93,38,0.85);margin-bottom:24px;font-weight:600;">⏰ ' + matchTimeLeft() + ' kvar</div>' +
-        '<button onclick="document.getElementById(\'_matchBlockModal\').remove()" style="width:100%;padding:14px;background:#e85d26;border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Stäng</button>' +
-      '</div>';
-    document.body.appendChild(m);
-    m.addEventListener('click', e => { if (e.target === m) m.remove(); });
-  }
-
-  // Visa "Sista matchen!" modal (när man just matchat sin 3:e)
-  function matchShowLimitReachedModal() {
-    const existing = document.getElementById('_matchLimitModal');
-    if (existing) existing.remove();
-    const m = document.createElement('div');
-    m.id = '_matchLimitModal';
-    m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);padding:20px;backdrop-filter:blur(4px);';
-    m.innerHTML =
-      '<div style="background:#1e2440;border-radius:20px;padding:32px 28px;max-width:460px;width:100%;border-top:4px solid #e85d26;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">' +
-        '<div style="font-size:52px;margin-bottom:14px;">🌙</div>' +
-        '<div style="font-size:21px;font-weight:900;color:#fff;margin-bottom:10px;">Du har matchat 3 CV idag!</div>' +
-        '<div style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:12px;">Bra jobbat — max antal matcher nådd för idag. 💪<br>Nya matcher öppnar vid midnatt.</div>' +
-        '<div style="font-size:13px;color:rgba(232,93,38,0.85);margin-bottom:24px;font-weight:600;">⏰ ' + matchTimeLeft() + ' kvar</div>' +
-        '<button onclick="document.getElementById(\'_matchLimitModal\').remove()" style="width:100%;padding:14px;background:#e85d26;border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;">Okej, ses imorgon! 👋</button>' +
-      '</div>';
-    document.body.appendChild(m);
-    m.addEventListener('click', e => { if (e.target === m) m.remove(); });
-  }
-
-  // Röd banner i steg 3: "X av 3 matcher kvar idag"
-  function matchUpdateDagsBanner() {
-    const step3 = document.getElementById('matchaStep3');
-    if (!step3 || !step3.classList.contains('active')) return;
-
-    const count = matchedToday();
-    const left  = 3 - count;
-    const vip   = matchIsVIP();
-
-    let banner = document.getElementById('_matchDagsBanner');
-    if (!banner) {
-      banner = document.createElement('div');
-      banner.id = '_matchDagsBanner';
-      step3.insertBefore(banner, step3.firstChild);
-    }
-
-    if (vip) { banner.style.display = 'none'; return; }
-
-    banner.style.cssText =
-      'display:flex;align-items:center;justify-content:space-between;gap:12px;' +
-      'background:' + (left === 0 ? 'rgba(232,93,38,0.18)' : 'rgba(232,93,38,0.1)') + ';' +
-      'border:2px solid ' + (left === 0 ? '#e85d26' : 'rgba(232,93,38,0.4)') + ';' +
-      'border-radius:12px;padding:12px 16px;margin-bottom:16px;';
-    banner.innerHTML =
-      '<div>' +
-        '<div style="font-size:14px;font-weight:900;color:#e85d26;margin-bottom:3px;">' +
-          (left === 0 ? '🔒 Inga matcher kvar idag' : '🎯 ' + left + ' av 3 matcher kvar idag') +
-        '</div>' +
-        '<div style="font-size:12px;color:rgba(255,255,255,0.45);">Resetar om ' + matchTimeLeft() + '</div>' +
-      '</div>' +
-      '<div style="text-align:right;flex-shrink:0;">' +
-        '<div style="font-size:22px;font-weight:900;color:' + (left === 0 ? '#e85d26' : '#fff') + ';">' + count + '/3</div>' +
-        '<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;">MATCHER</div>' +
-      '</div>';
-  }
-  window.matchUpdateDagsBanner = matchUpdateDagsBanner;
-
-  // Stor fullskärms-timglas overlay (inga klick igenom)
-  function matchShowHourglassOverlay(role) {
-    const existing = document.getElementById('_matchHourglass');
-    if (existing) existing.remove();
-    const o = document.createElement('div');
-    o.id = '_matchHourglass';
-    o.style.cssText = 'position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;background:rgba(10,12,28,0.85);backdrop-filter:blur(6px);pointer-events:all;';
-    o.innerHTML =
-      '<div style="background:#1e2440;border:1.5px solid rgba(108,92,231,0.35);border-radius:24px;padding:40px 36px;max-width:420px;width:calc(100% - 40px);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.6);">' +
-        '<div style="font-size:68px;margin-bottom:20px;animation:matchaHourglassSpin 2.5s linear infinite;display:inline-block;">⏳</div>' +
-        '<div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:10px;">AI skriver 3 profiltexter</div>' +
-        '<div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:8px;">riktade mot <strong style="color:#f0c040;">' + (role || 'ditt jobb') + '</strong></div>' +
-        '<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Det tar oftast 10-20 sekunder.<br>Stäng inte fönstret.</div>' +
-      '</div>';
-    document.body.appendChild(o);
-    // Blockera alla klick bakåt
-    o.addEventListener('click', e => e.stopPropagation());
-  }
-
-  function matchHideHourglassOverlay() {
-    const o = document.getElementById('_matchHourglass');
-    if (o) o.remove();
-  }
-
-  // Pedagogisk "Har du läst annonsen?"-modal — visas INNAN AI-matchning
-  // startar. Samma UX som mobilen: 3 val (läs annons / matcha / gå tillbaka).
-  function matchShowReadAnnonsModal(hit, onConfirmed) {
-    const existing = document.getElementById('_matchaReadConfirm');
-    if (existing) existing.remove();
-
-    const annonsUrl = (hit && hit.webpage_url) || '';
-
-    const modal = document.createElement('div');
-    modal.id = '_matchaReadConfirm';
-    modal.style.cssText = 'position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);padding:20px;';
-
-    modal.innerHTML =
-      '<div style="background:#1e2440;border-radius:20px;padding:32px 28px;width:100%;max-width:460px;border:1.5px solid rgba(255,255,255,0.1);box-shadow:0 20px 60px rgba(0,0,0,0.6);">' +
-        '<div style="font-size:44px;text-align:center;margin-bottom:14px;">🧐</div>' +
-        '<div style="font-size:20px;font-weight:900;color:#fff;text-align:center;margin-bottom:10px;">Har du läst annonsen?</div>' +
-        '<div style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.7;margin-bottom:26px;">' +
-          'Det är viktigt att du vet om jobbet faktiskt passar dig och dina kompetenser — innan AI skriver din profiltext. Vill du läsa annonsen igen?' +
-        '</div>' +
-
-        // 1. Läs annonsen först (grön) - bara om URL finns
-        (annonsUrl
-          ? '<a href="' + escape(annonsUrl) + '" target="_blank" rel="noopener" ' +
-            'style="display:block;width:100%;padding:15px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">' +
-            '🔗 Läs annonsen först</a>'
-          : '') +
-
-        // 2. Ja, matcha med AI (lila)
-        '<button id="_matchaReadJa" ' +
-          'style="width:100%;padding:15px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:16px;">' +
-          '✨ Ja, matcha mitt CV med AI</button>' +
-
-        // 3. Gå tillbaka (liten röd outline)
-        '<button id="_matchaReadNej" ' +
-          'style="display:block;margin:0 auto;padding:9px 22px;background:none;border:1.5px solid rgba(232,93,38,0.5);color:rgba(232,93,38,0.85);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">' +
-          '← Gå tillbaka</button>' +
-      '</div>';
-
-    document.body.appendChild(modal);
-
-    document.getElementById('_matchaReadJa').onclick = function() {
-      modal.remove();
-      if (typeof onConfirmed === 'function') onConfirmed();
-    };
-
-    document.getElementById('_matchaReadNej').onclick = function() {
-      modal.remove();
-    };
-
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) modal.remove();
-    });
   }
 
   async function matchaRunAiForAd(hit) {
     const loadEl = document.getElementById('matchaAdLoading_' + hit.id);
     const bodyEl = document.getElementById('matchaAdBody_' + hit.id);
-    const genBtn = document.getElementById('matchaGenBtn_' + hit.id);
     if (!loadEl || !bodyEl) return;
 
-    // Blockera om dagsgränsen redan nådd (och ej VIP)
-    if (!matchIsVIP() && matchedToday() >= 3) {
-      matchShowBlockModal();
-      return;
-    }
-
-    // Visa inline-loading + stor overlay med timglas (blockerar klick)
-    loadEl.style.display = 'block';
-    if (genBtn) genBtn.style.display = 'none';
-    const role = hit.headline || '';
-    matchShowHourglassOverlay(role);
-
     const selectedCV = matchaGetSelectedCVData();
+    const role    = hit.headline || '';
     const company = (hit.employer && hit.employer.name) || '';
     const adText  = (hit.description && hit.description.text) || '';
 
@@ -4736,30 +3894,11 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     ].filter(Boolean).join('\n');
 
     const prompt = 'CV:\n' + cvSummary +
-      '\n\nJobbet: ' + role + ' hos ' + company +
+      '\n\nSoker: ' + role + ' hos ' + company +
       (adText ? '\nAnnonsinfo: ' + adText.substring(0, 800) : '') +
-      '\n\nSkriv 3 profiltexter som UNDVIKER AI-känsla. Skriv som en riktig människa — personligt, konkret, utan klichéer.' +
-      '\n\n===== SKRIVREGLER =====' +
-      '\n• Använd "jag"-form genomgående' +
-      '\n• Blanda långa och korta meningar — naturligt flöde, inte stel symmetri' +
-      '\n• Minst en mening per text ska börja med ett verb eller en personlig observation ("Efter fem år i...", "Det jag tar med mig från...", "På DSV lärde jag mig att...")' +
-      '\n• Referera till KONKRETA saker från CV:t — företagsnamn, antal år, specifika uppgifter — inte bara abstrakta egenskaper' +
-      '\n• Undvik floskler och klichéer: "driven", "resultatorienterad", "utvecklat en kombination av", "lugnt och metodiskt sätt", "direkt överförbara", "teamplayer", "passion för"' +
-      '\n• Undvik meningar som börjar "Med min erfarenhet av..." eller "Jag är en person som..."' +
-      '\n• Skriv så som en människa pratar till en rekryterare på ett fikapaus — professionellt men äkta' +
-      '\n• Varje text ska kännas unik — inte omskrivning av samma mall' +
-      '\n\n===== FORMAT =====' +
-      '\n• TVÅ stycken per text, separerade med \\n\\n' +
-      '\n• Stycke 1 (3-4 meningar): vad du gjort och vad du tar med dig — konkret och berättande' +
-      '\n• Stycke 2 (3-4 meningar): vad du bidrar med, vad som driver dig — avsluta ALLTID med exakt: "Jag ser fram emot att berätta mer om mig själv på en intervju, bli en del av ert team eller få höra mer om ert företag och jobbmöjligheterna."' +
-      '\n\n===== TRE VINKLAR (en per alternativ) =====' +
-      '\n• Alt 1 (ERFARENHET): börja med en konkret situation från ett tidigare jobb i CV:t' +
-      '\n• Alt 2 (MOTIVATION): börja med vad som fick dig att söka just detta jobb / denna bransch' +
-      '\n• Alt 3 (KOMPETENS & RESULTAT): börja med en kompetens du byggt upp och vad den har lett till' +
-      '\n\n===== SVAR =====' +
-      '\nSvara ENDAST med giltig JSON, inget annat:' +
-      '\n{"keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1-text", "alt2-text", "alt3-text"]}' +
-      '\nMax 6 keywords.';
+      '\n\nSvara med JSON: {"keywords": [{"word": "nyckelord", "status": "match|partial|missing"}], "alternatives": ["alt1", "alt2", "alt3"]}' +
+      '\n\nAlternativen ska vara personliga profiltexter (3-5 meningar) riktade mot ' + company + ' och rollen som ' + role +
+      '. Texterna ska vara i TVA stycken separerade med \\n\\n. Stycke 1 (3-4 meningar): bakgrund och styrkor. Stycke 2 (3-4 meningar): motivation och bidrag — avsluta ALLTID med: "Jag ser fram emot att berätta mer om mig sjalv pa en intervju, bli en del av ert team eller fa hora mer om ert foretag och jobbmojligheterna." Tre vinklar: 1) erfarenhetsfokus, 2) motivationsfokus, 3) kompetens och resultat. Max 6 keywords.';
 
     try {
       const resp = await fetch('/api/chat', {
@@ -4767,8 +3906,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 1800,
-          system: 'Du är en svensk CV-coach som hjälper jobbsökare att skriva profiltexter som INTE låter AI-genererade. Din specialitet: mänsklig, konkret, berättande svenska — inte corporate buzzwords. Du undviker ord som "driven", "resultatorienterad", "direkt överförbar", "lugnt och metodiskt", "teamplayer". Istället refererar du till konkreta saker personen gjort, som en vän som hjälper till med brev. Svara ALLTID med giltig JSON och inget annat.',
+          max_tokens: 1500,
+          system: 'Du ar en CV-expert. Svara ALLTID med giltig JSON och inget annat.',
           messages: [{ role: 'user', content: prompt }]
         })
       });
@@ -4777,21 +3916,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const raw = (data.content && data.content[0] && data.content[0].text) || '{}';
       const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
-      // Dölj loading + overlay + visa resultat
-      loadEl.style.display = 'none';
-      matchHideHourglassOverlay();
       renderMatchaAiResult(hit, parsed);
       logEvent('cv_matched', { role: role, company: company });
     } catch(err) {
       console.error('AI-match fel:', err);
-      matchHideHourglassOverlay();
       loadEl.style.color = '#ff8fa3';
-      loadEl.innerHTML = '<span style="font-size:24px;">❌</span><div style="margin-top:8px;">AI kunde inte matcha just nu. Försök igen om en stund.</div>';
-      // Återställ knappen så användaren kan försöka igen
-      if (genBtn) {
-        genBtn.style.display = '';
-        genBtn.textContent = '🔄 Försök igen';
-      }
+      loadEl.textContent = '❌ AI kunde inte matcha just nu. Försök igen om en stund.';
     }
   }
 
@@ -4803,131 +3933,44 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     const keywords     = parsed.keywords     || [];
     const alternatives = parsed.alternatives || [];
-    const role         = hit.headline || '';
 
-    // Spara alts globalt så klick kan hämta dem
+    // Spara alts globalt så knappen kan hämta dem
     if (!window._matchaAlts) window._matchaAlts = {};
     window._matchaAlts[hit.id] = alternatives;
 
     const labels = ['🎯 Erfarenhetsfokus', '💫 Motivationsfokus', '⭐ Kompetens & resultat'];
-    const accents     = ['#3eb489',                  '#f0c040',                  '#a78bfa'];
-    const borderCols  = ['rgba(62,180,137,0.4)',     'rgba(240,192,64,0.35)',    'rgba(124,58,237,0.4)'];
-    const bgCols      = ['rgba(62,180,137,0.07)',    'rgba(240,192,64,0.07)',    'rgba(124,58,237,0.07)'];
-
-    let html = '';
-
-    // Keywords-rad (om vi fick nyckelord från AI:n)
-    if (keywords.length) {
-      html += '<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Nyckelord i annonsen</div>';
-      html += '<div class="matcha-keywords" style="margin-bottom:18px;">';
-      keywords.forEach(k => {
-        const status = (k.status || 'partial').toLowerCase();
-        const icon = status === 'match' ? '✓ ' : status === 'partial' ? '◐ ' : '✕ ';
-        html += '<span class="matcha-kw ' + escape(status) + '">' + icon + escape(k.word || '') + '</span>';
-      });
-      html += '</div>';
-    }
-
-    // Rubrik (matchar mobilen)
-    html += '<div style="text-align:center;margin-bottom:20px;">';
-    html += '<div style="font-size:24px;margin-bottom:8px;">✨</div>';
-    html += '<div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:6px;">AI har skrivit 3 profiltexter åt dig!</div>';
-    html += '<div style="font-size:13px;color:rgba(255,255,255,0.55);font-weight:600;margin-bottom:4px;">som matchar <span style="color:#f0c040;">' + escape(role) + '</span></div>';
-    html += '<div style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.6;">Klicka på ett alternativ för att välja det</div>';
-    html += '</div>';
-
-    // Profiltext-kort (hela kortet klickbart)
-    alternatives.forEach((text, ai) => {
-      html += '<div id="matchaCard_' + escape(String(hit.id)) + '_' + ai + '" ' +
-              'style="cursor:pointer;background:' + bgCols[ai] + ';border:2px solid ' + borderCols[ai] + ';border-radius:16px;padding:18px;margin-bottom:14px;transition:all 0.15s;">';
-      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">';
-      html += '<span style="font-size:16px;">📋</span>';
-      html += '<span style="font-size:12px;font-weight:800;letter-spacing:0.5px;color:' + accents[ai] + ';">' + escape(labels[ai] || 'Alternativ ' + (ai + 1)) + '</span>';
-      html += '</div>';
-      // Bevara stycke-brytningar med white-space: pre-wrap
-      html += '<div style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.88);white-space:pre-wrap;">' + escape(text) + '</div>';
-      html += '</div>';
-    });
-
-    // "Se matchningarna igen"-knapp (visar tillbaka annonskortet + andra kort)
-    html += '<button id="matchaBack_' + escape(String(hit.id)) + '" ' +
-            'style="width:100%;padding:12px;background:none;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;font-family:inherit;margin-top:4px;">' +
-            '← Tillbaka till alla annonser</button>';
 
     bodyEl.style.display = 'block';
-    bodyEl.innerHTML = html;
+    bodyEl.innerHTML = `
+      ${keywords.length ? `
+        <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
+          Nyckelord i annonsen
+        </div>
+        <div class="matcha-keywords">
+          ${keywords.map(k => {
+            const status = (k.status || 'partial').toLowerCase();
+            const icon = status === 'match' ? '✓ ' : status === 'partial' ? '◐ ' : '✕ ';
+            return `<span class="matcha-kw ${escape(status)}">${icon}${escape(k.word || '')}</span>`;
+          }).join('')}
+        </div>
+      ` : ''}
 
-    setTimeout(() => { bodyEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
-
-    // "Tillbaka till alla annonser" — återställ vyn
-    const backBtn = document.getElementById('matchaBack_' + hit.id);
-    if (backBtn) {
-      backBtn.onclick = () => {
-        const section = bodyEl.closest('[data-ad-id]');
-        if (section) {
-          Array.from(section.children).forEach(c => { c.style.display = ''; });
-          bodyEl.style.display = 'none';
-          bodyEl.innerHTML = '';
-        }
-        // Återställ opacity på andra kort
-        document.querySelectorAll('#matchaAdsContainer > div[data-ad-id]').forEach(s => {
-          s.style.opacity = ''; s.style.pointerEvents = '';
-        });
-        const reset = document.getElementById('matchaResetFocus');
-        if (reset) reset.remove();
-      };
-    }
-
-    // Klick på kort → bekräftelse-overlay (som mobilen)
-    alternatives.forEach((text, ai) => {
-      const card = document.getElementById('matchaCard_' + hit.id + '_' + ai);
-      if (!card) return;
-      card.onmouseenter = () => {
-        card.style.transform = 'translateY(-2px)';
-        card.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)';
-      };
-      card.onmouseleave = () => {
-        card.style.transform = '';
-        card.style.boxShadow = '';
-      };
-      card.onclick = () => matchShowConfirmOverlay(hit, ai, accents[ai]);
-    });
-  }
-
-  // Bekräftelse-overlay som dyker upp när användaren klickar ett profiltext-kort
-  // (matchar mobilens UX: "Välj denna profiltext?" → Ja/Nej)
-  function matchShowConfirmOverlay(hit, altIdx, accent) {
-    const existing = document.getElementById('_matchConfirmOverlay');
-    if (existing) existing.remove();
-
-    const overlay = document.createElement('div');
-    overlay.id = '_matchConfirmOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99990;background:rgba(10,12,28,0.88);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;';
-    overlay.innerHTML =
-      '<div style="background:#1e2440;border:1.5px solid ' + (accent || 'rgba(62,180,137,0.35)') + ';border-radius:20px;padding:32px 28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,0.6);">' +
-        '<div style="font-size:44px;text-align:center;margin-bottom:14px;">✨</div>' +
-        '<div style="font-size:19px;font-weight:900;color:#fff;text-align:center;margin-bottom:10px;">Välj denna profiltext?</div>' +
-        '<div style="font-size:13px;color:rgba(255,255,255,0.55);text-align:center;line-height:1.7;margin-bottom:24px;">Den läggs direkt in i ditt CV. Ett matchat CV sparas under <strong style="color:#fff;">👤 Profil</strong> och kan redigeras efteråt.</div>' +
-        '<button class="_conf-ja" style="width:100%;padding:15px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:15px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">✅ Ja, välj denna</button>' +
-        '<button class="_conf-nej" style="width:100%;padding:13px;background:none;border:1.5px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.55);font-size:14px;font-weight:600;border-radius:12px;cursor:pointer;font-family:inherit;">Nej, visa alternativen igen</button>' +
-      '</div>';
-
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-    overlay.querySelector('._conf-nej').onclick = () => overlay.remove();
-    overlay.querySelector('._conf-ja').onclick = () => {
-      overlay.remove();
-      window.matchaApplyText(String(hit.id), altIdx);
-    };
+      <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
+        Välj en profiltext att använda
+      </div>
+      ${alternatives.map((text, i) => `
+        <div class="matcha-alt">
+          <div class="matcha-alt-title">${escape(labels[i] || 'Alternativ ' + (i+1))}</div>
+          <div class="matcha-alt-text">${escape(text)}</div>
+          <button class="matcha-alt-btn" onclick="matchaApplyText('${escape(String(hit.id))}', ${i})">
+            ✨ Använd denna text
+          </button>
+        </div>
+      `).join('')}
+    `;
   }
 
   window.matchaApplyText = function(hitId, altIdx) {
-    // Blockera om dagsgränsen nådd (ej VIP)
-    if (!matchIsVIP() && matchedToday() >= 3) {
-      matchShowBlockModal();
-      return;
-    }
-
     const alts = window._matchaAlts && window._matchaAlts[hitId];
     if (!alts || !alts[altIdx]) {
       toast('Kunde inte hitta texten', 'error');
@@ -4968,51 +4011,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       company: (hit && hit.employer && hit.employer.name) || ''
     });
 
-    // Uppdatera dagsbanner direkt så nya räknaren syns
-    setTimeout(matchUpdateDagsBanner, 100);
-
-    // Om detta var 3:e matchen idag — visa "Sista matchen!"-modal istället
-    // för standard "Sparat!"-modalen
-    if (!matchIsVIP() && matchedToday() >= 3) {
-      setTimeout(matchShowLimitReachedModal, 600);
-      return;
-    }
-
-    // Visa pedagogisk "Sparat!"-modal — fyll i dynamiska fält först
-    const savedModal = document.getElementById('matchaSavedModal');
-    if (savedModal) {
-      // Räknar-pill: "CV 1/3" eller "CV 2/3 · VIP 👑"
-      const counter = document.getElementById('matchaSavedCounter');
-      if (counter) {
-        const count = matchedToday();
-        const vip = matchIsVIP();
-        counter.textContent = vip
-          ? 'CV ' + count + '/∞ · VIP 👑'
-          : 'CV ' + count + '/3 idag';
-        counter.style.display = 'inline-block';
-      }
-
-      // Jobbtitel
-      const jobTitleEl = document.getElementById('matchaSavedJobTitle');
-      if (jobTitleEl) jobTitleEl.textContent = jobTitle;
-
-      // Limit-note (3/dag-påminnelse, eller dagens kvot)
-      const noteEl = document.getElementById('matchaSavedLimitNote');
-      if (noteEl) {
-        const left = 3 - matchedToday();
-        if (matchIsVIP()) {
-          noteEl.textContent = '👑 VIP — ingen dagsgräns för dig.';
-        } else if (left > 0) {
-          noteEl.innerHTML = '🎯 Du har <strong style="color:#fff;">' + left + ' matchning' + (left === 1 ? '' : 'ar') + '</strong> kvar idag. Räknaren nollställs vid midnatt.';
-        } else {
-          noteEl.innerHTML = '🌙 Du har använt dagens alla 3 matchningar. Räknaren nollställs vid midnatt.';
-        }
-      }
-
-      savedModal.style.display = 'flex';
-    } else {
-      toast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil');
-    }
+    toast('✅ Sparat! Ditt matchade CV finns nu under 👤 Profil');
   };
 
   // ──────────────────────────────────────────────────────────
@@ -5060,40 +4059,24 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
   window.cvAiSkills = async function() {
     const title = (cvData.title || document.getElementById('cv-title').value || '').trim();
-    const jobs = (cvData.jobs || []);
-
-    if (!title && !jobs.length) {
-      toast('Fyll i en jobbtitel (Profil) eller lägg till minst ett jobb först', 'error');
+    if (!title) {
+      toast('Skriv in en jobbtitel först (Profil-fliken)', 'error');
       return;
     }
-
-    // Bygg en sammanfattning av CV-kontext för AI:n
-    const jobSummary = jobs.slice(0, 5).map(j => {
-      const bullets = [j.desc1, j.desc2, j.desc3].filter(Boolean).join(' | ');
-      return '- ' + (j.title || '') + (j.company ? ' på ' + j.company : '') + (bullets ? ': ' + bullets : '');
-    }).join('\n');
-
-    const educationSummary = (cvData.education || []).slice(0, 3).map(e =>
-      '- ' + (e.degree || '') + (e.schoolName || e.school ? ' (' + (e.schoolName || e.school) + ')' : '')
-    ).join('\n');
-
-    showAiLoader('Hämtar kompetenser...', 'AI analyserar dina jobb och utbildning');
+    showAiLoader('Hämtar kompetenser...', 'AI tänker ut passande kompetenser för "' + title + '"');
     try {
-      const userContent =
-        'Baserat på följande CV, föreslå 6 relevanta yrkeskompetenser. Basera dig FRÄMST på användarens faktiska arbetslivserfarenhet — inte bara yrkestiteln.\n\n' +
-        (title ? 'Önskad/nuvarande yrkestitel: ' + title + '\n\n' : '') +
-        (jobSummary ? 'Arbetslivserfarenhet:\n' + jobSummary + '\n\n' : '') +
-        (educationSummary ? 'Utbildning:\n' + educationSummary + '\n\n' : '') +
-        'Ge 6 konkreta yrkeskompetenser (1-3 ord vardera) som direkt matchar jobberfarenheten ovan. Välj kompetenser som framgår TYDLIGT av arbetsuppgifterna. Svara ENBART med JSON: {"kompetenser": ["k1","k2","k3","k4","k5","k6"]}';
-
       const r = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: 300,
-          system: 'Du är en CV-expert. Svara ALLTID med giltig JSON och inget annat. Basera kompetenser på användarens faktiska arbetslivserfarenhet.',
-          messages: [{ role: 'user', content: userContent }]
+          system: 'Du är en CV-expert. Svara ALLTID med giltig JSON och inget annat.',
+          messages: [{
+            role: 'user',
+            content: 'Generera 6 konkreta yrkeskompetenser på svenska för yrket: ' + title +
+              '. Korta (1-3 ord), konkreta. Svara ENBART med JSON: {"kompetenser": ["k1","k2","k3","k4","k5","k6"]}'
+          }]
         })
       });
       if (!r.ok) throw new Error('API-fel ' + r.status);
@@ -5118,176 +4101,51 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   };
 
   // ============================================================
+  // CV: LANGUAGES & LICENSES
   // ============================================================
-  // CV: LANGUAGES & LICENSES (chip-baserat + nivåer)
-  // ============================================================
-
-  // Normalisera cvData.languages — backward-compat med gamla string-arrays
-  function normalizeLanguages() {
-    if (!Array.isArray(cvData.languages)) cvData.languages = [];
-    cvData.languages = cvData.languages.map(l => {
-      if (typeof l === 'string') return { name: l, level: 'Flytande' };
-      if (l && typeof l === 'object' && l.name) return { name: l.name, level: l.level || 'Flytande' };
-      return null;
-    }).filter(Boolean);
-  }
-
   function renderLanguages() {
-    normalizeLanguages();
-    const chips = document.getElementById('languagesChips');
-    if (!chips) return;
-    if (!cvData.languages.length) { chips.innerHTML = ''; return; }
-    chips.innerHTML = cvData.languages.map((l, idx) =>
-      '<span class="lang-chip" data-level="' + escapeAttr(l.level) + '" onclick="cvEditLanguage(' + idx + ')">' +
-        '<span class="lang-chip-dot"></span>' +
-        '<span>' + escape(l.name) + '</span>' +
-        '<span class="lang-chip-level">' + escape(l.level) + '</span>' +
-        '<button class="chip-remove" onclick="event.stopPropagation(); cvRemoveLanguage(' + idx + ')">✕</button>' +
-      '</span>'
-    ).join('');
+    const grid = document.getElementById('languagesGrid');
+    grid.innerHTML = ALL_LANGUAGES.map(lang => {
+      const checked = cvData.languages.includes(lang);
+      return `
+        <label class="check-item ${checked ? 'checked' : ''}">
+          <input type="checkbox" ${checked ? 'checked' : ''} onchange="cvToggleLanguage('${escapeAttr(lang)}')">
+          <span>${escape(lang)}</span>
+        </label>
+      `;
+    }).join('');
   }
 
-  let _pendingLangName = null; // språk som väntar på nivå-val
-  let _editingLangIdx = -1;    // -1 = lägger till, annars index som redigeras
-
-  window.openLanguagePicker = function() {
-    normalizeLanguages();
-    const list = document.getElementById('languagePickerList');
-    if (!list) return;
-    const taken = new Set(cvData.languages.map(l => l.name));
-    list.innerHTML = ALL_LANGUAGES.map(lang => {
-      const isTaken = taken.has(lang);
-      return '<div class="picker-option' + (isTaken ? ' selected' : '') + '" onclick="cvPickLanguage(\'' + escapeAttr(lang) + '\')">' +
-        '<div class="picker-option-check"></div>' +
-        '<span>' + escape(lang) + '</span>' +
-      '</div>';
-    }).join('');
-    document.getElementById('languagePicker').classList.add('open');
-  };
-  window.closeLanguagePicker = function() {
-    document.getElementById('languagePicker').classList.remove('open');
-  };
-
-  window.cvPickLanguage = function(lang) {
-    normalizeLanguages();
-    const existingIdx = cvData.languages.findIndex(l => l.name === lang);
-    if (existingIdx >= 0) {
-      // Redan tillagt → ta bort
-      cvData.languages.splice(existingIdx, 1);
-      saveCVLocal();
-      renderLanguages();
-      renderPreview();
-      // Uppdatera picker-lista
-      openLanguagePicker();
-      return;
-    }
-    // Nytt språk → öppna nivå-väljare
-    _pendingLangName = lang;
-    _editingLangIdx = -1;
-    document.getElementById('languageLevelTitle').textContent = 'Välj nivå för ' + lang;
-    document.getElementById('languagePicker').classList.remove('open');
-    document.getElementById('languageLevelPicker').classList.add('open');
-  };
-
-  window.cvEditLanguage = function(idx) {
-    normalizeLanguages();
-    const l = cvData.languages[idx];
-    if (!l) return;
-    _pendingLangName = l.name;
-    _editingLangIdx = idx;
-    document.getElementById('languageLevelTitle').textContent = 'Ändra nivå för ' + l.name;
-    document.getElementById('languageLevelPicker').classList.add('open');
-  };
-
-  window.setLanguageLevel = function(level) {
-    if (!_pendingLangName) return;
-    if (_editingLangIdx >= 0) {
-      // Uppdatera befintligt språk
-      cvData.languages[_editingLangIdx].level = level;
-    } else {
-      // Nytt språk
-      cvData.languages.push({ name: _pendingLangName, level: level });
-    }
-    _pendingLangName = null;
-    _editingLangIdx = -1;
-    saveCVLocal();
-    renderLanguages();
-    renderPreview();
-    closeLanguageLevelPicker();
-    markStepDone('mer');
-  };
-  window.closeLanguageLevelPicker = function() {
-    _pendingLangName = null;
-    _editingLangIdx = -1;
-    document.getElementById('languageLevelPicker').classList.remove('open');
-  };
-
-  window.cvRemoveLanguage = function(idx) {
-    normalizeLanguages();
-    cvData.languages.splice(idx, 1);
-    saveCVLocal();
-    renderLanguages();
-    renderPreview();
-  };
-
-  // Gammal API för bakåtkompatibilitet — används av annan kod som kanske anropar det
   window.cvToggleLanguage = function(lang) {
-    cvPickLanguage(lang);
+    const i = cvData.languages.indexOf(lang);
+    if (i >= 0) cvData.languages.splice(i, 1);
+    else cvData.languages.push(lang);
+    saveCVLocal();
+    renderLanguages();
+    renderPreview();
   };
 
-  // ───── KÖRKORT (utan nivåer, bara val) ─────
   function renderLicenses() {
-    const chips = document.getElementById('licensesChips');
-    if (!chips) return;
-    if (!Array.isArray(cvData.licenses)) cvData.licenses = [];
-    if (!cvData.licenses.length) { chips.innerHTML = ''; return; }
-    chips.innerHTML = cvData.licenses.map((lic, idx) =>
-      '<span class="chip">' +
-        '<span>🚗 ' + escape(lic) + '</span>' +
-        '<button class="chip-remove" onclick="cvRemoveLicense(' + idx + ')">✕</button>' +
-      '</span>'
-    ).join('');
+    const grid = document.getElementById('licensesGrid');
+    grid.innerHTML = ALL_LICENSES.map(lic => {
+      const checked = cvData.licenses.includes(lic);
+      return `
+        <label class="check-item ${checked ? 'checked' : ''}">
+          <input type="checkbox" ${checked ? 'checked' : ''} onchange="cvToggleLicense('${escapeAttr(lic)}')">
+          <span>${escape(lic)}</span>
+        </label>
+      `;
+    }).join('');
   }
 
-  window.openLicensePicker = function() {
-    if (!Array.isArray(cvData.licenses)) cvData.licenses = [];
-    const list = document.getElementById('licensePickerList');
-    if (!list) return;
-    const taken = new Set(cvData.licenses);
-    list.innerHTML = ALL_LICENSES.map(lic => {
-      const isTaken = taken.has(lic);
-      return '<div class="picker-option' + (isTaken ? ' selected' : '') + '" onclick="cvPickLicense(\'' + escapeAttr(lic) + '\')">' +
-        '<div class="picker-option-check"></div>' +
-        '<span>' + escape(lic) + '</span>' +
-      '</div>';
-    }).join('');
-    document.getElementById('licensePicker').classList.add('open');
-  };
-  window.closeLicensePicker = function() {
-    document.getElementById('licensePicker').classList.remove('open');
-  };
-
-  window.cvPickLicense = function(lic) {
-    if (!Array.isArray(cvData.licenses)) cvData.licenses = [];
+  window.cvToggleLicense = function(lic) {
     const i = cvData.licenses.indexOf(lic);
     if (i >= 0) cvData.licenses.splice(i, 1);
     else cvData.licenses.push(lic);
     saveCVLocal();
     renderLicenses();
     renderPreview();
-    // Uppdatera picker-vyn så kryss/avkryss syns direkt
-    openLicensePicker();
-    markStepDone('mer');
   };
-  window.cvRemoveLicense = function(idx) {
-    if (!Array.isArray(cvData.licenses)) cvData.licenses = [];
-    cvData.licenses.splice(idx, 1);
-    saveCVLocal();
-    renderLicenses();
-    renderPreview();
-  };
-
-  window.cvToggleLicense = function(lic) { cvPickLicense(lic); };
 
   // ============================================================
   // CV: PROFILTEXT (AI)
@@ -5303,55 +4161,32 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   window.cvAiSummary = async function() {
     const name = cvData.name || '';
     const title = cvData.title || '';
-    const skills = (cvData.skills || []).join(', ');
-    const jobs = (cvData.jobs || []);
-    const education = (cvData.education || []);
+    const skills = cvData.skills.join(', ');
+    const job = cvData.jobs[0] ? `${cvData.jobs[0].title} på ${cvData.jobs[0].company}` : '';
 
-    if (!title && !jobs.length) {
-      toast('Fyll i en jobbtitel (Profil) eller lägg till minst ett jobb först', 'error');
+    if (!title) {
+      toast('Skriv in en jobbtitel först (Profil-fliken)', 'error');
       return;
     }
 
-    // Bygg ett detaljerat kontext av alla jobb
-    const jobSummary = jobs.slice(0, 5).map(j => {
-      const bullets = [j.desc1, j.desc2, j.desc3].filter(Boolean).join(' | ');
-      return '- ' + (j.title || '') + (j.company ? ' på ' + j.company : '') +
-             (j.startYear ? ' (' + j.startYear + (j.endYear ? '–' + j.endYear : '') + ')' : '') +
-             (bullets ? ': ' + bullets : '');
-    }).join('\n');
-
-    const educationSummary = education.slice(0, 3).map(e =>
-      '- ' + (e.degree || '') + (e.schoolName || e.school ? ' (' + (e.schoolName || e.school) + ')' : '')
-    ).join('\n');
-
-    showAiLoader('Skriver profiltext...', 'AI bygger en personlig presentation baserat på din bakgrund');
+    showAiLoader('Skriver profiltext...', 'AI bygger en personlig presentation');
     try {
-      const userContent =
-        'Skriv en CV-profiltext på svenska i TVÅ stycken separerade med \\n\\n. Text-struktur som i matchade profiltexter — personlig och konkret.\n\n' +
-        'Namn: ' + (name || '(okänt)') + '\n' +
-        (title ? 'Önskad/nuvarande yrkestitel: ' + title + '\n' : '') +
-        (jobSummary ? '\nArbetslivserfarenhet:\n' + jobSummary + '\n' : '') +
-        (educationSummary ? '\nUtbildning:\n' + educationSummary + '\n' : '') +
-        (skills ? '\nKompetenser: ' + skills + '\n' : '') +
-        '\n===== SKRIVREGLER =====\n' +
-        '• Skriv i FÖRSTA PERSON ("jag har...", "mitt arbete...")\n' +
-        '• TVÅ stycken, separerade med \\n\\n:\n' +
-        '  - Stycke 1 (3-4 meningar): vad du gjort, vilka konkreta erfarenheter du tar med dig. Referera till FAKTISKA företag och år från CV:t ovan.\n' +
-        '  - Stycke 2 (2-3 meningar): vad du bidrar med och vad som driver dig. Kan avsluta med vad du söker nu eller hur du vill bidra.\n' +
-        '• Blanda långa och korta meningar — naturligt flöde\n' +
-        '• UNDVIK dessa AI-klichéer: "driven", "resultatorienterad", "utvecklat en kombination av", "direkt överförbara", "lugnt och metodiskt", "teamplayer", "passion för", "Med min erfarenhet av...", "Jag är en person som..."\n' +
-        '• Skriv som en människa pratar — professionellt men äkta, som ett brev till en kollega\n' +
-        '• Nämn KONKRETA saker (företagsnamn, antal år, specifika uppgifter) — inte abstrakta egenskaper\n\n' +
-        'Returnera ENBART profiltexten — inga rubriker, inga bullets, ingen markdown, inga inledningsord som "Här är din text:".';
-
       const r = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 800,
-          system: 'Du är en svensk CV-coach som skriver profiltexter som INTE låter AI-genererade. Mänsklig, konkret, berättande svenska — inte corporate buzzwords. Du undviker ord som "driven", "resultatorienterad", "direkt överförbar", "lugnt och metodiskt", "teamplayer". Istället refererar du till konkreta saker personen gjort, som en vän som hjälper till. Alltid i FÖRSTA PERSON. Alltid i TVÅ stycken separerade med dubbel radbrytning.',
-          messages: [{ role: 'user', content: userContent }]
+          max_tokens: 600,
+          system: 'Du skriver professionella, personliga CV-profiltexter på svenska. Aldrig generiska.',
+          messages: [{
+            role: 'user',
+            content: 'Skriv en professionell profiltext (3-5 meningar, max 80 ord) för ett CV.\n\n' +
+              'Namn: ' + (name || '(okänt)') + '\n' +
+              'Yrkestitel: ' + title + '\n' +
+              (job    ? 'Senaste jobb: ' + job + '\n' : '') +
+              (skills ? 'Kompetenser: ' + skills + '\n' : '') +
+              '\nReturnera ENBART profiltexten, inga rubriker, inga bullets, ingen markdown.'
+          }]
         })
       });
       if (!r.ok) throw new Error('API-fel ' + r.status);
@@ -5377,14 +4212,13 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // CV: TEMPLATES
   // ============================================================
   function renderTemplates() {
-    const sel = document.getElementById('templateSelect');
-    if (!sel) return;
-    sel.innerHTML = TEMPLATES.map(t =>
-      '<option value="' + t.id + '"' + (cvData.template === t.id ? ' selected' : '') + '>' +
-        t.icon + '  ' + t.name +
-      '</option>'
-    ).join('');
-    sel.value = cvData.template || 'classic';
+    const grid = document.getElementById('templateGrid');
+    grid.innerHTML = TEMPLATES.map(t => `
+      <div class="template-card ${cvData.template === t.id ? 'active' : ''}" onclick="cvSelectTemplate('${t.id}')">
+        <div class="template-card-icon">${t.icon}</div>
+        <div>${t.name}</div>
+      </div>
+    `).join('');
   }
 
   window.cvSelectTemplate = function(id) {
@@ -5395,71 +4229,55 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   };
 
   // ============================================================
-  // CV: PREVIEW (live) — bygger EXAKT samma DOM som mobilen
-  // så alla 10 mallar funkar pixelperfect.
+  // CV: PREVIEW (live)
   // ============================================================
   function renderPreview() {
     const doc = document.getElementById('cvDocument');
     if (!doc) return;
-    // Mall-klass: alla mallar prefixas med "cv-" för att matcha mobilens CSS
-    //   classic    → cv-classic
-    //   minimal    → cv-minimal
-    //   template-3 → cv-template-3
-    //   template-N → cv-template-N
-    const tpl = cvData.template || 'classic';
-    const tplClass = 'cv-' + tpl;
-    doc.className = 'cv-document ' + tplClass;
+    doc.className = 'cv-document ' + (cvData.template || 'classic');
 
     const html = [];
-
-    // ── HEADER ──
+    // Header — med valfri profilbild
     const hasPhoto = cvData.showPhoto === true && !!cvData.photoData;
-    html.push('<div class="cv-header">');
-    // Foto-container finns alltid i DOM (för CSS som stylar header) men döljs om inget foto
-    html.push('<div class="cv-header-photo" style="' + (hasPhoto ? 'display:block;' : 'display:none;') + '">');
+    html.push('<div class="cv-doc-header"' + (hasPhoto ? ' style="display:flex;align-items:center;gap:20px;"' : '') + '>');
     if (hasPhoto) {
-      html.push('<img src="' + cvData.photoData + '" alt="Foto" style="display:block;">');
+      html.push('<img src="' + cvData.photoData + '" alt="Profilbild" style="width:88px;height:88px;border-radius:50%;object-fit:cover;flex-shrink:0;border:3px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.15);">');
+      html.push('<div style="flex:1;">');
     }
-    html.push('</div>');
-    // Text-innehåll
-    html.push('<div class="cv-header-content">');
-    html.push('<div class="cv-name">' + escape(cvData.name || 'Ditt namn') + '</div>');
-    if (cvData.title) html.push('<div class="cv-title">' + escape(cvData.title) + '</div>');
+    html.push('<div class="cv-doc-name">' + escape(cvData.name || 'Ditt namn') + '</div>');
+    if (cvData.title) html.push('<div class="cv-doc-title">' + escape(cvData.title) + '</div>');
     const contact = [];
     if (cvData.email) contact.push('✉ ' + escape(cvData.email));
     if (cvData.phone) contact.push('📞 ' + escape(cvData.phone));
-    if (contact.length) html.push('<div class="cv-contact">' + contact.join(' · ') + '</div>');
-    html.push('</div>'); // end cv-header-content
-    html.push('</div>'); // end cv-header
-
-    // ── BODY ──
-    html.push('<div class="cv-body">');
+    if (contact.length) html.push('<div class="cv-doc-contact">' + contact.join('') + '</div>');
+    if (hasPhoto) html.push('</div>');
+    html.push('</div>');
 
     // Summary
     if (cvData.summary) {
-      html.push('<div class="cv-section">');
-      html.push('<div class="cv-section-title">Profil</div>');
-      html.push('<div class="cv-summary">' + escape(cvData.summary) + '</div>');
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Profil</div>');
+      html.push('<div class="cv-doc-summary">' + escape(cvData.summary) + '</div>');
       html.push('</div>');
     }
 
     // Jobs
     if (cvData.jobs.length) {
-      html.push('<div class="cv-section">');
-      html.push('<div class="cv-section-title">Arbetslivserfarenhet</div>');
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Arbetslivserfarenhet</div>');
       cvData.jobs.forEach(j => {
         const period = formatJobPeriod(j) || ((j.startYear || '') + '–' + (j.endYear || 'nu'));
         const loc = j.location ? ' · ' + escape(j.location) : '';
         const descs = [j.desc1, j.desc2, j.desc3].filter(Boolean);
-        html.push('<div class="cv-entry">');
-        html.push('<div class="cv-entry-title">' + escape(j.title || '') + '</div>');
-        html.push('<div class="cv-entry-subtitle">' + escape(j.company || '') + ' · ' + escape(period) + loc + '</div>');
+        html.push('<div class="cv-doc-entry">');
+        html.push('<div class="cv-doc-entry-title">' + escape(j.title || '') + '</div>');
+        html.push('<div class="cv-doc-entry-meta">' + escape(j.company || '') + ' · ' + escape(period) + loc + '</div>');
         if (descs.length) {
-          html.push('<ul style="margin:8px 0 0 0; padding-left:16px; font-size:12px; color:#555; line-height:1.6;">');
-          descs.forEach(d => html.push('<li style="margin-bottom:4px;">' + escape(d) + '</li>'));
+          html.push('<ul class="cv-doc-entry-desc" style="margin:4px 0 0 16px; padding:0;">');
+          descs.forEach(d => html.push('<li>' + escape(d) + '</li>'));
           html.push('</ul>');
         } else if (j.desc) {
-          html.push('<div style="font-size:12px; color:#555; line-height:1.6; margin-top:6px;">' + escape(j.desc) + '</div>');
+          html.push('<div class="cv-doc-entry-desc">' + escape(j.desc) + '</div>');
         }
         html.push('</div>');
       });
@@ -5468,76 +4286,59 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     // Education
     if (cvData.education.length) {
-      html.push('<div class="cv-section">');
-      html.push('<div class="cv-section-title">Utbildning</div>');
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Utbildning</div>');
       cvData.education.forEach(e => {
         const from = formatPeriod(e.startMonth, e.startYear);
         const to = (e.ongoing || e.endYear === 'Pågående' || e.endYear === 'nu') ? 'nu' : formatPeriod(e.endMonth, e.endYear);
         const period = (from || to) ? (from || '') + '–' + (to || '') : '';
         const school = e.schoolName || e.school || '';
         const form = e.schoolForm ? ' (' + escape(e.schoolForm) + ')' : '';
-        html.push('<div class="cv-entry">');
-        html.push('<div class="cv-entry-title">' + escape(e.degree || '') + '</div>');
-        html.push('<div class="cv-entry-subtitle">' + escape(school) + form + (period ? ' · ' + escape(period) : '') + '</div>');
+        html.push('<div class="cv-doc-entry">');
+        html.push('<div class="cv-doc-entry-title">' + escape(e.degree || '') + '</div>');
+        html.push('<div class="cv-doc-entry-meta">' + escape(school) + form + (period ? ' · ' + escape(period) : '') + '</div>');
         html.push('</div>');
       });
       html.push('</div>');
     }
 
-    // Skills — chip-stil matchar mobilen
+    // Skills
     if (cvData.skills.length) {
-      html.push('<div class="cv-section">');
-      html.push('<div class="cv-section-title">Kompetenser</div>');
-      html.push('<div style="display:flex; flex-wrap:wrap; gap:6px;">');
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Kompetenser</div>');
+      html.push('<div class="cv-doc-skills">');
       cvData.skills.forEach(s => {
-        html.push('<span style="display:inline-block; background:rgba(26,26,46,0.07); border:1px solid rgba(26,26,46,0.15); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600; color:#1a1a2e; letter-spacing:0.2px; white-space:nowrap;">' + escape(s) + '</span>');
+        html.push('<span class="cv-doc-skill">' + escape(s) + '</span>');
       });
       html.push('</div>');
       html.push('</div>');
     }
 
-    // Languages — chip-stil med formatet "Svenska – Modersmål"
+    // Languages
     if (cvData.languages.length) {
-      const langs = cvData.languages.map(l =>
-        typeof l === 'string' ? { name: l, level: 'Flytande' } : l
-      ).filter(l => l && l.name);
-      if (langs.length) {
-        html.push('<div class="cv-section">');
-        html.push('<div class="cv-section-title">Språk</div>');
-        html.push('<div style="display:flex; flex-wrap:wrap; gap:6px;">');
-        langs.forEach(l => {
-          const lvl = l.level || 'Flytande';
-          html.push('<span style="display:inline-flex; align-items:baseline; gap:4px; background:rgba(26,26,46,0.07); border:1px solid rgba(26,26,46,0.15); border-radius:20px; padding:3px 12px; font-size:11px; color:#1a1a2e; letter-spacing:0.2px; white-space:nowrap;">' +
-            '<strong style="font-weight:700;">' + escape(l.name) + '</strong>' +
-            '<span style="font-weight:500; opacity:0.7; font-style:italic;"> – ' + escape(lvl) + '</span>' +
-          '</span>');
-        });
-        html.push('</div>');
-        html.push('</div>');
-      }
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Språk</div>');
+      html.push('<div>' + cvData.languages.map(escape).join(', ') + '</div>');
+      html.push('</div>');
     }
 
-    // Licenses — chip-stil
+    // Licenses
     if (cvData.licenses.length) {
-      html.push('<div class="cv-section">');
-      html.push('<div class="cv-section-title">Körkort</div>');
-      html.push('<div style="display:flex; flex-wrap:wrap; gap:6px;">');
-      cvData.licenses.forEach(lic => {
-        html.push('<span style="display:inline-block; background:rgba(26,26,46,0.07); border:1px solid rgba(26,26,46,0.15); border-radius:20px; padding:3px 12px; font-size:11px; font-weight:600; color:#1a1a2e; letter-spacing:0.2px; white-space:nowrap;">' + escape(lic) + '</span>');
-      });
-      html.push('</div>');
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Körkort</div>');
+      html.push('<div>' + cvData.licenses.map(escape).join(', ') + '</div>');
       html.push('</div>');
     }
 
     // Certifikat
     if (Array.isArray(cvData.certifications) && cvData.certifications.length) {
-      html.push('<div class="cv-section">');
-      html.push('<div class="cv-section-title">Certifikat</div>');
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Certifikat</div>');
       cvData.certifications.forEach(c => {
         const meta = [c.issuer, c.date].filter(Boolean).map(escape).join(' · ');
-        html.push('<div class="cv-entry">');
-        html.push('<div class="cv-entry-title">' + escape(c.name || '') + '</div>');
-        if (meta) html.push('<div class="cv-entry-subtitle">' + meta + '</div>');
+        html.push('<div class="cv-doc-entry">');
+        html.push('<div class="cv-doc-entry-title">' + escape(c.name || '') + '</div>');
+        if (meta) html.push('<div class="cv-doc-entry-meta">' + meta + '</div>');
         html.push('</div>');
       });
       html.push('</div>');
@@ -5546,160 +4347,25 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     // Referenser
     const hasRefs = Array.isArray(cvData.references) && cvData.references.length;
     if (hasRefs || cvData.refOnRequest) {
-      html.push('<div class="cv-section">');
-      html.push('<div class="cv-section-title">Referenser</div>');
-      if (cvData.refOnRequest && !hasRefs) {
-        html.push('<div style="font-style:italic; color:#666; font-size:12.5px;">Referenser lämnas på begäran</div>');
-      } else if (hasRefs) {
+      html.push('<div class="cv-doc-section">');
+      html.push('<div class="cv-doc-section-title">Referenser</div>');
+      if (hasRefs) {
         cvData.references.forEach(r => {
-          const contactLine = [r.email, r.phone].filter(Boolean).map(escape).join(' · ');
-          html.push('<div class="cv-entry">');
-          html.push('<div class="cv-entry-title">' + escape(r.name || '') + '</div>');
-          if (r.title) html.push('<div class="cv-entry-subtitle">' + escape(r.title) + '</div>');
-          if (contactLine) html.push('<div class="cv-entry-subtitle" style="opacity:0.85;">' + contactLine + '</div>');
+          const contact = [r.email, r.phone].filter(Boolean).map(escape).join(' · ');
+          html.push('<div class="cv-doc-entry">');
+          html.push('<div class="cv-doc-entry-title">' + escape(r.name || '') + '</div>');
+          if (r.title) html.push('<div class="cv-doc-entry-meta">' + escape(r.title) + '</div>');
+          if (contact) html.push('<div class="cv-doc-entry-meta" style="opacity:0.85;">' + contact + '</div>');
           html.push('</div>');
         });
-        if (cvData.refOnRequest) {
-          html.push('<div style="font-style:italic; color:#666; font-size:12px; margin-top:8px;">Ytterligare referenser lämnas på begäran</div>');
-        }
+      } else {
+        html.push('<div class="cv-doc-entry-meta" style="font-style:italic;">Lämnas på begäran</div>');
       }
       html.push('</div>');
     }
 
-    html.push('</div>'); // end cv-body
-
     doc.innerHTML = html.join('');
   }
-
-  // ============================================================
-  // CV-PICKER: välj bland sparade CV (3 max) eller starta nytt
-  // Speglar mobilens mobShowCVPicker-flow
-  // ============================================================
-  window.cvShowPicker = function() {
-    const existing = document.getElementById('_cvPickerOverlay');
-    if (existing) existing.remove();
-
-    const saved = pfGetSaved();
-    const MAX = MAX_SAVED_CVS;
-
-    // Bygg slots: sparade + tomma "Nytt CV"-slots upp till MAX
-    const slots = [];
-    for (let i = 0; i < MAX; i++) {
-      if (i < saved.length) slots.push({ type: 'saved', cv: saved[i] });
-      else slots.push({ type: 'new' });
-    }
-
-    const overlay = document.createElement('div');
-    overlay.id = '_cvPickerOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);';
-    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-
-    const drawer = document.createElement('div');
-    drawer.style.cssText = 'background:#1a1a2e;border:1.5px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 24px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:90vh;overflow-y:auto;';
-
-    drawer.innerHTML =
-      '<div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:14px;letter-spacing:-0.3px;">📄 Dina CV:n</div>' +
-      '<div style="background:rgba(62,180,137,0.07);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;">' +
-        'Du fyller i namn, jobb och utbildning — <span style="color:#3eb489;font-weight:700;">AI skriver din profiltext</span>, föreslår kompetenser och hjälper med arbetsuppgifter. ' +
-        'Välj bland <span style="color:#3eb489;font-weight:700;">10+ mallar</span> och spara som PDF. ' +
-        'Du kan ha upp till <span style="color:#fff;font-weight:700;">3 olika CV</span> — ett per yrkesroll. ' +
-        'Alla CV sparas under <span style="color:#3eb489;font-weight:700;">👤 Profil</span> och kan öppnas, redigeras eller delas när som helst.' +
-      '</div>';
-
-    const slotsDiv = document.createElement('div');
-    slotsDiv.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
-
-    slots.forEach(function(slot) {
-      const row = document.createElement('div');
-      if (slot.type === 'saved') {
-        const cv = slot.cv;
-        const date = cv.savedAt
-          ? new Date(cv.savedAt).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
-          : '';
-        row.style.cssText = 'display:flex;align-items:center;gap:10px;';
-
-        // Öppna-knapp (huvuddelen av raden)
-        const btn = document.createElement('button');
-        btn.style.cssText = 'flex:1;padding:14px 16px;background:rgba(62,180,137,0.1);border:1.5px solid rgba(62,180,137,0.35);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;min-width:0;transition:all 0.15s;';
-        btn.onmouseenter = () => { btn.style.background = 'rgba(62,180,137,0.18)'; };
-        btn.onmouseleave = () => { btn.style.background = 'rgba(62,180,137,0.1)'; };
-        btn.innerHTML =
-          '<div style="width:44px;height:44px;border-radius:12px;background:rgba(62,180,137,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📄</div>' +
-          '<div style="flex:1;min-width:0;">' +
-            '<div style="font-size:14px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escape(cv.title || 'Namnlöst CV') + '</div>' +
-            '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;">' +
-              ((cv.data && cv.data.name) ? escape(cv.data.name) + ' · ' : '') + escape(date) +
-            '</div>' +
-          '</div>' +
-          '<span style="font-size:12px;font-weight:700;color:#3eb489;background:rgba(62,180,137,0.15);border:1px solid rgba(62,180,137,0.3);border-radius:8px;padding:6px 12px;white-space:nowrap;flex-shrink:0;">👁 Öppna</span>';
-        btn.onclick = function() {
-          overlay.remove();
-          if (typeof window.pfOpenSaved === 'function') {
-            window.pfOpenSaved(cv.id);
-          }
-        };
-
-        // Ta bort-knapp
-        const delBtn = document.createElement('button');
-        delBtn.style.cssText = 'flex-shrink:0;width:46px;height:46px;background:rgba(220,38,38,0.1);border:1.5px solid rgba(220,38,38,0.3);border-radius:12px;color:rgba(252,165,165,0.9);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;';
-        delBtn.innerHTML = '🗑';
-        delBtn.title = 'Ta bort detta CV';
-        delBtn.onmouseenter = () => { delBtn.style.background = 'rgba(220,38,38,0.2)'; };
-        delBtn.onmouseleave = () => { delBtn.style.background = 'rgba(220,38,38,0.1)'; };
-        delBtn.onclick = function() {
-          if (!confirm('Ta bort "' + (cv.title || 'CV') + '"?\n\nDetta går inte att ångra.')) return;
-          if (typeof window.pfDeleteSaved === 'function') {
-            window.pfDeleteSaved(cv.id);
-          }
-          overlay.remove();
-          // Visa picker igen så användaren ser uppdaterad lista
-          setTimeout(() => {
-            const stillHas = pfGetSaved().length > 0;
-            if (stillHas) cvShowPicker();
-          }, 100);
-        };
-
-        row.appendChild(btn);
-        row.appendChild(delBtn);
-      } else {
-        // Tomt slot = "Nytt CV"-knapp
-        const btn = document.createElement('button');
-        btn.style.cssText = 'width:100%;padding:14px 16px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left;transition:all 0.15s;';
-        btn.onmouseenter = () => { btn.style.background = 'rgba(255,255,255,0.06)'; btn.style.borderColor = 'rgba(255,255,255,0.25)'; };
-        btn.onmouseleave = () => { btn.style.background = 'rgba(255,255,255,0.03)'; btn.style.borderColor = 'rgba(255,255,255,0.15)'; };
-        btn.innerHTML =
-          '<div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">➕</div>' +
-          '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.5);">Skapa nytt CV</div>';
-        btn.onclick = function() {
-          overlay.remove();
-          // Rensa nuvarande arbetsdata för ett rent nytt CV
-          cvData = createEmptyCV();
-          saveCVLocal();
-          loadCVIntoForm();
-          renderJobs(); renderEducation();
-          renderSkillsChips(); renderLanguages(); renderLicenses();
-          renderTemplates();
-          renderPreview();
-          cvSwitchStep('profil');
-          toast('🎯 Nytt CV startat — fyll i informationen');
-        };
-        row.appendChild(btn);
-      }
-      slotsDiv.appendChild(row);
-    });
-
-    drawer.appendChild(slotsDiv);
-
-    // Stäng-knapp
-    const closeBtn = document.createElement('button');
-    closeBtn.style.cssText = 'margin-top:18px;width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;';
-    closeBtn.textContent = 'Stäng — fortsätt med nuvarande CV';
-    closeBtn.onclick = function() { overlay.remove(); };
-    drawer.appendChild(closeBtn);
-
-    overlay.appendChild(drawer);
-    document.body.appendChild(overlay);
-  };
 
   // ============================================================
   // CV: SAVE
@@ -5768,30 +4434,28 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     showAiLoader('Sparar i molnet...', 'Synkar med dina enheter');
     try {
-      // Använd sbCall så token auto-refreshas + 401 hanteras snyggt
-      // OBS: action heter 'save_cv' (snake_case) — det är vad backend förstår
-      const result = await sbCall({
-        action: 'save_cv',
-        userId: auth.userId,
-        cvData: cvData
+      // Spara nuvarande CV-state (action: saveCV — befintlig)
+      const r = await fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'saveCV',
+          accessToken: auth.accessToken,
+          userId: auth.userId,
+          cvData: cvData
+        })
       });
-
-      // Synka även listan över sparade CV:n (kan failsafe ignoreras om den funktionen saknas)
-      try { sbSync('saved_cvs', pfGetSaved()); } catch(_) {}
+      // Synka även listan över sparade CV:n
+      sbSync('saved_cvs', pfGetSaved());
 
       hideAiLoader();
-      if (result && !result.error) {
+      if (r.ok) {
         toast('✅ CV sparat — synligt på alla enheter');
-      } else if (result && result.error === 'not_authenticated') {
-        toast('Sparat lokalt — logga in igen för molnsynk', 'error');
       } else {
-        // Logga vad servern faktiskt returnerade så det går att debugga
-        console.warn('saveCV cloud-fel:', result);
         toast('Sparat lokalt, molnsynk misslyckades', 'error');
       }
     } catch(e) {
       hideAiLoader();
-      console.error('saveCV exception:', e);
       toast('Sparat lokalt, nätverksfel', 'error');
     }
 
@@ -5819,95 +4483,38 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
       // Klona för att rendera fritt utan layout-begränsningar
       const clone = cvDoc.cloneNode(true);
-      clone.style.cssText = 'position:absolute; left:-9999px; top:0; width:794px; padding:0; background:#fff; color:#1a1a2e; font-size:13px; line-height:1.5; border-radius:0; box-shadow:none; overflow:hidden;';
+      clone.style.cssText = 'position:absolute; left:-9999px; top:0; width:794px; padding:48px; background:#fff; color:#1a1a2e; font-size:13px; line-height:1.5; border-radius:0; box-shadow:none;';
       document.body.appendChild(clone);
 
       await new Promise(r => setTimeout(r, 400));
 
-      // ─────────────────────────────────────────────────────────────
-      // STEG 1: KARTLÄGG SÄKRA BRYTPUNKTER
-      // En säker brytpunkt är toppen av en .cv-section (rubrik följer med sitt
-      // innehåll) eller en .cv-entry (hel jobbpost hålls intakt). Vi samlar
-      // Y-koordinaten i clone-koordinatsystemet för varje sådant element.
-      // ─────────────────────────────────────────────────────────────
-      const cloneRect = clone.getBoundingClientRect();
-      const safePointsDomPx = [];
-      clone.querySelectorAll('.cv-section, .cv-entry').forEach(el => {
-        const rect = el.getBoundingClientRect();
-        const y = Math.round(rect.top - cloneRect.top);
-        if (y > 0) safePointsDomPx.push(y);
-      });
-      // Dedupe + sortera stigande
-      const uniqueDomPoints = [...new Set(safePointsDomPx)].sort((a, b) => a - b);
-
-      // ─────────────────────────────────────────────────────────────
-      // STEG 2: RENDERA TILL CANVAS
-      // ─────────────────────────────────────────────────────────────
-      const scale = 2;
       const canvas = await html2canvas(clone, {
-        scale: scale, useCORS: true, backgroundColor: '#ffffff', logging: false,
+        scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false,
         width: 794, windowHeight: clone.scrollHeight
       });
-
-      // Konvertera brytpunkter till canvas-pixlar (skalade)
-      const canvasBreakPoints = uniqueDomPoints.map(p => p * scale);
 
       document.body.removeChild(clone);
 
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
-      const pageW = 210, pageH = 297, margin = 0;
+      const pageW = 210, pageH = 297, margin = 10;
       const imgW = pageW - margin * 2;
-      const contentH = pageH - margin * 2;
-      const pageHpx = (contentH * canvas.width) / imgW;
-
       const imgH = canvas.height * imgW / canvas.width;
+
+      // Slice till flera sidor om för långt
+      const contentH = pageH - margin * 2;
+      let y = 0;
       const fullImgData = canvas.toDataURL('image/jpeg', 0.92);
 
       if (imgH <= contentH) {
-        // Allt får plats på en sida
         pdf.addImage(fullImgData, 'JPEG', margin, margin, imgW, imgH);
       } else {
-        // ─────────────────────────────────────────────────────────
-        // STEG 3: SMART MULTI-PAGE SLICING
-        // Bryt vid närmaste säkra brytpunkt (rubrik/post-start) istället
-        // för vid fast höjd. Regler:
-        //   - Aldrig mitt i en .cv-entry
-        //   - Aldrig en ensam rubrik (break FÖRE .cv-section håller ihop)
-        //   - OK att bryta mellan två .cv-entry i samma sektion
-        // ─────────────────────────────────────────────────────────
+        // Multi-page slicing
+        const pageHpx = (contentH * canvas.width) / imgW;
         let srcY = 0;
         let pageNum = 0;
-        const MIN_PAGE_CONTENT = 50; // undviker oändlig loop om brytpunkt ligger direkt vid srcY
-
-        while (srcY < canvas.height - 1) {
-          const theoreticalEnd = srcY + pageHpx;
-          let pageEnd;
-
-          if (theoreticalEnd >= canvas.height) {
-            // Sista sidan — ta resten
-            pageEnd = canvas.height;
-          } else {
-            // Hitta största säkra brytpunkt som är:
-            //   - tillräckligt efter srcY (inte bara en pixel senare)
-            //   - före eller vid teoretisk sid-slut
-            const validBreaks = canvasBreakPoints.filter(
-              p => p > srcY + MIN_PAGE_CONTENT && p <= theoreticalEnd
-            );
-            if (validBreaks.length > 0) {
-              // Välj LARGEST — packa så mycket som möjligt på sidan
-              pageEnd = validBreaks[validBreaks.length - 1];
-            } else {
-              // Ingen säker brytpunkt inom rimligt avstånd → hård brytning.
-              // Händer bara om en enskild post är större än en A4-sida.
-              pageEnd = theoreticalEnd;
-              console.warn('[PDF] Ingen säker brytpunkt hittad för sida ' + (pageNum + 1) + ', hårdbryts');
-            }
-          }
-
-          const sliceH = pageEnd - srcY;
-
+        while (srcY < canvas.height) {
           if (pageNum > 0) pdf.addPage();
-
+          const sliceH = Math.min(pageHpx, canvas.height - srcY);
           const tmp = document.createElement('canvas');
           tmp.width = canvas.width;
           tmp.height = sliceH;
@@ -5918,15 +4525,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           const sliceImg = tmp.toDataURL('image/jpeg', 0.92);
           const sliceMm = (sliceH / canvas.width) * imgW;
           pdf.addImage(sliceImg, 'JPEG', margin, margin, imgW, sliceMm);
-
-          srcY = pageEnd;
+          srcY += sliceH;
           pageNum++;
-
-          // Säkerhet: avbryt om något gått fel och vi loopar i evighet
-          if (pageNum > 20) {
-            console.error('[PDF] Abort: >20 sidor — fel i pagineringen');
-            break;
-          }
         }
       }
 
@@ -5989,12 +4589,16 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     if (!auth || !auth.accessToken || !auth.userId) return;
     clearTimeout(_sbSyncTimers[table]);
     _sbSyncTimers[table] = setTimeout(() => {
-      // sbCall sköter token-refresh + 401-hantering automatiskt
-      sbCall({
-        action: 'save_table',
-        userId: auth.userId,
-        table: table,
-        data: data
+      fetch('/api/supabase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_table',
+          accessToken: auth.accessToken,
+          userId: auth.userId,
+          table: table,
+          data: data
+        })
       }).catch(() => {});
     }, 1500);
   }
@@ -6014,457 +4618,121 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   }
 
   // ── Render ─────────────────────────────────────────────────
-  // Nuvarande aktiv detaljvy: 'saved' | 'matched' | 'diary' | null
-  let pfActiveTile = null;
-
   function renderProfilView() {
     // Email
     const auth = getAuth();
     const pfEmail = document.getElementById('pfUserEmail');
     if (pfEmail) pfEmail.textContent = (auth && auth.email) ? auth.email : 'Inte inloggad';
 
-    // Tasks — ladda innan vi bygger grid
+    // Tasks — rendera direkt om vi redan har data, ladda annars om
+    if (typeof renderTasksInProfil === 'function') renderTasksInProfil();
     if (!tasksLoadedOnce && typeof loadMyTasks === 'function') loadMyTasks(true);
+    // Lätt auto-refresh varje gång profil-vyn öppnas
     else if (typeof loadMyTasks === 'function') loadMyTasks(true);
 
-    renderProfilHub();
-    renderProfilDetail();
+    pfRenderSavedList();
+    pfRenderMatchedList();
   }
 
-  function renderProfilHub() {
-    const grid = document.getElementById('pfHubGrid');
-    if (!grid) return;
+  function pfRenderSavedList() {
+    const container = document.getElementById('pfSavedList');
+    const countEl   = document.getElementById('pfSavedCount');
+    if (!container) return;
 
-    const saved   = pfGetSaved() || [];
-    const matched = pfMatchedActiveList() || [];
-    const tasks   = (window._myTasks && Array.isArray(window._myTasks)) ? window._myTasks : [];
-    const pendingTasks = tasks.filter(t => !t.done).length;
-    const diary   = (typeof getDiary === 'function') ? (getDiary() || []).filter(e => e.applied) : [];
-
-    // Övningar-procent
-    let ovnPct = 0;
-    if (typeof window.getOvningsPct === 'function') ovnPct = window.getOvningsPct();
-
-    // Sparade utbildningar
-    let eduSaved = [];
-    try { eduSaved = JSON.parse(localStorage.getItem('cvmatchen_edu_saved') || '[]'); } catch(e) {}
-
-    // Dagar kvar för matchade
-    let soonestDays = null;
-    if (matched.length) {
-      soonestDays = Math.min.apply(null, matched.map(pfMatchedDaysLeft));
+    const list = pfGetSaved();
+    if (countEl) {
+      countEl.textContent = list.length + '/' + MAX_SAVED_CVS;
+      countEl.classList.toggle('warn', list.length >= MAX_SAVED_CVS);
     }
 
-    const tiles = [
-      {
-        id: 'tasks',
-        emoji: '✅',
-        label: 'Uppgifter<br>från handläggare',
-        count: pendingTasks,
-        badge: pendingTasks,
-        variant: ''
-      },
-      {
-        id: 'saved',
-        emoji: '📄',
-        label: 'Mina CV',
-        count: saved.length,
-        max: MAX_SAVED_CVS,
-        variant: ''
-      },
-      {
-        id: 'matched',
-        emoji: '🎯',
-        label: 'Mina matchningar',
-        count: matched.length,
-        badge: matched.length,
-        badgeDays: soonestDays,
-        variant: ''
-      },
-      {
-        id: 'ovningar',
-        emoji: '🏋️',
-        label: 'Övningar',
-        counterText: ovnPct + '% klarat',
-        variant: 'variant-ovningar',
-        clickAction: "switchView('ovningar')"
-      },
-      {
-        id: 'edu',
-        emoji: '🎓',
-        label: 'Sparade<br>utbildningar',
-        count: eduSaved.length,
-        counterText: eduSaved.length > 0 ? eduSaved.length + ' sparad' + (eduSaved.length > 1 ? 'e' : '') : '0 sparade',
-        badge: eduSaved.length,
-        variant: 'variant-utbildningar',
-        clickAction: "switchView('aisyv')"
-      },
-      {
-        id: 'diary',
-        emoji: '💼',
-        label: 'Sökta<br>arbeten',
-        count: diary.length,
-        variant: ''
-      },
-      {
-        id: 'settings',
-        emoji: '⚙️',
-        label: 'Avtal &<br>inställningar',
-        counterText: 'Villkor · GDPR',
-        variant: 'variant-settings'
-      }
-    ];
-
-    grid.innerHTML = tiles.map(t => {
-      const isActive = pfActiveTile === t.id;
-      const activeCls = isActive ? ' active' : '';
-      const clickAttr = t.clickAction ? 'onclick="' + t.clickAction + '"' : 'onclick="pfSetActiveTile(\'' + t.id + '\')"';
-
-      const badgeCorner = (t.badge && t.badge > 0)
-        ? '<div class="pf-hub-tile-red-badge">' + t.badge + '</div>'
-        : '';
-
-      let counter;
-      if (t.counterText) {
-        counter = '<div class="pf-hub-tile-badge-count">' + t.counterText + '</div>';
-      } else {
-        counter = '<div class="pf-hub-tile-badge-count">' + t.count + (t.max ? '/' + t.max : '') + '</div>';
-      }
-
-      let urgent = '';
-      if (t.id === 'matched' && t.badgeDays !== null && t.badgeDays <= 7 && t.count > 0) {
-        urgent = '<div class="pf-hub-tile-urgent">' + t.count + ' ann. försvinner om ' + t.badgeDays + ' dag' + (t.badgeDays === 1 ? '' : 'ar') + '</div>';
-      } else if (t.id === 'matched' && t.count > 0) {
-        urgent = '<div class="pf-hub-tile-subnote">' + t.count + ' aktiv' + (t.count === 1 ? '' : 'a') + '</div>';
-      }
-
-      return '<div class="pf-hub-tile ' + (t.variant || '') + activeCls + '" ' + clickAttr + '>' +
-        badgeCorner +
-        '<div class="pf-hub-tile-emoji">' + t.emoji + '</div>' +
-        '<div class="pf-hub-tile-label">' + t.label + '</div>' +
-        counter +
-        urgent +
+    if (!list.length) {
+      container.innerHTML =
+        '<div class="pf-empty">' +
+          '<div class="pf-empty-icon">📄</div>' +
+          '<div class="pf-empty-text">Du har inga sparade CV:n än.<br>Bygg ett CV och tryck <strong>Spara CV</strong> för att lägga till det här.</div>' +
+          '<button class="pf-empty-cta" onclick="switchView(\'cv\')">Bygg ditt första CV →</button>' +
         '</div>';
-    }).join('');
-  }
-
-  window.pfSetActiveTile = function(tileId) {
-    // Toggla av om samma tile klickas igen
-    if (pfActiveTile === tileId) {
-      pfActiveTile = null;
-    } else {
-      pfActiveTile = tileId;
-    }
-    renderProfilHub();
-    renderProfilDetail();
-  };
-
-  function renderProfilDetail() {
-    const area = document.getElementById('pfDetailArea');
-    if (!area) return;
-
-    if (!pfActiveTile) {
-      area.innerHTML = '';
       return;
     }
 
-    if (pfActiveTile === 'tasks')    { area.innerHTML = renderProfilTasksDetail(); return; }
-    if (pfActiveTile === 'saved')    { area.innerHTML = renderProfilSavedDetail(); return; }
-    if (pfActiveTile === 'matched')  { area.innerHTML = renderProfilMatchedDetail(); return; }
-    if (pfActiveTile === 'diary')    { area.innerHTML = renderProfilDiaryDetail(); return; }
-    if (pfActiveTile === 'settings') { area.innerHTML = renderProfilSettingsDetail(); return; }
-  }
-
-  function renderProfilTasksDetail() {
-    const tasks = (window._myTasks && Array.isArray(window._myTasks)) ? window._myTasks : [];
-    const pending = tasks.filter(t => !t.done);
-
-    let html = '<div class="pf-detail-header"><div class="pf-detail-title">✅ Uppgifter från handläggare</div></div>';
-    if (!pending.length) {
-      html += '<div class="pf-detail-empty"><div class="pf-detail-empty-icon">✅</div>' +
-        '<div class="pf-detail-empty-text">Du har inga uppgifter just nu.<br>Uppgifter från din handläggare dyker upp här.</div></div>';
-    } else {
-      // Delegera till befintliga renderTasksInProfil om den finns — den bygger till pfTasksList
-      // Men eftersom vi ändrat DOM'en, skapa en enkel lista inline
-      html += '<div id="pfTasksList" class="task-list"></div>';
-      setTimeout(() => {
-        if (typeof renderTasksInProfil === 'function') renderTasksInProfil();
-      }, 0);
-    }
-    return html;
-  }
-
-  function renderProfilSavedDetail() {
-    const list = pfGetSaved() || [];
-    let html = '<div class="pf-detail-header"><div class="pf-detail-title">📄 Mina CV (' + list.length + '/' + MAX_SAVED_CVS + ')</div></div>';
-
-    if (!list.length) {
-      html += '<div class="pf-detail-empty"><div class="pf-detail-empty-icon">📄</div>' +
-        '<div class="pf-detail-empty-text">Du har inga sparade CV:n än.<br>Bygg ett CV och tryck <strong>Spara CV</strong>.</div>' +
-        '<button class="pf-empty-cta" onclick="switchView(\'cv\')" style="margin-top:14px;">Bygg ditt första CV →</button></div>';
-      return html;
-    }
-
+    // Sortera: nyaste först
     const sorted = list.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
-    sorted.forEach(cv => {
+
+    container.innerHTML = sorted.map(cv => {
       const title = escape(cv.title || 'Utan titel');
       const name  = escape((cv.data && cv.data.name) || '');
       const date  = pfFormatDate(cv.savedAt);
-      html += '<div class="pf-detail-card">' +
-        '<div class="pf-detail-card-icon"><span style="color:#f0c040;">CV</span><span style="color:#fff;">m</span></div>' +
-        '<div class="pf-detail-card-info">' +
-          '<div class="pf-detail-card-title">' + title + '</div>' +
-          '<div class="pf-detail-card-meta">' + (name ? name + ' · ' : '') + escape(date) + '</div>' +
-        '</div>' +
-        '<div class="pf-detail-card-actions">' +
-          '<button class="pf-card-btn primary" onclick="pfOpenSaved(\'' + cv.id + '\')">Öppna</button>' +
-          '<button class="pf-card-btn" onclick="pfExportSaved(\'' + cv.id + '\')">📤 PDF</button>' +
-          '<button class="pf-card-btn danger" onclick="pfDeleteSaved(\'' + cv.id + '\')" title="Ta bort">✕</button>' +
-        '</div>' +
-      '</div>';
-    });
-    return html;
-  }
-
-  function renderProfilMatchedDetail() {
-    const active = pfMatchedActiveList() || [];
-    let html = '<div class="pf-detail-header"><div class="pf-detail-title">🎯 Mina matchningar (' + active.length + ')</div></div>';
-
-    if (!active.length) {
-      html += '<div class="pf-detail-empty"><div class="pf-detail-empty-icon">🎯</div>' +
-        '<div class="pf-detail-empty-text">Inga matchningar än.<br>Gå till <strong>Matcha</strong> och matcha ditt CV mot ett jobb.<br><span style="font-size:11px;opacity:0.6;">Matchade CV:n sparas i 14 dagar.</span></div></div>';
-      return html;
-    }
-
-    const sorted = active.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
-    sorted.forEach((cv, idx) => {
-      const title   = escape(cv.title || 'Utan titel').replace('Matchat CV – ', '');
-      const company = escape(cv.company || '');
-      const days    = pfMatchedDaysLeft(cv);
-      const urgent  = days <= 3;
-      const jobUrlBtn = cv.jobUrl
-        ? '<a href="' + escape(cv.jobUrl) + '" target="_blank" rel="noopener" class="pf-card-btn" style="text-decoration:none;text-align:center;" onclick="event.stopPropagation()">↗ Annons</a>'
-        : '';
-
-      html += '<div class="pf-detail-card matched">' +
-        '<div class="pf-detail-card-icon" style="background:rgba(62,180,137,0.18);">🎯</div>' +
-        '<div class="pf-detail-card-info">' +
-          '<div class="pf-detail-card-title">' + title + '</div>' +
-          '<div class="pf-detail-card-meta">' + (company ? company + ' · ' : '') +
-            '<span style="color:' + (urgent ? '#ef4444' : 'rgba(255,255,255,0.45)') + ';">' +
-            days + ' dag' + (days === 1 ? '' : 'ar') + ' kvar</span></div>' +
-        '</div>' +
-        '<div class="pf-detail-card-actions">' +
-          '<button class="pf-card-btn primary" onclick="pfOpenMatched(\'' + cv.id + '\')">Öppna</button>' +
-          '<button class="pf-card-btn" onclick="pfExportMatched(\'' + cv.id + '\')">📤 PDF</button>' +
-          jobUrlBtn +
-          '<button class="pf-card-btn danger" onclick="pfDeleteMatched(\'' + cv.id + '\')" title="Ta bort">✕</button>' +
-        '</div>' +
-      '</div>';
-    });
-    return html;
-  }
-
-  function renderProfilDiaryDetail() {
-    const diary = (typeof getDiary === 'function') ? (getDiary() || []).filter(e => e.applied) : [];
-    let html = '<div class="pf-detail-header"><div class="pf-detail-title">💼 Sökta arbeten (' + diary.length + ')</div></div>';
-
-    if (!diary.length) {
-      html += '<div class="pf-detail-empty"><div class="pf-detail-empty-icon">💼</div>' +
-        '<div class="pf-detail-empty-text">Inga sökta arbeten än.<br>Tryck <strong>"Jag har sökt detta"</strong> i Mina matchningar för att spara ett jobb här.</div></div>';
-      return html;
-    }
-
-    const sorted = diary.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
-    sorted.forEach(e => {
-      const title = escape(e.jobTitle || 'Okänt jobb');
-      const comp  = escape(e.company || '');
-      const date  = pfFormatDate(e.savedAt);
-      html += '<div class="pf-detail-card">' +
-        '<div class="pf-detail-card-icon" style="background:rgba(255,255,255,0.08);">💼</div>' +
-        '<div class="pf-detail-card-info">' +
-          '<div class="pf-detail-card-title">' + title + '</div>' +
-          '<div class="pf-detail-card-meta">' + (comp ? comp + ' · ' : '') + 'Sökt ' + escape(date) + '</div>' +
-        '</div>' +
-        (e.jobUrl
-          ? '<a class="pf-card-btn" href="' + escape(e.jobUrl) + '" target="_blank" rel="noopener" style="text-decoration:none;">↗ Annons</a>'
-          : '') +
-      '</div>';
-    });
-    return html;
-  }
-
-  // ============================================================
-  // PROFIL: AVTAL & INSTÄLLNINGAR (speglar mobilen)
-  // ============================================================
-  function renderProfilSettingsDetail() {
-    const auth = getAuth();
-    const email = (auth && auth.email) ? auth.email : 'Inte inloggad';
-
-    return (
-      '<div class="pf-detail-header"><div class="pf-detail-title">⚙️ Avtal &amp; inställningar</div></div>' +
-
-      // Visa nuvarande inloggad
-      '<div style="background:rgba(62,180,137,0.07);border:1px solid rgba(62,180,137,0.2);border-radius:12px;padding:14px 16px;margin-bottom:14px;">' +
-        '<div style="font-size:11px;font-weight:800;color:rgba(62,180,137,0.8);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Inloggad som</div>' +
-        '<div style="font-size:14px;color:#fff;font-weight:600;word-break:break-all;">' + escape(email) + '</div>' +
-      '</div>' +
-
-      // Logga ut (röd)
-      '<div onclick="logout()" class="pf-settings-row" ' +
-        'style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;cursor:pointer;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);margin-bottom:8px;transition:all 0.15s;" ' +
-        'onmouseenter="this.style.background=\'rgba(220,38,38,0.12)\'" ' +
-        'onmouseleave="this.style.background=\'rgba(220,38,38,0.06)\'">' +
-        '<div style="font-size:22px;flex-shrink:0;">🚪</div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:14px;font-weight:700;color:rgba(252,165,165,0.95);">Logga ut</div>' +
-          '<div style="font-size:12px;color:rgba(255,255,255,0.4);">Logga ut från ditt konto</div>' +
-        '</div>' +
-        '<span style="font-size:16px;color:rgba(220,38,38,0.3);">›</span>' +
-      '</div>' +
-
-      // Integritetspolicy / GDPR
-      '<div onclick="showPrivacyPolicy()" class="pf-settings-row" ' +
-        'style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);margin-bottom:8px;transition:all 0.15s;" ' +
-        'onmouseenter="this.style.background=\'rgba(255,255,255,0.07)\'" ' +
-        'onmouseleave="this.style.background=\'rgba(255,255,255,0.04)\'">' +
-        '<div style="font-size:22px;flex-shrink:0;">📄</div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.85);">Integritetspolicy / GDPR</div>' +
-          '<div style="font-size:12px;color:rgba(255,255,255,0.4);">Hur CVmatchen hanterar dina uppgifter</div>' +
-        '</div>' +
-        '<span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>' +
-      '</div>' +
-
-      // Allmänna villkor
-      '<div onclick="showTermsModal()" class="pf-settings-row" ' +
-        'style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);margin-bottom:8px;transition:all 0.15s;" ' +
-        'onmouseenter="this.style.background=\'rgba(255,255,255,0.07)\'" ' +
-        'onmouseleave="this.style.background=\'rgba(255,255,255,0.04)\'">' +
-        '<div style="font-size:22px;flex-shrink:0;">📋</div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.85);">Allmänna villkor</div>' +
-          '<div style="font-size:12px;color:rgba(255,255,255,0.4);">Användarvillkor för CVmatchen</div>' +
-        '</div>' +
-        '<span style="font-size:16px;color:rgba(255,255,255,0.2);">›</span>' +
-      '</div>' +
-
-      // Radera konto (lila)
-      '<div onclick="handleDeleteAccount()" class="pf-settings-row" ' +
-        'style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:12px;cursor:pointer;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.22);margin-bottom:8px;transition:all 0.15s;" ' +
-        'onmouseenter="this.style.background=\'rgba(124,58,237,0.14)\'" ' +
-        'onmouseleave="this.style.background=\'rgba(124,58,237,0.07)\'">' +
-        '<div style="font-size:22px;flex-shrink:0;">🗑️</div>' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:14px;font-weight:700;color:rgba(167,139,250,0.95);">Radera konto</div>' +
-          '<div style="font-size:12px;color:rgba(255,255,255,0.4);">Ta bort ditt konto och all data permanent</div>' +
-        '</div>' +
-        '<span style="font-size:16px;color:rgba(124,58,237,0.3);">›</span>' +
-      '</div>' +
-
-      // Footer
-      '<div style="padding:28px 0 8px;text-align:center;">' +
-        '<div style="font-size:11px;color:rgba(255,255,255,0.2);line-height:2;">CVmatchen av PathfinderAI</div>' +
-        '<div style="font-size:11px;color:rgba(255,255,255,0.15);">' +
-          '<a href="mailto:info@cvmatchen.com" style="color:rgba(255,255,255,0.3);text-decoration:none;">info@cvmatchen.com</a>' +
-        '</div>' +
-      '</div>'
-    );
-  }
-
-  // Öppna integritetspolicy-modal
-  window.showPrivacyPolicy = function() {
-    const m = document.getElementById('privacyPolicyModal');
-    if (m) m.style.display = 'block';
-  };
-
-  // Öppna allmänna villkor-modal
-  window.showTermsModal = function() {
-    const m = document.getElementById('termsModal');
-    if (m) m.style.display = 'block';
-  };
-
-  // Radera konto med bekräftelse + Supabase-anrop
-  window.handleDeleteAccount = async function() {
-    const auth = getAuth();
-    const email = (auth && auth.email) ? auth.email : 'ditt konto';
-
-    const confirmed = confirm(
-      'Radera konto för: ' + email + '\n\n' +
-      'All data raderas permanent:\n' +
-      '• Ditt konto\n' +
-      '• Sparade CV:n\n' +
-      '• Matcher och jobbdagbok\n' +
-      '• Övningsframsteg\n\n' +
-      'Detta går inte att ångra.\n\n' +
-      'Vill du fortsätta?'
-    );
-    if (!confirmed) return;
-
-    // Dubbel-bekräftelse — be användaren skriva "RADERA"
-    const typed = prompt('Skriv RADERA (med versaler) för att bekräfta:');
-    if (typed !== 'RADERA') {
-      toast('Konto inte raderat', 'error');
-      return;
-    }
-
-    try {
-      // Rensa all lokal data
-      const localKeys = [
-        SAVED_CVS_KEY, MATCHED_CVS_KEY,
-        '_matchaSelectedAds', 'pf_saved_edu', 'pf_diary',
-        'pf_ai_cache', 'cvmovn4',
-        TRAINING_PROGRESS_KEY, STORAGE_KEY,
-        'cvmatchen_edu_saved'
-      ];
-      localKeys.forEach(k => { try { localStorage.removeItem(k); } catch(_) {} });
-
-      // Försök radera serverside (kan saknas — då fortsätter vi ändå)
-      const token = auth && auth.accessToken;
-      if (token) {
-        try {
-          await fetch('/api/delete-account', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-            }
-          });
-        } catch(e) { /* tyst — backend kan saknas */ }
-      }
-
-      // Logga ut + rensa auth
-      try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch(_) {}
-      window.authUserId = null;
-      window.authAccessToken = null;
-
-      toast('✅ Konto raderat — du kommer loggas ut');
-
-      // Reload efter 1.5s så användaren ser bekräftelsen
-      setTimeout(() => {
-        window.location.href = window.location.pathname;
-      }, 1500);
-    } catch(err) {
-      console.warn('Delete account error:', err);
-      toast('⚠️ Något gick fel — kontakta info@cvmatchen.com', 'error');
-    }
-  };
-
-  // Bakåtkompatibilitet — om något gammalt anropar dessa så finns de fortfarande
-  function pfRenderSavedList() {
-    // Uppdatera via nya hub:en istället
-    if (typeof renderProfilHub === 'function') renderProfilHub();
-    if (pfActiveTile === 'saved') renderProfilDetail();
+      return `
+        <div class="pf-card">
+          <div class="pf-card-head">
+            <div class="pf-card-icon">📄</div>
+            <div class="pf-card-info">
+              <div class="pf-card-title">${title}</div>
+              <div class="pf-card-meta">${name ? name + ' · ' : ''}${escape(date)}</div>
+            </div>
+          </div>
+          <div class="pf-card-actions">
+            <button class="pf-card-btn primary" onclick="pfOpenSaved('${cv.id}')">Öppna</button>
+            <button class="pf-card-btn" onclick="pfExportSaved('${cv.id}')">📤 PDF</button>
+            <button class="pf-card-btn danger" onclick="pfDeleteSaved('${cv.id}')" title="Ta bort">✕</button>
+          </div>
+        </div>`;
+    }).join('');
   }
 
   function pfRenderMatchedList() {
-    // Rensa utgångna
+    const container = document.getElementById('pfMatchedList');
+    const countEl   = document.getElementById('pfMatchedCount');
+    if (!container) return;
+
+    // Rensa utgångna i bakgrunden
     const all = pfGetMatched();
     const active = pfMatchedActiveList();
-    if (active.length !== all.length) pfPutMatched(active);
+    if (active.length !== all.length) {
+      pfPutMatched(active);
+    }
 
-    if (typeof renderProfilHub === 'function') renderProfilHub();
-    if (pfActiveTile === 'matched') renderProfilDetail();
+    if (countEl) countEl.textContent = String(active.length);
+
+    if (!active.length) {
+      container.innerHTML =
+        '<div class="pf-empty">' +
+          '<div class="pf-empty-icon">🎯</div>' +
+          '<div class="pf-empty-text">Inga matchade CV:n än.<br>Använd <strong>Matcha</strong> för att skräddarsy ett CV mot en jobbannons.<br><span style="font-size:11px;opacity:0.6;">Matchade CV:n sparas i 14 dagar.</span></div>' +
+        '</div>';
+      return;
+    }
+
+    const sorted = active.slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+
+    container.innerHTML = sorted.map(cv => {
+      const title   = escape(cv.title || 'Utan titel');
+      const company = escape(cv.company || '');
+      const days    = pfMatchedDaysLeft(cv);
+      let badgeCls  = 'ok';
+      if (days <= 3) badgeCls = 'danger';
+      else if (days <= 7) badgeCls = 'warn';
+      const jobUrlBtn = cv.jobUrl
+        ? `<a href="${escape(cv.jobUrl)}" target="_blank" rel="noopener" class="pf-card-btn" style="text-decoration:none; text-align:center;" onclick="event.stopPropagation()">↗ Annons</a>`
+        : '';
+      return `
+        <div class="pf-card matched">
+          <div class="pf-card-head">
+            <div class="pf-card-icon">🎯</div>
+            <div class="pf-card-info">
+              <div class="pf-card-title">${title}</div>
+              <div class="pf-card-meta">${company ? company + ' · ' : ''}${pfFormatDate(cv.savedAt)}</div>
+            </div>
+          </div>
+          <div class="pf-card-badge ${badgeCls}">⏳ ${days} dag${days === 1 ? '' : 'ar'} kvar</div>
+          <div class="pf-card-actions">
+            <button class="pf-card-btn primary" onclick="pfOpenMatched('${cv.id}')">Öppna</button>
+            <button class="pf-card-btn" onclick="pfExportMatched('${cv.id}')">📤 PDF</button>
+            ${jobUrlBtn}
+            <button class="pf-card-btn danger" onclick="pfDeleteMatched('${cv.id}')" title="Ta bort">✕</button>
+          </div>
+        </div>`;
+    }).join('');
   }
 
   // ── Actions: Sparade CV ───────────────────────────────────
@@ -6806,67 +5074,33 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // ============================================================
   // INIT
   // ============================================================
-  document.addEventListener('DOMContentLoaded', async () => {
+  document.addEventListener('DOMContentLoaded', () => {
     loadCV();
     loadCVIntoForm();
     renderPreview();
-    renderHejView();
 
-    // Steg 1: kolla magic link-redirect (#access_token=... i URL-hashen)
-    let magicHandled = false;
-    try {
-      magicHandled = await handleMagicLinkRedirect();
-    } catch(e) {
-      console.warn('Magic link check failed:', e);
-    }
+    // Steg 1: kolla Microsoft OAuth callback (?ms_token=... eller ?ms_error=...)
+    const msHandled = checkMicrosoftCallback();
 
-    // Steg 2: kolla Microsoft OAuth callback (?ms_token=... eller ?ms_error=...)
-    const msHandled = magicHandled ? false : checkMicrosoftCallback();
-
-    // Steg 3: om inget externt callback, kör normal auth-check
-    if (!magicHandled && !msHandled) {
-      checkAuth();
-    }
-
-    // Steg 4: kör initial token-refresh om det är nära expiry (håller session alltid fräsch)
-    setTimeout(() => { ensureFreshToken().catch(() => {}); }, 2000);
-
-    // ═══════════════════════════════════════════════════════════════
-    // PROAKTIV BAKGRUNDS-REFRESH (tyst för användaren)
-    // ═══════════════════════════════════════════════════════════════
-    // Tre triggers som tillsammans garanterar att användaren aldrig
-    // märker att token förnyas:
-    //
-    // 1. setInterval var 45:e min — håller token fräsch under aktiv
-    //    användning (default access_token livstid är 1h)
-    // 2. visibilitychange — när användaren kommer tillbaka till fliken
-    //    efter att ha varit borta (webbläsare kan pausa setInterval)
-    // 3. online — när nätverket kommer tillbaka efter avbrott
-    //
-    // Resultat: så länge refresh_token är giltig (30 dagar default,
-    // kan utökas till 1 år i Supabase-inställningar) så behöver
-    // användaren aldrig logga in igen.
-
-    // Primär: var 45:e minut
-    setInterval(() => {
-      ensureFreshToken().catch(() => {});
-    }, 45 * 60 * 1000);
-
-    // Fallback 1: när fliken blir synlig igen
-    // (webbläsare pausar ofta setInterval när fliken är i bakgrunden)
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        ensureFreshToken().catch(() => {});
+    // Steg 2: om inget MS-callback, kör normal auth-check
+    if (!msHandled) {
+      if (checkAuth()) {
+        // redan inloggad — logEvent anropas av checkMicrosoftCallback om det var MS,
+        // annars behövs det inte just här då 'login' redan loggats vid senaste inlogg
       }
-    });
-
-    // Fallback 2: när nätverket kommer tillbaka efter avbrott
-    window.addEventListener('online', () => {
-      ensureFreshToken().catch(() => {});
-    });
+    }
   });
 
-  // Borttagen: gammal magic link-delegation till mobilen — desktop hanterar det själv nu
-  // (se handleMagicLinkRedirect ovan)
+  // Magic link callback — desktop stödjer inte magic link (vi använder OTP)
+  // Men om någon råkar landa här med en magic-link-token, delegera till mobilen
+  // där authHandleMagicLinkRedirect är implementerat.
+  (function checkMagicLink() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token') || params.get('access_token');
+    // Endast delegera om det INTE är ett ms_token (det har egen handler ovan)
+    if (token && !params.get('ms_token')) {
+      window.location.href = '/?' + window.location.search.substring(1);
+    }
+  })();
 
 })();
