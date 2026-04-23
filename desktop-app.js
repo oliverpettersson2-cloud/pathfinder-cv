@@ -10,13 +10,29 @@
   // KONSTANTER
   // ============================================================
   const STORAGE_KEY      = 'cvData';
-  const AUTH_STORAGE_KEY = 'cvmatchen_auth';
+  const AUTH_STORAGE_KEY = 'pathfinder_auth';
   const API_KEY_STORAGE  = 'cvmatchen_api_key';
   const TRAINING_PROGRESS_KEY = 'cvmatchen_ovning_progress';
   const SAVED_CVS_KEY    = 'pathfinder_saved_cvs';
   const MATCHED_CVS_KEY  = 'pathfinder_matched_cvs';
   const MATCHED_TTL_MS   = 14 * 24 * 3600 * 1000; // 14 dagar — samma som mobilen
   const MAX_SAVED_CVS    = 3;
+
+  // Engångsmigrering: Om användaren har auth sparad i gamla 'cvmatchen_auth'-nyckeln
+  // (från tidigare desktop-version), flytta över till 'pathfinder_auth' så den
+  // delas med mobilen. Körs en gång vid appstart.
+  try {
+    const oldAuth = localStorage.getItem('cvmatchen_auth');
+    const newAuth = localStorage.getItem('pathfinder_auth');
+    if (oldAuth && !newAuth) {
+      localStorage.setItem('pathfinder_auth', oldAuth);
+      localStorage.removeItem('cvmatchen_auth');
+      console.info('[CVmatchen] Auth migrerat från cvmatchen_auth → pathfinder_auth');
+    } else if (oldAuth && newAuth) {
+      // Båda finns — behåll nyare, radera gamla
+      localStorage.removeItem('cvmatchen_auth');
+    }
+  } catch(e) { /* tyst */ }
 
   const ALL_LANGUAGES = [
     'Svenska', 'Engelska', 'Danska', 'Tyska', 'Franska', 'Spanska',
