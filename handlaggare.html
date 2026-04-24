@@ -343,15 +343,8 @@ td{padding:10px 13px;vertical-align:middle}
 .mt-empty-task-t{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px}
 .mt-empty-task-s{font-size:12px;line-height:1.5}
 
-/* ═══ MINA — UPPGIFTSLISTA (ren listvy, matchar Deltagare-stilen exakt) ═══ */
-.sl-list{background:var(--sf);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
-.sl-head{padding:11px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);background:var(--sf2);border-bottom:1px solid var(--bdl);display:flex;align-items:center;gap:8px}
-.sl-head-c{font-weight:500;text-transform:none;letter-spacing:0;color:var(--tx2)}
-.sl-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--bdl);cursor:pointer;transition:background var(--tr)}
-.sl-row:first-of-type{border-top:none}
-.sl-row:hover{background:#fafaf6}
-.sl-row .uc{flex:1;min-width:0}
-.sl-stats{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;align-items:center}
+/* ═══ MINA — UPPGIFTER (pills i tabellens Status-kolumn) ═══ */
+.sl-stats{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
 .sl-stat{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap;line-height:1.4}
 .sl-stat::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 .sl-stat.completed{background:var(--gnb);color:var(--gn)}
@@ -359,8 +352,6 @@ td{padding:10px 13px;vertical-align:middle}
 .sl-stat.pending{background:var(--blb);color:var(--bl)}
 .sl-stat.expired{background:var(--rdb);color:var(--rd)}
 .sl-stat.none{background:var(--bdl);color:var(--mu)}
-.sl-deadline{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace;margin-right:6px;letter-spacing:.2px}
-.sl-foot{padding:10px 16px;border-top:1px solid var(--bdl);background:var(--sf2);font-size:11px;color:var(--mu)}
 
 /* ═══ STATISTIK — dashboard-stil ═══ */
 .st-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
@@ -1725,22 +1716,22 @@ function renderMinaTasksList(){
       })
       .join('') || '<span class="sl-stat none">Inga uppgifter</span>';
 
-    // Deadline som subtil mono-text till vänster om stats, bara om det finns ogjort
     const hasOpen = u.counts.active + u.counts.pending + u.counts.expired > 0;
-    const deadlineHTML = (hasOpen && u.nextDeadline)
-      ? `<span class="sl-deadline">${u.nextDeadline.split('T')[0]}</span>`
-      : '';
+    const nextDeadline = (hasOpen && u.nextDeadline) ? u.nextDeadline.split('T')[0] : '—';
 
-    return `<div class="sl-row" onclick="openDetail('${u.uid}')">
-      <div class="uc">
-        <div class="ua">${u.initials}</div>
-        <div style="min-width:0">
-          <div class="un">${escapeHtml(u.name)}</div>
-          <div class="ue">${escapeHtml(u.email || u.uid.slice(0,8))}</div>
+    return `<tr onclick="openDetail('${u.uid}')">
+      <td>
+        <div class="uc">
+          <div class="ua">${u.initials}</div>
+          <div>
+            <div class="un">${escapeHtml(u.name)}</div>
+            <div class="ue">${escapeHtml(u.email || u.uid.slice(0,8))}</div>
+          </div>
         </div>
-      </div>
-      <div class="sl-stats">${deadlineHTML}${statsHTML}</div>
-    </div>`;
+      </td>
+      <td><div class="sl-stats">${statsHTML}</div></td>
+      <td class="hm dc">${nextDeadline}</td>
+    </tr>`;
   }).join('');
 
   wrap.innerHTML = `
@@ -1759,10 +1750,16 @@ function renderMinaTasksList(){
       </button>
     </div>
 
-    ${shown.length ? `<div class="sl-list">
-      <div class="sl-head">Deltagare <span class="sl-head-c">· ${shown.length} av ${minaTasksCache.length}</span></div>
-      ${rowsHTML}
-      <div class="sl-foot">${totalTasks} uppgifter totalt · klicka på en rad för att se alla detaljer</div>
+    ${shown.length ? `<div class="tw">
+      <table>
+        <thead><tr>
+          <th>Deltagare</th>
+          <th>Status</th>
+          <th class="hm" style="width:140px">Nästa deadline</th>
+        </tr></thead>
+        <tbody>${rowsHTML}</tbody>
+      </table>
+      <div class="pg-bar"><span>${shown.length} av ${minaTasksCache.length} deltagare · ${totalTasks} uppgifter totalt</span></div>
     </div>` : '<div class="mt-empty-task"><div class="mt-empty-task-s">Inga deltagare matchar filtret.</div></div>'}
   `;
 }
