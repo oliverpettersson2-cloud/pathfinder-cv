@@ -343,16 +343,25 @@ td{padding:10px 13px;vertical-align:middle}
 .mt-empty-task-t{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px}
 .mt-empty-task-s{font-size:12px;line-height:1.5}
 
-/* ═══ MINA — UPPGIFTER-TABELL (räknar-badges + framstegsbar) ═══ */
-.tk-b{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace}
-.tk-b.completed{background:var(--gnb);color:var(--gn)}
-.tk-b.active{background:var(--orb);color:var(--or)}
-.tk-b.pending{background:var(--blb);color:var(--bl)}
-.tk-b.expired{background:var(--rdb);color:var(--rd)}
-.tk-b-none{color:var(--mu);font-family:'JetBrains Mono',monospace;font-size:12px}
-.tk-prog{height:5px;background:var(--bdl);border-radius:3px;overflow:hidden;margin-bottom:4px}
-.tk-prog-bar{height:100%;transition:width .3s ease;border-radius:3px}
-.tk-prog-l{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
+/* ═══ MINA — UPPGIFTSLISTA (ren listvy, matchar Deltagare-stilen) ═══ */
+.sl-list{background:var(--sf);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
+.sl-head{padding:13px 18px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);background:var(--sf2);border-bottom:1px solid var(--bdl)}
+.sl-row{display:flex;align-items:center;gap:14px;padding:12px 18px;border-top:1px solid var(--bdl);cursor:pointer;transition:background var(--tr)}
+.sl-row:first-of-type{border-top:none}
+.sl-row:hover{background:#fafaf6}
+.sl-row .uc{flex:1;min-width:0}
+.sl-row .un{font-size:14px}
+.sl-row .ue{font-size:11px}
+.sl-stats{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;max-width:55%}
+.sl-stat{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:14px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.sl-stat::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.sl-stat.completed{background:var(--gnb);color:var(--gn)}
+.sl-stat.active{background:var(--orb);color:var(--or)}
+.sl-stat.pending{background:var(--blb);color:var(--bl)}
+.sl-stat.expired{background:var(--rdb);color:var(--rd)}
+.sl-stat.none{background:var(--bdl);color:var(--mu)}
+.sl-meta{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace;margin-top:3px;letter-spacing:.3px}
+.sl-foot{padding:10px 18px;border-top:1px solid var(--bdl);background:var(--sf2);font-size:11px;color:var(--mu)}
 
 /* ═══ BULK-SELECT BAR (flytande) ═══ */
 .bulk-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 30px));background:var(--nv);color:#fff;border-radius:12px;padding:10px 14px 10px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 32px rgba(0,0,0,.25);z-index:80;transition:transform .25s cubic-bezier(.4,0,.2,1);min-width:340px}
@@ -1444,39 +1453,35 @@ function renderMinaTasksList(){
     return;
   }
 
-  const showExpiredCol = total.expired > 0;
-  const countBadge = (n, cls) => n > 0
-    ? `<span class="tk-b ${cls}">${n}</span>`
-    : `<span class="tk-b-none">—</span>`;
+  const SL2 = {completed:'klar',active:'pågående',pending:'ny',expired:'försenad'};
+  const SL2p = {completed:'klara',active:'pågående',pending:'nya',expired:'försenade'};
+  const showExpiredFilter = total.expired > 0;
 
   const rowsHTML = shown.map(u => {
-    const totalForUser = u.tasks.length;
-    const doneForUser = u.counts.completed;
-    const progressPct = totalForUser ? Math.round(doneForUser/totalForUser*100) : 0;
-    const progressColor = u.counts.expired>0 ? 'var(--rd)'
-                        : progressPct===100 ? 'var(--gn)'
-                        : u.counts.active>0 ? 'var(--or)' : 'var(--bl)';
-    const nextDeadline = u.nextDeadline ? u.nextDeadline.split('T')[0] : '—';
+    const order = ['expired','active','pending','completed'];
+    const statsHTML = order
+      .filter(s => u.counts[s] > 0)
+      .map(s => {
+        const label = u.counts[s] === 1 ? SL2[s] : SL2p[s];
+        return `<span class="sl-stat ${s}">${u.counts[s]} ${label}</span>`;
+      })
+      .join('') || '<span class="sl-stat none">Inga uppgifter</span>';
 
-    return `<tr onclick="openDetail('${u.uid}')">
-      <td>
-        <div class="uc">
-          <div class="ua">${u.initials}</div>
-          <div><div class="un">${escapeHtml(u.name)}</div><div class="ue">${escapeHtml(u.email)}</div></div>
+    const metaParts = [];
+    if(u.nextDeadline) metaParts.push('Nästa deadline: ' + u.nextDeadline.split('T')[0]);
+    if(u.tasks.length) metaParts.push(`${u.counts.completed}/${u.tasks.length} klara`);
+
+    return `<div class="sl-row" onclick="openDetail('${u.uid}')">
+      <div class="uc">
+        <div class="ua">${u.initials}</div>
+        <div style="min-width:0">
+          <div class="un">${escapeHtml(u.name)}</div>
+          <div class="ue">${escapeHtml(u.email || u.uid.slice(0,8))}</div>
+          ${metaParts.length ? `<div class="sl-meta">${metaParts.join(' · ')}</div>` : ''}
         </div>
-      </td>
-      <td class="tc">${countBadge(u.counts.active, 'active')}</td>
-      <td class="tc">${countBadge(u.counts.pending, 'pending')}</td>
-      <td class="tc">${countBadge(u.counts.completed, 'completed')}</td>
-      ${showExpiredCol ? `<td class="tc">${countBadge(u.counts.expired, 'expired')}</td>` : ''}
-      <td class="hm dc">${nextDeadline}</td>
-      <td class="hm">
-        <div class="tk-prog">
-          <div class="tk-prog-bar" style="width:${progressPct}%;background:${progressColor}"></div>
-        </div>
-        <div class="tk-prog-l">${doneForUser}/${totalForUser} klara</div>
-      </td>
-    </tr>`;
+      </div>
+      <div class="sl-stats">${statsHTML}</div>
+    </div>`;
   }).join('');
 
   wrap.innerHTML = `
@@ -1487,7 +1492,7 @@ function renderMinaTasksList(){
       <div class="chip${minaTaskFilter==='active'?' act':''}" onclick="filterMinaTasks('active')"><span>Har pågående</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.active>0).length}</span></div>
       <div class="chip${minaTaskFilter==='pending'?' act':''}" onclick="filterMinaTasks('pending')"><span>Har nya</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.pending>0).length}</span></div>
       <div class="chip${minaTaskFilter==='completed'?' act':''}" onclick="filterMinaTasks('completed')"><span>Har klara</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.completed>0).length}</span></div>
-      ${showExpiredCol ? `<div class="chip${minaTaskFilter==='expired'?' act':''}" onclick="filterMinaTasks('expired')"><span>Har försenade</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.expired>0).length}</span></div>` : ''}
+      ${showExpiredFilter ? `<div class="chip${minaTaskFilter==='expired'?' act':''}" onclick="filterMinaTasks('expired')"><span>Har försenade</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.expired>0).length}</span></div>` : ''}
       <div class="sp" style="flex:1"></div>
       <button class="btn btn-primary" onclick="openCreateTask()">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
@@ -1495,20 +1500,10 @@ function renderMinaTasksList(){
       </button>
     </div>
 
-    ${shown.length ? `<div class="tw">
-      <table>
-        <thead><tr>
-          <th>Deltagare</th>
-          <th class="tc" style="width:86px">Pågående</th>
-          <th class="tc" style="width:66px">Nya</th>
-          <th class="tc" style="width:66px">Klara</th>
-          ${showExpiredCol ? '<th class="tc" style="width:86px">Försenade</th>' : ''}
-          <th class="hm" style="width:120px">Nästa deadline</th>
-          <th class="hm" style="width:170px">Framsteg</th>
-        </tr></thead>
-        <tbody>${rowsHTML}</tbody>
-        <div class="pg-bar"><span>${shown.length} av ${minaTasksCache.length} deltagare · ${totalTasks} uppgifter totalt</span></div>
-      </table>
+    ${shown.length ? `<div class="sl-list">
+      <div class="sl-head">Deltagare <span style="color:var(--tx2);font-weight:500;text-transform:none;letter-spacing:0;margin-left:6px">· ${shown.length} av ${minaTasksCache.length}</span></div>
+      ${rowsHTML}
+      <div class="sl-foot">${totalTasks} uppgifter totalt · klicka på en rad för att se alla detaljer</div>
     </div>` : '<div class="mt-empty-task"><div class="mt-empty-task-s">Inga deltagare matchar filtret.</div></div>'}
   `;
 }
