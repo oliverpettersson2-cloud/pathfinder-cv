@@ -530,6 +530,7 @@ td{padding:10px 13px;vertical-align:middle}
           <div class="stats" id="statCards"><div class="loading">Laddar...</div></div>
           <div class="tb">
             <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
+            <select id="handlaggareFlt" style="min-width:160px"><option value="">Alla handläggare</option></select>
             <select id="enhetFlt" style="min-width:140px"><option value="">Alla enheter</option></select>
             <div class="sp"></div>
             <button class="btn" onclick="exportData()">Exportera</button>
@@ -543,8 +544,8 @@ td{padding:10px 13px;vertical-align:middle}
           </div>
           <div class="tw">
             <table>
-              <thead><tr><th style="width:36px;text-align:center">★</th><th>Namn</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead>
-              <tbody id="tBody"><tr><td colspan="8" class="loading">Laddar ärenden...</td></tr></tbody>
+              <thead><tr><th style="width:36px;text-align:center">★</th><th>Namn</th><th class="hm">Handläggare</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead>
+              <tbody id="tBody"><tr><td colspan="9" class="loading">Laddar ärenden...</td></tr></tbody>
             </table>
             <div class="pg-bar"><span id="pgInfo"></span></div>
           </div>
@@ -757,6 +758,16 @@ function updateBulkBar(){
 
 function ini(n){return (n||'').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'}
 function cvName(cv){if(!cv)return '';return cv.name||[cv.firstName,cv.lastName].filter(Boolean).join(' ')||'';}
+
+// Handläggar-helpers — hämtar info från olika möjliga datastrukturer
+function getHandlaggareId(u){
+  return u.handlaggare_id || u.admin_id || u.handlaggare?.id || u.admins?.id || '';
+}
+function getHandlaggareName(u){
+  return u.handlaggare?.name || u.admins?.name
+      || u.handlaggare_name || u.admin_name
+      || (u.handlaggare?.email?.split('@')[0]) || '';
+}
 function roleSubtitle(){
   if(!admin) return '';
   return admin.role === 'superadmin' ? 'Alla kommuner och enheter' :
@@ -848,22 +859,54 @@ function switchTab(id){
 
 // ═══ USERS-LISTA ═══
 async function loadUsers(){
-  document.getElementById('tBody').innerHTML='<tr><td colspan="8" class="loading">Laddar ärenden...</td></tr>';
+  document.getElementById('tBody').innerHTML='<tr><td colspan="9" class="loading">Laddar ärenden...</td></tr>';
   const filters={};
   if(admin.role==='kommunadmin'&&admin.kommun_id) filters.kommun_id=admin.kommun_id;
   if(admin.role==='handlaggare'&&admin.enhet_id) filters.enhet_id=admin.enhet_id;
   let data;
   try{data=await post('admin_list_users',{filters,adminId:admin.id});}
-  catch(e){document.getElementById('tBody').innerHTML=`<tr><td colspan="8" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;showErr('Kunde inte hämta användare: '+e.message);return;}
-  if(data.error){document.getElementById('tBody').innerHTML=`<tr><td colspan="8" class="loading" style="color:var(--rd)">Fel från API: ${data.error}</td></tr>`;showErr('API-fel: '+data.error);return;}
+  catch(e){document.getElementById('tBody').innerHTML=`<tr><td colspan="9" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;showErr('Kunde inte hämta användare: '+e.message);return;}
+  if(data.error){document.getElementById('tBody').innerHTML=`<tr><td colspan="9" class="loading" style="color:var(--rd)">Fel från API: ${data.error}</td></tr>`;showErr('API-fel: '+data.error);return;}
   allUsers=data.data||data.users||(Array.isArray(data)?data:[]);
-  if(allUsers.length===0) document.getElementById('tBody').innerHTML='<tr><td colspan="8" class="loading">Inga deltagare hittades</td></tr>';
+  if(allUsers.length===0) document.getElementById('tBody').innerHTML='<tr><td colspan="9" class="loading">Inga deltagare hittades</td></tr>';
 
   // Fyll enhet-filtret
   const enheter = [...new Set(allUsers.map(u=>u.enheter?.name||u.enhet_name).filter(Boolean))].sort();
   const enhetSel = document.getElementById('enhetFlt');
   if(enhetSel){
     enhetSel.innerHTML = '<option value="">Alla enheter</option>' + enheter.map(e=>`<option value="${e}">${e}</option>`).join('');
+  }
+
+  // Fyll handläggar-filtret — lista unika handläggare från deltagardatan
+  const handlaggareMap = new Map();
+  allUsers.forEach(u => {
+    const hid = getHandlaggareId(u);
+    const hname = getHandlaggareName(u);
+    if(hid && hname) handlaggareMap.set(hid, hname);
+  });
+  // Se till att inloggad handläggare alltid finns med (även om hen inte har några deltagare ännu)
+  if(admin.role === 'handlaggare' && admin.id){
+    const myName = admin.name || admin.email?.split('@')[0] || 'Mina ärenden';
+    if(!handlaggareMap.has(admin.id)) handlaggareMap.set(admin.id, myName);
+  }
+  const handlaggareSel = document.getElementById('handlaggareFlt');
+  if(handlaggareSel){
+    // Sortera: inloggad först ("Mina ärenden"), sedan övriga alfabetiskt
+    const entries = [...handlaggareMap.entries()]
+      .filter(([id]) => id !== admin.id)
+      .sort((a,b) => a[1].localeCompare(b[1], 'sv'));
+    const myLabel = handlaggareMap.get(admin.id) || admin.name || 'Mig';
+    handlaggareSel.innerHTML =
+      '<option value="">Alla handläggare</option>' +
+      (admin.role === 'handlaggare' && admin.id
+        ? `<option value="${admin.id}">⭐ Mina ärenden (${myLabel})</option>`
+        : '') +
+      entries.map(([id,name]) => `<option value="${id}">${name}</option>`).join('');
+
+    // Förval: "Mina ärenden" för handläggare första gången
+    if(admin.role === 'handlaggare' && admin.id && !handlaggareSel.dataset.userSet){
+      handlaggareSel.value = admin.id;
+    }
   }
 
   renderStats();renderChipCounts();renderTable(allUsers);
@@ -888,15 +931,18 @@ function renderChipCounts(){
 function renderTable(users){
   const q=(document.getElementById('searchIn')?.value||'').toLowerCase();
   const enhet=document.getElementById('enhetFlt')?.value||'';
+  const handlaggareId=document.getElementById('handlaggareFlt')?.value||'';
   const favs = getFavorites();
   let f=users.filter(u=>{
     const nm=cvName(u.cv?.data||u.cv).toLowerCase();
     const em=(u.cv?.data?.email||u.cv?.email||u.email||'').toLowerCase();
     const uid=(u.user_id||u.id||'').toLowerCase();
     const enhetN=u.enheter?.name||u.enhet_name||'';
+    const hid=getHandlaggareId(u);
     return (!q||nm.includes(q)||em.includes(q)||uid.includes(q))
         && (!currentStatus||u.status===currentStatus||(currentStatus==='new'&&!u.status))
-        && (!enhet||enhetN===enhet);
+        && (!enhet||enhetN===enhet)
+        && (!handlaggareId||hid===handlaggareId);
   });
   document.getElementById('tBody').innerHTML=f.length?f.map(u=>{
     const cvd=u.cv?.data||u.cv||{};
@@ -909,9 +955,16 @@ function renderTable(users){
     const uid=u.user_id||u.id||'';
     const lastSeen=u.cv?.updated_at?.split('T')[0]||u.last_seen?.split('T')[0]||'—';
     const isStarred = favs.has(uid);
+    const hid=getHandlaggareId(u);
+    const hname=getHandlaggareName(u);
+    const isMine = hid && hid===admin.id;
+    const handlaggareCell = hname
+      ? `<span${isMine?' style="font-weight:600;color:var(--ac)"':''}>${isMine?'⭐ ':''}${hname}</span>`
+      : '<span style="color:var(--mu)">—</span>';
     return `<tr onclick="openDetail('${uid}')">
       <td style="text-align:center" onclick="event.stopPropagation()"><button class="star-btn${isStarred?' starred':''}" data-uid="${uid}" onclick="toggleFavorite('${uid}',event)" title="${isStarred?'Ta bort från Mina':'Lägg till i Mina'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button></td>
       <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name}</div><div class="ue">${email}</div></div></div></td>
+      <td class="hm dc">${handlaggareCell}</td>
       <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
       <td class="dc">${lastSeen}</td>
       <td class="hm tc">${cvd.name||cvd.title?'✅':'—'}</td>
@@ -919,11 +972,15 @@ function renderTable(users){
       <td class="hm tc">${taskInfo}</td>
       <td><span class="bd ${u.status||'new'}">${SL[u.status]||'Ny'}</span></td>
     </tr>`;
-  }).join(''):'<tr><td colspan="8" class="loading">Inga deltagare matchar sökningen</td></tr>';
+  }).join(''):'<tr><td colspan="9" class="loading">Inga deltagare matchar sökningen</td></tr>';
   document.getElementById('pgInfo').textContent=`${f.length} deltagare`;
 }
 document.getElementById('searchIn')?.addEventListener('input',()=>renderTable(allUsers));
 document.getElementById('enhetFlt')?.addEventListener('change',()=>renderTable(allUsers));
+document.getElementById('handlaggareFlt')?.addEventListener('change',function(){
+  this.dataset.userSet = '1'; // Markera att användaren aktivt ändrat — stäng av auto-förval
+  renderTable(allUsers);
+});
 // Statuschips
 document.getElementById('statusChips')?.addEventListener('click',(e)=>{
   const chip = e.target.closest('.chip');
@@ -1205,6 +1262,7 @@ function renderTabInstall(data){
       <div class="cv-field"><div class="cv-field-l">Användar-ID</div><div class="cv-field-v" style="font-family:'JetBrains Mono',monospace;font-size:11px">${data.user_id||data.id||'—'}</div></div>
       <div class="cv-field"><div class="cv-field-l">Status</div><div class="cv-field-v">${SL[data.status||'new']}</div></div>
       <div class="cv-field"><div class="cv-field-l">Enhet</div><div class="cv-field-v">${data.enheter?.name||data.enhet_name||'—'}</div></div>
+      <div class="cv-field"><div class="cv-field-l">Handläggare</div><div class="cv-field-v">${getHandlaggareName(data)||'—'}${getHandlaggareId(data)===admin.id?' <span style="color:var(--ac);font-weight:600">(du)</span>':''}</div></div>
       <div class="cv-field"><div class="cv-field-l">E-post</div><div class="cv-field-v">${cvd.email||data.email||'—'}</div></div>
     </div>
     <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
