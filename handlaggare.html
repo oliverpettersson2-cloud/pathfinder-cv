@@ -343,25 +343,74 @@ td{padding:10px 13px;vertical-align:middle}
 .mt-empty-task-t{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px}
 .mt-empty-task-s{font-size:12px;line-height:1.5}
 
-/* ═══ MINA — UPPGIFTSLISTA (ren listvy, matchar Deltagare-stilen) ═══ */
+/* ═══ MINA — UPPGIFTSLISTA (ren listvy, matchar Deltagare-stilen exakt) ═══ */
 .sl-list{background:var(--sf);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
-.sl-head{padding:13px 18px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);background:var(--sf2);border-bottom:1px solid var(--bdl)}
-.sl-row{display:flex;align-items:center;gap:14px;padding:12px 18px;border-top:1px solid var(--bdl);cursor:pointer;transition:background var(--tr)}
+.sl-head{padding:11px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);background:var(--sf2);border-bottom:1px solid var(--bdl);display:flex;align-items:center;gap:8px}
+.sl-head-c{font-weight:500;text-transform:none;letter-spacing:0;color:var(--tx2)}
+.sl-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--bdl);cursor:pointer;transition:background var(--tr)}
 .sl-row:first-of-type{border-top:none}
 .sl-row:hover{background:#fafaf6}
 .sl-row .uc{flex:1;min-width:0}
-.sl-row .un{font-size:14px}
-.sl-row .ue{font-size:11px}
-.sl-stats{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;max-width:55%}
-.sl-stat{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:14px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.sl-row-extra{font-size:10px;color:var(--mu);margin-top:1px;font-family:'JetBrains Mono',monospace;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-stats{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;max-width:50%}
+.sl-stat{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap;line-height:1.4}
 .sl-stat::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 .sl-stat.completed{background:var(--gnb);color:var(--gn)}
 .sl-stat.active{background:var(--orb);color:var(--or)}
 .sl-stat.pending{background:var(--blb);color:var(--bl)}
 .sl-stat.expired{background:var(--rdb);color:var(--rd)}
 .sl-stat.none{background:var(--bdl);color:var(--mu)}
-.sl-meta{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace;margin-top:3px;letter-spacing:.3px}
-.sl-foot{padding:10px 18px;border-top:1px solid var(--bdl);background:var(--sf2);font-size:11px;color:var(--mu)}
+.sl-foot{padding:10px 16px;border-top:1px solid var(--bdl);background:var(--sf2);font-size:11px;color:var(--mu)}
+
+/* ═══ STATISTIK — dashboard-stil ═══ */
+.st-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.st-kpi{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.st-kpi-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.st-kpi-ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st-kpi-ic.users{background:var(--blb);color:var(--bl)}
+.st-kpi-ic.done{background:var(--gnb);color:var(--gn)}
+.st-kpi-ic.active{background:var(--orb);color:var(--or)}
+.st-kpi-ic.time{background:var(--acs);color:var(--ac)}
+.st-kpi-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu)}
+.st-kpi-v{font-size:26px;font-weight:800;letter-spacing:-.8px;line-height:1.1}
+.st-kpi-s{font-size:11px;color:var(--mu);margin-top:4px;font-family:'JetBrains Mono',monospace}
+.st-kpi-d{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-top:4px}
+.st-kpi-d.up{background:var(--gnb);color:var(--gn)}
+.st-kpi-d.down{background:var(--rdb);color:var(--rd)}
+.st-kpi-d.flat{background:var(--bdl);color:var(--mu)}
+
+.st-section{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;box-shadow:var(--sh);margin-bottom:12px}
+.st-section-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.st-section-t{font-size:13px;font-weight:700;letter-spacing:-.1px}
+.st-section-s{font-size:11px;color:var(--mu)}
+
+.st-cats{display:grid;gap:10px}
+.st-cat{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--bdl)}
+.st-cat:last-child{border-bottom:none}
+.st-cat-ic{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.st-cat-body{flex:1;min-width:0}
+.st-cat-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.st-cat-n{font-size:13px;font-weight:600;text-transform:capitalize}
+.st-cat-v{font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace}
+.st-cat-bar{height:6px;background:var(--bdl);border-radius:3px;overflow:hidden}
+.st-cat-bar-f{height:100%;border-radius:3px;transition:width .4s ease}
+
+.st-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media (max-width: 900px){.st-grid{grid-template-columns:repeat(2,1fr)}.st-two{grid-template-columns:1fr}}
+
+.st-top{display:flex;flex-direction:column;gap:2px}
+.st-top-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--bdl)}
+.st-top-row:last-child{border-bottom:none}
+.st-top-rank{width:18px;font-size:11px;font-weight:700;color:var(--mu);font-family:'JetBrains Mono',monospace;text-align:center;flex-shrink:0}
+.st-top-av{width:26px;height:26px;border-radius:50%;background:var(--gnb);color:var(--gn);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.st-top-n{flex:1;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.st-top-n:hover{color:var(--ac)}
+.st-top-b{font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace}
+
+.st-sparkline{display:flex;align-items:flex-end;gap:3px;height:56px;padding:6px 0}
+.st-spark-bar{flex:1;background:var(--ac);border-radius:2px 2px 0 0;min-height:2px;position:relative;transition:all .15s}
+.st-spark-bar:hover{background:var(--tx)}
+.st-spark-lab{display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace}
 
 /* ═══ BULK-SELECT BAR (flytande) ═══ */
 .bulk-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 30px));background:var(--nv);color:#fff;border-radius:12px;padding:10px 14px 10px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 32px rgba(0,0,0,.25);z-index:80;transition:transform .25s cubic-bezier(.4,0,.2,1);min-width:340px}
@@ -1379,35 +1428,186 @@ document.addEventListener('keydown',(e)=>{
 
 // ═══ STATS TAB ═══
 async function loadStats(){
+  const wrap = document.getElementById('statsContent');
+  const favs = getFavorites();
+  const mina = allUsers.filter(u => favs.has(u.user_id||u.id));
+
+  // Hämta stats-data + detaljdata för Mina-gruppen parallellt
   const filters={};
   if(admin.role==='kommunadmin'&&admin.kommun_id) filters.kommun_id=admin.kommun_id;
   if(admin.role==='handlaggare'&&admin.enhet_id) filters.enhet_id=admin.enhet_id;
-  let data;
-  try{data=await post('admin_stats',{filters});}
-  catch(e){document.getElementById('statsContent').innerHTML='<div class="loading" style="color:var(--rd)">Statistik-fel: '+e.message+'</div>';return;}
-  const t=data.tasks||{},u=data.users||{},cats=data.byCategory||[];
-  document.getElementById('statsContent').innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Deltagare</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div style="text-align:center"><div style="font-size:28px;font-weight:800">${u.total||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Totalt</div></div>
-          <div style="text-align:center"><div style="font-size:28px;font-weight:800;color:var(--gn)">${u.active||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Aktiva</div></div>
+
+  let data, minaDetails = [];
+  try {
+    [data, minaDetails] = await Promise.all([
+      post('admin_stats', {filters}),
+      Promise.all(mina.map(u => post('admin_get_user', {
+        targetUserId: u.user_id||u.id, adminId: admin.id
+      }).catch(()=>null)))
+    ]);
+  } catch(e){
+    wrap.innerHTML = `<div class="loading" style="color:var(--rd)">Statistik-fel: ${e.message}</div>`;
+    return;
+  }
+
+  const t = data.tasks || {}, cats = data.byCategory || [];
+
+  // Beräkna KPI:er för Mina-gruppen
+  let miGroupTotal = 0, miGroupDone = 0, miGroupActive = 0, miGroupOverdue = 0, miTotalTime = 0;
+  const userTaskCounts = []; // För topplistan
+  const completedByDay = {}; // För aktivitets-sparkline (senaste 14 dagar)
+
+  minaDetails.forEach((d, i) => {
+    if(!d) return;
+    const base = mina[i];
+    const cvd = d.cv?.data || d.cv || base?.cv?.data || base?.cv || {};
+    const name = cvName(cvd) || cvName(d) || 'Okänd';
+    const uid = d.user_id || d.id || base?.user_id || base?.id;
+    const tasks = d.tasks || [];
+    let userCompleted = 0, userActive = 0;
+    tasks.forEach(task => {
+      miGroupTotal++;
+      miTotalTime += task.time_spent_sec || 0;
+      if(task.status === 'completed'){ miGroupDone++; userCompleted++;
+        if(task.completed_at){
+          const day = task.completed_at.split('T')[0];
+          completedByDay[day] = (completedByDay[day] || 0) + 1;
+        }
+      }
+      else if(task.status === 'active'){ miGroupActive++; userActive++; }
+      else if(task.status === 'expired'){ miGroupOverdue++; }
+    });
+    if(tasks.length > 0){
+      userTaskCounts.push({name, uid, initials: ini(name), completed: userCompleted, active: userActive, total: tasks.length});
+    }
+  });
+
+  const completionPct = miGroupTotal ? Math.round(miGroupDone / miGroupTotal * 100) : 0;
+  const miTotalHours = Math.round(miTotalTime / 3600);
+
+  // Sparkline: uppgifter klarade per dag senaste 14 dagarna
+  const today = new Date();
+  const sparkData = [];
+  for(let i = 13; i >= 0; i--){
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    sparkData.push({ date: key, count: completedByDay[key] || 0, label: d.getDate() });
+  }
+  const sparkMax = Math.max(1, ...sparkData.map(s => s.count));
+
+  // Sortera topplistan efter klara uppgifter
+  const topUsers = [...userTaskCounts].sort((a,b) => b.completed - a.completed).slice(0, 5);
+
+  // Kategori-ikoner
+  const catIcons = {cv:'📄',övning:'📚',intervju:'🎤',matchning:'🎯',jobbsök:'🔍',övrigt:'📝'};
+  const catColors = {cv:'var(--bl)',övning:'var(--ac)',intervju:'var(--or)',matchning:'var(--gn)',jobbsök:'var(--tx2)',övrigt:'var(--mu)'};
+
+  wrap.innerHTML = `
+    <!-- KPI-rad -->
+    <div class="st-grid">
+      <div class="st-kpi">
+        <div class="st-kpi-h">
+          <div class="st-kpi-ic users">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="st-kpi-l">Deltagare</div>
+        </div>
+        <div class="st-kpi-v">${mina.length}</div>
+        <div class="st-kpi-s">varav ${userTaskCounts.length} med uppgifter</div>
+      </div>
+
+      <div class="st-kpi">
+        <div class="st-kpi-h">
+          <div class="st-kpi-ic done">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="st-kpi-l">Slutförandegrad</div>
+        </div>
+        <div class="st-kpi-v" style="color:var(--gn)">${completionPct}%</div>
+        <div class="st-kpi-s">${miGroupDone} av ${miGroupTotal} uppgifter</div>
+      </div>
+
+      <div class="st-kpi">
+        <div class="st-kpi-h">
+          <div class="st-kpi-ic active">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="st-kpi-l">Pågår just nu</div>
+        </div>
+        <div class="st-kpi-v" style="color:var(--or)">${miGroupActive}</div>
+        <div class="st-kpi-s">${miGroupOverdue > 0 ? `<span style="color:var(--rd);font-weight:700">${miGroupOverdue} försenade</span>` : 'Inga försenade'}</div>
+      </div>
+
+      <div class="st-kpi">
+        <div class="st-kpi-h">
+          <div class="st-kpi-ic time">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="st-kpi-l">Total aktiv tid</div>
+        </div>
+        <div class="st-kpi-v">${miTotalHours}<span style="font-size:15px;color:var(--mu);font-weight:600"> h</span></div>
+        <div class="st-kpi-s">spenderat på uppgifter</div>
+      </div>
+    </div>
+
+    <!-- Två kolumner: aktivitet + topplista -->
+    <div class="st-two">
+      <div class="st-section">
+        <div class="st-section-h">
+          <div class="st-section-t">Aktivitet senaste 14 dagarna</div>
+          <div class="st-section-s">Klarade uppgifter</div>
+        </div>
+        <div class="st-sparkline">
+          ${sparkData.map(s => `<div class="st-spark-bar" style="height:${Math.max(2, s.count/sparkMax*100)}%" title="${s.date}: ${s.count} klarade"></div>`).join('')}
+        </div>
+        <div class="st-spark-lab">
+          <span>${sparkData[0].date.slice(5)}</span>
+          <span>Idag</span>
         </div>
       </div>
-      <div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Uppgifter</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div style="text-align:center"><div style="font-size:24px;font-weight:800">${t.total||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Totalt</div></div>
-          <div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--gn)">${t.completed||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Klara</div></div>
-          <div style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--or)">${t.pending||0}</div><div style="font-size:10px;color:var(--mu);text-transform:uppercase">Väntande</div></div>
+
+      <div class="st-section">
+        <div class="st-section-h">
+          <div class="st-section-t">Topp 5 deltagare</div>
+          <div class="st-section-s">Efter klarade uppgifter</div>
+        </div>
+        <div class="st-top">
+          ${topUsers.length ? topUsers.map((u, i) => `
+            <div class="st-top-row">
+              <div class="st-top-rank">${i+1}</div>
+              <div class="st-top-av">${u.initials}</div>
+              <div class="st-top-n" onclick="openDetail('${u.uid}')">${escapeHtml(u.name)}</div>
+              <div class="st-top-b" style="color:var(--gn)">${u.completed}/${u.total}</div>
+            </div>
+          `).join('') : '<div style="color:var(--mu);font-size:12px;padding:14px 0;text-align:center">Ingen aktivitet ännu</div>'}
         </div>
       </div>
-      <div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px;grid-column:1/-1">
-        <div style="font-size:13px;font-weight:700;margin-bottom:12px">Tid per kategori</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">${cats.map(c=>`<div style="background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 14px;text-align:center;min-width:100px"><div style="font-size:20px;font-weight:800">${c.completed}/${c.total}</div><div style="font-size:11px;color:var(--mu);margin-top:2px">${c.category}</div></div>`).join('')}</div>
+    </div>
+
+    <!-- Kategori-fördelning med progress-bar -->
+    <div class="st-section">
+      <div class="st-section-h">
+        <div class="st-section-t">Fördelning per kategori</div>
+        <div class="st-section-s">Slutförandegrad per typ av uppgift</div>
       </div>
-    </div>`;
+      <div class="st-cats">
+        ${cats.length ? cats.map(c => {
+          const pct = c.total ? Math.round(c.completed/c.total*100) : 0;
+          const color = catColors[c.category] || 'var(--ac)';
+          return `<div class="st-cat">
+            <div class="st-cat-ic">${catIcons[c.category]||'📝'}</div>
+            <div class="st-cat-body">
+              <div class="st-cat-h">
+                <div class="st-cat-n">${c.category}</div>
+                <div class="st-cat-v">${c.completed} av ${c.total} klara · ${pct}%</div>
+              </div>
+              <div class="st-cat-bar"><div class="st-cat-bar-f" style="width:${pct}%;background:${color}"></div></div>
+            </div>
+          </div>`;
+        }).join('') : '<div style="color:var(--mu);font-size:12px;padding:14px 0;text-align:center">Ingen kategori-data tillgänglig</div>'}
+      </div>
+    </div>
+  `;
 }
 
 // ═══ UPPGIFTER UNDER MINA — tabellvy per deltagare (matchar Deltagare-fliken) ═══
@@ -1525,9 +1725,11 @@ function renderMinaTasksList(){
       })
       .join('') || '<span class="sl-stat none">Inga uppgifter</span>';
 
-    const metaParts = [];
-    if(u.nextDeadline) metaParts.push('Nästa deadline: ' + u.nextDeadline.split('T')[0]);
-    if(u.tasks.length) metaParts.push(`${u.counts.completed}/${u.tasks.length} klara`);
+    // Extra-info bara om det finns en aktuell deadline (ogjorda uppgifter)
+    const hasOpen = u.counts.active + u.counts.pending + u.counts.expired > 0;
+    const extraHTML = (hasOpen && u.nextDeadline)
+      ? `<div class="sl-row-extra">Nästa: ${u.nextDeadline.split('T')[0]} · ${u.counts.completed}/${u.tasks.length} klara</div>`
+      : '';
 
     return `<div class="sl-row" onclick="openDetail('${u.uid}')">
       <div class="uc">
@@ -1535,7 +1737,7 @@ function renderMinaTasksList(){
         <div style="min-width:0">
           <div class="un">${escapeHtml(u.name)}</div>
           <div class="ue">${escapeHtml(u.email || u.uid.slice(0,8))}</div>
-          ${metaParts.length ? `<div class="sl-meta">${metaParts.join(' · ')}</div>` : ''}
+          ${extraHTML}
         </div>
       </div>
       <div class="sl-stats">${statsHTML}</div>
@@ -1559,7 +1761,7 @@ function renderMinaTasksList(){
     </div>
 
     ${shown.length ? `<div class="sl-list">
-      <div class="sl-head">Deltagare <span style="color:var(--tx2);font-weight:500;text-transform:none;letter-spacing:0;margin-left:6px">· ${shown.length} av ${minaTasksCache.length}</span></div>
+      <div class="sl-head">Deltagare <span class="sl-head-c">· ${shown.length} av ${minaTasksCache.length}</span></div>
       ${rowsHTML}
       <div class="sl-foot">${totalTasks} uppgifter totalt · klicka på en rad för att se alla detaljer</div>
     </div>` : '<div class="mt-empty-task"><div class="mt-empty-task-s">Inga deltagare matchar filtret.</div></div>'}
