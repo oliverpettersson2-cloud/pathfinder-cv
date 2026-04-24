@@ -6743,12 +6743,9 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     // Whitelist: 18 moduler med färdigt innehåll. Resten visas som "Under arbete".
     const ACTIVE_MODS = [
-      'm1','m2','m3',
-      'a_cv','a_match','a5',
-      's1','s3','s0',
-      'h1','h2','h5',
-      'e1','e6','e15',
-      'd5','d9','d4'
+      'm1','m2','m3',                      // Intro (alla 3)
+      'a_cv','a_match','a0',               // Arbete
+      's0','s1','s2','s3'                  // Studier (Utbildningskartan, Vad är YH, Komvux, SFI)
     ];
 
     const catHeader = `
