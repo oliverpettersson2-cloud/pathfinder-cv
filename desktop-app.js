@@ -6741,6 +6741,16 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const cat = TRAINING_CATS.find(c => c.id === currentTrainCat);
     if (!cat) { currentTrainCat = null; renderTrainingHome(); return; }
 
+    // Whitelist: 18 moduler med färdigt innehåll. Resten visas som "Under arbete".
+    const ACTIVE_MODS = [
+      'm1','m2','m3',
+      'a_cv','a_match','a5',
+      's1','s3','s0',
+      'h1','h2','h5',
+      'e1','e6','e15',
+      'd5','d9','d4'
+    ];
+
     const catHeader = `
       <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; margin-bottom: 8px;">
         <button class="ov-back" onclick="trainBackToCats()" style="margin: 0;">← Alla kategorier</button>
@@ -6759,6 +6769,21 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const desc = m.sub || m.desc || '';
       const lessonsLen = (m.lessons || []).length;
       const quizLen    = (m.quiz    || []).length;
+      const isActive   = ACTIVE_MODS.indexOf(m.id) !== -1;
+      if (!isActive) {
+        return `
+          <div class="ov-card" style="opacity:0.45; cursor:not-allowed; position:relative; pointer-events:none;">
+            <div style="position:absolute; top:10px; right:12px; font-size:10px; font-weight:900; letter-spacing:1px; padding:4px 8px; background:rgba(251,146,60,0.15); border:1px solid rgba(251,146,60,0.4); border-radius:6px; color:#fb923c; text-transform:uppercase;">🚧 Snart</div>
+            <div class="ov-card-icon" style="filter:grayscale(0.6);">${m.icon || '📘'}</div>
+            <div class="ov-card-title">${escape(m.title || '')}</div>
+            <div class="ov-card-desc">${escape(desc)}</div>
+            <div class="ov-card-meta">
+              <span style="color:rgba(251,146,60,0.85); font-weight:700;">Under arbete</span>
+              <span class="ov-card-pct" style="color:rgba(255,255,255,0.3);">—</span>
+            </div>
+          </div>
+        `;
+      }
       return `
         <div class="ov-card" onclick="trainOpen('${escape(m.id)}')">
           <div class="ov-card-icon">${m.icon || '📘'}</div>
@@ -6793,108 +6818,152 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const det = document.getElementById('ov-detail');
     det.style.display = 'block';
 
-    const desc = mod.sub || mod.desc || '';
-    const lessons = mod.lessons || [];
-    const quiz    = mod.quiz    || [];
+    // Spara modul i state och börja på lektion 0
+    currentTrainMod = mod;
+    currentTrainStep = { type: 'lesson', idx: 0 };
+    renderTrainStep();
+    if (!trainingProgress[modId]) trainingProgress[modId] = { lessonsRead: 0, quizCorrect: 0 };
+  };
 
-    // Backnav: om vi kom från en kategori → tillbaka dit, annars till kategori-hem
+  // ── SLIDE-LÄGE: ett kort i taget ──
+  let currentTrainMod = null;
+  let currentTrainStep = { type: 'lesson', idx: 0 }; // type: 'lesson' | 'ex' | 'quiz' | 'done'
+
+  function renderTrainStep() {
+    const mod = currentTrainMod;
+    if (!mod) return;
+    const det = document.getElementById('ov-detail');
+    if (!det) return;
+
+    const lessons = mod.lessons || [];
+    const ex      = mod.ex || null;
+    const quiz    = mod.quiz || [];
+    const totalSteps = lessons.length + (ex ? 1 : 0) + (quiz.length ? 1 : 0);
+
+    // Stega-räkning för progress-bar
+    let stepNum = 0;
+    if (currentTrainStep.type === 'lesson') stepNum = currentTrainStep.idx + 1;
+    else if (currentTrainStep.type === 'ex') stepNum = lessons.length + 1;
+    else if (currentTrainStep.type === 'quiz') stepNum = lessons.length + (ex ? 1 : 0) + 1;
+    else if (currentTrainStep.type === 'done') stepNum = totalSteps;
+    const pct = totalSteps ? Math.round(stepNum / totalSteps * 100) : 0;
+
     const backLabel = currentTrainCat
       ? ('← Tillbaka till ' + (TRAINING_CATS.find(c => c.id === currentTrainCat) || {}).label)
       : '← Tillbaka till alla kategorier';
 
     let html = '<button class="ov-back" onclick="trainBack()">' + escape(backLabel) + '</button>';
-    html += '<div class="ov-hero" style="text-align:left; padding:0 0 24px;">';
+
+    // Hero — modul-titel + progress-bar
+    html += '<div class="ov-hero" style="text-align:left; padding:0 0 18px;">';
     html += '<div class="ov-title">' + (mod.icon || '📘') + ' ' + escape(mod.title || '') + '</div>';
-    if (desc) html += '<div class="ov-sub" style="margin:0;">' + escape(desc) + '</div>';
+    if (mod.sub) html += '<div class="ov-sub" style="margin:0 0 14px;">' + escape(mod.sub) + '</div>';
+    html += '<div style="display:flex; align-items:center; gap:10px; margin-top:8px;">';
+    html += '<div style="flex:1; height:6px; background:rgba(255,255,255,0.07); border-radius:3px; overflow:hidden;">';
+    html += '<div style="height:100%; width:' + pct + '%; background:' + (mod.color || '#60a5fa') + '; transition:width .3s;"></div>';
     html += '</div>';
+    html += '<div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.55); min-width:54px; text-align:right;">' + stepNum + ' / ' + totalSteps + '</div>';
+    html += '</div></div>';
 
-    // Lektioner
-    if (lessons.length) {
-      html += '<div class="cv-section-title" style="margin-bottom:12px;">Lektioner</div>';
-      lessons.forEach((l, i) => {
-        const text = l.s || '';
-        const deep = l.a || '';
-        html += `
-          <div class="lesson-card">
-            <div class="lesson-title">${i+1}. ${escape(l.t || '')}</div>
-            <div class="lesson-text">${escape(text)}</div>
-            ${deep ? `<details style="margin-top:12px;">
-              <summary style="cursor:pointer; color:rgba(255,255,255,0.5); font-size:12px; font-weight:700;">Visa fördjupning</summary>
-              <div class="lesson-deep">${escape(deep)}</div>
-            </details>` : ''}
-          </div>
-        `;
-      });
+    // Innehåll baserat på typ av steg
+    if (currentTrainStep.type === 'lesson') {
+      const i = currentTrainStep.idx;
+      const l = lessons[i] || {};
+      const text = l.s || '';
+      const deep = l.a || '';
+      html += '<div style="font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:' + (mod.color || '#60a5fa') + '; margin-bottom:10px;">📘 LEKTION ' + (i + 1) + ' / ' + lessons.length + '</div>';
+      html += '<div class="lesson-card">';
+      html += '<div class="lesson-title">' + escape(l.t || '') + '</div>';
+      html += '<div class="lesson-text">' + escape(text) + '</div>';
+      if (deep) {
+        html += '<details style="margin-top:14px;">';
+        html += '<summary style="cursor:pointer; color:rgba(255,255,255,0.5); font-size:12px; font-weight:700;">Visa fördjupning</summary>';
+        html += '<div class="lesson-deep">' + escape(deep) + '</div>';
+        html += '</details>';
+      }
+      html += '</div>';
+
+      // Navigation
+      html += '<div style="display:flex; gap:10px; margin-top:18px;">';
+      if (i > 0) {
+        html += '<button class="ov-back" onclick="trainGoStep(\'lesson\',' + (i - 1) + ')" style="margin:0;">← Föregående</button>';
+      }
+      html += '<div style="flex:1;"></div>';
+      const nextLabel = (i < lessons.length - 1)
+        ? 'Nästa lektion →'
+        : (ex ? 'Gå till övning →' : (quiz.length ? 'Gå till quiz →' : 'Klar →'));
+      const nextStep = (i < lessons.length - 1)
+        ? "trainGoStep('lesson'," + (i + 1) + ")"
+        : (ex ? "trainGoStep('ex',0)" : (quiz.length ? "trainGoStep('quiz',0)" : "trainGoStep('done',0)"));
+      html += '<button onclick="' + nextStep + '" style="background:' + (mod.color || '#60a5fa') + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; font-family:inherit;">' + nextLabel + '</button>';
+      html += '</div>';
+
+      // Markera lektion som läst
+      if (!trainingProgress[mod.id]) trainingProgress[mod.id] = { lessonsRead: 0, quizCorrect: 0 };
+      trainingProgress[mod.id].lessonsRead = Math.max(trainingProgress[mod.id].lessonsRead || 0, i + 1);
+      saveTrainingProgress();
     }
-
-    // Övningar (exercise) — scrollbart kort, med "under arbete"-stöd
-    const ACTIVE_EX_MODS = [
-      'm1','m2','m3',                      // Intro (alla 3)
-      'a_cv','a_match','a5',               // Arbete
-      's1','s3','s0',                      // Studier (Vad är YH, SFI, Utbildningskartan)
-      'h1','h2','h5',                      // Hälsa
-      'e1','e6','e15',                     // Ekonomi
-      'd5','d9','d4'                       // Digital
-    ];
-    const ex = mod.ex;
-    if (ex) {
-      const isActive = ACTIVE_EX_MODS.indexOf(modId) !== -1;
-      html += '<div class="cv-section-title" style="margin:28px 0 12px;">Övningar</div>';
-      html += '<div class="lesson-card" style="max-height:480px; overflow-y:auto;">';
+    else if (currentTrainStep.type === 'ex' && ex) {
+      html += '<div style="font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:' + (mod.color || '#60a5fa') + '; margin-bottom:10px;">✏️ ÖVNING</div>';
+      html += '<div class="lesson-card">';
       if (ex.title) html += '<div class="lesson-title">' + escape(ex.title) + '</div>';
       if (ex.desc)  html += '<div class="lesson-text">' + escape(ex.desc) + '</div>';
-
-      if (isActive) {
-        // Aktiv övning — visa fält
-        if (ex.fields && ex.fields.length) {
-          html += '<ul style="margin:12px 0 0 0; padding-left:20px; color:rgba(255,255,255,0.75); font-size:14px; line-height:1.6;">';
-          ex.fields.forEach(f => {
-            html += '<li style="margin-bottom:6px;">' + escape(f.l || '') + (f.hint ? ' <span style="color:rgba(255,255,255,0.45); font-size:12px;">— ' + escape(f.hint) + '</span>' : '') + '</li>';
-          });
-          html += '</ul>';
-        }
-      } else {
-        // Under arbete
-        html += '<div style="margin-top:14px; padding:16px; background:rgba(251,146,60,0.08); border:1px dashed rgba(251,146,60,0.35); border-radius:10px; color:rgba(255,255,255,0.75); font-size:14px; line-height:1.5;">'
-             + '🚧 <strong style="color:#fb923c;">Under arbete</strong> — övningen kommer snart.'
-             + '<div style="font-size:12px; color:rgba(255,255,255,0.5); margin-top:6px;">Lektioner och quiz är klara och användbara redan nu.</div>'
-             + '</div>';
+      if (ex.fields && ex.fields.length) {
+        html += '<ul style="margin:12px 0 0 0; padding-left:20px; color:rgba(255,255,255,0.75); font-size:14px; line-height:1.6;">';
+        ex.fields.forEach(f => {
+          html += '<li style="margin-bottom:6px;">' + escape(f.l || '') + (f.hint ? ' <span style="color:rgba(255,255,255,0.45); font-size:12px;">— ' + escape(f.hint) + '</span>' : '') + '</li>';
+        });
+        html += '</ul>';
       }
-
-      // Länkar visas alltid när de finns (oavsett aktiv/under arbete)
       if (ex.links && ex.links.length) {
         html += '<div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">';
-        html += '<div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.55); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">Länkar</div>';
+        html += '<div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.55); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">🔗 Länkar</div>';
         ex.links.forEach(lk => {
           html += '<a href="' + escapeAttr(lk.u || '#') + '" target="_blank" rel="noopener noreferrer" style="display:block; padding:10px 12px; margin-bottom:8px; background:rgba(96,165,250,0.08); border:1px solid rgba(96,165,250,0.25); border-radius:8px; color:#60a5fa; text-decoration:none; font-size:14px;">'
-              + '<div style="font-weight:600;">🔗 ' + escape(lk.t || lk.u || '') + '</div>'
+              + '<div style="font-weight:600;">' + escape(lk.t || lk.u || '') + '</div>'
               + (lk.d ? '<div style="font-size:12px; color:rgba(255,255,255,0.55); margin-top:3px; font-weight:400;">' + escape(lk.d) + '</div>' : '')
               + '</a>';
         });
         html += '</div>';
       }
       html += '</div>';
-    }
 
-    // Quiz
-    if (quiz.length) {
-      html += '<div class="cv-section-title" style="margin:28px 0 12px;">Quiz — testa dina kunskaper</div>';
+      html += '<div style="display:flex; gap:10px; margin-top:18px;">';
+      if (lessons.length) {
+        html += '<button class="ov-back" onclick="trainGoStep(\'lesson\',' + (lessons.length - 1) + ')" style="margin:0;">← Föregående</button>';
+      }
+      html += '<div style="flex:1;"></div>';
+      const nextLabel2 = quiz.length ? 'Gå till quiz →' : 'Klar →';
+      const nextStep2 = quiz.length ? "trainGoStep('quiz',0)" : "trainGoStep('done',0)";
+      html += '<button onclick="' + nextStep2 + '" style="background:' + (mod.color || '#60a5fa') + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; font-family:inherit;">' + nextLabel2 + '</button>';
+      html += '</div>';
+    }
+    else if (currentTrainStep.type === 'quiz' && quiz.length) {
+      html += '<div style="font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:' + (mod.color || '#60a5fa') + '; margin-bottom:10px;">🎯 QUIZ</div>';
       quiz.forEach((q, i) => {
-        html += `<div class="quiz-card" data-quiz-idx="${i}">
-          <div class="quiz-q">${i+1}. ${escape(q.q || '')}</div>`;
+        html += '<div class="quiz-card" data-quiz-idx="' + i + '">';
+        html += '<div class="quiz-q">' + (i + 1) + '. ' + escape(q.q || '') + '</div>';
         (q.o || []).forEach((opt, oi) => {
-          html += `<button class="quiz-opt" onclick="trainAnswer('${escape(modId)}', ${i}, ${oi}, ${q.c}, this)">${escape(opt)}</button>`;
+          html += '<button class="quiz-opt" onclick="trainAnswer(\'' + escape(mod.id) + '\', ' + i + ', ' + oi + ', ' + q.c + ', this)">' + escape(opt) + '</button>';
         });
         html += '</div>';
       });
+
+      html += '<div style="display:flex; gap:10px; margin-top:18px;">';
+      const prevType = ex ? 'ex' : 'lesson';
+      const prevIdx  = ex ? 0 : Math.max(0, lessons.length - 1);
+      html += '<button class="ov-back" onclick="trainGoStep(\'' + prevType + '\',' + prevIdx + ')" style="margin:0;">← Föregående</button>';
+      html += '</div>';
     }
 
     det.innerHTML = html;
+    // Skrolla upp till början
+    try { det.scrollTop = 0; window.scrollTo({ top: det.offsetTop - 20, behavior: 'smooth' }); } catch(e) {}
+  }
 
-    // Markera lektioner som lästa när de öppnas (enklast: alla på en gång)
-    if (!trainingProgress[modId]) trainingProgress[modId] = { lessonsRead: 0, quizCorrect: 0 };
-    trainingProgress[modId].lessonsRead = lessons.length;
-    saveTrainingProgress();
+  window.trainGoStep = function(type, idx) {
+    currentTrainStep = { type: type, idx: idx };
+    renderTrainStep();
   };
 
   window.trainBack = function() {
