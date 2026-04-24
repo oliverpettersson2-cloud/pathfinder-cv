@@ -8420,12 +8420,13 @@ function sp(p){try{localStorage.setItem(KEY,JSON.stringify(p))}catch(e){} if(typ
 var INTRO=[
 {id:'m1',icon:'📋',title:'Regler & Rättigheter',sub:'Närvaro, frånvaro & skyldigheter',color:'#3eb489',bc:'rgba(62,180,137,.3)',bg:'rgba(62,180,137,.07)',
 lessons:[
-{t:'Vad är aktivitetskrav?',s:'Aktivitetskrav betyder att du ska delta i de aktiviteter som du och din handläggare har bestämt. Det kan vara möten, jobbsök, praktik eller utbildning.\n\nDu behöver delta för att få ekonomiskt bistånd.',a:'Aktivitetskrav innebär att du förväntas följa den planering som beslutats tillsammans med din handläggare. Syftet är att stärka din väg mot självförsörjning. Om du inte deltar kan det påverka din ersättning.'},
-{t:'Närvaro & frånvaro',s:'Om du blir sjuk måste du säga till direkt. Du ska meddela samma dag. Du kan behöva lämna intyg.',a:'Frånvaro ska alltid meddelas samma dag, helst innan aktiviteten börjar. Vid upprepad frånvaro kan handläggaren begära intyg eller uppdaterad planering.'},
-{t:'Rättigheter & skyldigheter',s:'Du har rätt till stöd, planering och information.\nDu har skyldighet att delta, lämna korrekta uppgifter och följa planen.',a:'Du har rätt till en individuell plan, tydlig kommunikation och skälig handläggningstid.\nDu har skyldighet att medverka aktivt, lämna korrekta uppgifter och följa beslutade aktiviteter.'}
+{t:'Ekonomiskt bistånd & försörjningsstöd',s:'Titta på videon först — Attention förklarar hur ekonomiskt bistånd (försörjningsstöd) fungerar i Sverige.\n\nEkonomiskt bistånd är samhällets sista skyddsnät när du inte kan försörja dig själv.\n\n💡 Det kallas också försörjningsstöd eller socialbidrag.\n\nEfter videon — läs vidare om aktivitetskravet nedan.',a:'Ekonomiskt bistånd regleras i Socialtjänstlagen (SoL). Rätten prövas individuellt av kommunens socialtjänst. Biståndet består av två delar: riksnorm (mat, kläder, hygien, fritid) + skäliga kostnader (hyra, el, hemförsäkring, arbetsresor). För att få bistånd måste du först ha uttömt andra möjligheter — a-kassa, sjukpenning, föräldrapenning, bostadsbidrag m.m.',yt:'https://www.youtube.com/embed/PieoOiL4Lug'},
+{t:'Vad är aktivitetskrav?',s:'Aktivitetskravet betyder att du måste vara AKTIV för att få ekonomiskt bistånd.\n\n✅ Delta i möten med handläggaren\n✅ Söka jobb aktivt (dokumentera!)\n✅ Delta i praktik, utbildning eller anvisad aktivitet\n✅ Stå till arbetsmarknadens förfogande\n\n🔎 "Stå till arbetsmarknadens förfogande" betyder att du är redo att ta ett jobb direkt om det dyker upp.\n\n❌ Om du tackar nej till ett rimligt jobb/aktivitet → ersättningen kan sänkas eller dras in.\n\n⚠️ Undantag: om du är sjuk, har små barn eller särskilda skäl — prata med din handläggare!',a:'Aktivitetskravet är lagstadgat (SoL 4 kap. 4§). Kommunen får ställa krav på att den biståndsberättigade deltar i praktik eller kompetenshöjande åtgärd. Kravet måste vara individanpassat — hänsyn tas till ålder, hälsa och familjesituation. Vid giltig frånvaro (sjukdom, vård av barn) påverkas inte biståndet. Ogiltig frånvaro eller vägran kan leda till att ansökan avslås eller att bistånd minskas.'},
+{t:'Närvaro & frånvaro',s:'Om du blir sjuk eller inte kan komma:\n\n1️⃣ Meddela SAMMA DAG — helst innan aktiviteten börjar\n2️⃣ Ring, mejla eller sms:a din handläggare\n3️⃣ Lämna läkarintyg om det krävs (vanligtvis dag 8)\n\nOgiltig frånvaro = kan påverka din ersättning.',a:'Frånvaro ska alltid meddelas samma dag, helst innan aktiviteten börjar. Vid upprepad frånvaro kan handläggaren begära intyg eller uppdaterad planering. Förstadagsintyg kan krävas vid frekvent korttidsfrånvaro.'},
+{t:'Rättigheter & skyldigheter',s:'DINA RÄTTIGHETER:\n✅ En individuell plan\n✅ Tydlig information om beslut\n✅ Skälig handläggningstid\n✅ Överklaga beslut du inte håller med om\n✅ Bli bemött med respekt\n\nDINA SKYLDIGHETER:\n✅ Delta aktivt\n✅ Lämna korrekta uppgifter\n✅ Följa planen\n✅ Meddela ändringar (jobb, inkomst, boende)',a:'Du har rätt till en individuell plan, tydlig kommunikation och skälig handläggningstid. Beslut kan överklagas till förvaltningsrätten. Du har skyldighet att medverka aktivt, lämna korrekta uppgifter och följa beslutade aktiviteter. Felaktiga uppgifter kan leda till återkrav eller polisanmälan vid bidragsbrott.'}
 ],
 ex:{type:'write',title:'Skriv ett frånvaromeddelande',desc:'Du är sjuk och kan inte delta i dagens aktivitet. Skriv ett korrekt och professionellt meddelande till din handläggare.',tips:'Inkludera: vem du är, vilken aktivitet du missar, varför du är frånvarande och när du förväntar dig att vara tillbaka.',ph:'Hej [handläggarens namn],\n\nJag heter... och deltar i...\n\nJag kan idag inte delta på grund av...\n\nJag förväntar mig att vara tillbaka...',min:80},
-quiz:[{q:'Vad betyder aktivitetskrav?',o:['Du kan göra vad du vill','Du ska delta i planerade aktiviteter','Du behöver inte meddela frånvaro'],c:1},{q:'När ska du meddela frånvaro?',o:['Dagen efter','Samma dag','Nästa vecka'],c:1},{q:'Vad är en skyldighet?',o:['Något du kan välja','Något du måste göra','En rättighet'],c:1},{q:'Vad är en rättighet?',o:['Något du är tvungen att göra','Något du har rätt till','En aktivitet'],c:1},{q:'Vad kan hända om du inte deltar?',o:['Ingenting','Din ersättning kan påverkas','Du får mer tid'],c:1}],
+quiz:[{q:'Vad är ekonomiskt bistånd?',o:['En förmån alla får','Samhällets sista skyddsnät när du inte kan försörja dig','En pension'],c:1},{q:'Vad kallas ekonomiskt bistånd också?',o:['Aktivitetsstöd','Försörjningsstöd eller socialbidrag','Studiemedel'],c:1},{q:'Vem bedömer rätten till bistånd?',o:['Arbetsförmedlingen','Kommunens socialtjänst','Försäkringskassan'],c:1},{q:'Vad betyder "stå till arbetsmarknadens förfogande"?',o:['Att vara arbetslös','Att vara redo att ta ett jobb direkt','Att ha jobb'],c:1},{q:'Vad betyder aktivitetskrav?',o:['Du kan göra vad du vill','Du ska delta i planerade aktiviteter','Du behöver inte meddela frånvaro'],c:1},{q:'När ska du meddela frånvaro?',o:['Dagen efter','Samma dag','Nästa vecka'],c:1},{q:'Vad händer om du tackar nej till ett rimligt jobb?',o:['Ingenting','Ersättningen kan sänkas eller dras in','Du får mer bistånd'],c:1},{q:'Vad är en rättighet?',o:['Något du är tvungen att göra','Något du har rätt till','En aktivitet'],c:1}],
 pr:['Förklara mina skyldigheter på enkel svenska.','Skriv ett korrekt meddelande om sjukfrånvaro.','Sammanfatta aktivitetskrav i tre meningar.']},
 {id:'m2',icon:'💻',title:'SKills-systemet',sub:'Introduktion till SKills & din plan',color:'#f0c040',bc:'rgba(240,192,64,.3)',bg:'rgba(240,192,64,.07)',
 lessons:[
@@ -10495,6 +10496,12 @@ var D={
     var h=D.hdr(pct,idx+1,tot,true,'D.backToList()');
     h+='<div class="cat-label" style="color:'+m.color+';">'+m.icon+' '+m.title+'</div>';
     h+='<div class="lesson-title">'+les.t+'</div>';
+    // YouTube-embed om lektionen har yt-fält (och inte är Rick Roll-placeholdern)
+    if(les.yt && les.yt.indexOf('dQw4w9WgXcQ')===-1){
+      h+='<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;background:#000;margin-bottom:16px;">';
+      h+='<iframe src="'+les.yt+'" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen allow="accelerometer; encrypted-media; picture-in-picture"></iframe>';
+      h+='</div>';
+    }
     h+='<div class="lesson-box">'+les.s+'</div>';
     if(les.a){
       h+='<div style="border-left:3px solid '+m.color+';background:rgba(255,255,255,.03);border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:20px;">';
@@ -10505,9 +10512,15 @@ var D={
     h+='';
     h+='<div class="nav-row">';
     if(idx>0)h+='<button class="nav-btn" onclick="D.showLesson('+(idx-1)+')">← Föregående</button>';
-    h+='<button class="cta-btn" style="background:'+m.color+';" onclick="D.lessonNext('+idx+')">'+(idx<m.lessons.length-1?'Nästa lektion →':'Gå till övning →')+'</button>';
+    var lblNext=(idx<m.lessons.length-1?'Nästa lektion →':'Gå till övning →');
+    h+='<button id="mobLessonNext" class="cta-btn" disabled style="background:'+m.color+';opacity:.4;cursor:not-allowed;" onclick="D.lessonNext('+idx+')">⏳ '+lblNext+'</button>';
     h+='</div>';
     document.getElementById('ovnModview').innerHTML=h;
+    // Lås Nästa-knappen i 2 sek
+    setTimeout(function(){
+      var b=document.getElementById('mobLessonNext');
+      if(b){b.disabled=false;b.style.opacity='1';b.style.cursor='pointer';b.textContent=lblNext;}
+    },2000);
   },
 
   setLv:function(){},
@@ -10573,6 +10586,17 @@ var D={
       var ta=document.getElementById('wta');
       if(ta)ta.addEventListener('input',function(){var c=document.getElementById('wcc');if(c)c.textContent=this.value.length+' tecken';});
     }
+    // Lås alla CTA-knappar (Spara/fortsätt) i 2 sek för att tvinga läsning
+    var ctas=document.querySelectorAll('#ovnModview .cta-btn');
+    ctas.forEach(function(b){
+      var orig=b.textContent;
+      b.disabled=true;b.style.opacity='.4';b.style.cursor='not-allowed';
+      b.textContent='⏳ '+orig;
+      setTimeout(function(){
+        b.disabled=false;b.style.opacity='1';b.style.cursor='pointer';
+        b.textContent=orig;
+      },2000);
+    });
   },
 
 
@@ -10671,9 +10695,17 @@ var D={
     h+='<div class="quiz-dots">';
     m.quiz.forEach(function(_,i){h+='<div class="quiz-dot" style="background:'+(i<qi?m.color:i===qi?'rgba(255,255,255,.35)':'rgba(255,255,255,.08)')+';"></div>';});
     h+='</div><div class="quiz-q">'+q.q+'</div><div id="qopts">';
-    q.o.forEach(function(opt,i){h+='<button class="quiz-opt" onclick="D.answerQ(this,'+i+','+q.c+','+qi+','+score+')">'+'<span class="opt-lbl">'+labs[i]+'</span><span class="opt-txt">'+opt+'</span></button>';});
-    h+='</div><div class="fb" id="qfb"></div>';
+    q.o.forEach(function(opt,i){h+='<button class="quiz-opt" disabled style="opacity:.4;cursor:not-allowed;" onclick="D.answerQ(this,'+i+','+q.c+','+qi+','+score+')">'+'<span class="opt-lbl">'+labs[i]+'</span><span class="opt-txt">'+opt+'</span></button>';});
+    h+='</div><div class="fb" id="qfb"><div style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;padding:8px;">⏳ Läs frågan — svarsknappar aktiveras om 2 sek...</div></div>';
     document.getElementById('ovnModview').innerHTML=h;
+    // Lås svarsknappar i 2 sek
+    setTimeout(function(){
+      document.querySelectorAll('#qopts button').forEach(function(b){
+        b.disabled=false;b.style.opacity='1';b.style.cursor='pointer';
+      });
+      var fb=document.getElementById('qfb');
+      if(fb)fb.innerHTML='';
+    },2000);
   },
 
   answerQ:function(el,chosen,correct,qi,score){
