@@ -2099,16 +2099,13 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           if (!Array.isArray(cvData[k])) cvData[k] = [];
         });
         saveCVLocal();
-        // Wrappa render-anropen — om ett kraschar (t.ex. DOM-element saknas på
-        // denna sida) ska resten av load_all ändå kunna fortsätta och spara
-        // savedCvs/matchedCvs till localStorage.
-        try { if (typeof loadCVIntoForm    === 'function') loadCVIntoForm();    } catch(e) { console.warn('loadCVIntoForm:', e); }
-        try { if (typeof renderJobs        === 'function') renderJobs();        } catch(e) { console.warn('renderJobs:', e); }
-        try { if (typeof renderEducation   === 'function') renderEducation();   } catch(e) { console.warn('renderEducation:', e); }
-        try { if (typeof renderSkillsChips === 'function') renderSkillsChips(); } catch(e) { console.warn('renderSkillsChips:', e); }
-        try { if (typeof renderLanguages   === 'function') renderLanguages();   } catch(e) { console.warn('renderLanguages:', e); }
-        try { if (typeof renderLicenses    === 'function') renderLicenses();    } catch(e) { console.warn('renderLicenses:', e); }
-        try { if (typeof renderPreview     === 'function') renderPreview();     } catch(e) { console.warn('renderPreview:', e); }
+        if (typeof loadCVIntoForm === 'function') loadCVIntoForm();
+        if (typeof renderJobs === 'function') renderJobs();
+        if (typeof renderEducation === 'function') renderEducation();
+        if (typeof renderSkillsChips === 'function') renderSkillsChips();
+        if (typeof renderLanguages === 'function') renderLanguages();
+        if (typeof renderLicenses === 'function') renderLicenses();
+        if (typeof renderPreview === 'function') renderPreview();
         if (cvData.name) foundSomething = true;
       }
 
@@ -2133,15 +2130,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       if (Array.isArray(result.jobDiary)) {
         safeSet('pathfinder_job_diary', JSON.stringify(result.jobDiary));
       }
-
-      // Re-rendera profil-vyn om den är aktiv så nyladdad data visas direkt
-      // (annars ser profilen tom ut eftersom load_all körs fire-and-forget)
-      try {
-        if (typeof currentView !== 'undefined' && currentView === 'profil'
-            && typeof renderProfilView === 'function') {
-          renderProfilView();
-        }
-      } catch(e) { /* tyst — rendering ska aldrig blockera */ }
 
       return foundSomething;
     } catch(e) {
@@ -4117,7 +4105,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // ============================================================
   function renderLanguages() {
     const grid = document.getElementById('languagesGrid');
-    if (!grid) return;
     grid.innerHTML = ALL_LANGUAGES.map(lang => {
       const checked = cvData.languages.includes(lang);
       return `
@@ -4140,7 +4127,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
   function renderLicenses() {
     const grid = document.getElementById('licensesGrid');
-    if (!grid) return;
     grid.innerHTML = ALL_LICENSES.map(lic => {
       const checked = cvData.licenses.includes(lic);
       return `
