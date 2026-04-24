@@ -10340,9 +10340,23 @@ var D={
     var p=gp();
     var h='<div class="mvhdr"><button class="back-btn" onclick="D.goHome()">←</button>';
     h+='<span style="font-size:14px;font-weight:900;color:#fff;">'+catName+'</span></div>';
+    // Whitelist: 18 moduler med färdigt innehåll. Övriga visas som "Under arbete".
+    var ACTIVE=['m1','m2','m3','a_cv','a_match','a5','s1','s3','s0','h1','h2','h5','e1','e6','e15','d5','d9','d4'];
     mods.forEach(function(m,i){
       var pct=D.modPct(m,p),mp=p[m.id]||{};
       var un=D.modUnlocked(mods,i,p);
+      var inProgress=ACTIVE.indexOf(m.id)===-1;
+      if(inProgress){
+        // Under arbete-kort (klickbart men gråat och visar info)
+        h+='<div class="mcard" data-id="'+m.id+'" style="opacity:0.5;border-color:rgba(251,146,60,.25);background:rgba(251,146,60,.04);position:relative;cursor:not-allowed;">';
+        h+='<div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:900;letter-spacing:1px;padding:3px 8px;background:rgba(251,146,60,.18);border:1px solid rgba(251,146,60,.4);border-radius:6px;color:#fb923c;text-transform:uppercase;">🚧 Snart</div>';
+        h+='<div class="mcard-top">';
+        h+='<div class="mcard-icon" style="background:rgba(255,255,255,.04);filter:grayscale(0.6);">'+m.icon+'</div>';
+        h+='<div class="mcard-info"><div class="mcard-title" style="color:rgba(255,255,255,.55);">'+m.title+'</div>';
+        h+='<div class="mcard-sub" style="color:#fb923c;font-weight:700;">Under arbete</div></div>';
+        h+='</div></div>';
+        return;
+      }
       h+='<div class="mcard'+(un?'':' locked')+'" data-id="'+m.id+'" onclick="D.clickCard(this)" style="border-color:'+(un?m.bc:'rgba(255,255,255,.07)')+';background:'+(un?m.bg:'rgba(255,255,255,.02)')+';">';
       h+='<div class="mcard-top">';
       h+='<div class="mcard-icon" style="background:'+(un?m.bg:'rgba(255,255,255,.04)')+';">'+(un?m.icon:'🔒')+'</div>';
@@ -10366,8 +10380,11 @@ var D={
   },
 
   clickCard:function(el){
+    var ACTIVE=['m1','m2','m3','a_cv','a_match','a5','s1','s3','s0','h1','h2','h5','e1','e6','e15','d5','d9','d4'];
+    var id=el.dataset.id;
+    if(id && ACTIVE.indexOf(id)===-1){toast('🚧 Under arbete — kommer snart');return;}
     if(el.classList.contains('locked')){toast('🔒 Slutför föregående modul');return;}
-    var id=el.dataset.id;if(id)D.openMod(id);
+    if(id)D.openMod(id);
   },
 
   // ── TASKS ──
@@ -10531,28 +10548,13 @@ var D={
       '<span class="mvstep">'+step+'/'+tot+'</span></div>';
   },
 
-  // Whitelist: moduler med färdiga, aktiva övningar. Resten visar "under arbete".
-  // VERSION v2 — Under arbete-system aktivt
-  ACTIVE_EX_MODS:[
-    'm1','m2','m3',           // Intro (alla 3)
-    'a_cv','a_match','a5',    // Arbete
-    's1','s3','s0',           // Studier (Vad är YH, SFI, Utbildningskartan)
-    'h1','h2','h5',           // Hälsa
-    'e1','e6','e15',          // Ekonomi
-    'd5','d9','d4'            // Digital
-  ],
-
   // ── EXERCISE ──
   showEx:function(){
     var m=D.curMod,ex=m.ex,tot=m.lessons.length+2,step=m.lessons.length+1;
     var pct=Math.round(step/tot*100);
     var h=D.hdr(pct,step,tot,true,'D.exBack()');
     h+='<div class="cat-label" style="color:'+m.color+';">'+m.icon+' ÖVNING</div>';
-    var isActive=D.ACTIVE_EX_MODS.indexOf(m.id)!==-1;
-    console.log('[ÖVNING v2]',m.id,'isActive:',isActive);
-    if(!isActive){
-      h+=D.exUnderConstruction(ex);
-    } else if(ex.type==='write')h+=D.exWrite(ex);
+    if(ex.type==='write')h+=D.exWrite(ex);
     else if(ex.type==='sort')h+=D.exSort(ex);
     else if(ex.type==='arb-map')h+=D.exArbMap(ex);
     else if(ex.type==='match-trainer')h+=D.exMatchTrainer(ex);
@@ -10563,34 +10565,13 @@ var D={
     else if(ex.type==='ai-chat')h+=D.exAiChat(ex);
     else h+=D.exBuild(ex);
     document.getElementById('ovnModview').innerHTML=h;
-    if(isActive && ex.type==='write'){
+    if(ex.type==='write'){
       var ta=document.getElementById('wta');
       if(ta)ta.addEventListener('input',function(){var c=document.getElementById('wcc');if(c)c.textContent=this.value.length+' tecken';});
     }
   },
 
-  exUnderConstruction:function(ex){
-    var m=D.curMod;
-    var h='<div class="ex-box"><div class="ex-title">'+(ex.title||'Övning')+'</div><div class="ex-desc">'+(ex.desc||'')+'</div></div>';
-    h+='<div style="padding:22px 18px;margin-bottom:18px;background:rgba(251,146,60,.08);border:1.5px dashed rgba(251,146,60,.4);border-radius:14px;text-align:center;">';
-    h+='<div style="font-size:34px;margin-bottom:10px;">🚧</div>';
-    h+='<div style="font-size:15px;font-weight:800;color:#fb923c;margin-bottom:6px;">Under arbete</div>';
-    h+='<div style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.5;">Den här övningen kommer snart.<br>Lektioner och quiz är klara — fortsätt gärna dit!</div>';
-    h+='</div>';
-    if(ex.links&&ex.links.length){
-      h+='<div style="margin-bottom:18px;">';
-      h+='<div style="font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px;">🔗 Länkar</div>';
-      ex.links.forEach(function(lk){
-        h+='<a href="'+(lk.u||'#')+'" target="_blank" rel="noopener noreferrer" style="display:block;padding:12px 14px;margin-bottom:8px;background:'+m.bg+';border:1px solid '+m.bc+';border-radius:12px;color:'+m.color+';text-decoration:none;">';
-        h+='<div style="font-size:14px;font-weight:700;line-height:1.3;">'+(lk.t||lk.u||'')+'</div>';
-        if(lk.d)h+='<div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;font-weight:400;line-height:1.4;">'+lk.d+'</div>';
-        h+='</a>';
-      });
-      h+='</div>';
-    }
-    h+='<button class="cta-btn" style="width:100%;background:'+m.color+';" onclick="D.exDone()">Gå till quiz →</button>';
-    return h;
-  },
+
 
   exWrite:function(ex){
     var saved=(gp()[D.curMod.id]||{}).wa||'';
