@@ -77,12 +77,13 @@
 var INTRO=[
 {id:'m1',icon:'📋',title:'Regler & Rättigheter',sub:'Närvaro, frånvaro & skyldigheter',color:'#3eb489',bc:'rgba(62,180,137,.3)',bg:'rgba(62,180,137,.07)',
 lessons:[
-{t:'Vad är aktivitetskrav?',s:'Aktivitetskrav betyder att du ska delta i de aktiviteter som du och din handläggare har bestämt. Det kan vara möten, jobbsök, praktik eller utbildning.\n\nDu behöver delta för att få ekonomiskt bistånd.',a:'Aktivitetskrav innebär att du förväntas följa den planering som beslutats tillsammans med din handläggare. Syftet är att stärka din väg mot självförsörjning. Om du inte deltar kan det påverka din ersättning.'},
-{t:'Närvaro & frånvaro',s:'Om du blir sjuk måste du säga till direkt. Du ska meddela samma dag. Du kan behöva lämna intyg.',a:'Frånvaro ska alltid meddelas samma dag, helst innan aktiviteten börjar. Vid upprepad frånvaro kan handläggaren begära intyg eller uppdaterad planering.'},
-{t:'Rättigheter & skyldigheter',s:'Du har rätt till stöd, planering och information.\nDu har skyldighet att delta, lämna korrekta uppgifter och följa planen.',a:'Du har rätt till en individuell plan, tydlig kommunikation och skälig handläggningstid.\nDu har skyldighet att medverka aktivt, lämna korrekta uppgifter och följa beslutade aktiviteter.'}
+{t:'Ekonomiskt bistånd & försörjningsstöd',s:'Titta på videon först — Attention förklarar hur ekonomiskt bistånd (försörjningsstöd) fungerar i Sverige.\n\nEkonomiskt bistånd är samhällets sista skyddsnät när du inte kan försörja dig själv.\n\n💡 Det kallas också försörjningsstöd eller socialbidrag.\n\nEfter videon — läs vidare om aktivitetskravet nedan.',a:'Ekonomiskt bistånd regleras i Socialtjänstlagen (SoL). Rätten prövas individuellt av kommunens socialtjänst. Biståndet består av två delar: riksnorm (mat, kläder, hygien, fritid) + skäliga kostnader (hyra, el, hemförsäkring, arbetsresor). För att få bistånd måste du först ha uttömt andra möjligheter — a-kassa, sjukpenning, föräldrapenning, bostadsbidrag m.m.',yt:'https://www.youtube.com/embed/PieoOiL4Lug'},
+{t:'Vad är aktivitetskrav?',s:'Aktivitetskravet betyder att du måste vara AKTIV för att få ekonomiskt bistånd.\n\n✅ Delta i möten med handläggaren\n✅ Söka jobb aktivt (dokumentera!)\n✅ Delta i praktik, utbildning eller anvisad aktivitet\n✅ Stå till arbetsmarknadens förfogande\n\n🔎 "Stå till arbetsmarknadens förfogande" betyder att du är redo att ta ett jobb direkt om det dyker upp.\n\n❌ Om du tackar nej till ett rimligt jobb/aktivitet → ersättningen kan sänkas eller dras in.\n\n⚠️ Undantag: om du är sjuk, har små barn eller särskilda skäl — prata med din handläggare!',a:'Aktivitetskravet är lagstadgat (SoL 4 kap. 4§). Kommunen får ställa krav på att den biståndsberättigade deltar i praktik eller kompetenshöjande åtgärd. Kravet måste vara individanpassat — hänsyn tas till ålder, hälsa och familjesituation. Vid giltig frånvaro (sjukdom, vård av barn) påverkas inte biståndet. Ogiltig frånvaro eller vägran kan leda till att ansökan avslås eller att bistånd minskas.'},
+{t:'Närvaro & frånvaro',s:'Om du blir sjuk eller inte kan komma:\n\n1️⃣ Meddela SAMMA DAG — helst innan aktiviteten börjar\n2️⃣ Ring, mejla eller sms:a din handläggare\n3️⃣ Lämna läkarintyg om det krävs (vanligtvis dag 8)\n\nOgiltig frånvaro = kan påverka din ersättning.',a:'Frånvaro ska alltid meddelas samma dag, helst innan aktiviteten börjar. Vid upprepad frånvaro kan handläggaren begära intyg eller uppdaterad planering. Förstadagsintyg kan krävas vid frekvent korttidsfrånvaro.'},
+{t:'Rättigheter & skyldigheter',s:'DINA RÄTTIGHETER:\n✅ En individuell plan\n✅ Tydlig information om beslut\n✅ Skälig handläggningstid\n✅ Överklaga beslut du inte håller med om\n✅ Bli bemött med respekt\n\nDINA SKYLDIGHETER:\n✅ Delta aktivt\n✅ Lämna korrekta uppgifter\n✅ Följa planen\n✅ Meddela ändringar (jobb, inkomst, boende)',a:'Du har rätt till en individuell plan, tydlig kommunikation och skälig handläggningstid. Beslut kan överklagas till förvaltningsrätten. Du har skyldighet att medverka aktivt, lämna korrekta uppgifter och följa beslutade aktiviteter. Felaktiga uppgifter kan leda till återkrav eller polisanmälan vid bidragsbrott.'}
 ],
 ex:{type:'write',title:'Skriv ett frånvaromeddelande',desc:'Du är sjuk och kan inte delta i dagens aktivitet. Skriv ett korrekt och professionellt meddelande till din handläggare.',tips:'Inkludera: vem du är, vilken aktivitet du missar, varför du är frånvarande och när du förväntar dig att vara tillbaka.',ph:'Hej [handläggarens namn],\n\nJag heter... och deltar i...\n\nJag kan idag inte delta på grund av...\n\nJag förväntar mig att vara tillbaka...',min:80},
-quiz:[{q:'Vad betyder aktivitetskrav?',o:['Du kan göra vad du vill','Du ska delta i planerade aktiviteter','Du behöver inte meddela frånvaro'],c:1},{q:'När ska du meddela frånvaro?',o:['Dagen efter','Samma dag','Nästa vecka'],c:1},{q:'Vad är en skyldighet?',o:['Något du kan välja','Något du måste göra','En rättighet'],c:1},{q:'Vad är en rättighet?',o:['Något du är tvungen att göra','Något du har rätt till','En aktivitet'],c:1},{q:'Vad kan hända om du inte deltar?',o:['Ingenting','Din ersättning kan påverkas','Du får mer tid'],c:1}],
+quiz:[{q:'Vad är ekonomiskt bistånd?',o:['En förmån alla får','Samhällets sista skyddsnät när du inte kan försörja dig','En pension'],c:1},{q:'Vad kallas ekonomiskt bistånd också?',o:['Aktivitetsstöd','Försörjningsstöd eller socialbidrag','Studiemedel'],c:1},{q:'Vem bedömer rätten till bistånd?',o:['Arbetsförmedlingen','Kommunens socialtjänst','Försäkringskassan'],c:1},{q:'Vad betyder "stå till arbetsmarknadens förfogande"?',o:['Att vara arbetslös','Att vara redo att ta ett jobb direkt','Att ha jobb'],c:1},{q:'Vad betyder aktivitetskrav?',o:['Du kan göra vad du vill','Du ska delta i planerade aktiviteter','Du behöver inte meddela frånvaro'],c:1},{q:'När ska du meddela frånvaro?',o:['Dagen efter','Samma dag','Nästa vecka'],c:1},{q:'Vad händer om du tackar nej till ett rimligt jobb?',o:['Ingenting','Ersättningen kan sänkas eller dras in','Du får mer bistånd'],c:1},{q:'Vad är en rättighet?',o:['Något du är tvungen att göra','Något du har rätt till','En aktivitet'],c:1}],
 pr:['Förklara mina skyldigheter på enkel svenska.','Skriv ett korrekt meddelande om sjukfrånvaro.','Sammanfatta aktivitetskrav i tre meningar.']},
 {id:'m2',icon:'💻',title:'SKills-systemet',sub:'Introduktion till SKills & din plan',color:'#f0c040',bc:'rgba(240,192,64,.3)',bg:'rgba(240,192,64,.07)',
 lessons:[
@@ -6868,9 +6869,16 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const l = lessons[i] || {};
       const text = l.s || '';
       const deep = l.a || '';
+      const yt   = l.yt || '';
       html += '<div style="font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:' + (mod.color || '#60a5fa') + '; margin-bottom:10px;">📘 LEKTION ' + (i + 1) + ' / ' + lessons.length + '</div>';
       html += '<div class="lesson-card">';
       html += '<div class="lesson-title">' + escape(l.t || '') + '</div>';
+      // YouTube-embed om lektionen har yt-fält (och det inte är Rick Roll-placeholdern)
+      if (yt && yt.indexOf('dQw4w9WgXcQ') === -1) {
+        html += '<div style="margin:12px 0 16px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px; background:#000;">';
+        html += '<iframe src="' + escapeAttr(yt) + '" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen allow="accelerometer; encrypted-media; picture-in-picture"></iframe>';
+        html += '</div>';
+      }
       html += '<div class="lesson-text">' + escape(text) + '</div>';
       if (deep) {
         html += '<details style="margin-top:14px;">';
@@ -6880,7 +6888,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       }
       html += '</div>';
 
-      // Navigation
+      // Navigation — Nästa-knapp är låst 2 sek (tvingar läsning)
       html += '<div style="display:flex; gap:10px; margin-top:18px;">';
       if (i > 0) {
         html += '<button class="ov-back" onclick="trainGoStep(\'lesson\',' + (i - 1) + ')" style="margin:0;">← Föregående</button>';
@@ -6892,8 +6900,13 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const nextStep = (i < lessons.length - 1)
         ? "trainGoStep('lesson'," + (i + 1) + ")"
         : (ex ? "trainGoStep('ex',0)" : (quiz.length ? "trainGoStep('quiz',0)" : "trainGoStep('done',0)"));
-      html += '<button onclick="' + nextStep + '" style="background:' + (mod.color || '#60a5fa') + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; font-family:inherit;">' + nextLabel + '</button>';
+      html += '<button id="trainNextBtn" disabled onclick="' + nextStep + '" style="background:' + (mod.color || '#60a5fa') + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:not-allowed; font-family:inherit; opacity:0.4;">⏳ ' + nextLabel + '</button>';
       html += '</div>';
+      // Aktivera knappen efter 2 sek
+      setTimeout(function() {
+        const b = document.getElementById('trainNextBtn');
+        if (b) { b.disabled = false; b.style.cursor = 'pointer'; b.style.opacity = '1'; b.textContent = nextLabel; }
+      }, 2000);
 
       // Markera lektion som läst
       if (!trainingProgress[mod.id]) trainingProgress[mod.id] = { lessonsRead: 0, quizCorrect: 0 };
@@ -6932,25 +6945,69 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       html += '<div style="flex:1;"></div>';
       const nextLabel2 = quiz.length ? 'Gå till quiz →' : 'Klar →';
       const nextStep2 = quiz.length ? "trainGoStep('quiz',0)" : "trainGoStep('done',0)";
-      html += '<button onclick="' + nextStep2 + '" style="background:' + (mod.color || '#60a5fa') + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; font-family:inherit;">' + nextLabel2 + '</button>';
+      html += '<button id="trainExNextBtn" disabled onclick="' + nextStep2 + '" style="background:' + (mod.color || '#60a5fa') + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:not-allowed; font-family:inherit; opacity:0.4;">⏳ ' + nextLabel2 + '</button>';
       html += '</div>';
+      // Lås i 2 sek
+      setTimeout(function() {
+        const b = document.getElementById('trainExNextBtn');
+        if (b) { b.disabled = false; b.style.cursor = 'pointer'; b.style.opacity = '1'; b.textContent = nextLabel2; }
+      }, 2000);
     }
     else if (currentTrainStep.type === 'quiz' && quiz.length) {
-      html += '<div style="font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:' + (mod.color || '#60a5fa') + '; margin-bottom:10px;">🎯 QUIZ</div>';
-      quiz.forEach((q, i) => {
-        html += '<div class="quiz-card" data-quiz-idx="' + i + '">';
-        html += '<div class="quiz-q">' + (i + 1) + '. ' + escape(q.q || '') + '</div>';
-        (q.o || []).forEach((opt, oi) => {
-          html += '<button class="quiz-opt" onclick="trainAnswer(\'' + escape(mod.id) + '\', ' + i + ', ' + oi + ', ' + q.c + ', this)">' + escape(opt) + '</button>';
-        });
-        html += '</div>';
+      // Quiz i slide-mode — en fråga i taget
+      const qi = currentTrainStep.idx || 0;
+      const q = quiz[qi] || {};
+      html += '<div style="font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:' + (mod.color || '#60a5fa') + '; margin-bottom:10px;">🎯 QUIZ — FRÅGA ' + (qi + 1) + ' / ' + quiz.length + '</div>';
+      html += '<div class="quiz-card" data-quiz-idx="' + qi + '" style="text-align:left;">';
+      html += '<div class="quiz-q" style="text-align:left;">' + escape(q.q || '') + '</div>';
+      (q.o || []).forEach((opt, oi) => {
+        html += '<button class="quiz-opt" id="quizOpt' + oi + '" disabled style="text-align:left; cursor:not-allowed; opacity:0.4;" onclick="trainAnswerSlide(\'' + escape(mod.id) + '\', ' + qi + ', ' + oi + ', ' + q.c + ', this)">' + escape(opt) + '</button>';
       });
-
-      html += '<div style="display:flex; gap:10px; margin-top:18px;">';
-      const prevType = ex ? 'ex' : 'lesson';
-      const prevIdx  = ex ? 0 : Math.max(0, lessons.length - 1);
-      html += '<button class="ov-back" onclick="trainGoStep(\'' + prevType + '\',' + prevIdx + ')" style="margin:0;">← Föregående</button>';
       html += '</div>';
+
+      // Feedback + Nästa-område (fylls i efter svar)
+      html += '<div id="quizFeedback" style="margin-top:18px; min-height:30px;"></div>';
+
+      // Tillbaka-knapp (alltid aktiv)
+      html += '<div style="display:flex; gap:10px; margin-top:18px;">';
+      if (qi > 0) {
+        html += '<button class="ov-back" onclick="trainGoStep(\'quiz\',' + (qi - 1) + ')" style="margin:0;">← Föregående fråga</button>';
+      } else {
+        const prevType = ex ? 'ex' : 'lesson';
+        const prevIdx  = ex ? 0 : Math.max(0, lessons.length - 1);
+        html += '<button class="ov-back" onclick="trainGoStep(\'' + prevType + '\',' + prevIdx + ')" style="margin:0;">← Tillbaka</button>';
+      }
+      html += '</div>';
+
+      // Lås svarsknappar i 2 sek
+      setTimeout(function() {
+        (q.o || []).forEach((_, oi) => {
+          const b = document.getElementById('quizOpt' + oi);
+          if (b) { b.disabled = false; b.style.cursor = 'pointer'; b.style.opacity = '1'; }
+        });
+      }, 2000);
+    }
+    else if (currentTrainStep.type === 'done') {
+      // Slutsida efter sista quiz-fråga
+      const modColor = mod.color || '#60a5fa';
+      const correct  = (trainingProgress[mod.id] && trainingProgress[mod.id].quizCorrect) || 0;
+      const total    = quiz.length;
+      const pctScore = total ? Math.round(correct / total * 100) : 0;
+      html += '<div style="text-align:center; padding:30px 20px;">';
+      html += '<div style="font-size:56px; margin-bottom:16px;">🎉</div>';
+      html += '<div style="font-size:20px; font-weight:800; color:#fff; margin-bottom:8px;">Klar!</div>';
+      html += '<div style="font-size:14px; color:rgba(255,255,255,0.6); margin-bottom:24px;">Du har slutfört modulen <strong style="color:' + modColor + ';">' + escape(mod.title || '') + '</strong>.</div>';
+      if (total) {
+        html += '<div style="display:inline-block; padding:16px 24px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; margin-bottom:24px;">';
+        html += '<div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Ditt resultat</div>';
+        html += '<div style="font-size:26px; font-weight:900; color:' + modColor + ';">' + correct + ' / ' + total + ' rätt</div>';
+        html += '<div style="font-size:13px; color:rgba(255,255,255,0.55); margin-top:4px;">' + pctScore + '%</div>';
+        html += '</div>';
+      }
+      html += '<div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">';
+      html += '<button class="ov-back" onclick="trainBack()" style="margin:0;">← Tillbaka till kategorin</button>';
+      html += '<button onclick="trainGoStep(\'lesson\',0)" style="background:' + modColor + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:pointer; font-family:inherit;">🔁 Gör om modulen</button>';
+      html += '</div></div>';
     }
 
     det.innerHTML = html;
@@ -6959,6 +7016,17 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   }
 
   window.trainGoStep = function(type, idx) {
+    // När användaren börjar quizet från början — nollställ räknaren så poäng blir korrekt
+    if (type === 'quiz' && idx === 0 && currentTrainMod) {
+      const mid = currentTrainMod.id;
+      if (!trainingProgress[mid]) trainingProgress[mid] = { lessonsRead: 0, quizCorrect: 0 };
+      trainingProgress[mid].quizCorrect = 0;
+      // Rensa per-fråga flaggor (q_0, q_1, ...)
+      Object.keys(trainingProgress[mid]).forEach(k => {
+        if (k.indexOf('q_') === 0) delete trainingProgress[mid][k];
+      });
+      saveTrainingProgress();
+    }
     currentTrainStep = { type: type, idx: idx };
     renderTrainStep();
   };
@@ -6983,6 +7051,59 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       card.querySelectorAll('.quiz-opt').forEach((b, i) => {
         if (i === correctIdx) b.classList.add('correct');
       });
+    }
+  };
+
+  // Quiz-svar i slide-mode: markera + visa Nästa-knapp (låst 2 sek)
+  window.trainAnswerSlide = function(modId, qIdx, optIdx, correctIdx, btn) {
+    const card = btn.closest('.quiz-card');
+    if (card.dataset.answered) return;
+    card.dataset.answered = 'true';
+
+    // Lås alla knappar
+    card.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; b.style.cursor = 'default'; });
+
+    const isCorrect = (optIdx === correctIdx);
+    if (isCorrect) {
+      btn.classList.add('correct');
+      if (!trainingProgress[modId]) trainingProgress[modId] = { lessonsRead: 0, quizCorrect: 0 };
+      // Räkna rätt bara en gång per fråga (första försöket räknas)
+      if (!trainingProgress[modId]['q_' + qIdx]) {
+        trainingProgress[modId]['q_' + qIdx] = true;
+        trainingProgress[modId].quizCorrect = (trainingProgress[modId].quizCorrect || 0) + 1;
+        saveTrainingProgress();
+      }
+    } else {
+      btn.classList.add('wrong');
+      card.querySelectorAll('.quiz-opt').forEach((b, i) => {
+        if (i === correctIdx) b.classList.add('correct');
+      });
+    }
+
+    // Feedback + Nästa-knapp
+    const mod = currentTrainMod;
+    if (!mod) return;
+    const quiz = mod.quiz || [];
+    const isLast = qIdx === quiz.length - 1;
+    const nextLbl = isLast ? 'Visa resultat →' : 'Nästa fråga →';
+    const nextStep = isLast ? "trainGoStep('done',0)" : "trainGoStep('quiz'," + (qIdx + 1) + ")";
+
+    const fb = document.getElementById('quizFeedback');
+    if (fb) {
+      let html = '';
+      html += '<div style="padding:12px 14px; border-radius:10px; margin-bottom:14px; '
+           + (isCorrect ? 'background:rgba(62,180,137,0.10); border:1px solid rgba(62,180,137,0.35); color:#3eb489;' : 'background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.35); color:#f87171;')
+           + ' font-size:14px; font-weight:700;">';
+      html += (isCorrect ? '✅ Rätt!' : '❌ Fel. Det rätta svaret är markerat.');
+      html += '</div>';
+      html += '<div style="display:flex; justify-content:flex-end;">';
+      html += '<button id="quizNextBtn" disabled onclick="' + nextStep + '" style="background:' + (mod.color || '#60a5fa') + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:not-allowed; font-family:inherit; opacity:0.4;">⏳ ' + nextLbl + '</button>';
+      html += '</div>';
+      fb.innerHTML = html;
+      setTimeout(function() {
+        const b = document.getElementById('quizNextBtn');
+        if (b) { b.disabled = false; b.style.cursor = 'pointer'; b.style.opacity = '1'; b.textContent = nextLbl; }
+      }, 2000);
     }
   };
 
