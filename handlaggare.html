@@ -6,10 +6,39 @@
 <title>CVmatchen — Handläggarvy</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f4f3f0;--sf:#fff;--sf2:#fafaf8;--bd:#e6e4e0;--bdl:#f0eeeb;--tx:#1a1917;--tx2:#6b6860;--mu:#9b978f;--ac:#d4a436;--acs:#fef5e0;--gn:#1a8a5a;--gnb:#e8f5ee;--bl:#2563eb;--blb:#e8effc;--or:#d97706;--orb:#fef3d6;--rd:#d94444;--rdb:#fce8e8;--sh:0 1px 3px rgba(0,0,0,.06);--r:10px;--tr:.2s ease}
+:root{--bg:#f4f3f0;--sf:#fff;--sf2:#fafaf8;--bd:#e6e4e0;--bdl:#f0eeeb;--tx:#1a1917;--tx2:#6b6860;--mu:#9b978f;--ac:#d4a436;--acs:#fef5e0;--gn:#1a8a5a;--gnb:#e8f5ee;--bl:#2563eb;--blb:#e8effc;--or:#d97706;--orb:#fef3d6;--rd:#d94444;--rdb:#fce8e8;--nv:#0f1729;--sh:0 1px 3px rgba(0,0,0,.06);--r:10px;--tr:.2s ease}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased}
-body.embed header{display:none}
+
+/* ═══ LAYOUT ═══ */
+.layout{display:flex;min-height:100vh}
+.main{flex:1;min-width:0}
+body.embed .sidebar{display:none}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar{width:224px;background:var(--nv);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:18px 12px 12px}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:4px 10px 20px;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.05)}
+.sb-logo svg{flex-shrink:0}
+.sb-logo-t{font-size:14px;font-weight:600;color:#fff;line-height:1.2}
+.sb-logo-t b{color:var(--ac);font-weight:800}
+.sb-logo-sub{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+.sb-nav{flex:1;padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.sb-nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:rgba(255,255,255,.55);cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;position:relative;user-select:none}
+.sb-nav-item:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.92)}
+.sb-nav-item.act{background:rgba(212,164,54,.1);color:var(--ac)}
+.sb-nav-item.act::before{content:'';position:absolute;left:-12px;top:8px;bottom:8px;width:2px;background:var(--ac);border-radius:0 2px 2px 0}
+.sb-nav-item svg{flex-shrink:0;opacity:.9}
+.sb-nav-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.25);padding:14px 12px 6px}
+.sb-user{padding:12px 10px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px;margin-top:8px}
+.sb-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.78);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:background .15s}
+.sb-av:hover{background:rgba(212,164,54,.15);color:var(--ac)}
+.sb-meta{flex:1;min-width:0}
+.sb-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-role{font-size:10px;color:rgba(255,255,255,.35);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sb-logout{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;padding:4px;border-radius:5px;display:flex;flex-shrink:0;transition:all .15s}
+.sb-logout:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.06)}
+
+/* ═══ LOGIN ═══ */
 #loginOverlay{position:fixed;inset:0;background:linear-gradient(170deg,#0a0f1e,#0f1729 40%,#141e33);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
 #loginOverlay.hidden{display:none}
 .login-card{background:rgba(255,255,255,.06);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.08);border-radius:20px;width:100%;max-width:400px;padding:40px 36px;text-align:center}
@@ -25,29 +54,25 @@ body.embed header{display:none}
 .ms-btn:disabled{opacity:.5;cursor:not-allowed}
 .login-footer{margin-top:20px;font-size:10px;color:rgba(255,255,255,.15)}
 .login-footer a{color:rgba(255,255,255,.25);text-decoration:none}
-header{background:#0f1729;padding:0 24px;height:50px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.logo{display:flex;align-items:center;gap:8px}
-.logo svg{flex-shrink:0}
-.logo-t{font-size:14px;font-weight:600;color:#fff}
-.logo-t b{color:#d4a436;font-weight:800}
-.hdr-r{display:flex;align-items:center;gap:12px}
-.hdr-name{font-size:11px;color:rgba(255,255,255,.4);font-family:'JetBrains Mono',monospace}
-.hdr-av{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);cursor:pointer}
-.cnt{max-width:1280px;margin:0 auto;padding:24px 24px 48px}
-.pg-t{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:2px}
-.pg-s{color:var(--mu);font-size:12px;margin-bottom:20px}
-.tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:20px;gap:0}
-.tab{padding:9px 16px;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;position:relative;bottom:-1px;transition:all var(--tr)}
-.tab:hover{color:var(--tx)}.tab.act{color:var(--tx);border-bottom-color:var(--ac)}
+
+/* ═══ CONTENT ═══ */
+.cnt{max-width:1400px;margin:0 auto;padding:24px 28px 48px}
+.pg-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;gap:20px}
+.pg-t{font-size:22px;font-weight:700;letter-spacing:-.4px;margin-bottom:3px}
+.pg-s{color:var(--mu);font-size:12px}
 .pan{display:none}.pan.act{display:block}
+
+/* ═══ STATS ═══ */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .stc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
 .stc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
 .stc:nth-child(1)::after{background:var(--gn)}.stc:nth-child(2)::after{background:var(--tx)}.stc:nth-child(3)::after{background:var(--bl)}.stc:nth-child(4)::after{background:var(--ac)}
 .stl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);margin-bottom:5px}
 .stv{font-size:26px;font-weight:700;letter-spacing:-1px}
+
+/* ═══ TOOLBAR ═══ */
 .tb{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
-.sw{position:relative;flex:1;min-width:160px;max-width:280px}
+.sw{position:relative;flex:1;min-width:160px;max-width:320px}
 .sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none}
 input[type=text],select{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;border:1px solid var(--bd);border-radius:8px;background:var(--sf);color:var(--tx);outline:none;transition:border-color var(--tr)}
 input[type=text]{width:100%;padding:7px 10px 7px 32px}
@@ -56,6 +81,8 @@ input:focus,select:focus{border-color:var(--ac)}
 .sp{flex:1}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:1px solid var(--bd);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:var(--sf);color:var(--tx);transition:all var(--tr)}
 .btn:hover{border-color:var(--tx)}
+
+/* ═══ TABLE ═══ */
 .tw{background:var(--sf);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
 table{width:100%;border-collapse:collapse}
 thead th{background:var(--sf2);padding:9px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);border-bottom:1px solid var(--bd);cursor:pointer}
@@ -72,6 +99,8 @@ td{padding:10px 13px;vertical-align:middle}
 .bd::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
 .bd.active{background:var(--gnb);color:var(--gn)}.bd.new{background:var(--blb);color:var(--bl)}.bd.recent{background:var(--orb);color:var(--or)}.bd.inactive{background:#f0efec;color:var(--mu)}
 .tc{font-size:12px;font-family:'JetBrains Mono',monospace;text-align:center;font-weight:600}
+
+/* ═══ DRAWER ═══ */
 .dov{display:none;position:fixed;inset:0;background:rgba(26,25,23,.3);z-index:100;backdrop-filter:blur(2px)}.dov.open{display:block}
 .dr{position:fixed;right:0;top:0;bottom:0;width:440px;background:var(--sf);box-shadow:-4px 0 24px rgba(0,0,0,.1);z-index:101;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}.dr.open{transform:translateX(0)}
 .dr-top{padding:20px;border-bottom:1px solid var(--bdl);display:flex;justify-content:space-between;align-items:flex-start}
@@ -94,47 +123,63 @@ td{padding:10px 13px;vertical-align:middle}
 .qa-btn:hover{border-color:var(--bd)}
 .qa-icon{font-size:18px;margin-bottom:3px}
 .qa-t{font-size:11px;font-weight:600}
+
 .pg-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--bdl);background:var(--sf2);font-size:12px;color:var(--mu)}
 .loading{text-align:center;padding:40px;color:var(--mu);font-size:14px}
 .err-box{background:var(--rdb);border:1px solid rgba(217,68,68,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--rd);margin-bottom:12px;display:none}
 .err-box.show{display:block}
-@media(max-width:768px){.stats{grid-template-columns:1fr 1fr}.dr{width:100%}td.hm,th.hm{display:none}}
 
 /* ═══════════════════════════════════════════════════════════════
-   DESKTOP-BREAKPOINT ≥1200px
-   Mobilvyn ovan rörs INTE. Dessa regler aktiveras bara på
-   bredare skärmar och ger bättre utnyttjande av plats.
+   MOBIL ≤768px — sidomenyn blir en horisontell topplist
+   ═══════════════════════════════════════════════════════════════ */
+@media(max-width:768px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;height:auto;flex-direction:row;align-items:center;padding:0 14px;gap:14px;position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.05)}
+  .sb-logo{padding:0;margin:0;border:none;flex-shrink:0;height:50px;align-items:center}
+  .sb-logo-sub{display:none}
+  .sb-nav{flex:1;flex-direction:row;padding:0;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sb-nav::-webkit-scrollbar{display:none}
+  .sb-nav-item{margin:0;padding:7px 11px;font-size:12px;white-space:nowrap;border-radius:6px}
+  .sb-nav-item.act::before{display:none}
+  .sb-nav-item svg{display:none}
+  .sb-nav-section{display:none}
+  .sb-user{border:none;padding:0;margin:0;flex-shrink:0;gap:8px}
+  .sb-meta{display:none}
+  .sb-logout{display:none}
+  .stats{grid-template-columns:1fr 1fr}
+  .dr{width:100%}
+  td.hm,th.hm{display:none}
+  .cnt{padding:18px 16px 36px}
+  .pg-head{flex-direction:column;align-items:flex-start;gap:0;margin-bottom:16px}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DESKTOP ≥1200px — mer luft
    ═══════════════════════════════════════════════════════════════ */
 @media(min-width:1200px){
-  /* Bredare content-area men inte hela vidden — text ska inte bli för långt att läsa */
+  .sidebar{width:240px;padding:22px 14px 14px}
   .cnt{max-width:1600px;padding:32px 40px 64px}
-  /* Större rubrik och mer luft runt sidhuvudet */
   .pg-t{font-size:26px;margin-bottom:4px}
-  .pg-s{font-size:14px;margin-bottom:28px}
-  /* 4 stats-kort på en rad, större */
+  .pg-s{font-size:14px}
+  .pg-head{margin-bottom:28px}
   .stats{gap:14px;margin-bottom:24px}
   .stc{padding:18px 22px}
   .stl{font-size:11px}
   .stv{font-size:32px}
-  /* Mer luftig tabell */
   td{padding:14px 18px}
   thead th{padding:12px 18px;font-size:11px}
   .un{font-size:14px}
   .ue{font-size:11px}
   .ua{width:36px;height:36px;font-size:12px}
-  /* Ärenden-toolbar får plats för fler filter */
   .tb{gap:12px;margin-bottom:18px}
-  .sw{max-width:360px}
-  /* Bredare drawer så handläggaren får mer plats att jobba */
+  .sw{max-width:380px}
   .dr{width:520px}
   .dr-body{padding:22px 28px 36px}
   .dr-m{padding:12px 14px}
   .dr-mv{font-size:22px}
-  /* Flikar mer luftiga */
-  .tab{padding:11px 20px;font-size:14px}
+  .sb-nav-item{padding:10px 12px;font-size:13.5px}
 }
 
-/* Ultra-wide skärmar ≥1600px — ännu mer plats */
 @media(min-width:1600px){
   .cnt{max-width:1800px}
   .dr{width:580px}
@@ -170,38 +215,80 @@ td{padding:10px 13px;vertical-align:middle}
 </div>
 
 <!-- ═══ APP ═══ -->
-<header>
-  <div class="logo">
-    <svg width="24" height="24" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,.25)" stroke-width="1"/><path d="M28 12L30.5 26L28 28L25.5 26Z" fill="#d4a436"/><path d="M28 12L30.5 26L28 24Z" fill="#e8803a"/><path d="M28 44L25.5 30L28 28L30.5 30Z" fill="rgba(255,255,255,.18)"/><circle cx="28" cy="28" r="1.5" fill="#d4a436"/></svg>
-    <div class="logo-t"><b>CV</b>matchen · Handläggarvy</div>
-  </div>
-  <div class="hdr-r">
-    <div class="hdr-name" id="hdrName"></div>
-    <div class="hdr-av" id="hdrAv" onclick="logout()" title="Logga ut"></div>
-  </div>
-</header>
+<div class="layout">
 
-<div class="cnt">
-  <div class="pg-t" id="pgTitle">Ärenden</div>
-  <div class="pg-s" id="pgSub"></div>
-  <div class="err-box" id="errBox"></div>
-
-  <div class="tabs" id="tabBar"></div>
-
-  <div class="pan act" id="p-arenden">
-    <div class="stats" id="statCards"><div class="loading">Laddar...</div></div>
-    <div class="tb">
-      <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
-      <select id="statusFlt"><option value="">Alla statusar</option><option value="active">Aktiv</option><option value="new">Ny</option><option value="recent">Nyligen aktiv</option><option value="inactive">Inaktiv</option></select>
-      <div class="sp"></div>
-      <button class="btn" onclick="exportData()">Exportera</button>
+  <!-- SIDOMENY -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <svg width="26" height="26" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="22" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+        <path d="M28 12L30.5 26L28 28L25.5 26Z" fill="#d4a436"/>
+        <path d="M28 12L30.5 26L28 24Z" fill="#e8803a"/>
+        <path d="M28 44L25.5 30L28 28L30.5 30Z" fill="rgba(255,255,255,.18)"/>
+        <circle cx="28" cy="28" r="1.5" fill="#d4a436"/>
+      </svg>
+      <div>
+        <div class="sb-logo-t"><b>CV</b>matchen</div>
+        <div class="sb-logo-sub">Handläggare</div>
+      </div>
     </div>
-    <div class="tw"><table><thead><tr><th>Namn</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead><tbody id="tBody"><tr><td colspan="7" class="loading">Laddar ärenden...</td></tr></tbody></table>
-    <div class="pg-bar"><span id="pgInfo"></span></div></div>
-  </div>
 
-  <div class="pan" id="p-statistik"><div id="statsContent" class="loading">Laddar statistik...</div></div>
-  <div class="pan" id="p-uppgifter"><div id="tasksContent" class="loading">Laddar uppgifter...</div></div>
+    <nav class="sb-nav" id="sbNav"></nav>
+
+    <div class="sb-user">
+      <div class="sb-av" id="sbAv"></div>
+      <div class="sb-meta">
+        <div class="sb-name" id="sbName"></div>
+        <div class="sb-role" id="sbRole"></div>
+      </div>
+      <button class="sb-logout" onclick="logout()" title="Logga ut">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- HUVUDOMRÅDE -->
+  <main class="main">
+    <div class="cnt">
+      <div class="pg-head">
+        <div>
+          <div class="pg-t" id="pgTitle">Ärenden</div>
+          <div class="pg-s" id="pgSub"></div>
+        </div>
+      </div>
+
+      <div class="err-box" id="errBox"></div>
+
+      <!-- ÄRENDEN -->
+      <div class="pan act" id="p-arenden">
+        <div class="stats" id="statCards"><div class="loading">Laddar...</div></div>
+        <div class="tb">
+          <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
+          <select id="statusFlt"><option value="">Alla statusar</option><option value="active">Aktiv</option><option value="new">Ny</option><option value="recent">Nyligen aktiv</option><option value="inactive">Inaktiv</option></select>
+          <div class="sp"></div>
+          <button class="btn" onclick="exportData()">Exportera</button>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Namn</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead>
+            <tbody id="tBody"><tr><td colspan="7" class="loading">Laddar ärenden...</td></tr></tbody>
+          </table>
+          <div class="pg-bar"><span id="pgInfo"></span></div>
+        </div>
+      </div>
+
+      <!-- STATISTIK -->
+      <div class="pan" id="p-statistik"><div id="statsContent" class="loading">Laddar statistik...</div></div>
+
+      <!-- UPPGIFTER -->
+      <div class="pan" id="p-uppgifter"><div id="tasksContent" class="loading">Laddar uppgifter...</div></div>
+    </div>
+  </main>
+
 </div>
 
 <!-- ═══ DRAWER ═══ -->
@@ -233,6 +320,14 @@ td{padding:10px 13px;vertical-align:middle}
 <script>
 const API = '/api/supabase';
 const SL = {active:'Aktiv',recent:'Nyligen aktiv',new:'Ny',inactive:'Inaktiv'};
+
+// Sidnamn + undertext per flik
+const PAGE_INFO = {
+  arenden:   {title:'Ärenden',   sub: () => roleSubtitle()},
+  statistik: {title:'Statistik', sub: () => 'Översikt och nyckeltal'},
+  uppgifter: {title:'Uppgifter', sub: () => 'Tilldelade uppgifter och tidsdata'}
+};
+
 let admin = null;
 let allUsers = [];
 let currentUserId = null;
@@ -242,6 +337,13 @@ function ini(n){return (n||'').split(' ').map(w=>w[0]).join('').toUpperCase().sl
 function cvName(cv) {
   if (!cv) return '';
   return cv.name || [cv.firstName, cv.lastName].filter(Boolean).join(' ') || '';
+}
+
+function roleSubtitle(){
+  if(!admin) return '';
+  return admin.role === 'superadmin' ? 'Alla kommuner och enheter' :
+         admin.role === 'kommunadmin' ? (admin.kommuner?.name || 'Kommun') + ' — alla enheter' :
+         (admin.enheter?.name || admin.enhet_name || admin.email || 'Enhet');
 }
 
 function showErr(msg) {
@@ -270,20 +372,18 @@ function post(action, data){
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// MICROSOFT OAUTH LOGIN — riktig OAuth-flow via /api/v1/auth/microsoft
+// MICROSOFT OAUTH LOGIN
 // ═══════════════════════════════════════════════════════════════════════
 function loginMicrosoft(){
   const btn = document.getElementById('msBtn');
   const txt = document.getElementById('msBtnText');
   if (btn) btn.disabled = true;
   if (txt) txt.textContent = 'Skickar dig till Microsoft…';
-  // Fördröj lite så knappen hinner visas som pressad innan redirect
   setTimeout(function() {
     window.location.href = '/api/v1/auth/microsoft';
   }, 150);
 }
 
-// Kolla om vi återvänder från Microsoft-callback med token eller fel
 (function checkMicrosoftCallback(){
   const params = new URLSearchParams(location.search);
   const msToken = params.get('ms_token');
@@ -323,7 +423,6 @@ function loginMicrosoft(){
       while (b64.length % 4) b64 += '=';
       const payload = JSON.parse(atob(b64));
 
-      // Spara admin-info i sessionStorage (samma format som resten av filen förväntar)
       admin = {
         id: payload.adminId,
         email: payload.email,
@@ -354,7 +453,6 @@ function logout(){
 
 // ═══════════════════════════════════════════════════════════════════════
 // SESSION AUTO-REFRESH
-// Körs var 10:e minut. Om tokenen går ut inom 1 timme → förnya den.
 // ═══════════════════════════════════════════════════════════════════════
 async function refreshSessionIfNeeded(){
   if (!admin || !admin.accessToken || !admin.expiresAt) return;
@@ -362,17 +460,14 @@ async function refreshSessionIfNeeded(){
   const msUntilExpiry = admin.expiresAt - Date.now();
   const ONE_HOUR = 60 * 60 * 1000;
 
-  // Om token redan gått ut → logga ut direkt
   if (msUntilExpiry <= 0) {
     console.warn('[refresh] Token gick ut, loggar ut');
     logout();
     return;
   }
 
-  // Om mer än 1h kvar — inget behov att förnya än
   if (msUntilExpiry > ONE_HOUR) return;
 
-  // Försök förnya
   try {
     const r = await fetch('/api/v1/auth/refresh', {
       method: 'POST',
@@ -390,55 +485,59 @@ async function refreshSessionIfNeeded(){
       return;
     }
 
-    // Uppdatera admin-objekt och sessionStorage
     admin.accessToken = data.token;
     admin.expiresAt = data.expiresAt;
     sessionStorage.setItem('cvmatchen_admin', JSON.stringify(admin));
     console.log('[refresh] Session förnyad till', new Date(data.expiresAt).toLocaleTimeString('sv-SE'));
   } catch(e) {
     console.error('[refresh] Nätverksfel:', e);
-    // Tyst — försök igen om 10 min
   }
 }
 
 function startRefreshTimer(){
   if (window._refreshTimer) clearInterval(window._refreshTimer);
-  // Kör direkt vid start (för att fånga sessioner som snart går ut)
   refreshSessionIfNeeded();
-  // Sen var 10:e minut
   window._refreshTimer = setInterval(refreshSessionIfNeeded, 10 * 60 * 1000);
 }
 
 function enterApp(){
   document.getElementById('loginOverlay').classList.add('hidden');
-  document.getElementById('hdrName').textContent = admin.name || admin.email || '';
-  document.getElementById('hdrAv').textContent = ini(admin.name || admin.email || '?');
-  document.getElementById('pgSub').textContent =
-    admin.role === 'superadmin' ? 'Alla kommuner och enheter' :
-    admin.role === 'kommunadmin' ? (admin.kommuner?.name || 'Kommun') + ' — alla enheter' :
-    (admin.enheter?.name || admin.enhet_name || admin.email || 'Enhet');
+  // Sidomenyns user-card
+  document.getElementById('sbName').textContent = admin.name || admin.email || '';
+  document.getElementById('sbRole').textContent = admin.email || '';
+  document.getElementById('sbAv').textContent = ini(admin.name || admin.email || '?');
+  // Sidans undertitel
+  document.getElementById('pgSub').textContent = roleSubtitle();
 
-  buildTabs();
+  buildNav();
   loadUsers();
   loadStats();
-  startRefreshTimer();  // Starta automatisk session-förnyelse
+  startRefreshTimer();
 }
 
-// ═══ TABS ═══
-function buildTabs(){
-  const tabs = [{id:'arenden',label:'Ärenden'},{id:'statistik',label:'Statistik'},{id:'uppgifter',label:'Uppgifter'}];
-  document.getElementById('tabBar').innerHTML = tabs.map((t,i)=>
-    `<div class="tab${i===0?' act':''}" onclick="switchTab('${t.id}')">${t.label}</div>`
+// ═══ SIDOMENY-NAVIGERING ═══
+function buildNav(){
+  const items = [
+    {id:'arenden',   label:'Ärenden',   icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
+    {id:'statistik', label:'Statistik', icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>'},
+    {id:'uppgifter', label:'Uppgifter', icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'}
+  ];
+  document.getElementById('sbNav').innerHTML = items.map((it,i) =>
+    `<div class="sb-nav-item${i===0?' act':''}" data-id="${it.id}" onclick="switchTab('${it.id}')">${it.icon}<span>${it.label}</span></div>`
   ).join('');
 }
 
 function switchTab(id){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.sb-nav-item').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('.pan').forEach(p=>p.classList.remove('act'));
   document.getElementById('p-'+id)?.classList.add('act');
-  document.querySelectorAll('.tab').forEach(t=>{
-    if(t.textContent.toLowerCase().includes(id==='arenden'?'ärenden':id)) t.classList.add('act');
-  });
+  document.querySelector(`.sb-nav-item[data-id="${id}"]`)?.classList.add('act');
+  // Uppdatera sidtitel + undertitel
+  const info = PAGE_INFO[id];
+  if(info){
+    document.getElementById('pgTitle').textContent = info.title;
+    document.getElementById('pgSub').textContent = info.sub();
+  }
   if(id==='uppgifter') loadAllTasks();
 }
 
@@ -739,15 +838,12 @@ function exportData(){
   if(new URLSearchParams(location.search).get('embed')==='true'||window!==window.top){
     document.body.classList.add('embed');
   }
-  // Om vi är på väg in via Microsoft-callback — checkMicrosoftCallback() ovan
-  // har redan startat enterApp() i så fall. Annars kolla sessionStorage.
-  if (admin) return; // redan inloggad via MS-callback
+  if (admin) return;
 
   const saved=sessionStorage.getItem('cvmatchen_admin');
   if(saved){
     try{
       admin = JSON.parse(saved);
-      // Kolla att tokenen inte gått ut
       if (admin.expiresAt && admin.expiresAt < Date.now()) {
         sessionStorage.removeItem('cvmatchen_admin');
         admin = null;
