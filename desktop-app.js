@@ -77,13 +77,13 @@
 var INTRO=[
 {id:'m1',icon:'📋',title:'Regler & Rättigheter',sub:'Närvaro, frånvaro & skyldigheter',color:'#3eb489',bc:'rgba(62,180,137,.3)',bg:'rgba(62,180,137,.07)',
 lessons:[
-{t:'Ekonomiskt bistånd & försörjningsstöd',s:'Titta på videon först — Attention förklarar hur ekonomiskt bistånd (försörjningsstöd) fungerar i Sverige.\n\nEkonomiskt bistånd är samhällets sista skyddsnät när du inte kan försörja dig själv.\n\n💡 Det kallas också försörjningsstöd eller socialbidrag.\n\nEfter videon — läs vidare om aktivitetskravet nedan.',a:'Ekonomiskt bistånd regleras i Socialtjänstlagen (SoL). Rätten prövas individuellt av kommunens socialtjänst. Biståndet består av två delar: riksnorm (mat, kläder, hygien, fritid) + skäliga kostnader (hyra, el, hemförsäkring, arbetsresor). För att få bistånd måste du först ha uttömt andra möjligheter — a-kassa, sjukpenning, föräldrapenning, bostadsbidrag m.m.',yt:'https://www.youtube.com/embed/PieoOiL4Lug'},
-{t:'Vad är aktivitetskrav?',s:'Aktivitetskravet betyder att du måste vara AKTIV för att få ekonomiskt bistånd.\n\n✅ Delta i möten med handläggaren\n✅ Söka jobb aktivt (dokumentera!)\n✅ Delta i praktik, utbildning eller anvisad aktivitet\n✅ Stå till arbetsmarknadens förfogande\n\n🔎 "Stå till arbetsmarknadens förfogande" betyder att du är redo att ta ett jobb direkt om det dyker upp.\n\n❌ Om du tackar nej till ett rimligt jobb/aktivitet → ersättningen kan sänkas eller dras in.\n\n⚠️ Undantag: om du är sjuk, har små barn eller särskilda skäl — prata med din handläggare!',a:'Aktivitetskravet är lagstadgat (SoL 4 kap. 4§). Kommunen får ställa krav på att den biståndsberättigade deltar i praktik eller kompetenshöjande åtgärd. Kravet måste vara individanpassat — hänsyn tas till ålder, hälsa och familjesituation. Vid giltig frånvaro (sjukdom, vård av barn) påverkas inte biståndet. Ogiltig frånvaro eller vägran kan leda till att ansökan avslås eller att bistånd minskas.'},
+{t:'Ekonomiskt bistånd & försörjningsstöd',pre:'🎯 SYFTE MED MODULEN\n\nAtt du ska förstå vad ekonomiskt bistånd (försörjningsstöd) är, vilka rättigheter och skyldigheter du har, och hur aktivitetskravet fungerar.\n\n📚 DETTA KOMMER DU LÄRA DIG\n\n• Vad ekonomiskt bistånd är och vem som beslutar\n• Vad aktivitetskravet innebär i praktiken\n• Hur du äger din egen planering\n• Dina rättigheter och skyldigheter\n• Hur du meddelar frånvaro korrekt\n\n✅ MÅL EFTER MODULEN\n\nDu ska känna dig trygg i hur systemet fungerar, vilka krav som ställs på dig — och framför allt hur du själv kan påverka din väg mot jobb och självförsörjning.\n\n▼ Börja med att se videon från Attention nedan.',s:'Titta på videon först — Attention förklarar hur ekonomiskt bistånd (försörjningsstöd) fungerar i Sverige.\n\nEkonomiskt bistånd är samhällets sista skyddsnät när du inte kan försörja dig själv.\n\n💡 Det kallas också försörjningsstöd eller socialbidrag.\n\nEfter videon — läs vidare om aktivitetskravet nedan.',a:'Ekonomiskt bistånd regleras i Socialtjänstlagen (SoL). Rätten prövas individuellt av kommunens socialtjänst. Biståndet består av två delar: riksnorm (mat, kläder, hygien, fritid) + skäliga kostnader (hyra, el, hemförsäkring, arbetsresor). För att få bistånd måste du först ha uttömt andra möjligheter — a-kassa, sjukpenning, föräldrapenning, bostadsbidrag m.m.',yt:'https://www.youtube.com/embed/PieoOiL4Lug'},
+{t:'Vad är aktivitetskrav?',s:'Aktivitetskravet betyder att du måste vara AKTIV för att få ekonomiskt bistånd. Samhället hjälper dig — men du måste också göra din del.\n\n💡 DIN PLANERING = DITT PROJEKT\n\nDet viktigaste du kan ta med dig från den här lektionen:\n\nDu som söker bistånd ÄGER din egen planering.\n\nJu mer du är med och formar den — berättar om dina mål, styrkor och drömmar — desto större chans att aktiviteterna faktiskt leder dig framåt mot ett jobb.\n\nHandläggaren är din partner, inte din chef. Ni gör planen TILLSAMMANS.\n\n✅ Gör så här:\n• Kom förberedd till möten — vad vill DU?\n• Säg ifrån om en aktivitet inte känns meningsfull\n• Föreslå egna idéer (t.ex. en specifik kurs, praktikplats, yrke)\n• Var ärlig om vad som funkar och vad som inte gör det\n\n❌ Undvik:\n• Passivt "vänta och se" — det gör tiden längre\n• Tackar ja till allt utan att tänka efter\n• Låter någon annan bestämma över din framtid\n\nNär du äger din planering kommer aktiviteterna att kännas relevanta — inte som ett straff. Då blir vägen till självförsörjning snabbare och starkare.\n\n🎯 VAD ÄR AKTIVITET?\n\n✅ Delta i möten med din handläggare\n✅ Söka jobb aktivt — och kunna visa vad du gjort (lista, skärmdump, mejl)\n✅ Delta i praktik, utbildning eller annan anvisad aktivitet\n✅ Stå till arbetsmarknadens förfogande\n\n🔎 "STÅ TILL ARBETSMARKNADENS FÖRFOGANDE"\n\nDet betyder att du är:\n• Redo att ta ett jobb direkt om det dyker upp\n• Tillgänglig på telefon och mejl\n• Inte utomlands på semester\n• Inte sjukskriven utan intyg\n• Anmäld som arbetssökande hos Arbetsförmedlingen\n\n📝 DU MÅSTE KUNNA VISA VAD DU GJORT\n\nDokumentera varje vecka:\n• Vilka jobb har du sökt? (Antal + var)\n• Vilka möten har du varit på?\n• Vilka aktiviteter har du deltagit i?\n\nHandläggaren kan fråga när som helst. Ha alltid dina uppgifter i ordning.\n\n⚠️ OM DU INTE GÖR DIN DEL\n\nOm du tackar nej till ett rimligt jobb eller aktivitet utan giltigt skäl:\n• 1:a gången → varning\n• Upprepat → ersättningen sänks\n• Vägran → ansökan kan avslås helt\n\nDu blir aldrig "straffad" direkt — du får alltid en chans att förklara. Prata alltid med din handläggare OM du har problem.\n\n🛡️ GILTIGA SKÄL FÖR ATT INTE DELTA\n\n• Sjukdom (meddela + läkarintyg vid behov)\n• Vård av sjukt barn (VAB)\n• Begravning / akut familjekris\n• Arbetsintervju på annan tid\n• Studier som redan är godkända av handläggaren\n\n🤝 TILLSAMMANS NÅR VI MÅLET\n\nHandläggaren vill att DU ska lyckas. Det är deras jobb — och när du når självförsörjning vinner alla: du, din familj, och samhället.\n\nMen ingen kan göra det ÅT dig. Du måste äga processen.\n\nTips som gör skillnad:\n• Sätt ett tydligt eget mål — "Jag vill jobba som X inom Y månader"\n• Be om feedback — fråga vad DU kan göra bättre\n• Hör av dig mellan möten om något händer\n• Fira framstegen — varje litet steg räknas\n\n❗ VIKTIGT\n\nAlla beslut om aktivitetskrav är individuella.\nHar du funktionsnedsättning, små barn eller språkproblem — prata med din handläggare. Kravet anpassas efter din situation.\n\nDu kan alltid överklaga beslut du inte håller med om.',a:'Aktivitetskravet är lagstadgat i Socialtjänstlagen (SoL 4 kap. 4§). Kommunen får ställa krav på att den biståndsberättigade deltar i praktik eller kompetenshöjande åtgärd.\n\nKravet ska vara individanpassat — hänsyn tas till ålder, hälsa, familjesituation och språk. Vid giltig frånvaro (sjukdom, VAB) påverkas inte biståndet. Vid ogiltig frånvaro eller vägran kan handläggaren sänka eller avslå bistånd.\n\nForskning visar att individer som är delaktiga i sin planering och känner ägarskap över målen har betydligt högre chans att nå självförsörjning. Delaktighet är inte bara en rättighet — det är en framgångsfaktor.\n\nDu har alltid rätt att:\n- Få skriftligt beslut\n- Få motivering till beslutet\n- Överklaga till Förvaltningsrätten inom 3 veckor\n- Få hjälp med överklagan från socialtjänsten\n\nVanliga missförstånd:\n- "Jag måste söka 20 jobb i veckan" → Antalet bestäms individuellt.\n- "Aktivitetskrav = jag måste ta VILKET jobb som helst" → Nej, det ska vara rimligt utifrån din bakgrund.\n- "Om jag pluggar slipper jag kravet" → Studier måste vara godkända av handläggaren.'},
 {t:'Närvaro & frånvaro',s:'Om du blir sjuk eller inte kan komma:\n\n1️⃣ Meddela SAMMA DAG — helst innan aktiviteten börjar\n2️⃣ Ring, mejla eller sms:a din handläggare\n3️⃣ Lämna läkarintyg om det krävs (vanligtvis dag 8)\n\nOgiltig frånvaro = kan påverka din ersättning.',a:'Frånvaro ska alltid meddelas samma dag, helst innan aktiviteten börjar. Vid upprepad frånvaro kan handläggaren begära intyg eller uppdaterad planering. Förstadagsintyg kan krävas vid frekvent korttidsfrånvaro.'},
 {t:'Rättigheter & skyldigheter',s:'DINA RÄTTIGHETER:\n✅ En individuell plan\n✅ Tydlig information om beslut\n✅ Skälig handläggningstid\n✅ Överklaga beslut du inte håller med om\n✅ Bli bemött med respekt\n\nDINA SKYLDIGHETER:\n✅ Delta aktivt\n✅ Lämna korrekta uppgifter\n✅ Följa planen\n✅ Meddela ändringar (jobb, inkomst, boende)',a:'Du har rätt till en individuell plan, tydlig kommunikation och skälig handläggningstid. Beslut kan överklagas till förvaltningsrätten. Du har skyldighet att medverka aktivt, lämna korrekta uppgifter och följa beslutade aktiviteter. Felaktiga uppgifter kan leda till återkrav eller polisanmälan vid bidragsbrott.'}
 ],
 ex:{type:'write',title:'Skriv ett frånvaromeddelande',desc:'Du är sjuk och kan inte delta i dagens aktivitet. Skriv ett korrekt och professionellt meddelande till din handläggare.',tips:'Inkludera: vem du är, vilken aktivitet du missar, varför du är frånvarande och när du förväntar dig att vara tillbaka.',ph:'Hej [handläggarens namn],\n\nJag heter... och deltar i...\n\nJag kan idag inte delta på grund av...\n\nJag förväntar mig att vara tillbaka...',min:80},
-quiz:[{q:'Vad är ekonomiskt bistånd?',o:['En förmån alla får','Samhällets sista skyddsnät när du inte kan försörja dig','En pension'],c:1},{q:'Vad kallas ekonomiskt bistånd också?',o:['Aktivitetsstöd','Försörjningsstöd eller socialbidrag','Studiemedel'],c:1},{q:'Vem bedömer rätten till bistånd?',o:['Arbetsförmedlingen','Kommunens socialtjänst','Försäkringskassan'],c:1},{q:'Vad betyder "stå till arbetsmarknadens förfogande"?',o:['Att vara arbetslös','Att vara redo att ta ett jobb direkt','Att ha jobb'],c:1},{q:'Vad betyder aktivitetskrav?',o:['Du kan göra vad du vill','Du ska delta i planerade aktiviteter','Du behöver inte meddela frånvaro'],c:1},{q:'När ska du meddela frånvaro?',o:['Dagen efter','Samma dag','Nästa vecka'],c:1},{q:'Vad händer om du tackar nej till ett rimligt jobb?',o:['Ingenting','Ersättningen kan sänkas eller dras in','Du får mer bistånd'],c:1},{q:'Vad är en rättighet?',o:['Något du är tvungen att göra','Något du har rätt till','En aktivitet'],c:1}],
+quiz:[{q:'Vad är ekonomiskt bistånd?',o:['En förmån alla får','Samhällets sista skyddsnät när du inte kan försörja dig','En pension'],c:1},{q:'Vad kallas ekonomiskt bistånd också?',o:['Studiemedel','Aktivitetsstöd','Försörjningsstöd eller socialbidrag'],c:2},{q:'Vem bedömer rätten till bistånd?',o:['Försäkringskassan','Arbetsförmedlingen','Kommunens socialtjänst'],c:2},{q:'Vad betyder "stå till arbetsmarknadens förfogande"?',o:['Att vara redo att ta ett jobb direkt','Att vara arbetslös','Att ha jobb'],c:0},{q:'Vem äger din planering?',o:['Handläggaren','Socialtjänsten','Du själv — tillsammans med handläggaren'],c:2},{q:'Vad ökar chansen att nå självförsörjning?',o:['Att tacka ja till allt','Att vara delaktig och äga sin planering','Att vänta passivt'],c:1},{q:'Vad betyder aktivitetskrav?',o:['Du kan göra vad du vill','Du ska delta i planerade aktiviteter','Du behöver inte meddela frånvaro'],c:1},{q:'När ska du meddela frånvaro?',o:['Samma dag','Nästa vecka','Dagen efter'],c:0},{q:'Vad händer om du tackar nej till ett rimligt jobb?',o:['Ersättningen kan sänkas eller dras in','Du får mer bistånd','Ingenting'],c:0},{q:'Vad är en rättighet?',o:['Något du har rätt till','Något du är tvungen att göra','En aktivitet'],c:0}],
 pr:['Förklara mina skyldigheter på enkel svenska.','Skriv ett korrekt meddelande om sjukfrånvaro.','Sammanfatta aktivitetskrav i tre meningar.']},
 {id:'m2',icon:'💻',title:'SKills-systemet',sub:'Introduktion till SKills & din plan',color:'#f0c040',bc:'rgba(240,192,64,.3)',bg:'rgba(240,192,64,.07)',
 lessons:[
@@ -92,7 +92,7 @@ lessons:[
 {t:'SKills + CVmatchen',s:'SKills visar vad du ska göra. CVmatchen hjälper dig göra det.',a:'CVmatchen genererar CV, profiltext och matchningar som du sedan kan använda när du söker jobb i din SKills-plan.'}
 ],
 ex:{type:'sort',title:'SKills eller CVmatchen?',desc:'Sortera funktionerna i rätt verktyg.',catA:'SKills',catB:'CVmatchen',items:[{l:'Se din plan',c:'A'},{l:'Skapa CV',c:'B'},{l:'Markera aktiviteter',c:'A'},{l:'Matcha mot jobb',c:'B'},{l:'Kommunicera med handläggare',c:'A'},{l:'Exportera PDF',c:'B'}]},
-quiz:[{q:'Vad är SKills?',o:['En jobbsökarsida','Ett planeringsverktyg','En CV-mall'],c:1},{q:'Vad kan du göra i SKills?',o:['Skriva CV','Följa din plan och kommunicera','Söka utbildning'],c:1},{q:'Hur hänger de ihop?',o:['De är samma sak','SKills planerar, CVmatchen levererar','Ingen koppling'],c:1}],
+quiz:[{q:'Vad är SKills?',o:['Ett planeringsverktyg','En jobbsökarsida','En CV-mall'],c:0},{q:'Vad kan du göra i SKills?',o:['Söka utbildning','Skriva CV','Följa din plan och kommunicera'],c:2},{q:'Hur hänger de ihop?',o:['Ingen koppling','SKills planerar, CVmatchen levererar','De är samma sak'],c:1}],
 pr:['Förklara SKills som om jag vore ny i Sverige.','Hjälp mig skapa en veckoplan.','Vad tänker jag på när jag loggar in i SKills?']},
 {id:'m3',icon:'🤖',title:'AI & CVmatchen',sub:'Hur AI hjälper dig hitta jobb',color:'#a78bfa',bc:'rgba(167,139,250,.3)',bg:'rgba(167,139,250,.07)',
 lessons:[
@@ -101,7 +101,7 @@ lessons:[
 {t:'Bra prompts = bättre resultat',s:'❌ "Hjälp mig."\n✅ "Skapa en pitch baserat på min erfarenhet som butikssäljare."',a:'En bra prompt är specifik och ger AI rätt kontext. Ju mer du berättar, desto bättre svar.'}
 ],
 ex:{type:'build',title:'Skriv din egen AI-prompt',desc:'Fyll i dessa delar för att bygga en kraftfull prompt.',fields:[{l:'Vad söker du för jobb?',ph:'t.ex. lagerarbetare, kock, säljare...',hint:'Var specifik.'},{l:'Vilken erfarenhet har du?',ph:'t.ex. 2 år i butik, kör truck...'},{l:'Vad ska AI hjälpa dig med?',ph:'t.ex. skriva profiltext, förbättra CV...',hint:'Var tydlig med uppdraget.'}]},
-quiz:[{q:'Vad kan AI hjälpa med?',o:['Bara skriva brev','Skriva CV, profiltext och ge feedback','Inget'],c:1},{q:'Vad gör CVmatchen?',o:['Söker jobb åt dig','Matchar ditt CV mot jobbannonser med AI','Skickar ansökan'],c:1},{q:'Vad är en bra prompt?',o:['Kort och vag','Specifik med rätt kontext','Så lång som möjligt'],c:1}],
+quiz:[{q:'Vad kan AI hjälpa med?',o:['Inget','Bara skriva brev','Skriva CV, profiltext och ge feedback'],c:2},{q:'Vad gör CVmatchen?',o:['Söker jobb åt dig','Matchar ditt CV mot jobbannonser med AI','Skickar ansökan'],c:1},{q:'Vad är en bra prompt?',o:['Specifik med rätt kontext','Kort och vag','Så lång som möjligt'],c:0}],
 pr:['Skapa en kort pitch baserat på min erfarenhet.','Förklara denna jobbannons på enkel svenska.','Ge mig tre förbättringar till mitt CV.']}
 ];
 
@@ -119,12 +119,7 @@ s:'Helsingborg är en av Skånes starkaste städer.\n\nStarka sektorer lokalt:\n
 a:'H+ stadsomvandlingsprojektet skapar tusentals nya jobb i Helsingborg. Arbetsförmedlingen Helsingborg: Järnvägsgatan 14. Jobbtorg Helsingborg erbjuder kostnadsfri matchning och coachning för invånare.'}
 ],
 ex:{type:'arb-map',title:'Arbetsmarknadskartan',desc:'Utforska arbetslöshet och arbetsmarknad i Öresundsregionen.'},
-quiz:[
-{q:'Vad är ungefärlig arbetslöshet i Skåne 2026?',o:['5%','9%','20%'],c:1},
-{q:'Hur många pendlar dagligen över Öresund?',o:['2 000','20 000','200 000'],c:1},
-{q:'Vilken sektor har generellt lägst arbetslöshet i Sverige?',o:['Handel','IT & digitalt','Bygg'],c:1},
-{q:'Hur lång är båtturen Helsingborg–Helsingör?',o:['5 min','15 min','45 min'],c:1}
-],
+quiz:[{q:'Vad är ungefärlig arbetslöshet i Skåne 2026?',o:['5%','9%','20%'],c:1},{q:'Hur många pendlar dagligen över Öresund?',o:['2 000','200 000','20 000'],c:2},{q:'Vilken sektor har generellt lägst arbetslöshet i Sverige?',o:['IT & digitalt','Bygg','Handel'],c:0},{q:'Hur lång är båtturen Helsingborg–Helsingör?',o:['15 min','45 min','5 min'],c:0}],
 pr:['Vilka jobb finns just nu i Helsingborg?','Hur söker jag jobb i Danmark som bor i Sverige?','Vilka branscher rekryterar mest i Skåne nu?']},
 
 {id:'a_match',icon:'🎯',title:'Matcha med AI',sub:'Förstå matchningslogiken innan du kör skarpt',color:'#f87171',bc:'rgba(248,113,113,.3)',bg:'rgba(248,113,113,.07)',
@@ -140,11 +135,7 @@ s:'AI genererar alltid tre versioner:\n\n📌 Erfarenhetsfokus\n"5 år inom lage
 a:'De tre vinklarna matchar olika rekryteringsstilar. Erfarenhet passar traditionella rekryterare och stora bolag. Motivation passar kulturfokuserade bolag och startups. Resultat passar datadriven rekrytering och chefsroller. Blanda gärna delar.'}
 ],
 ex:{type:'match-trainer',title:'Träna matchningslogiken',desc:'Info → Quiz → Miniövning — förstå allt innan du kör skarpt.'},
-quiz:[
-{q:'Vad innebär "partial match"?',o:['Du saknar kompetensen helt','Du har liknande erfarenhet','Du har exakt kompetensen'],c:1},
-{q:'Varför är nyckelord kritiska i CV?',o:['Ser proffsigare ut','ATS-system filtrerar bort CV utan rätt nyckelord','Rekryterare läser dem sist'],c:1},
-{q:'Vilken profiltext-vinkel passar bäst vid karriärskifte?',o:['Erfarenhetsfokus','Motivationsfokus','Kompetens & resultat'],c:1}
-],
+quiz:[{q:'Vad innebär "partial match"?',o:['Du saknar kompetensen helt','Du har liknande erfarenhet','Du har exakt kompetensen'],c:1},{q:'Varför är nyckelord kritiska i CV?',o:['Rekryterare läser dem sist','Ser proffsigare ut','ATS-system filtrerar bort CV utan rätt nyckelord'],c:2},{q:'Vilken profiltext-vinkel passar bäst vid karriärskifte?',o:['Motivationsfokus','Kompetens & resultat','Erfarenhetsfokus'],c:0}],
 pr:['Analysera min matchning mot denna annons: [klistra in]','Vilken profiltext-vinkel passar bäst för mitt fall?','Skriv om detta CV-avsnitt för bättre nyckelordsmatch.']},
 
 {id:'a_cv',icon:'📄',title:'CV-byggaren',sub:'Förstå varje del INNAN du fyller i ditt riktiga CV',color:'#f87171',bc:'rgba(248,113,113,.3)',bg:'rgba(248,113,113,.07)',
@@ -160,11 +151,7 @@ s:'❌ "Jobbade i kassan och hjälpte kunder."\n\n✅ "Hanterade 200+ kundtransa
 a:'AI genererar 3 bullet points per anställning baserat på titel + företag. Kom ihåg: mätbara resultat (%, antal, kronor) är alltid starkare än vaga beskrivningar. Granska alltid vad AI föreslår — du vet bäst vad du faktiskt gjort.'}
 ],
 ex:{type:'cv-trainer',title:'Träna CV-byggaren',desc:'4 infoskärmar · 6 quizfrågor · Mini-bygge — sedan är du redo för ditt riktiga CV!'},
-quiz:[
-{q:'Hur lång tid lägger en rekryterare på första genomläsningen?',o:['30 sekunder','6-7 sekunder','2 minuter','5 minuter'],c:1},
-{q:'Vad ska profiltexten besvara?',o:['Ålder, adress och lön','Vem du är, vad du kan, vad du söker','Alla jobb du haft','Dina hobbies'],c:1},
-{q:'Vilken formel gäller för starka arbetsuppgifter?',o:['Lång och detaljerad','Handling + Skala/Resultat','Känsla + Personlighet','Kopia från annonsen'],c:1}
-],
+quiz:[{q:'Hur lång tid lägger en rekryterare på första genomläsningen?',o:['2 minuter','5 minuter','6-7 sekunder','30 sekunder'],c:2},{q:'Vad ska profiltexten besvara?',o:['Vem du är, vad du kan, vad du söker','Ålder, adress och lön','Dina hobbies','Alla jobb du haft'],c:0},{q:'Vilken formel gäller för starka arbetsuppgifter?',o:['Lång och detaljerad','Handling + Skala/Resultat','Känsla + Personlighet','Kopia från annonsen'],c:1}],
 pr:['Skriv en profiltext för: [yrkestitel, erfarenhet, stad]','Gör dessa arbetsuppgifter starkare: [klistra in]','Föreslå 8 kompetenser för en [yrkestitel].']},
 
 {id:'a1',icon:'🧠',title:'Mina kompetenser',sub:'Hårda, mjuka & överförbara',color:'#f87171',bc:'rgba(248,113,113,.3)',bg:'rgba(248,113,113,.07)',
@@ -1260,13 +1247,7 @@ s:'Hitta rätt modul med dessa frågor:\n\n1. Kan du svenska? Nej → Börja med
 a:'SYV (Studie- och yrkesvägledare) finns gratis hos kommunen, Komvux och AF. Ett möte tar 30-60 min och är den effektivaste investeringen du kan göra. Boka via helsingborg.se eller studera.nu.'}
 ],
 ex:{type:'ai-survey',title:'Kartlägg din startpunkt',desc:'Berätta om din situation och AI-SYV ger dig en personlig rekommendation om vilka moduler du ska börja med.'},
-quiz:[
-{q:'Vad är YH-utbildning?',o:['4-årig universitetsutbildning','1-2 år arbetsmarknadsanpassad utbildning med praktik','En gymnasiekurs'],c:1},
-{q:'Vad är AMU?',o:['En avgiftsbelagd kurs','Gratis arbetsmarknadsutbildning via AF','En universitetsexamen'],c:1},
-{q:'Vilka utbildningar är gratis för vuxna?',o:['Inga är gratis','Komvux, SFI, YH och folkhögskola','Bara SFI'],c:1},
-{q:'Vad hjälper SYV med?',o:['Bara CV-skrivning','Utbildnings- och karriärplanering — gratis','Bara för gymnasieelever'],c:1},
-{q:'Vad är CSN?',o:['En skola','Myndigheten för studiestöd — bidrag och lån','En utbildningsplattform'],c:1}
-],
+quiz:[{q:'Vad är YH-utbildning?',o:['4-årig universitetsutbildning','1-2 år arbetsmarknadsanpassad utbildning med praktik','En gymnasiekurs'],c:1},{q:'Vad är AMU?',o:['Gratis arbetsmarknadsutbildning via AF','En universitetsexamen','En avgiftsbelagd kurs'],c:0},{q:'Vilka utbildningar är gratis för vuxna?',o:['Komvux, SFI, YH och folkhögskola','Inga är gratis','Bara SFI'],c:0},{q:'Vad hjälper SYV med?',o:['Bara CV-skrivning','Bara för gymnasieelever','Utbildnings- och karriärplanering — gratis'],c:2},{q:'Vad är CSN?',o:['En utbildningsplattform','Myndigheten för studiestöd — bidrag och lån','En skola'],c:1}],
 pr:['Vilken utbildning passar mig baserat på min bakgrund?','Hur snabbt kan jag nå arbete via utbildning?','Förklara skillnaden YH och Komvux på enkel svenska.']},
 
 {id:'s1',icon:'🎓',title:'Vad är YH-utbildning?',sub:'Yrkeshögskola — snabbaste vägen till jobb',color:'#60a5fa',bc:'rgba(96,165,250,.3)',bg:'rgba(96,165,250,.07)',
@@ -1293,13 +1274,7 @@ links:[
 {t:'Gå en yrkesutbildning',u:'https://helsingborg.se/forskola-och-utbildning/vuxenutbildning/',d:'Vuxenutbildning i Helsingborg — översikt och ansökan'},
 {t:'Så här samarbetar vi med arbetsgivare i Helsingborg, service och vård',u:'https://helsingborg.se/forskola-och-utbildning/vuxenutbildning/utbildningar/yrkesutbildningar-pa-gymnasial-niva/',d:'Yrkesutbildningar på gymnasial nivå — Familjen Helsingborg'}
 ]},
-quiz:[
-{q:'Vad är en YH-utbildning?',o:['En universitetsutbildning','En arbetsmarknadsanpassad yrkesutbildning','En gymnasieutbildning'],c:1},
-{q:'Hur lång är en typisk YH-utbildning?',o:['4-5 år','1-2 år','6 månader'],c:1},
-{q:'Vad är LIA?',o:['En typ av lärare','Lärande i Arbete — praktik','En ansökningssida'],c:1},
-{q:'Var hittar du YH-utbildningar?',o:['arbetsformedlingen.se','yrkeshogskolan.se','csn.se'],c:1},
-{q:'Kan du få CSN under YH?',o:['Nej','Ja, studiemedel betalas ut','Bara om du arbetar parallellt'],c:1}
-],
+quiz:[{q:'Vad är en YH-utbildning?',o:['En arbetsmarknadsanpassad yrkesutbildning','En universitetsutbildning','En gymnasieutbildning'],c:0},{q:'Hur lång är en typisk YH-utbildning?',o:['1-2 år','4-5 år','6 månader'],c:0},{q:'Vad är LIA?',o:['En typ av lärare','En ansökningssida','Lärande i Arbete — praktik'],c:2},{q:'Var hittar du YH-utbildningar?',o:['arbetsformedlingen.se','yrkeshogskolan.se','csn.se'],c:1},{q:'Kan du få CSN under YH?',o:['Bara om du arbetar parallellt','Ja, studiemedel betalas ut','Nej'],c:1}],
 pr:['Vilka YH-utbildningar finns inom logistik i Skåne?','Vad krävs för att söka till en YH inom IT?','Förklara skillnaden mellan YH och universitet.']},
 
 {id:'s2',icon:'📚',title:'Komvux',sub:'Läsa in gymnasiebetyg som vuxen',color:'#60a5fa',bc:'rgba(96,165,250,.3)',bg:'rgba(96,165,250,.07)',
@@ -1322,12 +1297,7 @@ fields:[
 {l:'Kan du studera heltid eller deltid?',ph:'T.ex. Deltid 50% — jag jobbar parallellt'},
 {l:'När vill du börja?',ph:'T.ex. Höstterminen 2026',hint:'Kolla ansökningsdatum på din kommuns sida.'}
 ]},
-quiz:[
-{q:'Vad betyder Komvux?',o:['Kommunalt Vuxencenter','Kommunal Vuxenutbildning','Kompetens och Utbildning'],c:1},
-{q:'Är Komvux gratis?',o:['Nej, det kostar','Ja, det är avgiftsfritt','Bara om du är arbetslös'],c:1},
-{q:'Vad kan du läsa på Komvux?',o:['Bara matematik','Grundläggande, gymnasiekurser och yrkesutbildning','Bara universitetsförberedande'],c:1},
-{q:'Var hittar du Komvux i Helsingborg?',o:['komvux.se','helsingborg.se/komvux','skanevux.se'],c:1}
-],
+quiz:[{q:'Vad betyder Komvux?',o:['Kommunalt Vuxencenter','Kommunal Vuxenutbildning','Kompetens och Utbildning'],c:1},{q:'Är Komvux gratis?',o:['Ja, det är avgiftsfritt','Nej, det kostar','Bara om du är arbetslös'],c:0},{q:'Vad kan du läsa på Komvux?',o:['Grundläggande, gymnasiekurser och yrkesutbildning','Bara matematik','Bara universitetsförberedande'],c:0},{q:'Var hittar du Komvux i Helsingborg?',o:['komvux.se','skanevux.se','helsingborg.se/komvux'],c:2}],
 pr:['Vilka Komvux-kurser behöver jag för att söka YH?','Hur snabbt kan jag läsa klart gymnasiet via Komvux?','Vad är skillnaden mellan Komvux och SFI?']},
 
 {id:'s3',icon:'🇸🇪',title:'SFI — Svenska för invandrare',sub:'Lär dig svenska kostnadsfritt',color:'#60a5fa',bc:'rgba(96,165,250,.3)',bg:'rgba(96,165,250,.07)',
@@ -1350,12 +1320,7 @@ fields:[
 {l:'Vilka resurser ska du använda?',ph:'T.ex. Duolingo, SVT Play, prata med grannar...',hint:'Välj minst 2 metoder.'},
 {l:'Ditt mål med svenska',ph:'T.ex. Klara SFI D, kommunicera på jobbet, hjälpa mina barn med läxor...'}
 ]},
-quiz:[
-{q:'Vad är SFI?',o:['En avgiftsbelagd privatskola','Gratis svenska för invandrare','En yrkesutbildning'],c:1},
-{q:'Hur många studievägar finns det?',o:['2','3','5'],c:1},
-{q:'Vilket är bra för att öva svenska hemma?',o:['Bara läsa böcker på arabiska','SVT Play, Duolingo och 8sidor.se','Undvika svenska'],c:1},
-{q:'Vad händer när du klarar SFI D?',o:['Du måste sluta studera','Du kan läsa vidare på Komvux','Du måste ta ett nytt test'],c:1}
-],
+quiz:[{q:'Vad är SFI?',o:['En yrkesutbildning','En avgiftsbelagd privatskola','Gratis svenska för invandrare'],c:2},{q:'Hur många studievägar finns det?',o:['3','2','5'],c:0},{q:'Vilket är bra för att öva svenska hemma?',o:['Undvika svenska','SVT Play, Duolingo och 8sidor.se','Bara läsa böcker på arabiska'],c:1},{q:'Vad händer när du klarar SFI D?',o:['Du kan läsa vidare på Komvux','Du måste sluta studera','Du måste ta ett nytt test'],c:0}],
 pr:['Hur snabbt kan jag lära mig svenska med SFI?','Vilka appar hjälper mig lära mig svenska snabbast?','Skriv ett enkelt brev på svenska åt mig som övning.']},
 
 {id:'s4',icon:'🏡',title:'Folkhögskola',sub:'Lärande i gemenskap',color:'#60a5fa',bc:'rgba(96,165,250,.3)',bg:'rgba(96,165,250,.07)',
@@ -6870,9 +6835,14 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const text = l.s || '';
       const deep = l.a || '';
       const yt   = l.yt || '';
+      const pre  = l.pre || '';
       html += '<div style="font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:' + (mod.color || '#60a5fa') + '; margin-bottom:10px;">📘 LEKTION ' + (i + 1) + ' / ' + lessons.length + '</div>';
       html += '<div class="lesson-card">';
       html += '<div class="lesson-title">' + escape(l.t || '') + '</div>';
+      // Pre-intro (syfte/mål/innehåll) FÖRE videon
+      if (pre) {
+        html += '<div style="background:rgba(62,180,137,0.07); border:1px solid rgba(62,180,137,0.25); border-radius:10px; padding:14px 16px; margin:10px 0 16px; white-space:pre-wrap; font-size:14px; line-height:1.6; color:rgba(255,255,255,0.85);">' + escape(pre) + '</div>';
+      }
       // YouTube-embed om lektionen har yt-fält (och det inte är Rick Roll-placeholdern)
       if (yt && yt.indexOf('dQw4w9WgXcQ') === -1) {
         html += '<div style="margin:12px 0 16px; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px; background:#000;">';
@@ -6902,11 +6872,23 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         : (ex ? "trainGoStep('ex',0)" : (quiz.length ? "trainGoStep('quiz',0)" : "trainGoStep('done',0)"));
       html += '<button id="trainNextBtn" disabled onclick="' + nextStep + '" style="background:' + (mod.color || '#60a5fa') + '; color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; cursor:not-allowed; font-family:inherit; opacity:0.4;">⏳ ' + nextLabel + '</button>';
       html += '</div>';
-      // Aktivera knappen efter 2 sek
+      // Lås Nästa-knappen: 5 sek för textlektion, 15 sek om videon finns (tvingar att se videon)
+      const hasVideo = yt && yt.indexOf('dQw4w9WgXcQ') === -1;
+      const lockMs = hasVideo ? 15000 : 5000;
+      const lockSec = hasVideo ? 15 : 5;
+      // Visa nedräkning i knapptexten
+      let remain = lockSec;
+      const tickInt = setInterval(function() {
+        remain--;
+        const b = document.getElementById('trainNextBtn');
+        if (!b || remain <= 0) { clearInterval(tickInt); return; }
+        b.textContent = '⏳ ' + nextLabel + ' (' + remain + 's)';
+      }, 1000);
       setTimeout(function() {
+        clearInterval(tickInt);
         const b = document.getElementById('trainNextBtn');
         if (b) { b.disabled = false; b.style.cursor = 'pointer'; b.style.opacity = '1'; b.textContent = nextLabel; }
-      }, 2000);
+      }, lockMs);
 
       // Markera lektion som läst
       if (!trainingProgress[mod.id]) trainingProgress[mod.id] = { lessonsRead: 0, quizCorrect: 0 };
