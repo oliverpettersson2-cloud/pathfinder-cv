@@ -10532,6 +10532,7 @@ var D={
   },
 
   // Whitelist: moduler med färdiga, aktiva övningar. Resten visar "under arbete".
+  // VERSION v2 — Under arbete-system aktivt
   ACTIVE_EX_MODS:[
     'm1','m2','m3',           // Intro (alla 3)
     'a_cv','a_match','a5',    // Arbete
@@ -10548,6 +10549,7 @@ var D={
     var h=D.hdr(pct,step,tot,true,'D.exBack()');
     h+='<div class="cat-label" style="color:'+m.color+';">'+m.icon+' ÖVNING</div>';
     var isActive=D.ACTIVE_EX_MODS.indexOf(m.id)!==-1;
+    console.log('[ÖVNING v2]',m.id,'isActive:',isActive);
     if(!isActive){
       h+=D.exUnderConstruction(ex);
     } else if(ex.type==='write')h+=D.exWrite(ex);
