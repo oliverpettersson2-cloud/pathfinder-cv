@@ -367,6 +367,62 @@ td{padding:10px 13px;vertical-align:middle}
 .cat-ic.jobbsök,.cat-ic.jobbsok{background:var(--rdb);color:var(--rd)}
 .cat-ic.övrigt,.cat-ic.ovrigt{background:var(--bdl);color:var(--mu)}
 
+/* ═══ CV-DETALJVY — fullständig presentation ═══ */
+.cv-sec{margin-top:18px}
+.cv-sec-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bdl);display:flex;justify-content:space-between;align-items:baseline}
+.cv-sec-c{font-weight:500;text-transform:none;letter-spacing:0;color:var(--tx2);font-size:11px}
+.cv-entry{background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:11px 13px;margin-bottom:7px}
+.cv-entry-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;gap:10px}
+.cv-entry-t{font-size:13px;font-weight:700;letter-spacing:-.1px}
+.cv-entry-d{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace;flex-shrink:0;letter-spacing:.2px}
+.cv-entry-sub{font-size:12px;color:var(--tx2);font-weight:500;margin-bottom:4px}
+.cv-entry-desc{font-size:12px;line-height:1.55;color:var(--tx2)}
+.cv-tags{display:flex;flex-wrap:wrap;gap:5px}
+.cv-tag{font-size:11px;padding:4px 10px;border-radius:12px;background:var(--sf2);border:1px solid var(--bdl);color:var(--tx2);font-weight:500}
+.cv-tag.lvl-native{background:var(--gnb);color:var(--gn);border-color:transparent}
+.cv-tag.lvl-fluent{background:var(--acs);color:var(--ac);border-color:transparent}
+.cv-empty-inline{font-size:12px;color:var(--mu);font-style:italic;padding:6px 0}
+
+/* ═══ JOBBANSÖKAN — matchningar + sökta jobb ═══ */
+.ja-subtabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--bdl)}
+.ja-subtab{padding:8px 14px;font-size:12px;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:6px}
+.ja-subtab:hover{color:var(--tx)}
+.ja-subtab.act{color:var(--ac);border-bottom-color:var(--ac)}
+.ja-subtab-c{background:var(--bdl);color:var(--mu);font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;min-width:18px;text-align:center}
+.ja-subtab.act .ja-subtab-c{background:var(--acs);color:var(--ac)}
+.ja-job{background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:11px 13px;margin-bottom:7px;display:flex;gap:12px;align-items:flex-start}
+.ja-job-body{flex:1;min-width:0}
+.ja-job-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:3px}
+.ja-job-t{font-size:13px;font-weight:700;letter-spacing:-.1px}
+.ja-job-c{font-size:12px;color:var(--tx2);margin-bottom:5px}
+.ja-job-meta{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace;letter-spacing:.2px;display:flex;gap:10px;flex-wrap:wrap}
+.ja-job-score{flex-shrink:0;text-align:center;min-width:54px}
+.ja-job-score-v{font-size:20px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.ja-job-score-v.high{color:var(--gn)}
+.ja-job-score-v.mid{color:var(--or)}
+.ja-job-score-v.low{color:var(--mu)}
+.ja-job-score-l{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.ja-status{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
+.ja-status.sent{background:var(--blb);color:var(--bl)}
+.ja-status.interview{background:var(--orb);color:var(--or)}
+.ja-status.offer{background:var(--gnb);color:var(--gn)}
+.ja-status.rejected{background:var(--rdb);color:var(--rd)}
+.ja-status.draft{background:var(--bdl);color:var(--mu)}
+
+/* ═══ INSTÄLLNINGAR — handläggar-verktyg ═══ */
+.inst-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+@media (max-width: 760px){.inst-grid{grid-template-columns:1fr}}
+.inst-group{background:var(--sf2);border:1px solid var(--bdl);border-radius:10px;padding:14px 16px}
+.inst-group-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:10px}
+.inst-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--bdl);font-size:12.5px}
+.inst-row:last-child{border-bottom:none}
+.inst-row-l{color:var(--mu);font-weight:500}
+.inst-row-v{font-weight:600;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.inst-row-v.mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx2)}
+.inst-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--bdl)}
+.inst-danger{color:var(--rd);border-color:rgba(217,68,68,.3)}
+.inst-danger:hover{background:var(--rdb)}
+
 /* ═══ STATISTIK — dashboard-stil ═══ */
 .st-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .st-kpi{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;box-shadow:var(--sh);position:relative;overflow:hidden}
@@ -1296,9 +1352,12 @@ function renderTabIntervju(data){
 
 function renderTabCV(data){
   const cvd = data.cv?.data || data.cv || {};
-  if(!cvd.name && !cvd.title){
+  const hasAny = cvd.name || cvd.title || cvd.email || (cvd.experience||[]).length || (cvd.education||[]).length;
+  if(!hasAny){
     return `<div class="ud-body-h">CV</div><div class="ud-body-empty">Deltagaren har inte börjat med sitt CV ännu.</div>`;
   }
+
+  // Kontakt-fält
   const fields = [
     {l:'Namn', v: cvd.name || [cvd.firstName,cvd.lastName].filter(Boolean).join(' ')},
     {l:'Yrkestitel', v: cvd.title || cvd.role || '—'},
@@ -1307,37 +1366,299 @@ function renderTabCV(data){
     {l:'Ort', v: cvd.city || cvd.location || '—'},
     {l:'Senast uppdaterat', v: data.cv?.updated_at?.split('T')[0] || '—'}
   ];
-  return `<div class="ud-body-h">CV</div>
-    <div class="cv-summary">
-      ${fields.map(f=>`<div class="cv-field"><div class="cv-field-l">${f.l}</div><div class="cv-field-v">${f.v||'—'}</div></div>`).join('')}
+
+  // Datastrukturer (försöker flera vanliga fältnamn)
+  const experience = cvd.experience || cvd.workExperience || cvd.work || [];
+  const education = cvd.education || cvd.studies || [];
+  const skills = cvd.skills || cvd.competencies || [];
+  const languages = cvd.languages || [];
+  const certifications = cvd.certifications || cvd.certificates || [];
+
+  const formatDate = (d) => d ? String(d).split('T')[0].slice(0,7) : '';
+  const dateRange = (start, end, current) => {
+    const s = formatDate(start), e = current ? 'nu' : formatDate(end);
+    return [s, e].filter(Boolean).join(' – ') || '—';
+  };
+
+  const sec = (title, content, count) => count > 0 || content
+    ? `<div class="cv-sec">
+        <div class="cv-sec-h">${title}${count !== undefined ? `<span class="cv-sec-c">${count} ${count === 1 ? 'post' : 'poster'}</span>` : ''}</div>
+        ${content}
+      </div>` : '';
+
+  // Erfarenhet
+  const expHTML = experience.length ? experience.map(e => `
+    <div class="cv-entry">
+      <div class="cv-entry-h">
+        <div class="cv-entry-t">${escapeHtml(e.title || e.role || e.position || 'Tjänst')}</div>
+        <div class="cv-entry-d">${dateRange(e.startDate || e.start, e.endDate || e.end, e.current)}</div>
+      </div>
+      <div class="cv-entry-sub">${escapeHtml(e.company || e.employer || '')}${e.location ? ' · ' + escapeHtml(e.location) : ''}</div>
+      ${e.description ? `<div class="cv-entry-desc">${escapeHtml(e.description)}</div>` : ''}
     </div>
-    ${cvd.summary ? `<div style="margin-top:14px"><div class="cv-field-l" style="margin-bottom:6px">Sammanfattning</div><div style="font-size:13px;line-height:1.55;color:var(--tx2)">${cvd.summary}</div></div>` : ''}`;
+  `).join('') : '<div class="cv-empty-inline">Ingen arbetslivserfarenhet tillagd</div>';
+
+  // Utbildning
+  const eduHTML = education.length ? education.map(e => `
+    <div class="cv-entry">
+      <div class="cv-entry-h">
+        <div class="cv-entry-t">${escapeHtml(e.degree || e.program || e.title || 'Utbildning')}</div>
+        <div class="cv-entry-d">${dateRange(e.startDate || e.start, e.endDate || e.end, e.current)}</div>
+      </div>
+      <div class="cv-entry-sub">${escapeHtml(e.school || e.institution || '')}${e.field ? ' · ' + escapeHtml(e.field) : ''}</div>
+      ${e.description ? `<div class="cv-entry-desc">${escapeHtml(e.description)}</div>` : ''}
+    </div>
+  `).join('') : '<div class="cv-empty-inline">Ingen utbildning tillagd</div>';
+
+  // Kompetenser som taggar
+  const skillsHTML = skills.length
+    ? `<div class="cv-tags">${skills.map(s => `<span class="cv-tag">${escapeHtml(typeof s === 'string' ? s : (s.name || s.skill || ''))}</span>`).join('')}</div>`
+    : '<div class="cv-empty-inline">Inga kompetenser tillagda</div>';
+
+  // Språk med nivå-färgning
+  const langHTML = languages.length
+    ? `<div class="cv-tags">${languages.map(l => {
+        const name = typeof l === 'string' ? l : (l.language || l.name || '');
+        const level = typeof l === 'object' ? (l.level || l.proficiency || '') : '';
+        const levelCls = /modersmål|native/i.test(level) ? 'lvl-native'
+                       : /flytande|fluent|c[12]/i.test(level) ? 'lvl-fluent' : '';
+        return `<span class="cv-tag ${levelCls}">${escapeHtml(name)}${level ? ' · ' + escapeHtml(level) : ''}</span>`;
+      }).join('')}</div>`
+    : '<div class="cv-empty-inline">Inga språk tillagda</div>';
+
+  // Certifikat
+  const certHTML = certifications.length ? certifications.map(c => `
+    <div class="cv-entry">
+      <div class="cv-entry-h">
+        <div class="cv-entry-t">${escapeHtml(c.name || c.title || 'Certifikat')}</div>
+        <div class="cv-entry-d">${formatDate(c.date || c.issuedDate) || '—'}</div>
+      </div>
+      ${c.issuer ? `<div class="cv-entry-sub">${escapeHtml(c.issuer)}</div>` : ''}
+    </div>
+  `).join('') : '';
+
+  return `<div class="ud-body-h">CV <span style="font-weight:500;color:var(--mu);font-size:13px">· ${cvName(cvd) || 'deltagare'}</span></div>
+
+    <div class="cv-summary">
+      ${fields.map(f=>`<div class="cv-field"><div class="cv-field-l">${f.l}</div><div class="cv-field-v">${escapeHtml(String(f.v||'—'))}</div></div>`).join('')}
+    </div>
+
+    ${cvd.summary ? `
+      <div class="cv-sec">
+        <div class="cv-sec-h">Sammanfattning</div>
+        <div style="font-size:13px;line-height:1.6;color:var(--tx2)">${escapeHtml(cvd.summary)}</div>
+      </div>` : ''}
+
+    ${sec('Arbetslivserfarenhet', expHTML, experience.length)}
+    ${sec('Utbildning', eduHTML, education.length)}
+    ${sec('Kompetenser', skillsHTML, skills.length)}
+    ${sec('Språk', langHTML, languages.length)}
+    ${certifications.length ? sec('Certifikat', certHTML, certifications.length) : ''}
+  `;
 }
 
+let currentJaSubtab = 'sokta';
 function renderTabJobbansok(data){
-  const apps = data.applications || [];
-  if(!apps.length) return `<div class="ud-body-h">Jobbansökan</div><div class="ud-body-empty">Inga registrerade ansökningar.</div>`;
-  return `<div class="ud-body-h">Jobbansökan</div>
-    <div class="ud-list">
-      <div class="ud-list-h"><div>Tjänst</div><div>Skickad</div></div>
-      ${apps.map(a=>`<div class="ud-list-row"><div>${a.title} <span style="color:var(--mu);font-weight:400">— ${a.company||''}</span></div><div class="ud-list-d">${(a.applied_at||'').split('T')[0]||'—'}</div></div>`).join('')}
+  const apps = data.applications || data.jobApplications || [];
+  const matches = data.matches || data.jobMatches || data.matchedJobs || [];
+
+  if(!apps.length && !matches.length){
+    return `<div class="ud-body-h">Jobbansökan</div>
+      <div class="ud-body-empty">Deltagaren har inte börjat söka jobb eller matcha mot annonser ännu.</div>`;
+  }
+
+  const STATUS_LABEL = {
+    sent: 'Skickad', draft: 'Utkast', interview: 'På intervju',
+    offer: 'Fått erbjudande', rejected: 'Avslag', withdrawn: 'Återkallad'
+  };
+
+  // Statistik-sammanställning
+  const sent = apps.filter(a => a.status === 'sent' || !a.status || a.status === 'interview' || a.status === 'offer').length;
+  const interviews = apps.filter(a => a.status === 'interview' || a.status === 'offer').length;
+  const offers = apps.filter(a => a.status === 'offer').length;
+
+  // Matchningar sorterade efter score (hög först)
+  const sortedMatches = [...matches].sort((a,b) => (b.score || b.matchScore || 0) - (a.score || a.matchScore || 0));
+
+  const matchesHTML = sortedMatches.length ? sortedMatches.map(m => {
+    const score = Math.round((m.score || m.matchScore || 0) * (m.score > 1 ? 1 : 100));
+    const cls = score >= 80 ? 'high' : score >= 50 ? 'mid' : 'low';
+    return `<div class="ja-job">
+      <div class="ja-job-score">
+        <div class="ja-job-score-v ${cls}">${score}%</div>
+        <div class="ja-job-score-l">Match</div>
+      </div>
+      <div class="ja-job-body">
+        <div class="ja-job-h">
+          <div class="ja-job-t">${escapeHtml(m.title || m.jobTitle || 'Jobb')}</div>
+        </div>
+        <div class="ja-job-c">${escapeHtml(m.company || m.employer || '')}${m.location ? ' · ' + escapeHtml(m.location) : ''}</div>
+        <div class="ja-job-meta">
+          ${m.matchedAt ? `<span>Matchad: ${m.matchedAt.split('T')[0]}</span>` : ''}
+          ${m.source ? `<span>Källa: ${escapeHtml(m.source)}</span>` : ''}
+          ${m.applied ? `<span style="color:var(--gn);font-weight:700">Ansökt</span>` : ''}
+        </div>
+      </div>
     </div>`;
+  }).join('') : '<div class="cv-empty-inline">Inga matchade jobb ännu.</div>';
+
+  const appsHTML = apps.length ? apps.map(a => {
+    const status = a.status || 'sent';
+    return `<div class="ja-job">
+      <div class="ja-job-body">
+        <div class="ja-job-h">
+          <div class="ja-job-t">${escapeHtml(a.title || a.jobTitle || 'Tjänst')}</div>
+          <span class="ja-status ${status}">${STATUS_LABEL[status] || status}</span>
+        </div>
+        <div class="ja-job-c">${escapeHtml(a.company || a.employer || '')}${a.location ? ' · ' + escapeHtml(a.location) : ''}</div>
+        <div class="ja-job-meta">
+          ${a.applied_at || a.appliedAt ? `<span>Skickad: ${(a.applied_at || a.appliedAt).split('T')[0]}</span>` : ''}
+          ${a.deadline ? `<span>Deadline: ${a.deadline.split('T')[0]}</span>` : ''}
+          ${a.source ? `<span>${escapeHtml(a.source)}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="cv-empty-inline">Inga ansökningar registrerade.</div>';
+
+  return `<div class="ud-body-h">Jobbansökan <span style="font-weight:500;color:var(--mu);font-size:13px">· ${apps.length} ansökningar · ${matches.length} matchningar</span></div>
+
+    <div class="inst-grid" style="margin-bottom:14px">
+      <div class="inst-group">
+        <div class="inst-group-h">Aktivitet</div>
+        <div class="inst-row"><span class="inst-row-l">Matchade jobb</span><span class="inst-row-v">${matches.length}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Skickade ansökningar</span><span class="inst-row-v">${sent}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Intervjuer</span><span class="inst-row-v" style="color:var(--or)">${interviews}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Erbjudanden</span><span class="inst-row-v" style="color:var(--gn)">${offers}</span></div>
+      </div>
+      <div class="inst-group">
+        <div class="inst-group-h">Handläggarverktyg</div>
+        <button class="btn" style="width:100%;margin-bottom:6px" onclick="quickAssign('matcha-5')">Tilldela: Matcha 5 annonser</button>
+        <button class="btn" style="width:100%" onclick="document.getElementById('udCustomTask').value='Sök 3 jobb denna vecka';switchDetailTab('uppgifter');">Tilldela: Sök 3 jobb</button>
+      </div>
+    </div>
+
+    <div class="ja-subtabs">
+      <div class="ja-subtab${currentJaSubtab==='sokta'?' act':''}" onclick="switchJaSubtab('sokta')">
+        <span>Sökta jobb</span>
+        <span class="ja-subtab-c">${apps.length}</span>
+      </div>
+      <div class="ja-subtab${currentJaSubtab==='matchade'?' act':''}" onclick="switchJaSubtab('matchade')">
+        <span>Matchade CV</span>
+        <span class="ja-subtab-c">${matches.length}</span>
+      </div>
+    </div>
+
+    <div id="jaSubContent">
+      ${currentJaSubtab === 'sokta' ? appsHTML : matchesHTML}
+    </div>`;
+}
+
+function switchJaSubtab(id){
+  currentJaSubtab = id;
+  if(currentUserData) renderDetailTab('jobbansok', currentUserData);
 }
 
 function renderTabInstall(data){
   const cvd = data.cv?.data || data.cv || {};
+  const uid = data.user_id || data.id || '—';
+  const created = data.created_at ? data.created_at.split('T')[0] : '—';
+  const lastSeen = data.last_seen ? data.last_seen.split('T')[0] : '—';
+  const lastActivity = data.cv?.updated_at ? data.cv.updated_at.split('T')[0] : lastSeen;
+  const status = data.status || 'new';
+  const statusLabel = SL[status] || 'Ny';
+
+  // Samlade aktivitetsdata
+  const tasks = data.tasks || [];
+  const tasksDone = tasks.filter(t => t.status === 'completed').length;
+  const totalTime = tasks.reduce((s, t) => s + (t.time_spent_sec || 0), 0);
+  const courses = data.courses || [];
+  const forms = data.questionnaires || [];
+  const sessions = data.interviewSessions || [];
+
+  const inviteStatus = data.invite_accepted_at
+    ? `<span style="color:var(--gn);font-weight:700">Aktiverad ${data.invite_accepted_at.split('T')[0]}</span>`
+    : data.invite_sent_at
+      ? `<span style="color:var(--or)">Inbjuden ${data.invite_sent_at.split('T')[0]} (ej aktiverad)</span>`
+      : '<span style="color:var(--mu)">—</span>';
+
+  const hid = getHandlaggareId(data);
+  const hname = getHandlaggareName(data) || '—';
+  const isMine = hid && hid === admin.id;
+
   return `<div class="ud-body-h">Inställningar</div>
-    <div class="cv-summary">
-      <div class="cv-field"><div class="cv-field-l">Användar-ID</div><div class="cv-field-v" style="font-family:'JetBrains Mono',monospace;font-size:11px">${data.user_id||data.id||'—'}</div></div>
-      <div class="cv-field"><div class="cv-field-l">Status</div><div class="cv-field-v">${SL[data.status||'new']}</div></div>
-      <div class="cv-field"><div class="cv-field-l">Enhet</div><div class="cv-field-v">${data.enheter?.name||data.enhet_name||'—'}</div></div>
-      <div class="cv-field"><div class="cv-field-l">Handläggare</div><div class="cv-field-v">${getHandlaggareName(data)||'—'}${getHandlaggareId(data)===admin.id?' <span style="color:var(--ac);font-weight:600">(du)</span>':''}</div></div>
-      <div class="cv-field"><div class="cv-field-l">E-post</div><div class="cv-field-v">${cvd.email||data.email||'—'}</div></div>
+
+    <div class="inst-grid">
+      <div class="inst-group">
+        <div class="inst-group-h">Kontaktuppgifter</div>
+        <div class="inst-row"><span class="inst-row-l">Namn</span><span class="inst-row-v">${escapeHtml(cvName(cvd) || cvName(data) || '—')}</span></div>
+        <div class="inst-row"><span class="inst-row-l">E-post</span><span class="inst-row-v">${escapeHtml(cvd.email || data.email || '—')}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Telefon</span><span class="inst-row-v">${escapeHtml(cvd.phone || '—')}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Ort</span><span class="inst-row-v">${escapeHtml(cvd.city || cvd.location || '—')}</span></div>
+      </div>
+
+      <div class="inst-group">
+        <div class="inst-group-h">Organisation</div>
+        <div class="inst-row"><span class="inst-row-l">Handläggare</span><span class="inst-row-v"${isMine ? ' style="color:var(--ac)"' : ''}>${escapeHtml(hname)}${isMine ? ' (du)' : ''}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Enhet</span><span class="inst-row-v">${escapeHtml(data.enheter?.name || data.enhet_name || '—')}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Kommun</span><span class="inst-row-v">${escapeHtml(data.kommuner?.name || data.kommun_name || '—')}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Status</span><span class="inst-row-v"><span class="bd ${status}">${statusLabel}</span></span></div>
+      </div>
+
+      <div class="inst-group">
+        <div class="inst-group-h">Konto</div>
+        <div class="inst-row"><span class="inst-row-l">Konto-ID</span><span class="inst-row-v mono">${String(uid).slice(0,8)}…</span></div>
+        <div class="inst-row"><span class="inst-row-l">Inbjudan</span><span class="inst-row-v">${inviteStatus}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Registrerad</span><span class="inst-row-v mono">${created}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Senast aktiv</span><span class="inst-row-v mono">${lastActivity}</span></div>
+      </div>
+
+      <div class="inst-group">
+        <div class="inst-group-h">Aktivitet totalt</div>
+        <div class="inst-row"><span class="inst-row-l">Uppgifter klara</span><span class="inst-row-v">${tasksDone} av ${tasks.length}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Kurser påbörjade</span><span class="inst-row-v">${courses.length}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Frågeformulär besvarade</span><span class="inst-row-v">${forms.length}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Intervjuövningar</span><span class="inst-row-v">${sessions.length}</span></div>
+        <div class="inst-row"><span class="inst-row-l">Total aktiv tid</span><span class="inst-row-v">${Math.round(totalTime / 60)} min</span></div>
+      </div>
     </div>
-    <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn" onclick="resendInvite()">Skicka ny inbjudningslänk</button>
-      <button class="btn" onclick="alert('Inte implementerat ännu — kräver ett admin_archive_user-endpoint på backend.')" style="color:var(--rd);border-color:rgba(217,68,68,.3)">Arkivera deltagare</button>
+
+    <div class="inst-group">
+      <div class="inst-group-h">Handläggar-åtgärder</div>
+      <div class="inst-actions" style="border-top:none;padding-top:0">
+        <button class="btn" onclick="resendInvite()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Skicka ny inbjudningslänk
+        </button>
+        <button class="btn" onclick="switchDetailTab('uppgifter')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Tilldela ny uppgift
+        </button>
+        <button class="btn" onclick="exportUserData()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportera deltagardata
+        </button>
+        <button class="btn" onclick="alert('Byte av handläggare kräver backend-endpoint reassign_participant. Se backend-specen.')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          Byt handläggare
+        </button>
+        <button class="btn inst-danger" onclick="alert('Arkivering kräver backend-endpoint admin_archive_user.')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          Arkivera deltagare
+        </button>
+      </div>
     </div>`;
+}
+
+function exportUserData(){
+  if(!currentUserData) return;
+  const blob = new Blob([JSON.stringify(currentUserData, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const name = cvName(currentUserData.cv?.data || currentUserData.cv) || 'deltagare';
+  a.download = `${name.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ═══ TILLDELA UPPGIFT ═══
