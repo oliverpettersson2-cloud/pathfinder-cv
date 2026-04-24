@@ -298,6 +298,51 @@ td{padding:10px 13px;vertical-align:middle}
 .pv-results-score{font-size:34px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
 .pv-results-t{font-size:13px;color:var(--mu);margin-bottom:22px;line-height:1.55;max-width:300px}
 
+/* ═══ MINA — UPPGIFTSVY (per uppgift med deltagarchips) ═══ */
+.mt-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.mt-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.mt-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.mt-card.completed::after{background:var(--gn)}
+.mt-card.active::after{background:var(--or)}
+.mt-card.pending::after{background:var(--bl)}
+.mt-card.expired::after{background:var(--rd)}
+.mt-card-l{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);margin-bottom:4px}
+.mt-card-v{font-size:24px;font-weight:700;letter-spacing:-.8px;line-height:1}
+.mt-card.completed .mt-card-v{color:var(--gn)}
+.mt-card.active .mt-card-v{color:var(--or)}
+.mt-card.pending .mt-card-v{color:var(--bl)}
+.mt-card.expired .mt-card-v{color:var(--rd)}
+
+.mt-filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.mt-task{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);transition:border-color var(--tr)}
+.mt-task:hover{border-color:var(--tx2)}
+.mt-task-h{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:10px}
+.mt-task-info{flex:1;min-width:0}
+.mt-task-t{font-size:14px;font-weight:700;letter-spacing:-.1px;margin-bottom:3px}
+.mt-task-meta{font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace}
+.mt-task-counts{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.mt-count{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600}
+.mt-count::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.mt-count.completed{background:var(--gnb);color:var(--gn)}
+.mt-count.active{background:var(--orb);color:var(--or)}
+.mt-count.pending{background:var(--blb);color:var(--bl)}
+.mt-count.expired{background:var(--rdb);color:var(--rd)}
+
+.mt-chips{display:flex;flex-wrap:wrap;gap:5px;padding-top:10px;border-top:1px solid var(--bdl)}
+.mt-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:14px;background:var(--sf2);border:1px solid var(--bdl);cursor:pointer;transition:all .15s;font-size:11.5px;font-weight:500;max-width:180px}
+.mt-chip:hover{border-color:var(--tx2);transform:translateY(-1px)}
+.mt-chip-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.mt-chip.completed .mt-chip-av{background:var(--gnb);color:var(--gn)}
+.mt-chip.active .mt-chip-av{background:var(--orb);color:var(--or)}
+.mt-chip.pending .mt-chip-av{background:var(--blb);color:var(--bl)}
+.mt-chip.expired .mt-chip-av{background:var(--rdb);color:var(--rd)}
+.mt-chip-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt-chip-s{font-size:10px;flex-shrink:0}
+
+.mt-empty-task{padding:40px 20px;text-align:center;color:var(--mu);background:var(--sf);border:1px dashed var(--bd);border-radius:12px}
+.mt-empty-task-t{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px}
+.mt-empty-task-s{font-size:12px;line-height:1.5}
+
 /* ═══ BULK-SELECT BAR (flytande) ═══ */
 .bulk-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 30px));background:var(--nv);color:#fff;border-radius:12px;padding:10px 14px 10px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 32px rgba(0,0,0,.25);z-index:80;transition:transform .25s cubic-bezier(.4,0,.2,1);min-width:340px}
 .bulk-bar.show{transform:translateX(-50%) translateY(0)}
@@ -467,10 +512,6 @@ td{padding:10px 13px;vertical-align:middle}
             <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
             <select id="enhetFlt" style="min-width:140px"><option value="">Alla enheter</option></select>
             <div class="sp"></div>
-            <button class="btn btn-primary" onclick="openInviteModal()">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-              Bjud in deltagare
-            </button>
             <button class="btn" onclick="exportData()">Exportera</button>
           </div>
           <div class="chips" id="statusChips" style="margin-bottom:14px">
@@ -1291,31 +1332,168 @@ async function loadStats(){
     </div>`;
 }
 
-// ═══ TASKS TAB ═══
-async function loadAllTasks(){
-  const filters={};
-  if(admin.role==='kommunadmin'&&admin.kommun_id) filters.kommun_id=admin.kommun_id;
-  if(admin.role==='handlaggare'&&admin.enhet_id) filters.enhet_id=admin.enhet_id;
-  let data;
-  try{data=await post('admin_stats',{filters});}
-  catch(e){document.getElementById('tasksContent').innerHTML='<div class="loading" style="color:var(--rd)">Fel: '+e.message+'</div>';return;}
-  const t=data.tasks||{};
-  document.getElementById('tasksContent').innerHTML=`
-    <div class="tb" style="margin-bottom:14px">
-      <div style="font-size:13px;color:var(--mu)">Översikt över uppgifter tilldelade till din grupp</div>
-      <div class="sp"></div>
+// ═══ UPPGIFTER UNDER MINA — per uppgift med deltagarchips ═══
+// Aggregerar alla uppgifter som är tilldelade till Mina-gruppen och visar
+// tydligt vilka deltagare som har gjort vilken, och vilka som är aktiva.
+let minaTasksCache = null;
+let minaTaskFilter = 'all'; // all | active | completed | pending | expired
+
+async function renderMinaTasksView(){
+  const wrap = document.getElementById('tasksContent');
+  const favs = getFavorites();
+  const mina = allUsers.filter(u => favs.has(u.user_id||u.id));
+  if(mina.length === 0){
+    wrap.innerHTML = `<div class="mt-empty-task">
+      <div class="mt-empty-task-t">Inga deltagare i din grupp</div>
+      <div class="mt-empty-task-s">Lägg till stjärnmarkerade deltagare först, så kan du här se exakt vilken deltagare som har gjort vilken uppgift.</div>
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = '<div class="loading">Hämtar uppgifter för gruppen…</div>';
+
+  // Hämta detaljdata för varje mina-deltagare parallellt
+  try {
+    const details = await Promise.all(
+      mina.map(u => post('admin_get_user', {
+        targetUserId: u.user_id||u.id, adminId: admin.id
+      }).catch(()=>null))
+    );
+    // Bygg tasks-struktur: { [taskTitle]: [{user, status, deadline, time_spent_sec}] }
+    const byTask = {};
+    details.forEach((d, i) => {
+      if(!d) return;
+      const cvd = d.cv?.data || d.cv || {};
+      const name = cvName(cvd) || cvName(d) || 'Okänd';
+      const uid = d.user_id || d.id || mina[i].user_id || mina[i].id;
+      const tasks = d.tasks || [];
+      tasks.forEach(t => {
+        const key = (t.title||'(Namnlös uppgift)').trim();
+        if(!byTask[key]) byTask[key] = { title: key, category: t.category, assignments: [] };
+        byTask[key].assignments.push({
+          user: { name, uid, initials: ini(name) },
+          status: t.status || 'pending',
+          deadline: t.deadline,
+          time_spent_sec: t.time_spent_sec
+        });
+      });
+    });
+    minaTasksCache = Object.values(byTask);
+    renderMinaTasksList();
+  } catch(e){
+    wrap.innerHTML = `<div class="loading" style="color:var(--rd)">Kunde inte hämta uppgifter: ${e.message}</div>`;
+  }
+}
+
+function renderMinaTasksList(){
+  const wrap = document.getElementById('tasksContent');
+  if(!minaTasksCache) { wrap.innerHTML = '<div class="loading">Laddar…</div>'; return; }
+
+  // Summering över alla tilldelningar
+  let sumCompleted=0, sumActive=0, sumPending=0, sumExpired=0;
+  const activeUsers = new Set();
+  minaTasksCache.forEach(t => t.assignments.forEach(a => {
+    if(a.status==='completed') sumCompleted++;
+    else if(a.status==='active') { sumActive++; activeUsers.add(a.user.uid); }
+    else if(a.status==='expired') sumExpired++;
+    else { sumPending++; activeUsers.add(a.user.uid); }
+  }));
+
+  if(minaTasksCache.length === 0){
+    wrap.innerHTML = `
+      ${renderMinaTaskSummary(sumCompleted,sumActive,sumPending,sumExpired,activeUsers.size)}
+      <div class="mt-empty-task">
+        <div class="mt-empty-task-t">Inga uppgifter tilldelade ännu</div>
+        <div class="mt-empty-task-s">Gå till Deltagare-fliken och välj deltagare att tilldela en uppgift till. Eller använd "Skapa uppgift från PowerPoint" nedan.</div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="openCreateTask()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>
+          Skapa uppgift från PowerPoint
+        </button></div>
+      </div>`;
+    return;
+  }
+
+  // Filtrera uppgifter baserat på valt filter
+  let filtered = minaTasksCache;
+  if(minaTaskFilter !== 'all'){
+    filtered = minaTasksCache.filter(t => t.assignments.some(a => {
+      if(minaTaskFilter==='pending') return a.status==='pending' || !a.status;
+      return a.status===minaTaskFilter;
+    }));
+  }
+
+  const SL2 = {completed:'Klar',active:'Pågår',pending:'Ny',expired:'Försenad'};
+  const catIcons = {cv:'📄',övning:'📚',intervju:'🎤',matchning:'🎯',jobbsök:'🔍',övrigt:'📝'};
+
+  const tasksHTML = filtered.map(t => {
+    // Gruppera tilldelningar per status (klara först, sen aktiva, sen pending, sen expired)
+    const order = ['completed','active','pending','expired'];
+    const sorted = [...t.assignments].sort((a,b) => order.indexOf(a.status||'pending') - order.indexOf(b.status||'pending'));
+    const c = { completed:0, active:0, pending:0, expired:0 };
+    t.assignments.forEach(a => { c[a.status||'pending'] = (c[a.status||'pending']||0)+1; });
+
+    const countsHTML = order.filter(s=>c[s]>0).map(s =>
+      `<span class="mt-count ${s}">${c[s]} ${SL2[s].toLowerCase()}</span>`
+    ).join('');
+
+    const chipsHTML = sorted.map(a => {
+      const s = a.status||'pending';
+      const deadline = a.deadline ? ' · frist ' + a.deadline.split('T')[0] : '';
+      const time = a.time_spent_sec ? ' · ' + Math.round(a.time_spent_sec/60) + ' min' : '';
+      const title = `${a.user.name} — ${SL2[s]}${deadline}${time}`;
+      return `<span class="mt-chip ${s}" title="${escapeHtml(title)}" onclick="openDetail('${a.user.uid}')">
+        <span class="mt-chip-av">${a.user.initials}</span>
+        <span class="mt-chip-n">${escapeHtml(a.user.name)}</span>
+      </span>`;
+    }).join('');
+
+    return `<div class="mt-task">
+      <div class="mt-task-h">
+        <div class="mt-task-info">
+          <div class="mt-task-t">${catIcons[t.category]||'📝'} ${escapeHtml(t.title)}</div>
+          <div class="mt-task-meta">${t.assignments.length} deltagare · kategori: ${t.category||'övrigt'}</div>
+        </div>
+        <div class="mt-task-counts">${countsHTML}</div>
+      </div>
+      <div class="mt-chips">${chipsHTML}</div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    ${renderMinaTaskSummary(sumCompleted,sumActive,sumPending,sumExpired,activeUsers.size)}
+
+    <div class="mt-filters">
+      <div class="chip${minaTaskFilter==='all'?' act':''}" onclick="filterMinaTasks('all')"><span>Alla uppgifter</span><span class="chip-c">${minaTasksCache.length}</span></div>
+      <div class="chip${minaTaskFilter==='active'?' act':''}" onclick="filterMinaTasks('active')"><span>Pågående</span><span class="chip-c">${sumActive}</span></div>
+      <div class="chip${minaTaskFilter==='pending'?' act':''}" onclick="filterMinaTasks('pending')"><span>Nya</span><span class="chip-c">${sumPending}</span></div>
+      <div class="chip${minaTaskFilter==='completed'?' act':''}" onclick="filterMinaTasks('completed')"><span>Klara</span><span class="chip-c">${sumCompleted}</span></div>
+      ${sumExpired?`<div class="chip${minaTaskFilter==='expired'?' act':''}" onclick="filterMinaTasks('expired')"><span>Försenade</span><span class="chip-c">${sumExpired}</span></div>`:''}
+      <div class="sp" style="flex:1"></div>
       <button class="btn btn-primary" onclick="openCreateTask()">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
         Skapa uppgift från PowerPoint
       </button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-      <div class="stc"><div class="stl">Väntande</div><div class="stv" style="color:var(--bl)">${t.pending||0}</div></div>
-      <div class="stc"><div class="stl">Pågående</div><div class="stv" style="color:var(--or)">${t.active||0}</div></div>
-      <div class="stc"><div class="stl">Klara</div><div class="stv" style="color:var(--gn)">${t.completed||0}</div></div>
-      <div class="stc"><div class="stl">Försenade</div><div class="stv" style="color:var(--rd)">${t.expired||0}</div></div>
-    </div>
-    <div style="font-size:13px;color:var(--mu)">Total tid spenderad: <b style="color:var(--tx)">${Math.round((t.total_time_sec||0)/3600)} timmar</b></div>`;
+
+    ${tasksHTML || '<div class="mt-empty-task"><div class="mt-empty-task-s">Inga uppgifter matchar filtret.</div></div>'}
+  `;
+}
+
+function renderMinaTaskSummary(completed, active, pending, expired, activeUserCount){
+  const total = completed + active + pending + expired;
+  return `<div class="mt-summary">
+    <div class="mt-card pending"><div class="mt-card-l">Nya</div><div class="mt-card-v">${pending}</div></div>
+    <div class="mt-card active"><div class="mt-card-l">Pågående</div><div class="mt-card-v">${active}</div></div>
+    <div class="mt-card completed"><div class="mt-card-l">Klara</div><div class="mt-card-v">${completed}</div></div>
+    ${expired>0
+      ? `<div class="mt-card expired"><div class="mt-card-l">Försenade</div><div class="mt-card-v">${expired}</div></div>`
+      : `<div class="mt-card"><div class="mt-card-l">Aktiva deltagare</div><div class="mt-card-v" style="color:var(--tx)">${activeUserCount}</div></div>`}
+  </div>`;
+}
+
+function filterMinaTasks(status){
+  minaTaskFilter = status;
+  renderMinaTasksList();
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1362,17 +1540,17 @@ function renderMinaView(){
     </div>
 
     <div class="subtabs">
-      <div class="subtab${currentMinaSubtab==='deltagare'?' act':''}" onclick="switchMinaSubtab('deltagare')">
+      <div class="subtab${currentMinaSubtab==='deltagare'?' act':''}" data-id="deltagare" onclick="switchMinaSubtab('deltagare')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Deltagare
       </div>
-      <div class="subtab${currentMinaSubtab==='statistik'?' act':''}" onclick="switchMinaSubtab('statistik')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
-        Statistik
-      </div>
-      <div class="subtab${currentMinaSubtab==='uppgifter'?' act':''}" onclick="switchMinaSubtab('uppgifter')">
+      <div class="subtab${currentMinaSubtab==='uppgifter'?' act':''}" data-id="uppgifter" onclick="switchMinaSubtab('uppgifter')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         Uppgifter
+      </div>
+      <div class="subtab${currentMinaSubtab==='statistik'?' act':''}" data-id="statistik" onclick="switchMinaSubtab('statistik')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
+        Statistik
       </div>
     </div>
 
@@ -1382,8 +1560,12 @@ function renderMinaView(){
           <span style="color:var(--tx);font-weight:600">Tips:</span> kryssa i flera deltagare för att tilldela samma uppgift till alla.
         </div>
         <div class="sp"></div>
+        <button class="btn btn-primary" onclick="openInviteModal()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          Bjud in deltagare
+        </button>
         <button class="btn" onclick="selectAllMina()">Markera alla</button>
-        <button class="btn btn-primary" onclick="selectAllMina();openBulkAssignModal()">Tilldela uppgift till hela gruppen</button>
+        <button class="btn" onclick="selectAllMina();openBulkAssignModal()">Tilldela uppgift till gruppen</button>
       </div>
 
       <div class="tw">
@@ -1440,17 +1622,17 @@ function renderMinaView(){
 
   // Ladda innehåll för aktiv undertabb
   if(currentMinaSubtab==='statistik') loadStats();
-  if(currentMinaSubtab==='uppgifter') loadAllTasks();
+  if(currentMinaSubtab==='uppgifter') renderMinaTasksView();
 }
 
 function switchMinaSubtab(id){
   currentMinaSubtab = id;
   document.querySelectorAll('#p-mina .subtab').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('#p-mina .subpan').forEach(p=>p.classList.remove('act'));
-  document.querySelector(`#p-mina .subtab:nth-child(${id==='deltagare'?1:id==='statistik'?2:3})`)?.classList.add('act');
+  document.querySelector(`#p-mina .subtab[data-id="${id}"]`)?.classList.add('act');
   document.getElementById('sp-'+id)?.classList.add('act');
   if(id==='statistik') loadStats();
-  if(id==='uppgifter') loadAllTasks();
+  if(id==='uppgifter') renderMinaTasksView();
 }
 
 function selectAllMina(){
@@ -1940,7 +2122,7 @@ async function wizardSaveAndAssign(){
 
     wzStatus(`Uppgift skapad och tilldelad till ${assignRes.count||wiz.targetUserIds.length} deltagare!`, 'ok');
     btn.textContent = 'Klar ✓';
-    setTimeout(()=>{ closeCreateTask(); loadAllTasks(); }, 1600);
+    setTimeout(()=>{ closeCreateTask(); renderMinaTasksView(); }, 1600);
   } catch(e){
     // Mock: fall tillbaka på assign_task per deltagare
     console.warn('[wizard] create_module/assign_module saknas — mockar med assign_task per deltagare');
@@ -1963,7 +2145,7 @@ async function wizardSaveAndAssign(){
       : `${ok} lyckades, ${fail} misslyckades.`,
       fail===0?'ok':'err');
     btn.textContent = fail===0 ? 'Klar ✓' : 'Försök igen';
-    if(fail===0) setTimeout(()=>{ closeCreateTask(); loadAllTasks(); }, 2000);
+    if(fail===0) setTimeout(()=>{ closeCreateTask(); renderMinaTasksView(); }, 2000);
     else btn.disabled=false;
   }
 }
@@ -1988,7 +2170,7 @@ async function wizardUseExisting(moduleId){
       filters:{adminId: admin.id}
     });
     wzStatus('Befintlig uppgift tilldelad!', 'ok');
-    setTimeout(()=>{ closeCreateTask(); loadAllTasks(); }, 1400);
+    setTimeout(()=>{ closeCreateTask(); renderMinaTasksView(); }, 1400);
   } catch(e){
     wzStatus('Kunde inte tilldela: '+e.message, 'err');
   }
