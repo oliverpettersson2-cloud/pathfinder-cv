@@ -10230,6 +10230,12 @@ var D={
   cur:null, // current category id
   curMod:null, // current module
 
+  // ════════════════════════════════════════════════════════════════
+  // AKTIVA MODULER — lägg till/ta bort modul-ID:n här för att styra
+  // vilka som visas aktiva vs "Under arbete". ÄNDRA BARA HÄR!
+  // ════════════════════════════════════════════════════════════════
+  ACTIVE_MODS:['m1','m2','m3','a_cv','a_match','a0','s0','s1','s2','s3'],
+
   allMods:function(){return INTRO.concat(ARBETE,STUDIER,HALSA,EKONOMI,DIGITAL)},
   findMod:function(id){return D.allMods().find(function(m){return m.id===id})},
 
@@ -10340,12 +10346,11 @@ var D={
     var p=gp();
     var h='<div class="mvhdr"><button class="back-btn" onclick="D.goHome()">←</button>';
     h+='<span style="font-size:14px;font-weight:900;color:#fff;">'+catName+'</span></div>';
-    // Whitelist: 18 moduler med färdigt innehåll. Övriga visas som "Under arbete".
-    var ACTIVE=['m1','m2','m3','a_cv','a_match','a0','s0','s1','s2','s3'];
+    // Använder central D.ACTIVE_MODS — ändra listan högst upp i D-objektet.
     mods.forEach(function(m,i){
       var pct=D.modPct(m,p),mp=p[m.id]||{};
       var un=D.modUnlocked(mods,i,p);
-      var inProgress=ACTIVE.indexOf(m.id)===-1;
+      var inProgress=D.ACTIVE_MODS.indexOf(m.id)===-1;
       if(inProgress){
         // Under arbete-kort (klickbart men gråat och visar info)
         h+='<div class="mcard" data-id="'+m.id+'" style="opacity:0.5;border-color:rgba(251,146,60,.25);background:rgba(251,146,60,.04);position:relative;cursor:not-allowed;">';
@@ -10380,9 +10385,8 @@ var D={
   },
 
   clickCard:function(el){
-    var ACTIVE=['m1','m2','m3','a_cv','a_match','a0','s0','s1','s2','s3'];
     var id=el.dataset.id;
-    if(id && ACTIVE.indexOf(id)===-1){toast('🚧 Under arbete — kommer snart');return;}
+    if(id && D.ACTIVE_MODS.indexOf(id)===-1){toast('🚧 Under arbete — kommer snart');return;}
     if(el.classList.contains('locked')){toast('🔒 Slutför föregående modul');return;}
     if(id)D.openMod(id);
   },
