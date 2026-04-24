@@ -9709,6 +9709,10 @@ fields:[
 {l:'Hittade du en utbildning? Vilket namn?',ph:'T.ex. Logistik och Supply Chain Management'},
 {l:'Hur lång är utbildningen och var?',ph:'T.ex. 2 år, Helsingborg, med LIA-perioder'},
 {l:'Vad krävs för att söka?',ph:'T.ex. Gymnasieexamen och arbetslivserfarenhet...'}
+],
+links:[
+{t:'Gå en yrkesutbildning',u:'https://helsingborg.se/forskola-och-utbildning/vuxenutbildning/',d:'Vuxenutbildning i Helsingborg — översikt och ansökan'},
+{t:'Så här samarbetar vi med arbetsgivare i Helsingborg, service och vård',u:'https://helsingborg.se/forskola-och-utbildning/vuxenutbildning/utbildningar/yrkesutbildningar-pa-gymnasial-niva/',d:'Yrkesutbildningar på gymnasial nivå — Familjen Helsingborg'}
 ]},
 quiz:[
 {q:'Vad är en YH-utbildning?',o:['En universitetsutbildning','En arbetsmarknadsanpassad yrkesutbildning','En gymnasieutbildning'],c:1},
@@ -10600,6 +10604,17 @@ var D={
     var m=D.curMod;
     var saved=(gp()[m.id]||{}).br||[];
     var h='<div class="ex-box"><div class="ex-title">'+ex.title+'</div><div class="ex-desc">'+ex.desc+'</div></div>';
+    if(ex.links&&ex.links.length){
+      h+='<div style="margin-bottom:18px;">';
+      h+='<div style="font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:10px;">🔗 Länkar</div>';
+      ex.links.forEach(function(lk){
+        h+='<a href="'+(lk.u||'#')+'" target="_blank" rel="noopener noreferrer" style="display:block;padding:12px 14px;margin-bottom:8px;background:'+m.bg+';border:1px solid '+m.bc+';border-radius:12px;color:'+m.color+';text-decoration:none;">';
+        h+='<div style="font-size:14px;font-weight:700;line-height:1.3;">'+(lk.t||lk.u||'')+'</div>';
+        if(lk.d)h+='<div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;font-weight:400;line-height:1.4;">'+lk.d+'</div>';
+        h+='</a>';
+      });
+      h+='</div>';
+    }
     ex.fields.forEach(function(f,i){
       var val=(saved[i]||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       h+='<div class="field-wrap">';
