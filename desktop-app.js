@@ -1799,6 +1799,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     { id: 'digital',  label: 'Digitalt',  icon: '🌐', color: '#34d399', mods: DIGITAL },
   ];
 
+  // ════════════════════════════════════════════════════════════════
+  // AKTIVA MODULER — lägg till/ta bort modul-ID:n här för att styra
+  // vilka som visas aktiva vs "Under arbete". ÄNDRA BARA HÄR!
+  // ════════════════════════════════════════════════════════════════
+  const ACTIVE_MODS = ['m1','m2','m3','a_cv','a_match','a0','s0','s1','s2','s3'];
+
   // Bakåtkompatibilitet: TRAINING_MODULES = alla moduler i en array
   const TRAINING_MODULES = [].concat(INTRO, ARBETE, STUDIER, HALSA, EKONOMI, DIGITAL);
 
@@ -6740,13 +6746,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     // Visa modulerna inom vald kategori
     const cat = TRAINING_CATS.find(c => c.id === currentTrainCat);
     if (!cat) { currentTrainCat = null; renderTrainingHome(); return; }
-
-    // Whitelist: 18 moduler med färdigt innehåll. Resten visas som "Under arbete".
-    const ACTIVE_MODS = [
-      'm1','m2','m3',                      // Intro (alla 3)
-      'a_cv','a_match','a0',               // Arbete
-      's0','s1','s2','s3'                  // Studier (Utbildningskartan, Vad är YH, Komvux, SFI)
-    ];
+    // Använder central ACTIVE_MODS — ändra listan högst upp i filen.
 
     const catHeader = `
       <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; margin-bottom: 8px;">
