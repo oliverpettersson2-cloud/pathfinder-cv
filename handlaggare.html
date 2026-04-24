@@ -343,37 +343,16 @@ td{padding:10px 13px;vertical-align:middle}
 .mt-empty-task-t{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px}
 .mt-empty-task-s{font-size:12px;line-height:1.5}
 
-/* ═══ MINA — PER-DELTAGARE UPPGIFTSLISTA ═══ */
-.mu-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px;box-shadow:var(--sh);overflow:hidden;transition:border-color var(--tr)}
-.mu-card:hover{border-color:var(--tx2)}
-.mu-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--sf2);border-bottom:1px solid var(--bdl);cursor:pointer}
-.mu-head:hover{background:#f4f3ee}
-.mu-av{width:34px;height:34px;border-radius:50%;background:var(--gnb);color:var(--gn);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
-.mu-info{flex:1;min-width:0}
-.mu-name{font-size:14px;font-weight:700;letter-spacing:-.1px}
-.mu-meta{font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mu-totals{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0}
-.mu-total{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600;white-space:nowrap}
-.mu-total::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
-.mu-total.completed{background:var(--gnb);color:var(--gn)}
-.mu-total.active{background:var(--orb);color:var(--or)}
-.mu-total.pending{background:var(--blb);color:var(--bl)}
-.mu-total.expired{background:var(--rdb);color:var(--rd)}
-
-.mu-tasks{padding:4px 0}
-.mu-task{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--bdl);font-size:13px;cursor:pointer;transition:background var(--tr)}
-.mu-task:last-child{border-bottom:none}
-.mu-task:hover{background:var(--sf2)}
-.mu-task-icon{font-size:15px;flex-shrink:0;width:22px;text-align:center}
-.mu-task-t{flex:1;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mu-task-d{font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace;flex-shrink:0}
-.mu-task-b{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
-.mu-task-b.completed{background:var(--gnb);color:var(--gn)}
-.mu-task-b.active{background:var(--orb);color:var(--or)}
-.mu-task-b.pending{background:var(--blb);color:var(--bl)}
-.mu-task-b.expired{background:var(--rdb);color:var(--rd)}
-
-.mu-no-tasks{padding:12px 16px;font-size:12px;color:var(--mu);font-style:italic}
+/* ═══ MINA — UPPGIFTER-TABELL (räknar-badges + framstegsbar) ═══ */
+.tk-b{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 7px;border-radius:6px;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.tk-b.completed{background:var(--gnb);color:var(--gn)}
+.tk-b.active{background:var(--orb);color:var(--or)}
+.tk-b.pending{background:var(--blb);color:var(--bl)}
+.tk-b.expired{background:var(--rdb);color:var(--rd)}
+.tk-b-none{color:var(--mu);font-family:'JetBrains Mono',monospace;font-size:12px}
+.tk-prog{height:5px;background:var(--bdl);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.tk-prog-bar{height:100%;transition:width .3s ease;border-radius:3px}
+.tk-prog-l{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
 
 /* ═══ BULK-SELECT BAR (flytande) ═══ */
 .bulk-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 30px));background:var(--nv);color:#fff;border-radius:12px;padding:10px 14px 10px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 32px rgba(0,0,0,.25);z-index:80;transition:transform .25s cubic-bezier(.4,0,.2,1);min-width:340px}
@@ -1364,8 +1343,8 @@ async function loadStats(){
     </div>`;
 }
 
-// ═══ UPPGIFTER UNDER MINA — per deltagare, visar deras uppgifter och status ═══
-// Mycket tydligare än per-uppgift-vy: handläggaren ser direkt "vad jobbar Anna med?"
+// ═══ UPPGIFTER UNDER MINA — tabellvy per deltagare (matchar Deltagare-fliken) ═══
+// Samma tabellstil som Deltagare: en rad per person, status-counts i kolumner.
 let minaTasksCache = null;
 let minaTaskFilter = 'all'; // all | active | pending | completed | expired
 
@@ -1390,7 +1369,6 @@ async function renderMinaTasksView(){
       }).catch(()=>null))
     );
 
-    // Bygg struktur per deltagare med deras uppgifter
     minaTasksCache = details.map((d, i) => {
       const base = mina[i];
       const cvd = d?.cv?.data || d?.cv || base?.cv?.data || base?.cv || {};
@@ -1404,11 +1382,16 @@ async function renderMinaTasksView(){
         deadline: t.deadline,
         time_spent_sec: t.time_spent_sec
       }));
-      // Räkna per status
       const counts = { completed:0, active:0, pending:0, expired:0 };
       tasks.forEach(t => { counts[t.status] = (counts[t.status]||0) + 1; });
-      return { uid, name, email, initials: ini(name), tasks, counts };
-    }).filter(u => u.uid); // exkludera ev. fel
+      // Hitta nästa deadline (i ogjorda uppgifter)
+      const upcoming = tasks
+        .filter(t => t.status !== 'completed' && t.deadline)
+        .map(t => t.deadline)
+        .sort();
+      const nextDeadline = upcoming[0] || null;
+      return { uid, name, email, initials: ini(name), tasks, counts, nextDeadline };
+    }).filter(u => u.uid);
 
     renderMinaTasksList();
   } catch(e){
@@ -1420,10 +1403,9 @@ function renderMinaTasksList(){
   const wrap = document.getElementById('tasksContent');
   if(!minaTasksCache) { wrap.innerHTML = '<div class="loading">Laddar…</div>'; return; }
 
-  // Summera totalt över alla deltagare
+  // Summera totalt
   const total = { completed:0, active:0, pending:0, expired:0 };
-  let activeUserCount = 0;
-  let totalTasks = 0;
+  let activeUserCount = 0, totalTasks = 0;
   minaTasksCache.forEach(u => {
     totalTasks += u.tasks.length;
     total.completed += u.counts.completed;
@@ -1433,17 +1415,18 @@ function renderMinaTasksList(){
     if(u.counts.active > 0 || u.counts.pending > 0) activeUserCount++;
   });
 
-  // Filtrera deltagare baserat på valt filter
+  // Filtrera
   let shown = minaTasksCache;
   if(minaTaskFilter !== 'all'){
     shown = minaTasksCache.filter(u => u.counts[minaTaskFilter] > 0);
   }
 
-  // Sortera: deltagare med aktiva/nya uppgifter först, sedan efter antal uppgifter
+  // Sortera: försenade först, sedan de med mest ogjort arbete
   shown = [...shown].sort((a, b) => {
-    const aActive = a.counts.active + a.counts.pending + a.counts.expired;
-    const bActive = b.counts.active + b.counts.pending + b.counts.expired;
-    if(aActive !== bActive) return bActive - aActive;
+    if(a.counts.expired !== b.counts.expired) return b.counts.expired - a.counts.expired;
+    const aOpen = a.counts.active + a.counts.pending;
+    const bOpen = b.counts.active + b.counts.pending;
+    if(aOpen !== bOpen) return bOpen - aOpen;
     return b.tasks.length - a.tasks.length;
   });
 
@@ -1461,38 +1444,39 @@ function renderMinaTasksList(){
     return;
   }
 
-  const SL2 = {completed:'Klar',active:'Pågår',pending:'Ny',expired:'Försenad'};
-  const catIcons = {cv:'📄',övning:'📚',intervju:'🎤',matchning:'🎯',jobbsök:'🔍',övrigt:'📝'};
+  const showExpiredCol = total.expired > 0;
+  const countBadge = (n, cls) => n > 0
+    ? `<span class="tk-b ${cls}">${n}</span>`
+    : `<span class="tk-b-none">—</span>`;
 
-  const userCardsHTML = shown.map(u => {
-    // Visa uppgifter sorterade: aktiva/försenade först, sedan nya, sedan klara
-    const statusOrder = {expired:0, active:1, pending:2, completed:3};
-    const tasksSorted = [...u.tasks].sort((a,b) => statusOrder[a.status] - statusOrder[b.status]);
+  const rowsHTML = shown.map(u => {
+    const totalForUser = u.tasks.length;
+    const doneForUser = u.counts.completed;
+    const progressPct = totalForUser ? Math.round(doneForUser/totalForUser*100) : 0;
+    const progressColor = u.counts.expired>0 ? 'var(--rd)'
+                        : progressPct===100 ? 'var(--gn)'
+                        : u.counts.active>0 ? 'var(--or)' : 'var(--bl)';
+    const nextDeadline = u.nextDeadline ? u.nextDeadline.split('T')[0] : '—';
 
-    const totalsHTML = ['expired','active','pending','completed']
-      .filter(s => u.counts[s] > 0)
-      .map(s => `<span class="mu-total ${s}">${u.counts[s]} ${SL2[s].toLowerCase()}</span>`)
-      .join('');
-
-    const tasksHTML = tasksSorted.length ? tasksSorted.map(t => `
-      <div class="mu-task" onclick="openDetail('${u.uid}')">
-        <span class="mu-task-icon">${catIcons[t.category]||'📝'}</span>
-        <span class="mu-task-t">${escapeHtml(t.title)}</span>
-        ${t.deadline ? `<span class="mu-task-d">${t.deadline.split('T')[0]}</span>` : ''}
-        <span class="mu-task-b ${t.status}">${SL2[t.status]||'Ny'}</span>
-      </div>`).join('') : '<div class="mu-no-tasks">Inga uppgifter tilldelade</div>';
-
-    return `<div class="mu-card">
-      <div class="mu-head" onclick="openDetail('${u.uid}')">
-        <div class="mu-av">${u.initials}</div>
-        <div class="mu-info">
-          <div class="mu-name">${escapeHtml(u.name)}</div>
-          <div class="mu-meta">${escapeHtml(u.email || u.uid.slice(0,8))}</div>
+    return `<tr onclick="openDetail('${u.uid}')">
+      <td>
+        <div class="uc">
+          <div class="ua">${u.initials}</div>
+          <div><div class="un">${escapeHtml(u.name)}</div><div class="ue">${escapeHtml(u.email)}</div></div>
         </div>
-        <div class="mu-totals">${totalsHTML || '<span class="mu-total" style="background:var(--bdl);color:var(--mu)">Inga uppgifter</span>'}</div>
-      </div>
-      <div class="mu-tasks">${tasksHTML}</div>
-    </div>`;
+      </td>
+      <td class="tc">${countBadge(u.counts.active, 'active')}</td>
+      <td class="tc">${countBadge(u.counts.pending, 'pending')}</td>
+      <td class="tc">${countBadge(u.counts.completed, 'completed')}</td>
+      ${showExpiredCol ? `<td class="tc">${countBadge(u.counts.expired, 'expired')}</td>` : ''}
+      <td class="hm dc">${nextDeadline}</td>
+      <td class="hm">
+        <div class="tk-prog">
+          <div class="tk-prog-bar" style="width:${progressPct}%;background:${progressColor}"></div>
+        </div>
+        <div class="tk-prog-l">${doneForUser}/${totalForUser} klara</div>
+      </td>
+    </tr>`;
   }).join('');
 
   wrap.innerHTML = `
@@ -1503,7 +1487,7 @@ function renderMinaTasksList(){
       <div class="chip${minaTaskFilter==='active'?' act':''}" onclick="filterMinaTasks('active')"><span>Har pågående</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.active>0).length}</span></div>
       <div class="chip${minaTaskFilter==='pending'?' act':''}" onclick="filterMinaTasks('pending')"><span>Har nya</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.pending>0).length}</span></div>
       <div class="chip${minaTaskFilter==='completed'?' act':''}" onclick="filterMinaTasks('completed')"><span>Har klara</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.completed>0).length}</span></div>
-      ${total.expired>0 ? `<div class="chip${minaTaskFilter==='expired'?' act':''}" onclick="filterMinaTasks('expired')"><span>Har försenade</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.expired>0).length}</span></div>` : ''}
+      ${showExpiredCol ? `<div class="chip${minaTaskFilter==='expired'?' act':''}" onclick="filterMinaTasks('expired')"><span>Har försenade</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.expired>0).length}</span></div>` : ''}
       <div class="sp" style="flex:1"></div>
       <button class="btn btn-primary" onclick="openCreateTask()">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
@@ -1511,7 +1495,21 @@ function renderMinaTasksList(){
       </button>
     </div>
 
-    ${userCardsHTML || '<div class="mt-empty-task"><div class="mt-empty-task-s">Inga deltagare matchar filtret.</div></div>'}
+    ${shown.length ? `<div class="tw">
+      <table>
+        <thead><tr>
+          <th>Deltagare</th>
+          <th class="tc" style="width:86px">Pågående</th>
+          <th class="tc" style="width:66px">Nya</th>
+          <th class="tc" style="width:66px">Klara</th>
+          ${showExpiredCol ? '<th class="tc" style="width:86px">Försenade</th>' : ''}
+          <th class="hm" style="width:120px">Nästa deadline</th>
+          <th class="hm" style="width:170px">Framsteg</th>
+        </tr></thead>
+        <tbody>${rowsHTML}</tbody>
+        <div class="pg-bar"><span>${shown.length} av ${minaTasksCache.length} deltagare · ${totalTasks} uppgifter totalt</span></div>
+      </table>
+    </div>` : '<div class="mt-empty-task"><div class="mt-empty-task-s">Inga deltagare matchar filtret.</div></div>'}
   `;
 }
 
