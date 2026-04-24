@@ -1287,6 +1287,10 @@ fields:[
 {l:'Hittade du en utbildning? Vilket namn?',ph:'T.ex. Logistik och Supply Chain Management'},
 {l:'Hur lång är utbildningen och var?',ph:'T.ex. 2 år, Helsingborg, med LIA-perioder'},
 {l:'Vad krävs för att söka?',ph:'T.ex. Gymnasieexamen och arbetslivserfarenhet...'}
+],
+links:[
+{t:'Gå en yrkesutbildning',u:'https://helsingborg.se/forskola-och-utbildning/vuxenutbildning/',d:'Vuxenutbildning i Helsingborg — översikt och ansökan'},
+{t:'Så här samarbetar vi med arbetsgivare i Helsingborg, service och vård',u:'https://helsingborg.se/forskola-och-utbildning/vuxenutbildning/utbildningar/yrkesutbildningar-pa-gymnasial-niva/',d:'Yrkesutbildningar på gymnasial nivå — Familjen Helsingborg'}
 ]},
 quiz:[
 {q:'Vad är en YH-utbildning?',o:['En universitetsutbildning','En arbetsmarknadsanpassad yrkesutbildning','En gymnasieutbildning'],c:1},
@@ -6821,6 +6825,34 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           </div>
         `;
       });
+    }
+
+    // Övningar (exercise)
+    const ex = mod.ex;
+    if (ex) {
+      html += '<div class="cv-section-title" style="margin:28px 0 12px;">Övningar</div>';
+      html += '<div class="lesson-card">';
+      if (ex.title) html += '<div class="lesson-title">' + escape(ex.title) + '</div>';
+      if (ex.desc)  html += '<div class="lesson-text">' + escape(ex.desc) + '</div>';
+      if (ex.fields && ex.fields.length) {
+        html += '<ul style="margin:12px 0 0 0; padding-left:20px; color:rgba(255,255,255,0.75); font-size:14px; line-height:1.6;">';
+        ex.fields.forEach(f => {
+          html += '<li style="margin-bottom:6px;">' + escape(f.l || '') + (f.hint ? ' <span style="color:rgba(255,255,255,0.45); font-size:12px;">— ' + escape(f.hint) + '</span>' : '') + '</li>';
+        });
+        html += '</ul>';
+      }
+      if (ex.links && ex.links.length) {
+        html += '<div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">';
+        html += '<div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.55); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">Länkar</div>';
+        ex.links.forEach(lk => {
+          html += '<a href="' + escapeAttr(lk.u || '#') + '" target="_blank" rel="noopener noreferrer" style="display:block; padding:10px 12px; margin-bottom:8px; background:rgba(96,165,250,0.08); border:1px solid rgba(96,165,250,0.25); border-radius:8px; color:#60a5fa; text-decoration:none; font-size:14px;">'
+              + '<div style="font-weight:600;">🔗 ' + escape(lk.t || lk.u || '') + '</div>'
+              + (lk.d ? '<div style="font-size:12px; color:rgba(255,255,255,0.55); margin-top:3px; font-weight:400;">' + escape(lk.d) + '</div>' : '')
+              + '</a>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
     }
 
     // Quiz
