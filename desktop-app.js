@@ -6827,20 +6827,41 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       });
     }
 
-    // Övningar (exercise)
+    // Övningar (exercise) — scrollbart kort, med "under arbete"-stöd
+    const ACTIVE_EX_MODS = [
+      'm1','m2','m3',                      // Intro (alla 3)
+      'a_cv','a_match','a5',               // Arbete
+      's1','s3','s0',                      // Studier (Vad är YH, SFI, Utbildningskartan)
+      'h1','h2','h5',                      // Hälsa
+      'e1','e6','e15',                     // Ekonomi
+      'd5','d9','d4'                       // Digital
+    ];
     const ex = mod.ex;
     if (ex) {
+      const isActive = ACTIVE_EX_MODS.indexOf(modId) !== -1;
       html += '<div class="cv-section-title" style="margin:28px 0 12px;">Övningar</div>';
-      html += '<div class="lesson-card">';
+      html += '<div class="lesson-card" style="max-height:480px; overflow-y:auto;">';
       if (ex.title) html += '<div class="lesson-title">' + escape(ex.title) + '</div>';
       if (ex.desc)  html += '<div class="lesson-text">' + escape(ex.desc) + '</div>';
-      if (ex.fields && ex.fields.length) {
-        html += '<ul style="margin:12px 0 0 0; padding-left:20px; color:rgba(255,255,255,0.75); font-size:14px; line-height:1.6;">';
-        ex.fields.forEach(f => {
-          html += '<li style="margin-bottom:6px;">' + escape(f.l || '') + (f.hint ? ' <span style="color:rgba(255,255,255,0.45); font-size:12px;">— ' + escape(f.hint) + '</span>' : '') + '</li>';
-        });
-        html += '</ul>';
+
+      if (isActive) {
+        // Aktiv övning — visa fält
+        if (ex.fields && ex.fields.length) {
+          html += '<ul style="margin:12px 0 0 0; padding-left:20px; color:rgba(255,255,255,0.75); font-size:14px; line-height:1.6;">';
+          ex.fields.forEach(f => {
+            html += '<li style="margin-bottom:6px;">' + escape(f.l || '') + (f.hint ? ' <span style="color:rgba(255,255,255,0.45); font-size:12px;">— ' + escape(f.hint) + '</span>' : '') + '</li>';
+          });
+          html += '</ul>';
+        }
+      } else {
+        // Under arbete
+        html += '<div style="margin-top:14px; padding:16px; background:rgba(251,146,60,0.08); border:1px dashed rgba(251,146,60,0.35); border-radius:10px; color:rgba(255,255,255,0.75); font-size:14px; line-height:1.5;">'
+             + '🚧 <strong style="color:#fb923c;">Under arbete</strong> — övningen kommer snart.'
+             + '<div style="font-size:12px; color:rgba(255,255,255,0.5); margin-top:6px;">Lektioner och quiz är klara och användbara redan nu.</div>'
+             + '</div>';
       }
+
+      // Länkar visas alltid när de finns (oavsett aktiv/under arbete)
       if (ex.links && ex.links.length) {
         html += '<div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">';
         html += '<div style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.55); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">Länkar</div>';
