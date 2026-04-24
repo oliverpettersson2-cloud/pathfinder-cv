@@ -351,8 +351,7 @@ td{padding:10px 13px;vertical-align:middle}
 .sl-row:first-of-type{border-top:none}
 .sl-row:hover{background:#fafaf6}
 .sl-row .uc{flex:1;min-width:0}
-.sl-row-extra{font-size:10px;color:var(--mu);margin-top:1px;font-family:'JetBrains Mono',monospace;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sl-stats{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;max-width:50%}
+.sl-stats{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;align-items:center}
 .sl-stat{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap;line-height:1.4}
 .sl-stat::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 .sl-stat.completed{background:var(--gnb);color:var(--gn)}
@@ -360,6 +359,7 @@ td{padding:10px 13px;vertical-align:middle}
 .sl-stat.pending{background:var(--blb);color:var(--bl)}
 .sl-stat.expired{background:var(--rdb);color:var(--rd)}
 .sl-stat.none{background:var(--bdl);color:var(--mu)}
+.sl-deadline{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace;margin-right:6px;letter-spacing:.2px}
 .sl-foot{padding:10px 16px;border-top:1px solid var(--bdl);background:var(--sf2);font-size:11px;color:var(--mu)}
 
 /* ═══ STATISTIK — dashboard-stil ═══ */
@@ -1725,10 +1725,10 @@ function renderMinaTasksList(){
       })
       .join('') || '<span class="sl-stat none">Inga uppgifter</span>';
 
-    // Extra-info bara om det finns en aktuell deadline (ogjorda uppgifter)
+    // Deadline som subtil mono-text till vänster om stats, bara om det finns ogjort
     const hasOpen = u.counts.active + u.counts.pending + u.counts.expired > 0;
-    const extraHTML = (hasOpen && u.nextDeadline)
-      ? `<div class="sl-row-extra">Nästa: ${u.nextDeadline.split('T')[0]} · ${u.counts.completed}/${u.tasks.length} klara</div>`
+    const deadlineHTML = (hasOpen && u.nextDeadline)
+      ? `<span class="sl-deadline">${u.nextDeadline.split('T')[0]}</span>`
       : '';
 
     return `<div class="sl-row" onclick="openDetail('${u.uid}')">
@@ -1737,10 +1737,9 @@ function renderMinaTasksList(){
         <div style="min-width:0">
           <div class="un">${escapeHtml(u.name)}</div>
           <div class="ue">${escapeHtml(u.email || u.uid.slice(0,8))}</div>
-          ${extraHTML}
         </div>
       </div>
-      <div class="sl-stats">${statsHTML}</div>
+      <div class="sl-stats">${deadlineHTML}${statsHTML}</div>
     </div>`;
   }).join('');
 
