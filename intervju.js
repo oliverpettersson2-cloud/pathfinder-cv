@@ -82,162 +82,6 @@
   ];
 
   // ══════════════════════════════════════════════════════════════
-  // FRÅGEBANK per bransch — 10 vanliga frågor att öva på hemma (PDF)
-  // Mix: personliga, kompetens, situation, motivation, STAR-triggers
-  // ══════════════════════════════════════════════════════════════
-  var PRACTICE_QUESTIONS = {
-    'generic': [
-      'Berätta lite om dig själv och din bakgrund.',
-      'Varför söker du just detta jobb?',
-      'Vilka är dina tre största styrkor?',
-      'Vad är din största svaghet, och hur jobbar du med den?',
-      'Berätta om en gång då du löste ett problem på jobbet.',
-      'Hur hanterar du stress eller tajta deadlines?',
-      'Varför lämnar (eller lämnade) du ditt förra jobb?',
-      'Var ser du dig själv om 3–5 år?',
-      'Hur jobbar du bäst — ensam eller i team?',
-      'Har du några frågor till oss?'
-    ],
-    '📦 Lager & logistik': [
-      'Berätta om din tidigare erfarenhet av lagerarbete.',
-      'Har du truckkort? I så fall vilka klasser (A, B, C, D)?',
-      'Hur noggrann är du när du plockar order? Berätta om en gång du upptäckte ett fel.',
-      'Hur hanterar du tunga lyft och hög arbetstakt under en hel dag?',
-      'Berätta om hur du samarbetar med kollegor under en stressig inleveransdag.',
-      'Vad vet du om WMS-system (lagerhanteringssystem)?',
-      'Hur prioriterar du när det är många brådskande uppgifter samtidigt?',
-      'Berätta om en gång du föreslog ett bättre sätt att göra något på lagret.',
-      'Hur ser du på säkerhet — vad gör du om du ser en kollega ta en genväg som är farlig?',
-      'Är du beredd på skiftarbete eller helger? Vad föredrar du?'
-    ],
-    '🤝 Vård & omsorg': [
-      'Vad fick dig att välja vård- och omsorgsyrket?',
-      'Berätta om en gång du mötte en krävande anhörig eller brukare och hur du löste det.',
-      'Hur hanterar du det emotionellt när en brukare du känner försämras eller går bort?',
-      'Vad betyder "personcentrerad vård" för dig i praktiken?',
-      'Berätta om en gång du behövde sätta gränser på ett respektfullt sätt.',
-      'Hur dokumenterar du avvikelser och varför är det viktigt?',
-      'Vad gör du om du ser en kollega göra något som går emot rutinerna?',
-      'Hur bemöter du någon med demenssjukdom som är orolig eller arg?',
-      'Hur är du som kollega under ett tufft pass?',
-      'Är du bekväm med delegerade uppgifter (exempelvis läkemedel) — berätta om din erfarenhet.'
-    ],
-    '🏗️ Bygg & anläggning': [
-      'Berätta om din yrkesbakgrund och vilka byggtyper du jobbat med.',
-      'Har du certifikat som ställningsbygge, heta arbeten, fallskydd eller liftutbildning?',
-      'Berätta om ett projekt där du är extra stolt över resultatet.',
-      'Hur gör du för att jobba säkert när tempot är högt?',
-      'Beskriv en konflikt på en byggarbetsplats och hur du hanterade den.',
-      'Hur läser du ritningar — visa ett exempel där detaljer gjorde skillnad.',
-      'Vad gör du om materialet som levereras är fel eller skadat?',
-      'Är du van att jobba med UE (underentreprenörer) — hur fungerar samarbetet?',
-      'Hur hanterar du fysiskt tunga dagar i kyla eller värme?',
-      'Är du beredd att resa eller bo på ort? Hur ser din flexibilitet ut?'
-    ],
-    '🧹 Städ & service': [
-      'Berätta om din erfarenhet av städarbete — vilka miljöer har du jobbat i?',
-      'Vilka kemikalier och maskiner är du van att använda?',
-      'Hur gör du för att hinna med allt på ett avgränsat tidsfönster?',
-      'Berätta om en gång du upptäckte något viktigt under ett städpass (t.ex. skador, läckage).',
-      'Hur hanterar du kundkontakt om du städar hos privatpersoner eller kontor?',
-      'Vad vet du om miljövänlig städning eller gröna kemikalier?',
-      'Hur noggrann är du med egenkontroll och avprickning?',
-      'Berätta om en gång du fick klagomål — hur löste du det?',
-      'Är du beredd på obekväma arbetstider (tidiga morgnar, kvällar)?',
-      'Hur samarbetar du i ett städteam när ni är flera på samma objekt?'
-    ],
-    '🍽️ Restaurang & kök': [
-      'Berätta om din erfarenhet av restaurang eller kök.',
-      'Hur håller du kvalitet och tempo under en stressig lunch-rush?',
-      'Vad vet du om egenkontroll (HACCP) och hygienregler?',
-      'Berätta om en gång du hanterade en missnöjd gäst bra.',
-      'Hur samarbetar du med köket om du jobbar i sal (eller tvärtom)?',
-      'Vilka rätter eller kök är du starkast inom?',
-      'Berätta om en stökig service-kväll — vad gjorde du konkret för att rädda den?',
-      'Hur hanterar du allergier och specialkost?',
-      'Är du bekväm med kassa, Swish och kortbetalningar?',
-      'Är du beredd på sena kvällar och helgarbete?'
-    ],
-    '🛒 Butik & handel': [
-      'Berätta om din säljerfarenhet och vilka branscher du sålt inom.',
-      'Hur närmar du dig en kund som ser "bara tittar"-typen ut?',
-      'Berätta om ditt bästa försäljningsögonblick — vad gjorde du annorlunda?',
-      'Hur hanterar du en arg eller besviken kund vid kassan?',
-      'Vad vet du om varuexponering (VM) och varför gör det skillnad?',
-      'Hur är du på att mersälja utan att pressa kunden?',
-      'Berätta om en gång du upptäckte stöld eller svinn — hur agerade du?',
-      'Vilka kassasystem och betalningslösningar har du jobbat med?',
-      'Hur hanterar du att ensamjobba i butiken?',
-      'Är du flexibel med kväll och helg? Hur ser din tillgänglighet ut?'
-    ],
-    '🏭 Industri & tillverkning': [
-      'Berätta om din erfarenhet av industri eller produktion.',
-      'Vilka maskiner eller processer är du van att jobba med?',
-      'Hur jobbar du med kvalitet och kontroll på din arbetsplats?',
-      'Berätta om en gång du upptäckte ett produktionsfel — vad gjorde du?',
-      'Vad vet du om LEAN, 5S eller Kaizen?',
-      'Hur ser du på säkerhet och skyddsutrustning — berätta om en situation.',
-      'Är du van vid 2- eller 3-skift? Hur påverkar det dig?',
-      'Berätta om en gång du förbättrade något i din arbetsprocess.',
-      'Hur hanterar du repetitivt arbete utan att bli oengagerad?',
-      'Hur är du i ett team där vi alla ska leverera samma takt?'
-    ],
-    '📋 Administration & kontor': [
-      'Berätta om din administrativa erfarenhet.',
-      'Vilka system är du van vid (Office 365, Google Workspace, affärssystem)?',
-      'Hur prioriterar du när du har fem saker på bordet samtidigt?',
-      'Berätta om en gång du upptäckte ett viktigt fel i en rapport eller dokumentation.',
-      'Hur hanterar du konfidentiell information?',
-      'Är du bekväm med att hantera kundkontakt via telefon och mejl?',
-      'Berätta om en gång du förbättrade en rutin eller process.',
-      'Hur är du på att skriva mejl — formell eller avslappnad ton?',
-      'Hur hanterar du en chef som ofta ändrar prioriteringar?',
-      'Vad tycker du är viktigast: noggrannhet eller tempo? Varför?'
-    ],
-    '🚚 Transport & chaufför': [
-      'Berätta om din kör-erfarenhet — vilka fordon och behörigheter har du?',
-      'Har du ADR, YKB eller andra certifikat aktiva?',
-      'Hur planerar du din körning för att hinna allt utan att bryta kör- och vilotider?',
-      'Berätta om en gång det hände något oväntat på vägen — vad gjorde du?',
-      'Hur hanterar du en stressad kund vid leverans?',
-      'Vad gör du om ditt fordon får ett problem på vägen?',
-      'Är du van vid digital fraktsedel och leveransappar?',
-      'Hur hanterar du ensamarbete över långa sträckor?',
-      'Berätta om en gång du gjorde extra för en kund — vad blev resultatet?',
-      'Är du flexibel med övernattningar eller långa pass?'
-    ],
-    '👶 Barn & skola': [
-      'Berätta om din erfarenhet av att jobba med barn.',
-      'Hur bygger du trygghet hos ett barn som är ledsen eller arg?',
-      'Berätta om en konflikt mellan barn — hur löste du den?',
-      'Hur samarbetar du med vårdnadshavare, särskilt när de är oroliga?',
-      'Vad betyder inkludering i praktiken för dig?',
-      'Hur bemöter du ett barn med särskilda behov som du inte mött tidigare?',
-      'Berätta om ett tillfälle du är stolt över i ditt arbete med barn.',
-      'Hur hanterar du en högljudd grupp utan att höja rösten?',
-      'Är du bekväm med att dokumentera i system som Unikum, InfoMentor eller Schoolsoft?',
-      'Hur tar du hand om dig själv i ett yrke som är känslomässigt krävande?'
-    ],
-    '💻 IT & tech': [
-      'Berätta om din tekniska bakgrund och vilka språk/verktyg du är starkast på.',
-      'Berätta om ett projekt du är särskilt stolt över — vad var din roll?',
-      'Hur felsöker du en bugg du aldrig sett förut?',
-      'Vad vet du om agila arbetssätt (Scrum, Kanban)?',
-      'Berätta om en gång du behövde lära dig en ny teknik snabbt.',
-      'Hur hanterar du code reviews — både ge och ta feedback?',
-      'Vad är skillnaden mellan bra och dålig kod för dig?',
-      'Berätta om en gång du gjort ett tekniskt val du ångrar — vad lärde du dig?',
-      'Hur samarbetar du med icke-tekniska kollegor (design, produkt, affär)?',
-      'Vad intresserar du dig för på sidan av — open source, egna projekt, läsning?'
-    ],
-    '📚 Annat / Eget val': null // fallback till generic
-  };
-
-  function getPracticeQuestionsFor(branch) {
-    return PRACTICE_QUESTIONS[branch] || PRACTICE_QUESTIONS['generic'];
-  }
-
-  // ══════════════════════════════════════════════════════════════
   // STATE
   // ══════════════════════════════════════════════════════════════
   var state = {
@@ -1101,16 +945,6 @@
       '  <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:12px;">Tryck på en fråga för att läsa ditt svar.</div>',
       '  <div id="ivTranscript" class="iv-qa-list"></div>',
 
-      // Erbjudande: Ladda ner 10 övningsfrågor för branschen som PDF
-      '  <div id="ivPracticePdfCard" style="margin-top:22px;background:linear-gradient(135deg,rgba(240,192,64,0.08),rgba(240,192,64,0.04));border:1.5px solid rgba(240,192,64,0.35);border-radius:14px;padding:18px 20px;">',
-      '    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">',
-      '      <span style="font-size:26px;">📋</span>',
-      '      <div style="font-size:15px;font-weight:900;color:#f0c040;">10 frågor att öva på hemma</div>',
-      '    </div>',
-      '    <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:14px;">Förbered dig inför din riktiga intervju — vi har samlat 10 vanliga frågor för <strong id="ivPracticeBranchLabel" style="color:#fff;">din bransch</strong> som du kan öva på när du vill.</div>',
-      '    <button class="iv-btn" id="ivPracticePdfBtn" style="width:100%;background:linear-gradient(135deg,#f0c040,#d4a836);color:#1a1a2e;font-weight:900;">📄 Ladda ner som PDF</button>',
-      '  </div>',
-
       '  <div style="display:flex;gap:8px;margin-top:24px">',
       '    <button class="iv-btn iv-btn--ghost" id="ivFbBackBtn" style="flex:1">Tillbaka</button>',
       '    <button class="iv-btn" id="ivFbSaveBtn" style="flex:1">Spara &amp; stäng</button>',
@@ -1574,9 +1408,6 @@
       state.messages.push(saved);
       appendMessage(saved);
 
-      // Uppdatera end-knappens lås-status (låses upp efter 5:e svaret)
-      if (typeof updateEndBtnLockStyle === 'function') updateEndBtnLockStyle();
-
       // 2. Be AI om nästa fråga — detta är det viktiga steget
       ivDebug.log('    → triggar askInterviewerNext()');
       await askInterviewerNext();
@@ -1632,142 +1463,6 @@
     }
   }
 
-  // ══════════════════════════════════════════════════════════════
-  // LÅS: Förhindra "Avsluta intervjun" om för få svar / för kort tid
-  // Regel: minst 5 svar ELLER minst 5 minuter
-  // ══════════════════════════════════════════════════════════════
-  var MIN_ANSWERS_TO_END = 5;
-  var MIN_MINUTES_TO_END = 5;
-
-  function getAnswerCount() {
-    if (!state.messages) return 0;
-    return state.messages.filter(function(m) { return m.role === 'candidate'; }).length;
-  }
-
-  function getMinutesElapsed() {
-    if (!state.session || !state.session.started_at) return 0;
-    var started = new Date(state.session.started_at).getTime();
-    if (!started || isNaN(started)) return 0;
-    return (Date.now() - started) / 60000;
-  }
-
-  function canEndInterview() {
-    return getAnswerCount() >= MIN_ANSWERS_TO_END || getMinutesElapsed() >= MIN_MINUTES_TO_END;
-  }
-
-  function updateEndBtnLockStyle() {
-    var btn = $('#ivEndBtn');
-    if (!btn) return;
-    if (canEndInterview()) {
-      // Upplåst — grön/tydlig
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-      btn.classList.remove('iv-btn--locked');
-      btn.textContent = '✓ Avsluta intervjun';
-    } else {
-      // Låst — grå/förtydligad
-      btn.style.opacity = '0.55';
-      btn.style.cursor = 'pointer'; // fortfarande klickbar, men klick visar modal
-      btn.classList.add('iv-btn--locked');
-      var answers = getAnswerCount();
-      var minsLeft = Math.max(0, Math.ceil(MIN_MINUTES_TO_END - getMinutesElapsed()));
-      // Visa hur nära man är
-      btn.textContent = '🔒 Avsluta (' + answers + '/' + MIN_ANSWERS_TO_END + ' svar)';
-    }
-  }
-
-  // Klick-hanterare för end-knappen
-  function checkEndInterviewLock() {
-    if (canEndInterview()) {
-      // Upplåst — dubbelkolla med confirm
-      showEndConfirmModal();
-    } else {
-      // Låst — visa förklarings-modal
-      showLockedEndModal();
-    }
-  }
-
-  // Modal när låset är aktivt
-  function showLockedEndModal() {
-    var answers = getAnswerCount();
-    var minsElapsed = Math.floor(getMinutesElapsed());
-    var minsLeft = Math.max(0, Math.ceil(MIN_MINUTES_TO_END - getMinutesElapsed()));
-    var answersLeft = Math.max(0, MIN_ANSWERS_TO_END - answers);
-
-    hideLockedEndModal();
-    var overlay = document.createElement('div');
-    overlay.id = '_ivLockedModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,12,28,0.92);backdrop-filter:blur(8px);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px;';
-    overlay.innerHTML =
-      '<div style="background:#1e2440;border:1.5px solid rgba(167,139,250,0.4);border-radius:20px;padding:32px 28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,0.6);">' +
-        '<div style="font-size:52px;text-align:center;margin-bottom:16px;">🔒</div>' +
-        '<div style="font-size:20px;font-weight:900;color:#fff;text-align:center;margin-bottom:12px;">Intervjun är för kort ännu</div>' +
-        '<div style="font-size:14px;color:rgba(255,255,255,0.65);text-align:center;line-height:1.7;margin-bottom:20px;">Öva lite till innan du får feedback — AI behöver tillräckligt med material för att kunna ge dig konstruktiva råd.</div>' +
-        '<div style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.25);border-radius:12px;padding:16px 18px;margin-bottom:20px;">' +
-          '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:rgba(167,139,250,0.75);margin-bottom:10px;">Du kan avsluta när:</div>' +
-          '<div style="font-size:13px;color:#fff;line-height:1.9;">' +
-            '• Minst <strong style="color:#a78bfa;">5 svar</strong> — nu: ' + answers + '/5 (' + (answersLeft > 0 ? answersLeft + ' kvar' : 'klart ✓') + ')<br>' +
-            '<span style="color:rgba(255,255,255,0.4);font-weight:700;">eller</span><br>' +
-            '• Minst <strong style="color:#a78bfa;">5 minuter</strong> — nu: ' + minsElapsed + ' min (' + (minsLeft > 0 ? minsLeft + ' min kvar' : 'klart ✓') + ')' +
-          '</div>' +
-        '</div>' +
-        '<div style="display:flex;gap:10px;">' +
-          '<button id="_ivLockedAbort" style="flex:1;padding:13px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">Avbryt utan feedback</button>' +
-          '<button id="_ivLockedContinue" style="flex:1.4;padding:13px;background:linear-gradient(135deg,#a78bfa,#7c3aed);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">OK, fortsätt intervjun</button>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', function(e) { if (e.target === overlay) hideLockedEndModal(); });
-
-    document.getElementById('_ivLockedContinue').onclick = hideLockedEndModal;
-    document.getElementById('_ivLockedAbort').onclick = function() {
-      hideLockedEndModal();
-      if (confirm('Avbryt intervjun helt utan feedback? Dina svar sparas inte.')) {
-        // Abandon session utan feedback
-        if (state.session && state.session.id) {
-          try { abandonSession(state.session.id); } catch(e) {}
-        }
-        resetToSetup();
-        if (window.trainSwitchView) window.trainSwitchView('hub');
-      }
-    };
-  }
-
-  function hideLockedEndModal() {
-    var el = document.getElementById('_ivLockedModal');
-    if (el) el.remove();
-  }
-
-  // Modal när låset är släppt — bekräfta innan feedback
-  function showEndConfirmModal() {
-    hideEndConfirmModal();
-    var overlay = document.createElement('div');
-    overlay.id = '_ivEndConfirmModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,12,28,0.92);backdrop-filter:blur(8px);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px;';
-    overlay.innerHTML =
-      '<div style="background:#1e2440;border:1.5px solid rgba(62,180,137,0.4);border-radius:20px;padding:32px 28px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.6);">' +
-        '<div style="font-size:52px;text-align:center;margin-bottom:14px;">🎉</div>' +
-        '<div style="font-size:20px;font-weight:900;color:#fff;text-align:center;margin-bottom:12px;">Avsluta intervjun?</div>' +
-        '<div style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.7;margin-bottom:22px;">AI-coachen analyserar dina svar och ger personlig feedback. Detta kan ta 10-20 sekunder.</div>' +
-        '<div style="display:flex;gap:10px;">' +
-          '<button id="_ivEndCancel" style="flex:1;padding:13px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">Fortsätt intervjun</button>' +
-          '<button id="_ivEndGo" style="flex:1.3;padding:13px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">Få feedback →</button>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', function(e) { if (e.target === overlay) hideEndConfirmModal(); });
-    document.getElementById('_ivEndCancel').onclick = hideEndConfirmModal;
-    document.getElementById('_ivEndGo').onclick = function() {
-      hideEndConfirmModal();
-      endInterview();
-    };
-  }
-
-  function hideEndConfirmModal() {
-    var el = document.getElementById('_ivEndConfirmModal');
-    if (el) el.remove();
-  }
-
   // Stor overlay som blockerar interaktion under AI-generering
   function showInterviewLoadingOverlay(title, subtitle) {
     hideInterviewLoadingOverlay();
@@ -1794,154 +1489,6 @@
   function hideInterviewLoadingOverlay() {
     var existing = document.getElementById('_ivLoadingOverlay');
     if (existing) existing.remove();
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  // PDF: Ladda ner 10 övningsfrågor för branschen
-  // Använder window.jspdf om tillgängligt (redan laddat i huvudappen),
-  // annars fallback till en utskriftsbar HTML-sida som öppnas i ny flik.
-  // ══════════════════════════════════════════════════════════════
-  function downloadPracticeQuestionsPDF() {
-    var branch = (state.session && state.session.branch) || state.setup.branch || '📚 Annat / Eget val';
-    var questions = getPracticeQuestionsFor(branch);
-    var branchLabel = branch;
-    var dateStr = new Date().toLocaleDateString('sv-SE');
-
-    // Försök med jsPDF om det finns globalt
-    try {
-      var jsPDF = null;
-      if (window.jspdf && window.jspdf.jsPDF) jsPDF = window.jspdf.jsPDF;
-      else if (window.jsPDF) jsPDF = window.jsPDF;
-
-      if (jsPDF) {
-        var doc = new jsPDF({ unit: 'mm', format: 'a4' });
-        var pageW = 210, margin = 20, y = margin;
-
-        // Header — gul accent
-        doc.setFillColor(240, 192, 64);
-        doc.rect(0, 0, pageW, 10, 'F');
-        y = 22;
-
-        // Titel
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(20);
-        doc.setTextColor(30, 36, 64);
-        doc.text('10 intervjufrågor att öva på', margin, y);
-        y += 9;
-
-        // Subtitle
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(12);
-        doc.setTextColor(100, 100, 120);
-        doc.text(branchLabel, margin, y);
-        y += 6;
-
-        doc.setFontSize(9);
-        doc.setTextColor(150, 150, 160);
-        doc.text('Skriv ut och öva hemma · CVmatchen · ' + dateStr, margin, y);
-        y += 10;
-
-        // Separator
-        doc.setDrawColor(230, 230, 235);
-        doc.setLineWidth(0.3);
-        doc.line(margin, y, pageW - margin, y);
-        y += 8;
-
-        // Intro-box
-        doc.setFillColor(248, 245, 230);
-        doc.rect(margin, y, pageW - (margin * 2), 16, 'F');
-        doc.setTextColor(80, 80, 90);
-        doc.setFontSize(9.5);
-        doc.setFont('helvetica', 'italic');
-        doc.text('Läs frågorna högt, spela gärna in dig själv och lyssna tillbaka.', margin + 4, y + 6);
-        doc.text('Använd STAR-metoden: Situation → Task → Action → Result.', margin + 4, y + 11);
-        y += 22;
-
-        // Frågor
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(11);
-        doc.setTextColor(30, 36, 64);
-
-        questions.forEach(function(q, i) {
-          // Kolla om vi behöver ny sida
-          if (y > 265) { doc.addPage(); y = margin; }
-
-          // Nummer i gul cirkel-känsla (rektangel)
-          doc.setFillColor(240, 192, 64);
-          doc.roundedRect(margin, y - 4, 8, 6, 1, 1, 'F');
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9);
-          doc.setTextColor(30, 36, 64);
-          doc.text(String(i + 1), margin + 4, y + 0.5, { align: 'center' });
-
-          // Fråga
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(11);
-          doc.setTextColor(30, 36, 64);
-          var lines = doc.splitTextToSize(q, pageW - (margin * 2) - 14);
-          doc.text(lines, margin + 12, y + 1);
-          y += (lines.length * 5.2) + 3;
-
-          // Linjer att skriva svar på
-          for (var L = 0; L < 3; L++) {
-            if (y > 275) { doc.addPage(); y = margin; }
-            doc.setDrawColor(220, 220, 225);
-            doc.setLineWidth(0.25);
-            doc.line(margin + 12, y + 3.5, pageW - margin, y + 3.5);
-            y += 6;
-          }
-          y += 4;
-        });
-
-        // Footer
-        if (y > 270) { doc.addPage(); y = margin; }
-        y = Math.max(y, 275);
-        doc.setDrawColor(230, 230, 235);
-        doc.line(margin, y, pageW - margin, y);
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 160);
-        doc.text('CVmatchen av PathfinderAI · cvmatchen.com', margin, y + 5);
-
-        var fileName = 'Ovningsfragor-' + branchLabel.replace(/[^\wåäöÅÄÖ]+/g, '-').replace(/^-|-$/g, '') + '.pdf';
-        doc.save(fileName);
-        return;
-      }
-    } catch (e) {
-      if (window.ivDebug) ivDebug.log('PDF-fel: ' + (e.message || e));
-    }
-
-    // Fallback: öppna utskriftsbar HTML i ny flik
-    var html = [
-      '<!doctype html><html><head><meta charset="utf-8"><title>Övningsfrågor — ' + escapeHtml(branchLabel) + '</title>',
-      '<style>',
-      'body{font-family:Georgia,serif;max-width:700px;margin:40px auto;padding:20px;color:#1e2440;}',
-      'h1{border-bottom:4px solid #f0c040;padding-bottom:10px;margin-bottom:6px;}',
-      '.sub{color:#777;font-size:14px;margin-bottom:20px;}',
-      '.intro{background:#fdf7e4;padding:12px 16px;border-left:4px solid #f0c040;font-style:italic;margin-bottom:24px;}',
-      'ol{line-height:2.2;padding-left:20px;}',
-      'ol li{margin-bottom:20px;page-break-inside:avoid;}',
-      '.ans{border-bottom:1px solid #ddd;height:22px;margin:8px 0;}',
-      '.footer{margin-top:40px;border-top:1px solid #eee;padding-top:12px;color:#999;font-size:12px;}',
-      '@media print{.no-print{display:none;}}',
-      '</style></head><body>',
-      '<h1>10 intervjufrågor att öva på</h1>',
-      '<div class="sub">' + escapeHtml(branchLabel) + ' · ' + dateStr + ' · CVmatchen</div>',
-      '<div class="intro">Läs frågorna högt, spela gärna in dig själv och lyssna tillbaka. Använd STAR-metoden: Situation → Task → Action → Result.</div>',
-      '<button class="no-print" onclick="window.print()" style="padding:10px 20px;background:#f0c040;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:20px;">🖨️ Skriv ut / Spara som PDF</button>',
-      '<ol>',
-      questions.map(function(q) {
-        return '<li>' + escapeHtml(q) + '<div class="ans"></div><div class="ans"></div><div class="ans"></div></li>';
-      }).join(''),
-      '</ol>',
-      '<div class="footer">CVmatchen av PathfinderAI · cvmatchen.com</div>',
-      '</body></html>'
-    ].join('');
-
-    var w = window.open('', '_blank');
-    if (w) {
-      w.document.write(html);
-      w.document.close();
-    }
   }
 
   async function endInterview() {
@@ -1973,12 +1520,6 @@
       if (state.session.role_title) parts.push(escapeHtml(state.session.role_title));
       parts.push('Längd: ' + mins + ' min ' + secs + ' s');
       meta.innerHTML = parts.join(' · ');
-    }
-
-    // Uppdatera PDF-erbjudande-kortets brancher-text
-    var pdfLabel = $('#ivPracticeBranchLabel');
-    if (pdfLabel && state.session && state.session.branch) {
-      pdfLabel.textContent = state.session.branch;
     }
 
     // Rendera transkript
@@ -2238,30 +1779,13 @@
     });
 
     if (endBtn) endBtn.addEventListener('click', function(){
-      if (typeof checkEndInterviewLock === 'function') checkEndInterviewLock();
+      if (confirm('Avsluta intervjun och få feedback?')) endInterview();
     });
-
-    // Uppdatera knappens utseende var 10:e sekund under pågående intervju
-    // så den blir "grön/klickbar-känsla" när låset släpper.
-    if (endBtn) {
-      setInterval(function() {
-        if (state.phase === 'session') updateEndBtnLockStyle();
-      }, 10000);
-      // Och en gång direkt vid start
-      setTimeout(updateEndBtnLockStyle, 200);
-    }
 
     // ─── FEEDBACK ─────────────────
     var fbBack = $('#ivFbBackBtn');
     if (fbBack) fbBack.addEventListener('click', function(){
       resetToSetup();
-    });
-
-    // PDF med 10 övningsfrågor för branschen
-    var pdfBtn = $('#ivPracticePdfBtn');
-    if (pdfBtn) pdfBtn.addEventListener('click', function() {
-      try { downloadPracticeQuestionsPDF(); }
-      catch(e) { showError('Kunde inte skapa PDF: ' + (e.message || e)); }
     });
 
     var fbSave = $('#ivFbSaveBtn');
