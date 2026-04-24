@@ -28,7 +28,6 @@ body.embed .sidebar{display:none}
 .sb-nav-item.act{background:rgba(212,164,54,.1);color:var(--ac)}
 .sb-nav-item.act::before{content:'';position:absolute;left:-12px;top:8px;bottom:8px;width:2px;background:var(--ac);border-radius:0 2px 2px 0}
 .sb-nav-item svg{flex-shrink:0;opacity:.9}
-.sb-nav-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.25);padding:14px 12px 6px}
 .sb-user{padding:12px 10px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px;margin-top:8px}
 .sb-av{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);color:rgba(255,255,255,.78);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:background .15s}
 .sb-av:hover{background:rgba(212,164,54,.15);color:var(--ac)}
@@ -74,13 +73,16 @@ body.embed .sidebar{display:none}
 .tb{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
 .sw{position:relative;flex:1;min-width:160px;max-width:320px}
 .sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none}
-input[type=text],select{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;border:1px solid var(--bd);border-radius:8px;background:var(--sf);color:var(--tx);outline:none;transition:border-color var(--tr)}
-input[type=text]{width:100%;padding:7px 10px 7px 32px}
+input[type=text],input[type=email],select,textarea{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;border:1px solid var(--bd);border-radius:8px;background:var(--sf);color:var(--tx);outline:none;transition:border-color var(--tr)}
+input[type=text],input[type=email]{width:100%;padding:7px 10px 7px 32px}
 select{padding:7px 28px 7px 10px;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b978f' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
-input:focus,select:focus{border-color:var(--ac)}
+input:focus,select:focus,textarea:focus{border-color:var(--ac)}
 .sp{flex:1}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:1px solid var(--bd);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:var(--sf);color:var(--tx);transition:all var(--tr)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border:1px solid var(--bd);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:var(--sf);color:var(--tx);transition:all var(--tr)}
 .btn:hover{border-color:var(--tx)}
+.btn-primary{background:var(--nv);color:#fff;border-color:var(--nv)}
+.btn-primary:hover{background:#1c2942;border-color:#1c2942}
+.btn-primary svg{stroke:#fff}
 
 /* ═══ TABLE ═══ */
 .tw{background:var(--sf);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
@@ -99,38 +101,86 @@ td{padding:10px 13px;vertical-align:middle}
 .bd::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
 .bd.active{background:var(--gnb);color:var(--gn)}.bd.new{background:var(--blb);color:var(--bl)}.bd.recent{background:var(--orb);color:var(--or)}.bd.inactive{background:#f0efec;color:var(--mu)}
 .tc{font-size:12px;font-family:'JetBrains Mono',monospace;text-align:center;font-weight:600}
-
-/* ═══ DRAWER ═══ */
-.dov{display:none;position:fixed;inset:0;background:rgba(26,25,23,.3);z-index:100;backdrop-filter:blur(2px)}.dov.open{display:block}
-.dr{position:fixed;right:0;top:0;bottom:0;width:440px;background:var(--sf);box-shadow:-4px 0 24px rgba(0,0,0,.1);z-index:101;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}.dr.open{transform:translateX(0)}
-.dr-top{padding:20px;border-bottom:1px solid var(--bdl);display:flex;justify-content:space-between;align-items:flex-start}
-.dr-user{display:flex;gap:10px;align-items:center}
-.dr-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--gnb);color:var(--gn)}
-.dr-nm{font-size:16px;font-weight:700}.dr-em{font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace}
-.bcl{background:none;border:none;cursor:pointer;color:var(--mu);padding:4px;border-radius:5px;display:flex}.bcl:hover{background:var(--bdl);color:var(--tx)}
-.dr-body{padding:18px 20px 28px}
-.dr-sec{margin-bottom:20px}
-.dr-sec-t{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:8px}
-.dr-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.dr-m{background:var(--sf2);border:1px solid var(--bdl);border-radius:7px;padding:10px 12px}
-.dr-ml{font-size:10px;color:var(--mu)}.dr-mv{font-size:18px;font-weight:700;letter-spacing:-.5px}
-.tsk{background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px}
-.tsk-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.tsk-t{font-size:12px;font-weight:600}.tsk-s{font-size:10px;color:var(--mu);margin-top:2px}
-.tsk-tag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;margin-top:4px;display:inline-block}
-.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
-.qa-btn{background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:border-color var(--tr)}
-.qa-btn:hover{border-color:var(--bd)}
-.qa-icon{font-size:18px;margin-bottom:3px}
-.qa-t{font-size:11px;font-weight:600}
-
 .pg-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--bdl);background:var(--sf2);font-size:12px;color:var(--mu)}
 .loading{text-align:center;padding:40px;color:var(--mu);font-size:14px}
 .err-box{background:var(--rdb);border:1px solid rgba(217,68,68,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--rd);margin-bottom:12px;display:none}
 .err-box.show{display:block}
 
+/* ═══ DETALJVY ═══ */
+.user-detail{display:none}
+.user-detail.act{display:block}
+.ud-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.ud-back{background:var(--sf);border:1px solid var(--bd);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tx2);transition:all .15s;flex-shrink:0}
+.ud-back:hover{border-color:var(--tx);color:var(--tx)}
+.ud-user{flex:1;min-width:0}
+.ud-name{font-size:22px;font-weight:700;letter-spacing:-.4px}
+.ud-meta{font-size:12px;color:var(--mu);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.ud-actions{display:flex;gap:8px;flex-shrink:0}
+
+.ud-charts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.ud-chart{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px 18px}
+.ud-chart-h{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.ud-chart-h svg{color:var(--ac);opacity:.9}
+.ud-chart-v{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px;color:var(--tx)}
+.ud-chart-svg{width:100%;height:90px;display:block}
+
+.ud-content{background:var(--sf);border:1px solid var(--bd);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:180px 1fr;min-height:420px;box-shadow:var(--sh)}
+.ud-tabs{background:var(--sf2);border-right:1px solid var(--bd);padding:10px 0}
+.ud-tab{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;text-align:center}
+.ud-tab:hover{background:rgba(0,0,0,.02)}
+.ud-tab.act{background:var(--sf);border-left-color:var(--ac)}
+.ud-tab svg{color:var(--mu);transition:color .15s}
+.ud-tab.act svg{color:var(--ac)}
+.ud-tab-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mu)}
+.ud-tab.act .ud-tab-l{color:var(--ac)}
+.ud-body{padding:22px 26px}
+.ud-body-h{font-size:16px;font-weight:700;margin-bottom:16px;letter-spacing:-.2px}
+.ud-body-empty{padding:40px 20px;text-align:center;color:var(--mu);font-size:13px}
+.ud-list{border:1px solid var(--bdl);border-radius:8px;overflow:hidden}
+.ud-list-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:11px 14px;border-bottom:1px solid var(--bdl);align-items:center;font-size:13px}
+.ud-list-row:last-child{border-bottom:none}
+.ud-list-row:hover{background:var(--sf2)}
+.ud-list-h{display:grid;grid-template-columns:1fr auto;gap:12px;padding:9px 14px;background:var(--sf2);border-bottom:1px solid var(--bd);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu)}
+.ud-list-d{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tx2)}
+
+/* Uppgift-tilldelning i detaljvyn */
+.ud-assign{background:var(--sf2);border:1px solid var(--bdl);border-radius:10px;padding:14px;margin-bottom:16px}
+.ud-assign-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);margin-bottom:10px}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.qa-btn{background:var(--sf);border:1px solid var(--bdl);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:border-color var(--tr)}
+.qa-btn:hover{border-color:var(--bd)}
+.qa-icon{font-size:18px;margin-bottom:3px}
+.qa-t{font-size:10px;font-weight:600}
+.tsk{background:var(--sf);border:1px solid var(--bdl);border-radius:8px;padding:11px 13px;margin-bottom:6px;display:flex;align-items:flex-start;gap:9px}
+.tsk-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.tsk-t{font-size:13px;font-weight:600}.tsk-s{font-size:10px;color:var(--mu);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.tsk-tag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;margin-top:5px;display:inline-block}
+
+/* CV-summary */
+.cv-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.cv-field{background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 12px}
+.cv-field-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:3px}
+.cv-field-v{font-size:13px;font-weight:600;word-break:break-word}
+
+/* ═══ MODAL ═══ */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(15,23,41,.55);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+.modal-ov.open{display:flex}
+.modal{background:var(--sf);border-radius:14px;padding:26px 28px 24px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto}
+.modal-h{font-size:18px;font-weight:700;margin-bottom:4px;letter-spacing:-.2px}
+.modal-s{font-size:12px;color:var(--mu);margin-bottom:18px;line-height:1.5}
+.modal-field{margin-bottom:13px}
+.modal-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);margin-bottom:5px;display:block}
+.modal-input,.modal-textarea{width:100%;padding:9px 12px;font-size:13px}
+.modal-textarea{resize:vertical;min-height:80px;line-height:1.5}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.modal-status{padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none;line-height:1.4}
+.modal-status.ok{display:block;background:var(--gnb);color:var(--gn);border:1px solid rgba(26,138,90,.2)}
+.modal-status.err{display:block;background:var(--rdb);color:var(--rd);border:1px solid rgba(217,68,68,.2)}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--mu);padding:4px;border-radius:5px;display:flex;float:right}
+.modal-close:hover{background:var(--bdl);color:var(--tx)}
+
 /* ═══════════════════════════════════════════════════════════════
-   MOBIL ≤768px — sidomenyn blir en horisontell topplist
+   MOBIL ≤768px
    ═══════════════════════════════════════════════════════════════ */
 @media(max-width:768px){
   .layout{flex-direction:column}
@@ -142,19 +192,26 @@ td{padding:10px 13px;vertical-align:middle}
   .sb-nav-item{margin:0;padding:7px 11px;font-size:12px;white-space:nowrap;border-radius:6px}
   .sb-nav-item.act::before{display:none}
   .sb-nav-item svg{display:none}
-  .sb-nav-section{display:none}
   .sb-user{border:none;padding:0;margin:0;flex-shrink:0;gap:8px}
   .sb-meta{display:none}
   .sb-logout{display:none}
   .stats{grid-template-columns:1fr 1fr}
-  .dr{width:100%}
+  .ud-charts{grid-template-columns:1fr}
+  .ud-content{grid-template-columns:1fr}
+  .ud-tabs{display:flex;flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--bd);padding:0}
+  .ud-tab{flex-direction:row;border-left:none;border-bottom:3px solid transparent;padding:10px 14px;white-space:nowrap}
+  .ud-tab.act{border-left:none;border-bottom-color:var(--ac)}
+  .qa-grid{grid-template-columns:1fr 1fr}
+  .cv-summary{grid-template-columns:1fr}
   td.hm,th.hm{display:none}
   .cnt{padding:18px 16px 36px}
   .pg-head{flex-direction:column;align-items:flex-start;gap:0;margin-bottom:16px}
+  .ud-head{flex-wrap:wrap}
+  .ud-actions{width:100%}
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   DESKTOP ≥1200px — mer luft
+   DESKTOP ≥1200px
    ═══════════════════════════════════════════════════════════════ */
 @media(min-width:1200px){
   .sidebar{width:240px;padding:22px 14px 14px}
@@ -173,16 +230,15 @@ td{padding:10px 13px;vertical-align:middle}
   .ua{width:36px;height:36px;font-size:12px}
   .tb{gap:12px;margin-bottom:18px}
   .sw{max-width:380px}
-  .dr{width:520px}
-  .dr-body{padding:22px 28px 36px}
-  .dr-m{padding:12px 14px}
-  .dr-mv{font-size:22px}
   .sb-nav-item{padding:10px 12px;font-size:13.5px}
+  .ud-name{font-size:26px}
+  .ud-content{grid-template-columns:200px 1fr;min-height:500px}
+  .ud-body{padding:26px 30px}
+  .ud-chart-svg{height:110px}
 }
 
 @media(min-width:1600px){
   .cnt{max-width:1800px}
-  .dr{width:580px}
 }
 </style>
 </head>
@@ -217,7 +273,6 @@ td{padding:10px 13px;vertical-align:middle}
 <!-- ═══ APP ═══ -->
 <div class="layout">
 
-  <!-- SIDOMENY -->
   <aside class="sidebar">
     <div class="sb-logo">
       <svg width="26" height="26" viewBox="0 0 56 56" fill="none">
@@ -251,69 +306,101 @@ td{padding:10px 13px;vertical-align:middle}
     </div>
   </aside>
 
-  <!-- HUVUDOMRÅDE -->
   <main class="main">
     <div class="cnt">
-      <div class="pg-head">
-        <div>
-          <div class="pg-t" id="pgTitle">Ärenden</div>
-          <div class="pg-s" id="pgSub"></div>
+
+      <!-- Listvy: page header + flikar -->
+      <div id="listView">
+        <div class="pg-head">
+          <div>
+            <div class="pg-t" id="pgTitle">Ärenden</div>
+            <div class="pg-s" id="pgSub"></div>
+          </div>
+        </div>
+
+        <div class="err-box" id="errBox"></div>
+
+        <div class="pan act" id="p-arenden">
+          <div class="stats" id="statCards"><div class="loading">Laddar...</div></div>
+          <div class="tb">
+            <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
+            <select id="statusFlt"><option value="">Alla statusar</option><option value="active">Aktiv</option><option value="new">Ny</option><option value="recent">Nyligen aktiv</option><option value="inactive">Inaktiv</option></select>
+            <div class="sp"></div>
+            <button class="btn btn-primary" onclick="openInviteModal()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              Bjud in deltagare
+            </button>
+            <button class="btn" onclick="exportData()">Exportera</button>
+          </div>
+          <div class="tw">
+            <table>
+              <thead><tr><th>Namn</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead>
+              <tbody id="tBody"><tr><td colspan="7" class="loading">Laddar ärenden...</td></tr></tbody>
+            </table>
+            <div class="pg-bar"><span id="pgInfo"></span></div>
+          </div>
+        </div>
+
+        <div class="pan" id="p-statistik"><div id="statsContent" class="loading">Laddar statistik...</div></div>
+        <div class="pan" id="p-uppgifter"><div id="tasksContent" class="loading">Laddar uppgifter...</div></div>
+      </div>
+
+      <!-- Detaljvy: visas när användare klickas -->
+      <div class="user-detail" id="detailView">
+        <div class="ud-head">
+          <button class="ud-back" onclick="closeDetail()" title="Tillbaka">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="ud-user">
+            <div class="ud-name" id="udName">—</div>
+            <div class="ud-meta" id="udMeta">—</div>
+          </div>
+          <div class="ud-actions">
+            <span id="udBadge"></span>
+          </div>
+        </div>
+
+        <div class="ud-charts" id="udCharts"></div>
+
+        <div class="ud-content">
+          <div class="ud-tabs" id="udTabs"></div>
+          <div class="ud-body" id="udBody"></div>
         </div>
       </div>
 
-      <div class="err-box" id="errBox"></div>
-
-      <!-- ÄRENDEN -->
-      <div class="pan act" id="p-arenden">
-        <div class="stats" id="statCards"><div class="loading">Laddar...</div></div>
-        <div class="tb">
-          <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
-          <select id="statusFlt"><option value="">Alla statusar</option><option value="active">Aktiv</option><option value="new">Ny</option><option value="recent">Nyligen aktiv</option><option value="inactive">Inaktiv</option></select>
-          <div class="sp"></div>
-          <button class="btn" onclick="exportData()">Exportera</button>
-        </div>
-        <div class="tw">
-          <table>
-            <thead><tr><th>Namn</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead>
-            <tbody id="tBody"><tr><td colspan="7" class="loading">Laddar ärenden...</td></tr></tbody>
-          </table>
-          <div class="pg-bar"><span id="pgInfo"></span></div>
-        </div>
-      </div>
-
-      <!-- STATISTIK -->
-      <div class="pan" id="p-statistik"><div id="statsContent" class="loading">Laddar statistik...</div></div>
-
-      <!-- UPPGIFTER -->
-      <div class="pan" id="p-uppgifter"><div id="tasksContent" class="loading">Laddar uppgifter...</div></div>
     </div>
   </main>
 
 </div>
 
-<!-- ═══ DRAWER ═══ -->
-<div class="dov" id="overlay" onclick="closeDrawer()"></div>
-<div class="dr" id="drawer">
-  <div class="dr-top">
-    <div class="dr-user"><div class="dr-av" id="drAv"></div><div><div class="dr-nm" id="drNm"></div><div class="dr-em" id="drEm"></div></div></div>
-    <button class="bcl" onclick="closeDrawer()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-  </div>
-  <div class="dr-body">
-    <div class="dr-sec"><div id="drBadge"></div></div>
-    <div class="dr-sec"><div class="dr-sec-t">Översikt</div><div class="dr-grid" id="drMetrics"></div></div>
-    <div class="dr-sec">
-      <div class="dr-sec-t">Tilldela uppgift</div>
-      <div class="qa-grid" id="drQuickAssign"></div>
-      <div style="display:flex;gap:6px;margin-bottom:6px">
-        <input type="text" id="drCustomTask" placeholder="Egen uppgift…" style="flex:1;padding:7px 10px 7px 10px">
-        <select id="drDeadline" style="min-width:100px"><option value="">Deadline</option><option value="1">Imorgon</option><option value="3">3 dagar</option><option value="7">1 vecka</option><option value="14">2 veckor</option></select>
-      </div>
-      <div style="display:flex;gap:6px">
-        <select id="drDuration" style="flex:1"><option value="">Ingen timer</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option></select>
-        <button class="btn" onclick="assignCustomTask()" style="white-space:nowrap">Tilldela</button>
-      </div>
+<!-- ═══ MODAL: Bjud in deltagare ═══ -->
+<div class="modal-ov" id="inviteModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeInviteModal()">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-h">Bjud in deltagare</div>
+    <div class="modal-s">Skicka en inbjudningslänk via e-post. Mottagaren får ett mail med en engångslänk för att skapa sitt konto.</div>
+
+    <div class="modal-status" id="inviteStatus"></div>
+
+    <div class="modal-field">
+      <label class="modal-label">E-postadress *</label>
+      <input type="email" class="modal-input" id="inviteEmail" placeholder="förnamn.efternamn@exempel.se">
     </div>
-    <div class="dr-sec"><div class="dr-sec-t">Aktiva uppgifter</div><div id="drTasks"></div></div>
+    <div class="modal-field">
+      <label class="modal-label">Namn (valfritt)</label>
+      <input type="text" class="modal-input" id="inviteName" placeholder="Förnamn Efternamn" style="padding-left:12px">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Personligt meddelande (valfritt)</label>
+      <textarea class="modal-textarea" id="inviteMsg" placeholder="Hej! Här kommer din inbjudan till CVmatchen…"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="closeInviteModal()">Avbryt</button>
+      <button class="btn btn-primary" id="inviteSendBtn" onclick="sendInvite()">Skicka inbjudan</button>
+    </div>
   </div>
 </div>
 
@@ -321,7 +408,6 @@ td{padding:10px 13px;vertical-align:middle}
 const API = '/api/supabase';
 const SL = {active:'Aktiv',recent:'Nyligen aktiv',new:'Ny',inactive:'Inaktiv'};
 
-// Sidnamn + undertext per flik
 const PAGE_INFO = {
   arenden:   {title:'Ärenden',   sub: () => roleSubtitle()},
   statistik: {title:'Statistik', sub: () => 'Översikt och nyckeltal'},
@@ -331,441 +417,548 @@ const PAGE_INFO = {
 let admin = null;
 let allUsers = [];
 let currentUserId = null;
+let currentUserData = null;
+let currentDetailTab = 'kurser';
 
 function ini(n){return (n||'').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'}
-
-function cvName(cv) {
-  if (!cv) return '';
-  return cv.name || [cv.firstName, cv.lastName].filter(Boolean).join(' ') || '';
-}
-
+function cvName(cv){if(!cv)return '';return cv.name||[cv.firstName,cv.lastName].filter(Boolean).join(' ')||'';}
 function roleSubtitle(){
   if(!admin) return '';
   return admin.role === 'superadmin' ? 'Alla kommuner och enheter' :
          admin.role === 'kommunadmin' ? (admin.kommuner?.name || 'Kommun') + ' — alla enheter' :
          (admin.enheter?.name || admin.enhet_name || admin.email || 'Enhet');
 }
+function showErr(msg){const el=document.getElementById('errBox');if(!el)return;el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),8000);}
+function showLoginInfo(msg,type){const el=document.getElementById('loginMsg');el.textContent=msg;el.className='login-msg '+(type||'error');}
+function post(action,data){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});}
 
-function showErr(msg) {
-  const el = document.getElementById('errBox');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 8000);
-}
-
-function showLoginInfo(msg, type){
-  const el = document.getElementById('loginMsg');
-  el.textContent = msg;
-  el.className = 'login-msg ' + (type || 'error');
-}
-
-function post(action, data){
-  return fetch(API,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action,...data})
-  }).then(r => {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// MICROSOFT OAUTH LOGIN
-// ═══════════════════════════════════════════════════════════════════════
+// ═══ MICROSOFT OAUTH ═══
 function loginMicrosoft(){
-  const btn = document.getElementById('msBtn');
-  const txt = document.getElementById('msBtnText');
-  if (btn) btn.disabled = true;
-  if (txt) txt.textContent = 'Skickar dig till Microsoft…';
-  setTimeout(function() {
-    window.location.href = '/api/v1/auth/microsoft';
-  }, 150);
+  const btn=document.getElementById('msBtn'),txt=document.getElementById('msBtnText');
+  if(btn) btn.disabled=true;
+  if(txt) txt.textContent='Skickar dig till Microsoft…';
+  setTimeout(()=>{window.location.href='/api/v1/auth/microsoft';},150);
 }
-
 (function checkMicrosoftCallback(){
-  const params = new URLSearchParams(location.search);
-  const msToken = params.get('ms_token');
-  const msError = params.get('ms_error');
-  const msInfo  = params.get('ms_info');
-
-  function cleanUrl() {
-    history.replaceState({}, document.title, location.pathname);
+  const params=new URLSearchParams(location.search);
+  const msToken=params.get('ms_token'),msError=params.get('ms_error'),msInfo=params.get('ms_info');
+  function cleanUrl(){history.replaceState({},document.title,location.pathname);}
+  if(msError){
+    const m={'cancelled':'Inloggningen avbröts.','unauthorized':msInfo?`Emailen ${msInfo} är inte registrerad som handläggare. Kontakta support för att bli upplagd.`:'Din email är inte registrerad som handläggare.','invalid_state':'Säkerhetsfel vid inloggning. Försök igen.','token_exchange_failed':'Kunde inte verifiera Microsoft-inloggning. Försök igen.','graph_failed':'Kunde inte hämta din profilinfo från Microsoft. Försök igen.','no_email':'Din Microsoft-profil har ingen email. Kontakta IT-support.','config_missing':'Serverkonfiguration saknas. Kontakta administratör.','admin_check_failed':'Kunde inte verifiera behörighet. Försök igen.','missing_code':'Ofullständig inloggning från Microsoft. Försök igen.','ms_error':'Microsoft returnerade ett fel. Försök igen.','unexpected':'Ett oväntat fel inträffade. Försök igen.'};
+    cleanUrl();showLoginInfo(m[msError]||('Inloggningsfel: '+msError),'error');return;
   }
-
-  if (msError) {
-    const errorMessages = {
-      'cancelled': 'Inloggningen avbröts.',
-      'unauthorized': msInfo
-        ? `Emailen ${msInfo} är inte registrerad som handläggare. Kontakta support för att bli upplagd.`
-        : 'Din email är inte registrerad som handläggare.',
-      'invalid_state': 'Säkerhetsfel vid inloggning. Försök igen.',
-      'token_exchange_failed': 'Kunde inte verifiera Microsoft-inloggning. Försök igen.',
-      'graph_failed': 'Kunde inte hämta din profilinfo från Microsoft. Försök igen.',
-      'no_email': 'Din Microsoft-profil har ingen email. Kontakta IT-support.',
-      'config_missing': 'Serverkonfiguration saknas. Kontakta administratör.',
-      'admin_check_failed': 'Kunde inte verifiera behörighet. Försök igen.',
-      'missing_code': 'Ofullständig inloggning från Microsoft. Försök igen.',
-      'ms_error': 'Microsoft returnerade ett fel. Försök igen.',
-      'unexpected': 'Ett oväntat fel inträffade. Försök igen.'
-    };
-    cleanUrl();
-    showLoginInfo(errorMessages[msError] || ('Inloggningsfel: ' + msError), 'error');
-    return;
-  }
-
-  if (msToken) {
-    try {
-      const parts = msToken.split('.');
-      if (parts.length !== 2) throw new Error('Invalid token format');
-      let b64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
-      while (b64.length % 4) b64 += '=';
-      const payload = JSON.parse(atob(b64));
-
-      admin = {
-        id: payload.adminId,
-        email: payload.email,
-        name: payload.name,
-        role: payload.role,
-        accessToken: msToken,
-        loginMethod: 'microsoft',
-        expiresAt: payload.expiresAt
-      };
-      sessionStorage.setItem('cvmatchen_admin', JSON.stringify(admin));
-
-      cleanUrl();
-      enterApp();
-    } catch(e) {
-      console.error('[MS-callback] Kunde inte läsa token:', e);
-      cleanUrl();
-      showLoginInfo('Kunde inte läsa inloggningsuppgifter. Försök igen.', 'error');
-    }
+  if(msToken){
+    try{
+      const parts=msToken.split('.');if(parts.length!==2)throw new Error('Invalid token');
+      let b64=parts[0].replace(/-/g,'+').replace(/_/g,'/');while(b64.length%4)b64+='=';
+      const payload=JSON.parse(atob(b64));
+      admin={id:payload.adminId,email:payload.email,name:payload.name,role:payload.role,accessToken:msToken,loginMethod:'microsoft',expiresAt:payload.expiresAt};
+      sessionStorage.setItem('cvmatchen_admin',JSON.stringify(admin));
+      cleanUrl();enterApp();
+    }catch(e){console.error(e);cleanUrl();showLoginInfo('Kunde inte läsa inloggningsuppgifter. Försök igen.','error');}
   }
 })();
 
 function logout(){
-  sessionStorage.removeItem('cvmatchen_admin');
-  admin = null;
-  if (window._refreshTimer) clearInterval(window._refreshTimer);
+  sessionStorage.removeItem('cvmatchen_admin');admin=null;
+  if(window._refreshTimer) clearInterval(window._refreshTimer);
   location.reload();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// SESSION AUTO-REFRESH
-// ═══════════════════════════════════════════════════════════════════════
+// ═══ SESSION REFRESH ═══
 async function refreshSessionIfNeeded(){
-  if (!admin || !admin.accessToken || !admin.expiresAt) return;
-
-  const msUntilExpiry = admin.expiresAt - Date.now();
-  const ONE_HOUR = 60 * 60 * 1000;
-
-  if (msUntilExpiry <= 0) {
-    console.warn('[refresh] Token gick ut, loggar ut');
-    logout();
-    return;
-  }
-
-  if (msUntilExpiry > ONE_HOUR) return;
-
-  try {
-    const r = await fetch('/api/v1/auth/refresh', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ token: admin.accessToken })
-    });
-    const data = await r.json();
-
-    if (!r.ok) {
-      console.warn('[refresh] Misslyckades:', data);
-      if (data.requireLogin) {
-        alert('Din session har gått ut. Logga in igen.');
-        logout();
-      }
-      return;
-    }
-
-    admin.accessToken = data.token;
-    admin.expiresAt = data.expiresAt;
-    sessionStorage.setItem('cvmatchen_admin', JSON.stringify(admin));
-    console.log('[refresh] Session förnyad till', new Date(data.expiresAt).toLocaleTimeString('sv-SE'));
-  } catch(e) {
-    console.error('[refresh] Nätverksfel:', e);
-  }
+  if(!admin||!admin.accessToken||!admin.expiresAt)return;
+  const ms=admin.expiresAt-Date.now(),OH=60*60*1000;
+  if(ms<=0){logout();return;}
+  if(ms>OH)return;
+  try{
+    const r=await fetch('/api/v1/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:admin.accessToken})});
+    const data=await r.json();
+    if(!r.ok){if(data.requireLogin){alert('Din session har gått ut. Logga in igen.');logout();}return;}
+    admin.accessToken=data.token;admin.expiresAt=data.expiresAt;
+    sessionStorage.setItem('cvmatchen_admin',JSON.stringify(admin));
+  }catch(e){console.error('[refresh]',e);}
 }
-
-function startRefreshTimer(){
-  if (window._refreshTimer) clearInterval(window._refreshTimer);
-  refreshSessionIfNeeded();
-  window._refreshTimer = setInterval(refreshSessionIfNeeded, 10 * 60 * 1000);
-}
+function startRefreshTimer(){if(window._refreshTimer)clearInterval(window._refreshTimer);refreshSessionIfNeeded();window._refreshTimer=setInterval(refreshSessionIfNeeded,10*60*1000);}
 
 function enterApp(){
   document.getElementById('loginOverlay').classList.add('hidden');
-  // Sidomenyns user-card
-  document.getElementById('sbName').textContent = admin.name || admin.email || '';
-  document.getElementById('sbRole').textContent = admin.email || '';
-  document.getElementById('sbAv').textContent = ini(admin.name || admin.email || '?');
-  // Sidans undertitel
-  document.getElementById('pgSub').textContent = roleSubtitle();
-
-  buildNav();
-  loadUsers();
-  loadStats();
-  startRefreshTimer();
+  document.getElementById('sbName').textContent=admin.name||admin.email||'';
+  document.getElementById('sbRole').textContent=admin.email||'';
+  document.getElementById('sbAv').textContent=ini(admin.name||admin.email||'?');
+  document.getElementById('pgSub').textContent=roleSubtitle();
+  buildNav();loadUsers();loadStats();startRefreshTimer();
 }
 
-// ═══ SIDOMENY-NAVIGERING ═══
+// ═══ SIDOMENY ═══
 function buildNav(){
-  const items = [
-    {id:'arenden',   label:'Ärenden',   icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
-    {id:'statistik', label:'Statistik', icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>'},
-    {id:'uppgifter', label:'Uppgifter', icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'}
+  const items=[
+    {id:'arenden',label:'Ärenden',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
+    {id:'statistik',label:'Statistik',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>'},
+    {id:'uppgifter',label:'Uppgifter',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'}
   ];
-  document.getElementById('sbNav').innerHTML = items.map((it,i) =>
-    `<div class="sb-nav-item${i===0?' act':''}" data-id="${it.id}" onclick="switchTab('${it.id}')">${it.icon}<span>${it.label}</span></div>`
-  ).join('');
+  document.getElementById('sbNav').innerHTML=items.map((it,i)=>`<div class="sb-nav-item${i===0?' act':''}" data-id="${it.id}" onclick="switchTab('${it.id}')">${it.icon}<span>${it.label}</span></div>`).join('');
 }
-
 function switchTab(id){
+  closeDetail();
   document.querySelectorAll('.sb-nav-item').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('.pan').forEach(p=>p.classList.remove('act'));
   document.getElementById('p-'+id)?.classList.add('act');
   document.querySelector(`.sb-nav-item[data-id="${id}"]`)?.classList.add('act');
-  // Uppdatera sidtitel + undertitel
-  const info = PAGE_INFO[id];
-  if(info){
-    document.getElementById('pgTitle').textContent = info.title;
-    document.getElementById('pgSub').textContent = info.sub();
-  }
+  const info=PAGE_INFO[id];
+  if(info){document.getElementById('pgTitle').textContent=info.title;document.getElementById('pgSub').textContent=info.sub();}
   if(id==='uppgifter') loadAllTasks();
 }
 
-// ═══ USERS ═══
+// ═══ USERS-LISTA ═══
 async function loadUsers(){
-  document.getElementById('tBody').innerHTML = '<tr><td colspan="7" class="loading">Laddar ärenden...</td></tr>';
-
-  const filters = {};
-  if(admin.role === 'kommunadmin' && admin.kommun_id) filters.kommun_id = admin.kommun_id;
-  if(admin.role === 'handlaggare' && admin.enhet_id)  filters.enhet_id  = admin.enhet_id;
-
+  document.getElementById('tBody').innerHTML='<tr><td colspan="7" class="loading">Laddar ärenden...</td></tr>';
+  const filters={};
+  if(admin.role==='kommunadmin'&&admin.kommun_id) filters.kommun_id=admin.kommun_id;
+  if(admin.role==='handlaggare'&&admin.enhet_id) filters.enhet_id=admin.enhet_id;
   let data;
-  try {
-    data = await post('admin_list_users', { filters, adminId: admin.id });
-    console.log('[admin_list_users] svar:', data);
-  } catch(e) {
-    console.error('[admin_list_users] fel:', e);
-    document.getElementById('tBody').innerHTML =
-      `<tr><td colspan="7" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;
-    showErr('Kunde inte hämta användare: ' + e.message);
-    return;
-  }
-
-  if (data.error) {
-    console.error('[admin_list_users] API-fel:', data.error);
-    document.getElementById('tBody').innerHTML =
-      `<tr><td colspan="7" class="loading" style="color:var(--rd)">Fel från API: ${data.error}</td></tr>`;
-    showErr('API-fel: ' + data.error);
-    return;
-  }
-
-  allUsers = data.data || data.users || (Array.isArray(data) ? data : []);
-  console.log('[admin_list_users] antal användare:', allUsers.length, allUsers.slice(0,2));
-
-  if (allUsers.length === 0) {
-    document.getElementById('tBody').innerHTML =
-      '<tr><td colspan="7" class="loading">Inga deltagare hittades — kontrollera console för API-svar</td></tr>';
-  }
-
-  renderStats();
-  renderTable(allUsers);
+  try{data=await post('admin_list_users',{filters,adminId:admin.id});}
+  catch(e){document.getElementById('tBody').innerHTML=`<tr><td colspan="7" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;showErr('Kunde inte hämta användare: '+e.message);return;}
+  if(data.error){document.getElementById('tBody').innerHTML=`<tr><td colspan="7" class="loading" style="color:var(--rd)">Fel från API: ${data.error}</td></tr>`;showErr('API-fel: '+data.error);return;}
+  allUsers=data.data||data.users||(Array.isArray(data)?data:[]);
+  if(allUsers.length===0) document.getElementById('tBody').innerHTML='<tr><td colspan="7" class="loading">Inga deltagare hittades</td></tr>';
+  renderStats();renderTable(allUsers);
 }
-
 function renderStats(){
-  const u = allUsers;
-  const tot   = u.length;
-  const act   = u.filter(x=>x.status==='active').length;
-  const withCV = u.filter(x => {
-    const cvd = x.cv?.data || x.cv || {};
-    return !!(cvd.name || cvd.title);
-  }).length;
-  const withProg = u.filter(x => {
-    const p = x.progress || {};
-    return Object.values(p).some(v => v && v.done);
-  }).length;
-  document.getElementById('statCards').innerHTML = `
+  const u=allUsers,tot=u.length,act=u.filter(x=>x.status==='active').length;
+  const withCV=u.filter(x=>{const c=x.cv?.data||x.cv||{};return !!(c.name||c.title);}).length;
+  const withProg=u.filter(x=>{const p=x.progress||{};return Object.values(p).some(v=>v&&v.done);}).length;
+  document.getElementById('statCards').innerHTML=`
     <div class="stc"><div class="stl">Deltagare</div><div class="stv">${tot}</div></div>
     <div class="stc"><div class="stl">Aktiva</div><div class="stv" style="color:var(--gn)">${act}</div></div>
     <div class="stc"><div class="stl">Har CV</div><div class="stv" style="color:var(--bl)">${withCV}</div></div>
-    <div class="stc"><div class="stl">Gjort övningar</div><div class="stv" style="color:var(--ac)">${withProg}</div></div>
-  `;
+    <div class="stc"><div class="stl">Gjort övningar</div><div class="stv" style="color:var(--ac)">${withProg}</div></div>`;
 }
-
 function renderTable(users){
-  const q  = (document.getElementById('searchIn')?.value||'').toLowerCase();
-  const st = document.getElementById('statusFlt')?.value||'';
-
-  let f = users.filter(u => {
-    const nm  = cvName(u.cv?.data || u.cv).toLowerCase();
-    const em  = (u.cv?.data?.email || u.cv?.email || u.email || '').toLowerCase();
-    const uid = (u.user_id || u.id || '').toLowerCase();
-    const matchQ  = !q || nm.includes(q) || em.includes(q) || uid.includes(q);
-    const matchSt = !st || u.status === st;
-    return matchQ && matchSt;
+  const q=(document.getElementById('searchIn')?.value||'').toLowerCase();
+  const st=document.getElementById('statusFlt')?.value||'';
+  let f=users.filter(u=>{
+    const nm=cvName(u.cv?.data||u.cv).toLowerCase();
+    const em=(u.cv?.data?.email||u.cv?.email||u.email||'').toLowerCase();
+    const uid=(u.user_id||u.id||'').toLowerCase();
+    return (!q||nm.includes(q)||em.includes(q)||uid.includes(q))&&(!st||u.status===st);
   });
-
-  document.getElementById('tBody').innerHTML = f.length ? f.map(u => {
-    const cvd     = u.cv?.data || u.cv || {};
-    const name    = cvName(cvd) || cvName(u) || (u.user_id||u.id||'').slice(0,8) || 'Okänd';
-    const email   = cvd.email || u.email || '';
-    const taskInfo = u.tasks ? `${u.tasks.completed||0}/${u.tasks.total||0}` : '—';
-    const progData = u.progress || {};
-    const vals    = Object.values(progData);
-    const doneP   = vals.filter(v => v === true || (v && v.done === true)).length;
-    const progPct = vals.length ? Math.round(doneP/vals.length*100) : 0;
-    const uid     = u.user_id || u.id || '';
-    const lastSeen = u.cv?.updated_at?.split('T')[0] || u.last_seen?.split('T')[0] || '—';
-
-    return `<tr onclick="openDrawer('${uid}')">
+  document.getElementById('tBody').innerHTML=f.length?f.map(u=>{
+    const cvd=u.cv?.data||u.cv||{};
+    const name=cvName(cvd)||cvName(u)||(u.user_id||u.id||'').slice(0,8)||'Okänd';
+    const email=cvd.email||u.email||'';
+    const taskInfo=u.tasks?`${u.tasks.completed||0}/${u.tasks.total||0}`:'—';
+    const progData=u.progress||{},vals=Object.values(progData);
+    const doneP=vals.filter(v=>v===true||(v&&v.done===true)).length;
+    const progPct=vals.length?Math.round(doneP/vals.length*100):0;
+    const uid=u.user_id||u.id||'';
+    const lastSeen=u.cv?.updated_at?.split('T')[0]||u.last_seen?.split('T')[0]||'—';
+    return `<tr onclick="openDetail('${uid}')">
       <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name}</div><div class="ue">${email}</div></div></div></td>
-      <td class="hm dc">${u.enheter?.name || u.enhet_name || ''}</td>
+      <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
       <td class="dc">${lastSeen}</td>
-      <td class="hm tc">${cvd.name || cvd.title ? '✅' : '—'}</td>
+      <td class="hm tc">${cvd.name||cvd.title?'✅':'—'}</td>
       <td class="hm tc">${progPct}%</td>
       <td class="hm tc">${taskInfo}</td>
       <td><span class="bd ${u.status||'new'}">${SL[u.status]||'Ny'}</span></td>
     </tr>`;
-  }).join('') : '<tr><td colspan="7" class="loading">Inga deltagare matchar sökningen</td></tr>';
-
-  document.getElementById('pgInfo').textContent = `${f.length} deltagare`;
+  }).join(''):'<tr><td colspan="7" class="loading">Inga deltagare matchar sökningen</td></tr>';
+  document.getElementById('pgInfo').textContent=`${f.length} deltagare`;
 }
+document.getElementById('searchIn')?.addEventListener('input',()=>renderTable(allUsers));
+document.getElementById('statusFlt')?.addEventListener('change',()=>renderTable(allUsers));
 
-document.getElementById('searchIn')?.addEventListener('input', ()=>renderTable(allUsers));
-document.getElementById('statusFlt')?.addEventListener('change', ()=>renderTable(allUsers));
+// ═══════════════════════════════════════════════════════════════════════
+// DETALJVY — full sidvy som ersätter listan
+// ═══════════════════════════════════════════════════════════════════════
+const DETAIL_TABS = [
+  {id:'kurser',     label:'Kurser',       icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>'},
+  {id:'uppgifter',  label:'Uppgifter',    icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'},
+  {id:'frageform',  label:'Frågeformulär',icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>'},
+  {id:'intervju',   label:'Intervjuspel', icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>'},
+  {id:'cv',         label:'CV',           icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'},
+  {id:'jobbansok',  label:'Jobbansökan',  icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>'},
+  {id:'install',    label:'Inställningar',icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'},
+];
 
-// ═══ DRAWER ═══
-async function openDrawer(userId){
+async function openDetail(userId){
   currentUserId = userId;
-  let data;
-  try {
-    data = await post('admin_get_user', {targetUserId: userId, adminId: admin.id});
-    console.log('[admin_get_user] svar:', data);
-  } catch(e) {
-    console.error('[admin_get_user] fel:', e);
-    return;
-  }
+  currentDetailTab = 'kurser';
+  // Visa detaljvy, dölj listvy
+  document.getElementById('listView').style.display='none';
+  document.getElementById('detailView').classList.add('act');
+  // Scrolla upp
+  window.scrollTo({top:0,behavior:'smooth'});
 
-  const cvd  = data.cv?.data || data.cv || {};
+  // Bygg flikar
+  document.getElementById('udTabs').innerHTML = DETAIL_TABS.map((t,i) =>
+    `<div class="ud-tab${i===0?' act':''}" data-tab="${t.id}" onclick="switchDetailTab('${t.id}')">${t.icon}<div class="ud-tab-l">${t.label}</div></div>`
+  ).join('');
+
+  // Visa laddar-state
+  document.getElementById('udName').textContent='Laddar...';
+  document.getElementById('udMeta').textContent='';
+  document.getElementById('udBadge').innerHTML='';
+  document.getElementById('udCharts').innerHTML='';
+  document.getElementById('udBody').innerHTML='<div class="ud-body-empty">Laddar deltagare...</div>';
+
+  // Hämta data
+  let data;
+  try{ data = await post('admin_get_user',{targetUserId:userId,adminId:admin.id}); }
+  catch(e){ document.getElementById('udBody').innerHTML=`<div class="ud-body-empty" style="color:var(--rd)">Kunde inte hämta: ${e.message}</div>`; return; }
+  currentUserData = data;
+
+  const cvd = data.cv?.data || data.cv || {};
   const name = cvName(cvd) || cvName(data) || 'Deltagare';
   const email = cvd.email || data.email || '';
-
-  document.getElementById('drNm').textContent = name;
-  document.getElementById('drEm').textContent = email;
-  document.getElementById('drAv').textContent = ini(name);
-
+  const lastSeen = data.cv?.updated_at?.split('T')[0] || data.last_seen?.split('T')[0] || '—';
   const asgn = data.assignment || {};
-  document.getElementById('drBadge').innerHTML = `
-    <span class="bd ${asgn.status||'new'}">${SL[asgn.status]||'Ny'}</span>
-    <span style="font-size:11px;color:var(--mu);margin-left:6px">${asgn.enheter?.name||''}</span>
-  `;
 
-  const progData = data.progress || {};
-  const vals  = Object.values(progData);
-  const doneP = vals.filter(v => v === true || (v && v.done === true)).length;
-  const progPct = vals.length ? Math.round(doneP/vals.length*100) : 0;
+  document.getElementById('udName').textContent = name;
+  document.getElementById('udMeta').textContent = (email ? email + ' · ' : '') + 'Senast aktiv: ' + lastSeen;
+  document.getElementById('udBadge').innerHTML = `<span class="bd ${asgn.status||data.status||'new'}">${SL[asgn.status||data.status]||'Ny'}</span>`;
 
-  const tasks     = data.tasks || [];
-  const tasksDone = tasks.filter(t=>t.status==='completed').length;
+  // Diagram (visar veckonummer V.X för senaste 6 veckorna)
+  renderUserCharts(data);
+  // Flikinnehåll
+  renderDetailTab('kurser', data);
+}
 
-  document.getElementById('drMetrics').innerHTML = `
-    <div class="dr-m"><div class="dr-ml">CV</div><div class="dr-mv">${cvd.name||cvd.title?'✅':'❌'}</div></div>
-    <div class="dr-m"><div class="dr-ml">Övningar</div><div class="dr-mv">${progPct}%</div></div>
-    <div class="dr-m"><div class="dr-ml">Uppgifter</div><div class="dr-mv">${tasksDone}/${tasks.length}</div></div>
-    <div class="dr-m"><div class="dr-ml">Matchningar</div><div class="dr-mv">${data.matchedCvs?.length||0}</div></div>
-  `;
+function closeDetail(){
+  document.getElementById('detailView').classList.remove('act');
+  document.getElementById('listView').style.display='';
+  currentUserId = null;
+  currentUserData = null;
+}
 
-  document.getElementById('drQuickAssign').innerHTML = [
-    {icon:'📄',t:'Gör klart CV',tmpl:'cv-komplett'},
-    {icon:'🎤',t:'Intervju 15 min',tmpl:'intervju-15'},
-    {icon:'📚',t:'3 övningar',tmpl:'ovning-3'},
-    {icon:'🎯',t:'Matcha CV',tmpl:'matcha-5'},
-  ].map(q=>`<div class="qa-btn" onclick="quickAssign('${q.tmpl}')"><div class="qa-icon">${q.icon}</div><div class="qa-t">${q.t}</div></div>`).join('');
+function switchDetailTab(tabId){
+  currentDetailTab = tabId;
+  document.querySelectorAll('.ud-tab').forEach(t=>t.classList.remove('act'));
+  document.querySelector(`.ud-tab[data-tab="${tabId}"]`)?.classList.add('act');
+  if(currentUserData) renderDetailTab(tabId, currentUserData);
+}
 
-  const catIcons = {cv:'📄',övning:'📚',intervju:'🎤',matchning:'🎯',jobbsök:'🔍',övrigt:'📝'};
-  const statusColors = {
-    pending:   {bg:'var(--blb)',c:'var(--bl)', t:'Ny'},
-    active:    {bg:'var(--orb)',c:'var(--or)', t:'Pågår'},
-    completed: {bg:'var(--gnb)',c:'var(--gn)', t:'Klar'},
-    expired:   {bg:'var(--rdb)',c:'var(--rd)', t:'Försenad'}
-  };
+// ═══ Aktivitetsdiagram ═══
+function getWeekNumber(d){
+  d = new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil(((d-yearStart)/86400000+1)/7);
+}
+function lastWeeks(n){
+  const out=[];
+  const today=new Date();
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(today);
+    d.setDate(today.getDate()-i*7);
+    out.push('V.'+getWeekNumber(d));
+  }
+  return out;
+}
+function lineChartSVG(values, weeks){
+  const w=300,h=90,padL=22,padR=10,padT=8,padB=20;
+  const maxV = Math.max(5, ...values);
+  const innerW = w - padL - padR;
+  const innerH = h - padT - padB;
+  const stepX = values.length > 1 ? innerW / (values.length-1) : 0;
+  const points = values.map((v,i)=>{
+    const x = padL + i*stepX;
+    const y = padT + innerH - (v/maxV)*innerH;
+    return [x,y];
+  });
+  const linePath = points.map((p,i)=>(i===0?'M':'L')+p[0]+' '+p[1]).join(' ');
+  // Y-axel värden (0, mid, max)
+  const yLabels = [0, Math.round(maxV/2), maxV];
+  return `<svg class="ud-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    ${yLabels.map(yv=>{
+      const y = padT + innerH - (yv/maxV)*innerH;
+      return `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="var(--bdl)" stroke-width="1"/>
+              <text x="${padL-4}" y="${y+3}" font-size="9" fill="var(--mu)" text-anchor="end" font-family="JetBrains Mono">${yv}</text>`;
+    }).join('')}
+    <path d="${linePath}" fill="none" stroke="var(--ac)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${points.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.5" fill="var(--ac)"/>`).join('')}
+    ${weeks.map((wk,i)=>{
+      const x = padL + i*stepX;
+      return `<text x="${x}" y="${h-4}" font-size="9" fill="var(--mu)" text-anchor="middle" font-family="JetBrains Mono">${wk}</text>`;
+    }).join('')}
+  </svg>`;
+}
+function renderUserCharts(data){
+  const weeks = lastWeeks(6);
+  // Använd activity-data om den finns, annars härled från progress/tasks
+  const act = data.activity || {};
+  const tidArr = act.time_per_week || new Array(6).fill(0);
+  const aktArr = act.events_per_week || new Array(6).fill(0);
+  const logArr = act.logins_per_week || new Array(6).fill(0);
+  // Sammanlagda värden
+  const tidSum = tidArr.reduce((a,b)=>a+b,0);
+  const aktSum = aktArr.reduce((a,b)=>a+b,0);
+  const logSum = logArr.reduce((a,b)=>a+b,0);
+  const tidLabel = tidSum >= 60 ? Math.round(tidSum/60)+' h' : tidSum+' min';
 
-  document.getElementById('drTasks').innerHTML = tasks.length ? tasks.map(t=>{
-    const sc = statusColors[t.status]||statusColors.pending;
-    return `<div class="tsk">
-      <div class="tsk-icon" style="background:${sc.bg}">${catIcons[t.category]||'📝'}</div>
-      <div style="flex:1"><div class="tsk-t">${t.title}</div>
-        <div class="tsk-s">${t.deadline?'Deadline: '+t.deadline.split('T')[0]:''}${t.time_spent_sec?' · '+Math.round(t.time_spent_sec/60)+' min':''}</div>
-        <span class="tsk-tag" style="background:${sc.bg};color:${sc.c}">${sc.t}</span>
-      </div>
+  document.getElementById('udCharts').innerHTML = `
+    <div class="ud-chart">
+      <div class="ud-chart-h"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Tid</div>
+      <div class="ud-chart-v">${tidLabel}</div>
+      ${lineChartSVG(tidArr, weeks)}
+    </div>
+    <div class="ud-chart">
+      <div class="ud-chart-h"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Aktivitet</div>
+      <div class="ud-chart-v">${aktSum} händelser</div>
+      ${lineChartSVG(aktArr, weeks)}
+    </div>
+    <div class="ud-chart">
+      <div class="ud-chart-h"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Inloggningar</div>
+      <div class="ud-chart-v">${logSum} ggr</div>
+      ${lineChartSVG(logArr, weeks)}
     </div>`;
-  }).join('') : '<div style="font-size:12px;color:var(--mu);padding:8px 0">Inga uppgifter tilldelade</div>';
-
-  document.getElementById('overlay').classList.add('open');
-  document.getElementById('drawer').classList.add('open');
 }
 
-function closeDrawer(){
-  document.getElementById('overlay').classList.remove('open');
-  document.getElementById('drawer').classList.remove('open');
+// ═══ Detaljflik-innehåll ═══
+function renderDetailTab(tabId, data){
+  const body = document.getElementById('udBody');
+  switch(tabId){
+    case 'kurser':    body.innerHTML = renderTabKurser(data); break;
+    case 'uppgifter': body.innerHTML = renderTabUppgifter(data); break;
+    case 'frageform': body.innerHTML = renderTabFrageform(data); break;
+    case 'intervju':  body.innerHTML = renderTabIntervju(data); break;
+    case 'cv':        body.innerHTML = renderTabCV(data); break;
+    case 'jobbansok': body.innerHTML = renderTabJobbansok(data); break;
+    case 'install':   body.innerHTML = renderTabInstall(data); break;
+  }
 }
 
-// ═══ TASK ASSIGNMENT ═══
+function renderTabKurser(data){
+  const courses = data.courses || [];
+  if(!courses.length){
+    return `<div class="ud-body-h">Kurser</div>
+      <div class="ud-body-empty">Deltagaren har inte påbörjat någon kurs ännu.</div>`;
+  }
+  return `<div class="ud-body-h">Kurser</div>
+    <div class="ud-list">
+      <div class="ud-list-h"><div>Kurs</div><div>Senast aktiv</div></div>
+      ${courses.map(c=>`<div class="ud-list-row"><div>${c.title||c.name}</div><div class="ud-list-d">${(c.last_activity||'').split('T')[0]||'—'}</div></div>`).join('')}
+    </div>`;
+}
+
+function renderTabUppgifter(data){
+  const tasks = data.tasks || [];
+  const tasksDone = tasks.filter(t=>t.status==='completed').length;
+  const catIcons = {cv:'📄',övning:'📚',intervju:'🎤',matchning:'🎯',jobbsök:'🔍',övrigt:'📝'};
+  const sc = {pending:{bg:'var(--blb)',c:'var(--bl)',t:'Ny'},active:{bg:'var(--orb)',c:'var(--or)',t:'Pågår'},completed:{bg:'var(--gnb)',c:'var(--gn)',t:'Klar'},expired:{bg:'var(--rdb)',c:'var(--rd)',t:'Försenad'}};
+
+  return `<div class="ud-body-h">Uppgifter <span style="font-weight:500;color:var(--mu);font-size:13px">· ${tasksDone}/${tasks.length} klara</span></div>
+
+    <div class="ud-assign">
+      <div class="ud-assign-t">Snabbtilldelning</div>
+      <div class="qa-grid">
+        ${[
+          {icon:'📄',t:'Gör klart CV',tmpl:'cv-komplett'},
+          {icon:'🎤',t:'Intervju 15 min',tmpl:'intervju-15'},
+          {icon:'📚',t:'3 övningar',tmpl:'ovning-3'},
+          {icon:'🎯',t:'Matcha CV',tmpl:'matcha-5'}
+        ].map(q=>`<div class="qa-btn" onclick="quickAssign('${q.tmpl}')"><div class="qa-icon">${q.icon}</div><div class="qa-t">${q.t}</div></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" id="udCustomTask" placeholder="Egen uppgift…" style="flex:1;padding:7px 10px">
+        <select id="udDeadline" style="min-width:110px"><option value="">Deadline</option><option value="1">Imorgon</option><option value="3">3 dagar</option><option value="7">1 vecka</option><option value="14">2 veckor</option></select>
+      </div>
+      <div style="display:flex;gap:6px">
+        <select id="udDuration" style="flex:1"><option value="">Ingen timer</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">60 min</option></select>
+        <button class="btn btn-primary" onclick="assignCustomTask()" style="white-space:nowrap">Tilldela</button>
+      </div>
+    </div>
+
+    ${tasks.length ? tasks.map(t=>{
+      const s = sc[t.status]||sc.pending;
+      return `<div class="tsk">
+        <div class="tsk-icon" style="background:${s.bg}">${catIcons[t.category]||'📝'}</div>
+        <div style="flex:1"><div class="tsk-t">${t.title}</div>
+          <div class="tsk-s">${t.deadline?'Deadline: '+t.deadline.split('T')[0]:''}${t.time_spent_sec?' · '+Math.round(t.time_spent_sec/60)+' min':''}</div>
+          <span class="tsk-tag" style="background:${s.bg};color:${s.c}">${s.t}</span>
+        </div>
+      </div>`;
+    }).join('') : '<div class="ud-body-empty">Inga uppgifter tilldelade ännu.</div>'}`;
+}
+
+function renderTabFrageform(data){
+  const forms = data.questionnaires || [];
+  if(!forms.length) return `<div class="ud-body-h">Frågeformulär</div><div class="ud-body-empty">Inga besvarade frågeformulär.</div>`;
+  return `<div class="ud-body-h">Frågeformulär</div>
+    <div class="ud-list">
+      <div class="ud-list-h"><div>Formulär</div><div>Inlämnat</div></div>
+      ${forms.map(f=>`<div class="ud-list-row"><div>${f.title}</div><div class="ud-list-d">${(f.submitted_at||'').split('T')[0]||'—'}</div></div>`).join('')}
+    </div>`;
+}
+
+function renderTabIntervju(data){
+  const sessions = data.interviewSessions || [];
+  if(!sessions.length) return `<div class="ud-body-h">Intervjuspel</div><div class="ud-body-empty">Inga genomförda intervjusessioner.</div>`;
+  return `<div class="ud-body-h">Intervjuspel</div>
+    <div class="ud-list">
+      <div class="ud-list-h"><div>Session</div><div>Längd</div></div>
+      ${sessions.map(s=>`<div class="ud-list-row"><div>${s.title||'Session'}</div><div class="ud-list-d">${Math.round((s.duration_sec||0)/60)} min</div></div>`).join('')}
+    </div>`;
+}
+
+function renderTabCV(data){
+  const cvd = data.cv?.data || data.cv || {};
+  if(!cvd.name && !cvd.title){
+    return `<div class="ud-body-h">CV</div><div class="ud-body-empty">Deltagaren har inte börjat med sitt CV ännu.</div>`;
+  }
+  const fields = [
+    {l:'Namn', v: cvd.name || [cvd.firstName,cvd.lastName].filter(Boolean).join(' ')},
+    {l:'Yrkestitel', v: cvd.title || cvd.role || '—'},
+    {l:'E-post', v: cvd.email || '—'},
+    {l:'Telefon', v: cvd.phone || '—'},
+    {l:'Ort', v: cvd.city || cvd.location || '—'},
+    {l:'Senast uppdaterat', v: data.cv?.updated_at?.split('T')[0] || '—'}
+  ];
+  return `<div class="ud-body-h">CV</div>
+    <div class="cv-summary">
+      ${fields.map(f=>`<div class="cv-field"><div class="cv-field-l">${f.l}</div><div class="cv-field-v">${f.v||'—'}</div></div>`).join('')}
+    </div>
+    ${cvd.summary ? `<div style="margin-top:14px"><div class="cv-field-l" style="margin-bottom:6px">Sammanfattning</div><div style="font-size:13px;line-height:1.55;color:var(--tx2)">${cvd.summary}</div></div>` : ''}`;
+}
+
+function renderTabJobbansok(data){
+  const apps = data.applications || [];
+  if(!apps.length) return `<div class="ud-body-h">Jobbansökan</div><div class="ud-body-empty">Inga registrerade ansökningar.</div>`;
+  return `<div class="ud-body-h">Jobbansökan</div>
+    <div class="ud-list">
+      <div class="ud-list-h"><div>Tjänst</div><div>Skickad</div></div>
+      ${apps.map(a=>`<div class="ud-list-row"><div>${a.title} <span style="color:var(--mu);font-weight:400">— ${a.company||''}</span></div><div class="ud-list-d">${(a.applied_at||'').split('T')[0]||'—'}</div></div>`).join('')}
+    </div>`;
+}
+
+function renderTabInstall(data){
+  const cvd = data.cv?.data || data.cv || {};
+  return `<div class="ud-body-h">Inställningar</div>
+    <div class="cv-summary">
+      <div class="cv-field"><div class="cv-field-l">Användar-ID</div><div class="cv-field-v" style="font-family:'JetBrains Mono',monospace;font-size:11px">${data.user_id||data.id||'—'}</div></div>
+      <div class="cv-field"><div class="cv-field-l">Status</div><div class="cv-field-v">${SL[data.status||'new']}</div></div>
+      <div class="cv-field"><div class="cv-field-l">Enhet</div><div class="cv-field-v">${data.enheter?.name||data.enhet_name||'—'}</div></div>
+      <div class="cv-field"><div class="cv-field-l">E-post</div><div class="cv-field-v">${cvd.email||data.email||'—'}</div></div>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="resendInvite()">Skicka ny inbjudningslänk</button>
+      <button class="btn" onclick="alert('Inte implementerat ännu — kräver ett admin_archive_user-endpoint på backend.')" style="color:var(--rd);border-color:rgba(217,68,68,.3)">Arkivera deltagare</button>
+    </div>`;
+}
+
+// ═══ TILLDELA UPPGIFT ═══
 const QUICK_TEMPLATES = {
   'cv-komplett': {title:'Gör klart hela CV:t',category:'cv',description:'Alla sektioner ifyllda',params:{verify_field:'cv_progress',verify_operator:'>=',verify_target:'100'}},
   'intervju-15': {title:'Intervjuövning 15 min',category:'intervju',durationMinutes:15,params:{verify_field:'session_duration',verify_operator:'>=',verify_target:'900'}},
   'ovning-3':    {title:'Genomför 3 övningar',category:'övning',params:{verify_field:'exercises_completed_count',verify_operator:'>=',verify_target:'3'}},
   'matcha-5':    {title:'Matcha CV mot 5 annonser',category:'matchning',params:{verify_field:'match_count_delta',verify_operator:'>=',verify_target:'5'}},
 };
-
 async function quickAssign(tmplId){
-  const tmpl = QUICK_TEMPLATES[tmplId];
-  if(!tmpl||!currentUserId) return;
-  const deadline = new Date();
-  deadline.setDate(deadline.getDate()+7);
-  await post('assign_task',{
-    targetUserId:currentUserId, title:tmpl.title,
-    description:tmpl.description||tmpl.title, category:tmpl.category,
-    deadline:deadline.toISOString(), durationMinutes:tmpl.durationMinutes||null,
-    tParams:tmpl.params||null, filters:{adminId:admin.id}
-  });
-  openDrawer(currentUserId);
+  const tmpl=QUICK_TEMPLATES[tmplId];if(!tmpl||!currentUserId)return;
+  const deadline=new Date();deadline.setDate(deadline.getDate()+7);
+  await post('assign_task',{targetUserId:currentUserId,title:tmpl.title,description:tmpl.description||tmpl.title,category:tmpl.category,deadline:deadline.toISOString(),durationMinutes:tmpl.durationMinutes||null,tParams:tmpl.params||null,filters:{adminId:admin.id}});
+  openDetail(currentUserId);
+}
+async function assignCustomTask(){
+  const title=document.getElementById('udCustomTask')?.value.trim();
+  if(!title||!currentUserId)return;
+  const dDays=parseInt(document.getElementById('udDeadline').value)||7;
+  const dur=parseInt(document.getElementById('udDuration').value)||null;
+  const deadline=new Date();deadline.setDate(deadline.getDate()+dDays);
+  await post('assign_task',{targetUserId:currentUserId,title,category:'övrigt',deadline:deadline.toISOString(),durationMinutes:dur,filters:{adminId:admin.id}});
+  openDetail(currentUserId);
 }
 
-async function assignCustomTask(){
-  const title = document.getElementById('drCustomTask').value.trim();
-  if(!title||!currentUserId) return;
-  const deadlineDays = parseInt(document.getElementById('drDeadline').value)||7;
-  const duration     = parseInt(document.getElementById('drDuration').value)||null;
-  const deadline = new Date();
-  deadline.setDate(deadline.getDate()+deadlineDays);
-  await post('assign_task',{
-    targetUserId:currentUserId, title, category:'övrigt',
-    deadline:deadline.toISOString(), durationMinutes:duration,
-    filters:{adminId:admin.id}
-  });
-  document.getElementById('drCustomTask').value='';
-  openDrawer(currentUserId);
+// ═══════════════════════════════════════════════════════════════════════
+// E-POSTINBJUDAN
+// ═══════════════════════════════════════════════════════════════════════
+function openInviteModal(){
+  document.getElementById('inviteModal').classList.add('open');
+  document.getElementById('inviteEmail').value='';
+  document.getElementById('inviteName').value='';
+  document.getElementById('inviteMsg').value='';
+  document.getElementById('inviteStatus').className='modal-status';
+  document.getElementById('inviteStatus').textContent='';
+  document.getElementById('inviteSendBtn').disabled=false;
+  document.getElementById('inviteSendBtn').textContent='Skicka inbjudan';
+  setTimeout(()=>document.getElementById('inviteEmail').focus(),100);
 }
+function closeInviteModal(){
+  document.getElementById('inviteModal').classList.remove('open');
+}
+function showInviteStatus(msg, ok){
+  const el=document.getElementById('inviteStatus');
+  el.textContent=msg;
+  el.className='modal-status '+(ok?'ok':'err');
+}
+
+async function sendInvite(){
+  const email=document.getElementById('inviteEmail').value.trim();
+  const name=document.getElementById('inviteName').value.trim();
+  const message=document.getElementById('inviteMsg').value.trim();
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showInviteStatus('Ange en giltig e-postadress.', false);
+    return;
+  }
+  const btn=document.getElementById('inviteSendBtn');
+  btn.disabled=true;btn.textContent='Skickar…';
+  try{
+    const data = await post('invite_user', {
+      email,
+      name: name || null,
+      message: message || null,
+      enhet_id: admin.enhet_id || null,
+      kommun_id: admin.kommun_id || null,
+      invitedBy: admin.id
+    });
+    if(data.error){
+      showInviteStatus(data.error, false);
+      btn.disabled=false;btn.textContent='Skicka inbjudan';
+      return;
+    }
+    showInviteStatus(`Inbjudan skickad till ${email}!`, true);
+    btn.textContent='Skickad ✓';
+    setTimeout(()=>{ closeInviteModal(); loadUsers(); }, 1800);
+  } catch(e) {
+    showInviteStatus('Kunde inte skicka: '+e.message+'. Kontrollera att invite_user-endpoint är konfigurerat.', false);
+    btn.disabled=false;btn.textContent='Skicka inbjudan';
+  }
+}
+
+async function resendInvite(){
+  if(!currentUserData) return;
+  const email = currentUserData.cv?.data?.email || currentUserData.cv?.email || currentUserData.email;
+  if(!email){ alert('Saknar e-postadress för deltagaren.'); return; }
+  if(!confirm('Skicka en ny inbjudningslänk till '+email+'?')) return;
+  try{
+    const data = await post('resend_invite', { targetUserId: currentUserId, invitedBy: admin.id });
+    if(data.error) alert('Fel: '+data.error);
+    else alert('Ny länk skickad till '+email);
+  } catch(e) { alert('Kunde inte skicka: '+e.message); }
+}
+
+// Stäng modal vid klick utanför
+document.getElementById('inviteModal')?.addEventListener('click',(e)=>{
+  if(e.target.id==='inviteModal') closeInviteModal();
+});
+// Esc stänger modal & detaljvy
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('inviteModal').classList.contains('open')) closeInviteModal();
+    else if(document.getElementById('detailView').classList.contains('act')) closeDetail();
+  }
+});
 
 // ═══ STATS TAB ═══
 async function loadStats(){
   const filters={};
   if(admin.role==='kommunadmin'&&admin.kommun_id) filters.kommun_id=admin.kommun_id;
-  if(admin.role==='handlaggare'&&admin.enhet_id)  filters.enhet_id=admin.enhet_id;
+  if(admin.role==='handlaggare'&&admin.enhet_id) filters.enhet_id=admin.enhet_id;
   let data;
-  try { data = await post('admin_stats',{filters}); }
-  catch(e){ document.getElementById('statsContent').innerHTML='<div class="loading" style="color:var(--rd)">Statistik-fel: '+e.message+'</div>'; return; }
-  const t=data.tasks||{}, u=data.users||{}, cats=data.byCategory||[];
+  try{data=await post('admin_stats',{filters});}
+  catch(e){document.getElementById('statsContent').innerHTML='<div class="loading" style="color:var(--rd)">Statistik-fel: '+e.message+'</div>';return;}
+  const t=data.tasks||{},u=data.users||{},cats=data.byCategory||[];
   document.getElementById('statsContent').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px">
@@ -785,12 +978,7 @@ async function loadStats(){
       </div>
       <div style="background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px;grid-column:1/-1">
         <div style="font-size:13px;font-weight:700;margin-bottom:12px">Tid per kategori</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">${cats.map(c=>
-          `<div style="background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 14px;text-align:center;min-width:100px">
-            <div style="font-size:20px;font-weight:800">${c.completed}/${c.total}</div>
-            <div style="font-size:11px;color:var(--mu);margin-top:2px">${c.category}</div>
-          </div>`
-        ).join('')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">${cats.map(c=>`<div style="background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 14px;text-align:center;min-width:100px"><div style="font-size:20px;font-weight:800">${c.completed}/${c.total}</div><div style="font-size:11px;color:var(--mu);margin-top:2px">${c.category}</div></div>`).join('')}</div>
       </div>
     </div>`;
 }
@@ -799,10 +987,10 @@ async function loadStats(){
 async function loadAllTasks(){
   const filters={};
   if(admin.role==='kommunadmin'&&admin.kommun_id) filters.kommun_id=admin.kommun_id;
-  if(admin.role==='handlaggare'&&admin.enhet_id)  filters.enhet_id=admin.enhet_id;
+  if(admin.role==='handlaggare'&&admin.enhet_id) filters.enhet_id=admin.enhet_id;
   let data;
-  try { data = await post('admin_stats',{filters}); }
-  catch(e){ document.getElementById('tasksContent').innerHTML='<div class="loading" style="color:var(--rd)">Fel: '+e.message+'</div>'; return; }
+  try{data=await post('admin_stats',{filters});}
+  catch(e){document.getElementById('tasksContent').innerHTML='<div class="loading" style="color:var(--rd)">Fel: '+e.message+'</div>';return;}
   const t=data.tasks||{};
   document.getElementById('tasksContent').innerHTML=`
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
@@ -819,12 +1007,7 @@ function exportData(){
   const csv=[['Namn','E-post','Status','CV','Övningar','Uppgifter klara']];
   allUsers.forEach(u=>{
     const cvd=u.cv?.data||u.cv||{};
-    csv.push([
-      cvName(cvd)||'Okänd', cvd.email||u.email||'',
-      SL[u.status]||'', cvd.name||cvd.title?'Ja':'Nej',
-      u.progress?Object.values(u.progress).filter(v=>v?.done).length+'/'+Object.keys(u.progress).length:'0',
-      (u.tasks?.completed||0)+'/'+(u.tasks?.total||0)
-    ]);
+    csv.push([cvName(cvd)||'Okänd',cvd.email||u.email||'',SL[u.status]||'',cvd.name||cvd.title?'Ja':'Nej',u.progress?Object.values(u.progress).filter(v=>v?.done).length+'/'+Object.keys(u.progress).length:'0',(u.tasks?.completed||0)+'/'+(u.tasks?.total||0)]);
   });
   const str=csv.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const a=document.createElement('a');
@@ -838,20 +1021,14 @@ function exportData(){
   if(new URLSearchParams(location.search).get('embed')==='true'||window!==window.top){
     document.body.classList.add('embed');
   }
-  if (admin) return;
-
+  if(admin) return;
   const saved=sessionStorage.getItem('cvmatchen_admin');
   if(saved){
     try{
-      admin = JSON.parse(saved);
-      if (admin.expiresAt && admin.expiresAt < Date.now()) {
-        sessionStorage.removeItem('cvmatchen_admin');
-        admin = null;
-      } else {
-        enterApp();
-        return;
-      }
-    } catch(e){}
+      admin=JSON.parse(saved);
+      if(admin.expiresAt&&admin.expiresAt<Date.now()){sessionStorage.removeItem('cvmatchen_admin');admin=null;}
+      else{enterApp();return;}
+    }catch(e){}
   }
   document.getElementById('loginOverlay').classList.remove('hidden');
 })();
