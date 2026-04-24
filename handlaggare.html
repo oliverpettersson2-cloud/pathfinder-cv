@@ -209,6 +209,95 @@ td{padding:10px 13px;vertical-align:middle}
 .mina-empty-t{font-size:15px;font-weight:600;color:var(--tx);margin-bottom:6px}
 .mina-empty-s{font-size:13px;line-height:1.55}
 
+/* ═══ UNDERTABBAR (i Mina-vyn) ═══ */
+.subtabs{display:flex;gap:2px;margin-bottom:18px;border-bottom:1px solid var(--bd);background:var(--sf);border-radius:10px 10px 0 0;padding:4px 4px 0;border:1px solid var(--bd);border-bottom:none}
+.subtab{padding:10px 16px;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;border-radius:8px 8px 0 0;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;user-select:none;display:flex;align-items:center;gap:7px}
+.subtab:hover{color:var(--tx);background:var(--sf2)}
+.subtab.act{color:var(--ac);border-bottom-color:var(--ac);background:var(--sf)}
+.subtab svg{opacity:.85}
+.subpan{display:none}
+.subpan.act{display:block}
+
+/* ═══ WIZARD (Skapa uppgift från PowerPoint) ═══ */
+.modal.wizard{max-width:620px;padding:0;overflow:hidden}
+.wz-head{padding:22px 26px 16px;border-bottom:1px solid var(--bdl)}
+.wz-title{font-size:18px;font-weight:700;letter-spacing:-.2px;margin-bottom:4px}
+.wz-sub{font-size:12px;color:var(--mu);line-height:1.5}
+.wz-steps{display:flex;gap:0;padding:0 26px;background:var(--sf2);border-bottom:1px solid var(--bdl)}
+.wz-step{flex:1;padding:10px 4px;font-size:11px;font-weight:600;color:var(--mu);text-align:center;border-bottom:2px solid transparent;text-transform:uppercase;letter-spacing:.6px}
+.wz-step.act{color:var(--ac);border-bottom-color:var(--ac)}
+.wz-step.done{color:var(--gn)}
+.wz-step.done::before{content:'✓ ';font-weight:700}
+.wz-body{padding:22px 26px;max-height:52vh;overflow-y:auto}
+.wz-actions{padding:14px 26px;border-top:1px solid var(--bdl);display:flex;gap:8px;justify-content:space-between;align-items:center;background:var(--sf2)}
+.wz-upload{border:2px dashed var(--bd);border-radius:10px;padding:30px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--sf2)}
+.wz-upload:hover{border-color:var(--ac);background:var(--acs)}
+.wz-upload.has-file{border-style:solid;border-color:var(--gn);background:var(--gnb)}
+.wz-upload svg{color:var(--mu);margin-bottom:8px}
+.wz-upload.has-file svg{color:var(--gn)}
+.wz-upload-t{font-size:13px;font-weight:600;margin-bottom:3px}
+.wz-upload-s{font-size:11px;color:var(--mu)}
+.wz-match{background:var(--orb);border:1px solid rgba(217,119,6,.25);border-radius:10px;padding:14px 16px;margin-top:12px}
+.wz-match-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--or);margin-bottom:6px}
+.wz-match-t{font-size:14px;font-weight:700;margin:4px 0 2px}
+.wz-match-s{font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:10px}
+.wz-match-actions{display:flex;gap:6px;flex-wrap:wrap}
+.wz-lesson{background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.wz-lesson-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.wz-lesson-n{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px}
+.wz-lesson-del{background:none;border:none;cursor:pointer;color:var(--mu);font-size:16px;padding:0 4px;line-height:1}
+.wz-lesson-del:hover{color:var(--rd)}
+.wz-lesson input{width:100%;font-size:13px;font-weight:600;padding:5px 8px;margin-bottom:4px;border:1px solid transparent;background:transparent}
+.wz-lesson input:focus,.wz-lesson textarea:focus{border-color:var(--bd);background:var(--sf)}
+.wz-lesson textarea{width:100%;font-size:12px;padding:5px 8px;border:1px solid transparent;background:transparent;resize:vertical;min-height:50px;font-family:inherit;color:var(--tx2);line-height:1.5}
+.wz-quiz{background:var(--sf);border:1px solid var(--bdl);border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.wz-quiz-q{width:100%;font-size:13px;font-weight:600;padding:5px 8px;border:1px solid var(--bdl);border-radius:5px;margin-bottom:6px}
+.wz-quiz-opts{display:grid;gap:4px}
+.wz-quiz-opt{display:flex;align-items:center;gap:7px;padding:4px 0}
+.wz-quiz-opt input[type=radio]{flex-shrink:0;accent-color:var(--gn)}
+.wz-quiz-opt input[type=text]{flex:1;font-size:12px;padding:4px 8px;border:1px solid transparent;background:transparent}
+.wz-quiz-opt input[type=text]:focus{border-color:var(--bdl);background:var(--sf2)}
+.wz-add{background:var(--sf2);border:1px dashed var(--bd);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;color:var(--mu);cursor:pointer;width:100%;text-align:center;transition:all .15s}
+.wz-add:hover{border-color:var(--ac);color:var(--ac)}
+.wz-ai-loading{text-align:center;padding:40px 20px}
+.wz-ai-loading-icon{display:inline-block;width:40px;height:40px;border:3px solid var(--bdl);border-top-color:var(--ac);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wz-ai-loading-t{font-size:14px;font-weight:600;margin-bottom:4px}
+.wz-ai-loading-s{font-size:12px;color:var(--mu)}
+
+/* ═══ FÖRHANDSVISNING (deltagarvy) ═══ */
+.pv-ov{display:none;position:fixed;inset:0;background:rgba(15,23,41,.7);z-index:300;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;backdrop-filter:blur(3px)}
+.pv-ov.open{display:flex}
+.pv-frame{background:var(--sf);border-radius:14px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;min-height:480px;overflow:hidden}
+.pv-head{padding:12px 18px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;background:var(--sf2)}
+.pv-label{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:6px}
+.pv-label::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--ac)}
+.pv-close{background:none;border:none;cursor:pointer;color:var(--mu);font-size:22px;padding:2px 8px;line-height:1;border-radius:5px}
+.pv-close:hover{color:var(--tx);background:var(--bdl)}
+.pv-body{padding:24px 26px;flex:1;display:flex;flex-direction:column}
+.pv-module-h{border-bottom:1px solid var(--bdl);padding-bottom:12px;margin-bottom:18px}
+.pv-module-t{font-size:18px;font-weight:700;letter-spacing:-.2px}
+.pv-module-s{font-size:10px;color:var(--mu);margin-top:4px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px}
+.pv-progress{height:3px;background:var(--bdl);border-radius:2px;margin-top:8px;overflow:hidden}
+.pv-progress-bar{height:100%;background:var(--ac);transition:width .3s ease}
+.pv-lesson-h{font-size:16px;font-weight:700;margin-bottom:12px;letter-spacing:-.1px}
+.pv-lesson-body{font-size:13.5px;line-height:1.7;color:var(--tx2);white-space:pre-wrap;flex:1}
+.pv-nav{display:flex;justify-content:space-between;gap:8px;margin-top:24px;padding-top:16px;border-top:1px solid var(--bdl)}
+.pv-nav .btn:disabled{opacity:.4;cursor:not-allowed}
+.pv-quiz-q{font-size:14.5px;font-weight:600;margin-bottom:16px;line-height:1.5}
+.pv-quiz-opts{display:flex;flex-direction:column;gap:7px;flex:1}
+.pv-quiz-opt{padding:11px 14px;border:1px solid var(--bd);border-radius:9px;cursor:pointer;font-size:13px;transition:all .15s;background:var(--sf);user-select:none}
+.pv-quiz-opt:hover{border-color:var(--tx);background:var(--sf2)}
+.pv-quiz-opt.correct{background:var(--gnb);border-color:var(--gn);color:var(--gn);font-weight:600}
+.pv-quiz-opt.correct::after{content:' ✓';font-weight:800}
+.pv-quiz-opt.wrong{background:var(--rdb);border-color:var(--rd);color:var(--rd)}
+.pv-quiz-opt.wrong::after{content:' ✗';font-weight:800}
+.pv-quiz-opt.disabled{cursor:default;pointer-events:none}
+.pv-results{text-align:center;padding:30px 20px;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.pv-results-icon{font-size:56px;margin-bottom:10px}
+.pv-results-score{font-size:34px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.pv-results-t{font-size:13px;color:var(--mu);margin-bottom:22px;line-height:1.55;max-width:300px}
+
 /* ═══ BULK-SELECT BAR (flytande) ═══ */
 .bulk-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 30px));background:var(--nv);color:#fff;border-radius:12px;padding:10px 14px 10px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 32px rgba(0,0,0,.25);z-index:80;transition:transform .25s cubic-bezier(.4,0,.2,1);min-width:340px}
 .bulk-bar.show{transform:translateX(-50%) translateY(0)}
@@ -365,7 +454,7 @@ td{padding:10px 13px;vertical-align:middle}
       <div id="listView">
         <div class="pg-head">
           <div>
-            <div class="pg-t" id="pgTitle">Ärenden</div>
+            <div class="pg-t" id="pgTitle">Alla deltagare</div>
             <div class="pg-s" id="pgSub"></div>
           </div>
         </div>
@@ -401,8 +490,6 @@ td{padding:10px 13px;vertical-align:middle}
         </div>
 
         <div class="pan" id="p-mina"><div id="minaContent" class="loading">Laddar...</div></div>
-        <div class="pan" id="p-statistik"><div id="statsContent" class="loading">Laddar statistik...</div></div>
-        <div class="pan" id="p-uppgifter"><div id="tasksContent" class="loading">Laddar uppgifter...</div></div>
       </div>
 
       <!-- Detaljvy: visas när användare klickas -->
@@ -506,15 +593,52 @@ td{padding:10px 13px;vertical-align:middle}
   </div>
 </div>
 
+<!-- ═══ MODAL: Skapa uppgift från PowerPoint ═══ -->
+<div class="modal-ov" id="createTaskModal">
+  <div class="modal wizard">
+    <div class="wz-head">
+      <button class="modal-close" onclick="closeCreateTask()" style="float:right;margin-top:-4px">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="wz-title">Skapa uppgift från PowerPoint</div>
+      <div class="wz-sub">AI:n analyserar din presentation och bygger en interaktiv uppgift med lektioner och quiz.</div>
+    </div>
+    <div class="wz-steps">
+      <div class="wz-step" id="wz-s1">1. Grundinfo</div>
+      <div class="wz-step" id="wz-s2">2. Ladda upp</div>
+      <div class="wz-step" id="wz-s3">3. Granska</div>
+      <div class="wz-step" id="wz-s4">4. Tilldela</div>
+    </div>
+    <div class="modal-status" id="wzStatus" style="margin:14px 26px 0"></div>
+    <div class="wz-body" id="wzBody"></div>
+    <div class="wz-actions">
+      <button class="btn" id="wzBackBtn" onclick="wizardBack()" style="display:none">← Tillbaka</button>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn" onclick="closeCreateTask()">Avbryt</button>
+        <button class="btn btn-primary" id="wzNextBtn" onclick="wizardNext()">Nästa →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FÖRHANDSVISNING (hur deltagaren ser uppgiften) ═══ -->
+<div class="pv-ov" id="previewOv">
+  <div class="pv-frame">
+    <div class="pv-head">
+      <div class="pv-label">Förhandsvisning — så här ser deltagaren</div>
+      <button class="pv-close" onclick="closePreview()" title="Stäng">✕</button>
+    </div>
+    <div class="pv-body" id="pvBody"></div>
+  </div>
+</div>
+
 <script>
 const API = '/api/supabase';
 const SL = {active:'Aktiv',recent:'Nyligen aktiv',new:'Ny',inactive:'Inaktiv'};
 
 const PAGE_INFO = {
-  arenden:   {title:'Ärenden',         sub: () => roleSubtitle()},
-  mina:      {title:'Mina deltagare',  sub: () => 'Stjärnmarkerade deltagare och gruppåtgärder'},
-  statistik: {title:'Statistik',       sub: () => 'Översikt och nyckeltal'},
-  uppgifter: {title:'Uppgifter',       sub: () => 'Tilldelade uppgifter och tidsdata'}
+  arenden:   {title:'Alla deltagare',  sub: () => roleSubtitle()},
+  mina:      {title:'Mina deltagare',  sub: () => 'Stjärnmarkerade deltagare, statistik och uppgifter'}
 };
 
 let admin = null;
@@ -643,10 +767,8 @@ function enterApp(){
 // ═══ SIDOMENY ═══
 function buildNav(){
   const items=[
-    {id:'arenden',label:'Ärenden',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
-    {id:'mina',label:'Mina deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'},
-    {id:'statistik',label:'Statistik',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>'},
-    {id:'uppgifter',label:'Uppgifter',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'}
+    {id:'arenden',label:'Alla deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
+    {id:'mina',label:'Mina deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'}
   ];
   document.getElementById('sbNav').innerHTML=items.map((it,i)=>`<div class="sb-nav-item${i===0?' act':''}" data-id="${it.id}" onclick="switchTab('${it.id}')">${it.icon}<span>${it.label}</span></div>`).join('');
 }
@@ -660,7 +782,6 @@ function switchTab(id){
   document.querySelector(`.sb-nav-item[data-id="${id}"]`)?.classList.add('act');
   const info=PAGE_INFO[id];
   if(info){document.getElementById('pgTitle').textContent=info.title;document.getElementById('pgSub').textContent=info.sub();}
-  if(id==='uppgifter') loadAllTasks();
   if(id==='mina') renderMinaView();
 }
 
@@ -1129,7 +1250,9 @@ document.getElementById('inviteModal')?.addEventListener('click',(e)=>{
 // Esc stänger modal & detaljvy
 document.addEventListener('keydown',(e)=>{
   if(e.key==='Escape'){
-    if(document.getElementById('inviteModal').classList.contains('open')) closeInviteModal();
+    if(document.getElementById('previewOv').classList.contains('open')) closePreview();
+    else if(document.getElementById('createTaskModal').classList.contains('open')) closeCreateTask();
+    else if(document.getElementById('inviteModal').classList.contains('open')) closeInviteModal();
     else if(document.getElementById('bulkModal').classList.contains('open')) closeBulkModal();
     else if(document.getElementById('detailView').classList.contains('act')) closeDetail();
   }
@@ -1178,6 +1301,14 @@ async function loadAllTasks(){
   catch(e){document.getElementById('tasksContent').innerHTML='<div class="loading" style="color:var(--rd)">Fel: '+e.message+'</div>';return;}
   const t=data.tasks||{};
   document.getElementById('tasksContent').innerHTML=`
+    <div class="tb" style="margin-bottom:14px">
+      <div style="font-size:13px;color:var(--mu)">Översikt över uppgifter tilldelade till din grupp</div>
+      <div class="sp"></div>
+      <button class="btn btn-primary" onclick="openCreateTask()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Skapa uppgift från PowerPoint
+      </button>
+    </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
       <div class="stc"><div class="stl">Väntande</div><div class="stv" style="color:var(--bl)">${t.pending||0}</div></div>
       <div class="stc"><div class="stl">Pågående</div><div class="stv" style="color:var(--or)">${t.active||0}</div></div>
@@ -1188,8 +1319,10 @@ async function loadAllTasks(){
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// MINA DELTAGARE — gruppvy med stjärnmarkerade + bulk-actions
+// MINA DELTAGARE — gruppvy med undertabbar: Deltagare / Statistik / Uppgifter
 // ═══════════════════════════════════════════════════════════════════════
+let currentMinaSubtab = 'deltagare';
+
 function renderMinaView(){
   const favs = getFavorites();
   const mina = allUsers.filter(u => favs.has(u.user_id||u.id));
@@ -1200,7 +1333,7 @@ function renderMinaView(){
     wrap.innerHTML = `<div class="mina-empty">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       <div class="mina-empty-t">Inga stjärnmarkerade deltagare ännu</div>
-      <div class="mina-empty-s">Gå till <b>Ärenden</b> och klicka på stjärnan vid en deltagare för att lägga till hen i din grupp.<br>Här kan du sedan se gruppstatistik och tilldela uppgifter till alla samtidigt.</div>
+      <div class="mina-empty-s">Gå till <b>Alla deltagare</b> och klicka på stjärnan vid en deltagare för att lägga till hen i din grupp.<br>Här kan du sedan se gruppstatistik och tilldela uppgifter till alla samtidigt.</div>
     </div>`;
     return;
   }
@@ -1209,7 +1342,6 @@ function renderMinaView(){
   const tot = mina.length;
   const act = mina.filter(u=>u.status==='active').length;
   const withCV = mina.filter(u=>{const c=u.cv?.data||u.cv||{};return !!(c.name||c.title);}).length;
-  const allTasks = mina.flatMap(u => u.tasks?.list || []);
   const totalTasks = mina.reduce((s,u)=>s+(u.tasks?.total||0),0);
   const doneTasks = mina.reduce((s,u)=>s+(u.tasks?.completed||0),0);
   const taskPct = totalTasks ? Math.round(doneTasks/totalTasks*100) : 0;
@@ -1229,57 +1361,96 @@ function renderMinaView(){
       </div>
     </div>
 
-    <div class="tb">
-      <div style="font-size:13px;color:var(--mu)">
-        <span style="color:var(--tx);font-weight:600">Tips:</span> kryssa i flera deltagare för att tilldela samma uppgift till alla.
+    <div class="subtabs">
+      <div class="subtab${currentMinaSubtab==='deltagare'?' act':''}" onclick="switchMinaSubtab('deltagare')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Deltagare
       </div>
-      <div class="sp"></div>
-      <button class="btn" onclick="selectAllMina()">Markera alla</button>
-      <button class="btn btn-primary" onclick="selectAllMina();openBulkAssignModal()">Tilldela uppgift till hela gruppen</button>
+      <div class="subtab${currentMinaSubtab==='statistik'?' act':''}" onclick="switchMinaSubtab('statistik')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
+        Statistik
+      </div>
+      <div class="subtab${currentMinaSubtab==='uppgifter'?' act':''}" onclick="switchMinaSubtab('uppgifter')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Uppgifter
+      </div>
     </div>
 
-    <div class="tw">
-      <table>
-        <thead><tr>
-          <th style="width:36px;text-align:center"><input type="checkbox" class="cb" id="cbAllMina" onchange="toggleAllMina(this.checked)"></th>
-          <th style="width:36px;text-align:center">★</th>
-          <th>Namn</th>
-          <th class="hm">Enhet</th>
-          <th>Senast aktiv</th>
-          <th class="hm">CV</th>
-          <th class="hm">Uppgifter</th>
-          <th>Status</th>
-        </tr></thead>
-        <tbody>
-          ${mina.map(u=>{
-            const cvd=u.cv?.data||u.cv||{};
-            const name=cvName(cvd)||cvName(u)||(u.user_id||u.id||'').slice(0,8)||'Okänd';
-            const email=cvd.email||u.email||'';
-            const uid=u.user_id||u.id||'';
-            const lastSeen=u.cv?.updated_at?.split('T')[0]||u.last_seen?.split('T')[0]||'—';
-            const taskInfo=u.tasks?`${u.tasks.completed||0}/${u.tasks.total||0}`:'—';
-            const checked = selectedUsers.has(uid);
-            return `<tr onclick="openDetail('${uid}')">
-              <td style="text-align:center" onclick="event.stopPropagation()">
-                <input type="checkbox" class="cb" data-uid="${uid}" ${checked?'checked':''} onchange="toggleSelected('${uid}',event)">
-              </td>
-              <td style="text-align:center" onclick="event.stopPropagation()">
-                <button class="star-btn starred" data-uid="${uid}" onclick="toggleFavorite('${uid}',event)" title="Ta bort från Mina">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </button>
-              </td>
-              <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name}</div><div class="ue">${email}</div></div></div></td>
-              <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
-              <td class="dc">${lastSeen}</td>
-              <td class="hm tc">${cvd.name||cvd.title?'✅':'—'}</td>
-              <td class="hm tc">${taskInfo}</td>
-              <td><span class="bd ${u.status||'new'}">${SL[u.status]||'Ny'}</span></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
+    <div class="subpan${currentMinaSubtab==='deltagare'?' act':''}" id="sp-deltagare">
+      <div class="tb">
+        <div style="font-size:13px;color:var(--mu)">
+          <span style="color:var(--tx);font-weight:600">Tips:</span> kryssa i flera deltagare för att tilldela samma uppgift till alla.
+        </div>
+        <div class="sp"></div>
+        <button class="btn" onclick="selectAllMina()">Markera alla</button>
+        <button class="btn btn-primary" onclick="selectAllMina();openBulkAssignModal()">Tilldela uppgift till hela gruppen</button>
+      </div>
+
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th style="width:36px;text-align:center"><input type="checkbox" class="cb" id="cbAllMina" onchange="toggleAllMina(this.checked)"></th>
+            <th style="width:36px;text-align:center">★</th>
+            <th>Namn</th>
+            <th class="hm">Enhet</th>
+            <th>Senast aktiv</th>
+            <th class="hm">CV</th>
+            <th class="hm">Uppgifter</th>
+            <th>Status</th>
+          </tr></thead>
+          <tbody>
+            ${mina.map(u=>{
+              const cvd=u.cv?.data||u.cv||{};
+              const name=cvName(cvd)||cvName(u)||(u.user_id||u.id||'').slice(0,8)||'Okänd';
+              const email=cvd.email||u.email||'';
+              const uid=u.user_id||u.id||'';
+              const lastSeen=u.cv?.updated_at?.split('T')[0]||u.last_seen?.split('T')[0]||'—';
+              const taskInfo=u.tasks?`${u.tasks.completed||0}/${u.tasks.total||0}`:'—';
+              const checked = selectedUsers.has(uid);
+              return `<tr onclick="openDetail('${uid}')">
+                <td style="text-align:center" onclick="event.stopPropagation()">
+                  <input type="checkbox" class="cb" data-uid="${uid}" ${checked?'checked':''} onchange="toggleSelected('${uid}',event)">
+                </td>
+                <td style="text-align:center" onclick="event.stopPropagation()">
+                  <button class="star-btn starred" data-uid="${uid}" onclick="toggleFavorite('${uid}',event)" title="Ta bort från Mina">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </button>
+                </td>
+                <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name}</div><div class="ue">${email}</div></div></div></td>
+                <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
+                <td class="dc">${lastSeen}</td>
+                <td class="hm tc">${cvd.name||cvd.title?'✅':'—'}</td>
+                <td class="hm tc">${taskInfo}</td>
+                <td><span class="bd ${u.status||'new'}">${SL[u.status]||'Ny'}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subpan${currentMinaSubtab==='statistik'?' act':''}" id="sp-statistik">
+      <div id="statsContent" class="loading">Laddar statistik...</div>
+    </div>
+
+    <div class="subpan${currentMinaSubtab==='uppgifter'?' act':''}" id="sp-uppgifter">
+      <div id="tasksContent" class="loading">Laddar uppgifter...</div>
     </div>
   `;
+
+  // Ladda innehåll för aktiv undertabb
+  if(currentMinaSubtab==='statistik') loadStats();
+  if(currentMinaSubtab==='uppgifter') loadAllTasks();
+}
+
+function switchMinaSubtab(id){
+  currentMinaSubtab = id;
+  document.querySelectorAll('#p-mina .subtab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('#p-mina .subpan').forEach(p=>p.classList.remove('act'));
+  document.querySelector(`#p-mina .subtab:nth-child(${id==='deltagare'?1:id==='statistik'?2:3})`)?.classList.add('act');
+  document.getElementById('sp-'+id)?.classList.add('act');
+  if(id==='statistik') loadStats();
+  if(id==='uppgifter') loadAllTasks();
 }
 
 function selectAllMina(){
@@ -1370,6 +1541,588 @@ async function bulkAssign(){
 // Stäng bulk-modal vid klick utanför
 document.getElementById('bulkModal')?.addEventListener('click',(e)=>{
   if(e.target.id==='bulkModal') closeBulkModal();
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// SKAPA UPPGIFT FRÅN POWERPOINT (AI-assisterad wizard)
+// ═══════════════════════════════════════════════════════════════════════
+// Backend-endpoints som behövs (se spec-dokumentet):
+//  • check_module_duplicate  → { title, purpose } → { match: {id,title,score}|null }
+//  • generate_module_from_pptx → multipart { file, title, purpose, usage } → { lessons:[], quiz:[] }
+//  • create_module → { title, purpose, usage, lessons, quiz, created_by } → { moduleId }
+//  • assign_module → { moduleId, targetUserIds[], deadline } → { ok, count }
+// Mockläget nedan genererar fejkat innehåll när endpoints saknas, så UX går att demoa.
+
+let wiz = null;
+
+function initWizState(){
+  wiz = {
+    step: 1,
+    title: '',
+    purpose: '',
+    usage: '',
+    file: null,
+    duplicate: null,
+    lessons: [],
+    quiz: [],
+    targetUserIds: [],
+    deadlineDays: 7
+  };
+}
+
+function openCreateTask(){
+  initWizState();
+  document.getElementById('createTaskModal').classList.add('open');
+  renderWizard();
+}
+function closeCreateTask(){
+  document.getElementById('createTaskModal').classList.remove('open');
+  wiz = null;
+}
+
+function wzStatus(msg, kind){
+  const el = document.getElementById('wzStatus');
+  if(!msg){ el.className = 'modal-status'; el.textContent=''; return; }
+  el.className = 'modal-status ' + (kind||'err');
+  el.textContent = msg;
+}
+
+function renderWizard(){
+  // Uppdatera steg-indikatorn
+  for(let i=1;i<=4;i++){
+    const el = document.getElementById('wz-s'+i);
+    el.classList.toggle('act', i===wiz.step);
+    el.classList.toggle('done', i<wiz.step);
+  }
+  wzStatus('');
+  document.getElementById('wzBackBtn').style.display = wiz.step>1 ? '' : 'none';
+  const nextBtn = document.getElementById('wzNextBtn');
+  nextBtn.textContent = wiz.step===4 ? 'Skapa & tilldela' : 'Nästa →';
+  nextBtn.disabled = false;
+
+  const body = document.getElementById('wzBody');
+  switch(wiz.step){
+    case 1: body.innerHTML = renderWizStep1(); break;
+    case 2: body.innerHTML = renderWizStep2(); break;
+    case 3: body.innerHTML = renderWizStep3(); break;
+    case 4: body.innerHTML = renderWizStep4(); break;
+  }
+}
+
+// STEG 1: Grundinfo
+function renderWizStep1(){
+  return `
+    <div class="modal-field">
+      <label class="modal-label">Rubrik på övning *</label>
+      <input type="text" class="modal-input" id="wzTitle" value="${wiz.title}" oninput="wiz.title=this.value" placeholder="T.ex. Arbetsmarknaden i Sverige" style="padding-left:12px">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Syfte *</label>
+      <textarea class="modal-textarea" id="wzPurpose" oninput="wiz.purpose=this.value" placeholder="Vad ska deltagaren lära sig? T.ex. Förstå hur svenska arbetsmarknaden fungerar och vilka rättigheter/skyldigheter man har.">${wiz.purpose}</textarea>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Användning *</label>
+      <textarea class="modal-textarea" id="wzUsage" oninput="wiz.usage=this.value" placeholder="När och hur används den? T.ex. Ges vid första mötet med nyanlända, alternativt som introduktion i grupper." style="min-height:60px">${wiz.usage}</textarea>
+    </div>
+    <div style="font-size:11px;color:var(--mu);line-height:1.55;margin-top:4px">
+      💡 Systemet söker efter liknande uppgifter i nästa steg — om någon redan finns föreslås den istället för att skapa en dubblett.
+    </div>`;
+}
+
+// STEG 2: Upload + dubblettkoll
+function renderWizStep2(){
+  const fileInfo = wiz.file
+    ? `<svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+       <div class="wz-upload-t">${wiz.file.name}</div>
+       <div class="wz-upload-s">${Math.round(wiz.file.size/1024)} KB — klicka för att välja en annan</div>`
+    : `<svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+       <div class="wz-upload-t">Klicka för att välja .pptx-fil</div>
+       <div class="wz-upload-s">Eller dra och släpp hit · Max 20 MB</div>`;
+
+  let matchHTML = '';
+  if(wiz.duplicate){
+    const m = wiz.duplicate;
+    matchHTML = `
+      <div class="wz-match">
+        <div class="wz-match-h">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Liknande uppgift finns redan (${Math.round(m.score*100)}% match)
+        </div>
+        <div class="wz-match-t">${m.title}</div>
+        <div class="wz-match-s">Skapad av ${m.createdBy||'handläggare'}. Överväg att använda den befintliga uppgiften istället för att skapa en dubblett.</div>
+        <div class="wz-match-actions">
+          <button class="btn btn-primary" onclick="wizardUseExisting('${m.id}')">Använd befintlig och tilldela</button>
+          <button class="btn" onclick="wiz.duplicate=null;renderWizard()">Skapa en ny ändå</button>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <label class="wz-upload${wiz.file?' has-file':''}" onclick="document.getElementById('wzFile').click()">
+      ${fileInfo}
+    </label>
+    <input type="file" id="wzFile" accept=".pptx" style="display:none" onchange="wizardFileChosen(event)">
+    ${matchHTML}
+    <div style="font-size:11px;color:var(--mu);margin-top:12px;line-height:1.55">
+      <b>Rubrik:</b> ${wiz.title}<br>
+      <b>Syfte:</b> ${wiz.purpose.slice(0,120)}${wiz.purpose.length>120?'…':''}
+    </div>`;
+}
+
+function wizardFileChosen(ev){
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(!f.name.toLowerCase().endsWith('.pptx')){
+    wzStatus('Fel filtyp — välj en .pptx-fil.', 'err');
+    return;
+  }
+  if(f.size > 20*1024*1024){
+    wzStatus('Filen är för stor (max 20 MB).', 'err');
+    return;
+  }
+  wiz.file = f;
+  wiz.duplicate = null;
+  renderWizard();
+  // Starta dubblettkoll direkt när fil är vald
+  wizardCheckDuplicate();
+}
+
+async function wizardCheckDuplicate(){
+  wzStatus('Söker efter liknande uppgifter…', 'ok');
+  try {
+    const data = await post('check_module_duplicate', {
+      title: wiz.title,
+      purpose: wiz.purpose,
+      adminId: admin.id
+    });
+    if(data?.match){
+      wiz.duplicate = data.match;
+      renderWizard();
+    }
+    wzStatus('');
+  } catch(e){
+    // Mock-läge om endpoint saknas
+    console.warn('[wizard] check_module_duplicate saknas — mockar resultat');
+    wzStatus('');
+    // Simulerad match om titeln innehåller specifika ord
+    const t = wiz.title.toLowerCase();
+    if(t.includes('arbetsmark') || t.includes('cv')){
+      wiz.duplicate = {
+        id: 'mod_demo_existing',
+        title: t.includes('cv') ? 'Att skriva ett svenskt CV' : 'Svenska arbetsmarknaden — introduktion',
+        score: 0.82,
+        createdBy: 'Anna Lindström'
+      };
+      renderWizard();
+    }
+  }
+}
+
+// STEG 3: Granskning av AI-genererat innehåll
+function renderWizStep3(){
+  if(!wiz.lessons.length && !wiz.quiz.length){
+    return `<div class="wz-ai-loading">
+      <div class="wz-ai-loading-icon"></div>
+      <div class="wz-ai-loading-t">AI:n analyserar din presentation…</div>
+      <div class="wz-ai-loading-s">Plockar ut lektioner och bygger quizfrågor. Tar vanligtvis 10–30 sekunder.</div>
+    </div>`;
+  }
+
+  const lessonsHTML = wiz.lessons.map((l,i)=>`
+    <div class="wz-lesson">
+      <div class="wz-lesson-h">
+        <div class="wz-lesson-n">Lektion ${i+1}</div>
+        <button class="wz-lesson-del" onclick="wizardRemoveLesson(${i})" title="Ta bort">×</button>
+      </div>
+      <input type="text" value="${escapeHtml(l.title)}" oninput="wiz.lessons[${i}].title=this.value" placeholder="Lektionens titel">
+      <textarea oninput="wiz.lessons[${i}].body=this.value" placeholder="Innehåll / text för lektionen">${escapeHtml(l.body)}</textarea>
+    </div>
+  `).join('');
+
+  const quizHTML = wiz.quiz.map((q,i)=>`
+    <div class="wz-quiz">
+      <div class="wz-lesson-h">
+        <div class="wz-lesson-n">Fråga ${i+1}</div>
+        <button class="wz-lesson-del" onclick="wizardRemoveQuestion(${i})" title="Ta bort">×</button>
+      </div>
+      <input type="text" class="wz-quiz-q" value="${escapeHtml(q.q)}" oninput="wiz.quiz[${i}].q=this.value" placeholder="Fråga">
+      <div class="wz-quiz-opts">
+        ${q.options.map((opt,j)=>`
+          <label class="wz-quiz-opt">
+            <input type="radio" name="q${i}" ${q.correct===j?'checked':''} onchange="wiz.quiz[${i}].correct=${j}">
+            <input type="text" value="${escapeHtml(opt)}" oninput="wiz.quiz[${i}].options[${j}]=this.value" placeholder="Svarsalternativ ${j+1}">
+          </label>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px">
+      <div style="font-size:11px;color:var(--mu);line-height:1.5;flex:1">
+        Granska och redigera. Titlar och texter är förifyllda från PowerPoint + AI-förslag — justera efter behov.
+      </div>
+      <button class="btn" onclick="openPreview()" style="flex-shrink:0">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Förhandsvisa
+      </button>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Lektioner (${wiz.lessons.length})</div>
+    ${lessonsHTML}
+    <button class="wz-add" onclick="wizardAddLesson()">+ Lägg till lektion</button>
+
+    <div style="font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px">Quiz (${wiz.quiz.length} frågor)</div>
+    ${quizHTML}
+    <button class="wz-add" onclick="wizardAddQuestion()">+ Lägg till fråga</button>`;
+}
+
+function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function wizardGenerate(){
+  // Rensa tidigare data så loading-state visas
+  wiz.lessons = [];
+  wiz.quiz = [];
+  renderWizard();
+
+  const fd = new FormData();
+  fd.append('file', wiz.file);
+  fd.append('title', wiz.title);
+  fd.append('purpose', wiz.purpose);
+  fd.append('usage', wiz.usage);
+  fd.append('adminId', admin.id);
+
+  try {
+    const r = await fetch(API, { method:'POST', body: fd });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    wiz.lessons = data.lessons || [];
+    wiz.quiz = data.quiz || [];
+    renderWizard();
+  } catch(e){
+    // Mock: generera fejkat innehåll baserat på rubriken så UX kan demoas
+    console.warn('[wizard] generate_module_from_pptx saknas — mockar AI-resultat');
+    await new Promise(r=>setTimeout(r, 1400));
+    wiz.lessons = mockGenerateLessons(wiz.title, wiz.purpose);
+    wiz.quiz = mockGenerateQuiz(wiz.title);
+    renderWizard();
+    wzStatus('Demo-innehåll genererat (backend AI-endpoint saknas). Redigera som vanligt.', 'ok');
+  }
+}
+
+function mockGenerateLessons(title, purpose){
+  return [
+    {title:'Introduktion — '+title, body:'Kort översikt av ämnet. '+purpose.slice(0,150)},
+    {title:'Viktigaste begreppen', body:'Här går vi igenom de centrala begreppen i ämnet. AI:n har extraherat dessa från slidesens rubriker och punktlistor.'},
+    {title:'Praktiska exempel', body:'Konkreta situationer som deltagaren kan möta. Exemplen är hämtade från PowerPointens bildtexter.'},
+    {title:'Sammanfattning', body:'Viktigaste lärdomarna från presentationen.'}
+  ];
+}
+function mockGenerateQuiz(title){
+  return [
+    {q:'Vad handlar övningen "'+title+'" huvudsakligen om?', options:['Allmän kultur','Ämnets grundbegrepp','Språkträning','Ekonomi'], correct:1},
+    {q:'Vilket påstående stämmer bäst?', options:['Alla har samma rättigheter','Detta gäller bara i Stockholm','Det är frivilligt att delta','Reglerna varierar per kommun'], correct:0},
+    {q:'När är det mest användbart att kunna detta?', options:['Aldrig','Vid första kontakten med myndigheter','Bara på semester','I skolan'], correct:1}
+  ];
+}
+
+function wizardAddLesson(){ wiz.lessons.push({title:'Ny lektion',body:''}); renderWizard(); }
+function wizardRemoveLesson(i){ wiz.lessons.splice(i,1); renderWizard(); }
+function wizardAddQuestion(){ wiz.quiz.push({q:'',options:['','','',''],correct:0}); renderWizard(); }
+function wizardRemoveQuestion(i){ wiz.quiz.splice(i,1); renderWizard(); }
+
+// STEG 4: Tilldela
+function renderWizStep4(){
+  const favs = getFavorites();
+  const mina = allUsers.filter(u=>favs.has(u.user_id||u.id));
+  const allOpts = mina.map(u=>{
+    const cvd = u.cv?.data||u.cv||{};
+    const name = cvName(cvd)||cvName(u)||(u.user_id||u.id||'').slice(0,8);
+    const uid = u.user_id||u.id;
+    const checked = wiz.targetUserIds.includes(uid);
+    return `<label class="wz-quiz-opt" style="padding:6px 0">
+      <input type="checkbox" ${checked?'checked':''} onchange="wizardToggleTarget('${uid}')">
+      <span style="font-size:13px;font-weight:500">${name}</span>
+    </label>`;
+  }).join('');
+
+  return `
+    <div class="modal-field">
+      <label class="modal-label">Sammanfattning</label>
+      <div style="background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.55">
+        <b>${wiz.title}</b><br>
+        ${wiz.lessons.length} lektioner · ${wiz.quiz.length} quizfrågor
+      </div>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Deadline</label>
+      <select id="wzDeadline" onchange="wiz.deadlineDays=parseInt(this.value)" style="width:100%;padding:9px 28px 9px 12px">
+        <option value="3" ${wiz.deadlineDays===3?'selected':''}>Om 3 dagar</option>
+        <option value="7" ${wiz.deadlineDays===7?'selected':''}>Om 1 vecka</option>
+        <option value="14" ${wiz.deadlineDays===14?'selected':''}>Om 2 veckor</option>
+        <option value="30" ${wiz.deadlineDays===30?'selected':''}>Om 1 månad</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Tilldela till (${wiz.targetUserIds.length} valda av ${mina.length})</label>
+      ${mina.length ? `
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button class="btn" style="font-size:11px;padding:5px 10px" onclick="wizardSelectAllTargets()">Markera alla</button>
+          <button class="btn" style="font-size:11px;padding:5px 10px" onclick="wiz.targetUserIds=[];renderWizard()">Rensa</button>
+        </div>
+        <div style="max-height:160px;overflow-y:auto;border:1px solid var(--bdl);border-radius:8px;padding:6px 12px">${allOpts}</div>
+      ` : `<div style="font-size:12px;color:var(--mu);padding:10px;background:var(--sf2);border-radius:8px">Du har inga stjärnmarkerade deltagare. Gå till Alla deltagare och markera några först.</div>`}
+    </div>`;
+}
+
+function wizardToggleTarget(uid){
+  const i = wiz.targetUserIds.indexOf(uid);
+  if(i===-1) wiz.targetUserIds.push(uid); else wiz.targetUserIds.splice(i,1);
+  renderWizard();
+}
+function wizardSelectAllTargets(){
+  const favs = getFavorites();
+  wiz.targetUserIds = allUsers.filter(u=>favs.has(u.user_id||u.id)).map(u=>u.user_id||u.id);
+  renderWizard();
+}
+
+// NAVIGATION
+function wizardBack(){ if(wiz.step>1){wiz.step--;renderWizard();} }
+async function wizardNext(){
+  if(wiz.step===1){
+    if(!wiz.title.trim()){ wzStatus('Fyll i rubrik.','err'); return; }
+    if(!wiz.purpose.trim()){ wzStatus('Fyll i syfte.','err'); return; }
+    if(!wiz.usage.trim()){ wzStatus('Fyll i användning.','err'); return; }
+    wiz.step = 2;
+    renderWizard();
+    return;
+  }
+  if(wiz.step===2){
+    if(!wiz.file){ wzStatus('Ladda upp en .pptx-fil.','err'); return; }
+    if(wiz.duplicate){ wzStatus('Välj att använda befintlig eller klicka "Skapa en ny ändå" först.','err'); return; }
+    wiz.step = 3;
+    renderWizard();
+    wizardGenerate();
+    return;
+  }
+  if(wiz.step===3){
+    if(!wiz.lessons.length){ wzStatus('Lägg till minst en lektion.','err'); return; }
+    wiz.step = 4;
+    renderWizard();
+    return;
+  }
+  if(wiz.step===4){
+    if(!wiz.targetUserIds.length){ wzStatus('Välj minst en deltagare att tilldela till.','err'); return; }
+    await wizardSaveAndAssign();
+  }
+}
+
+async function wizardSaveAndAssign(){
+  const btn = document.getElementById('wzNextBtn');
+  btn.disabled = true; btn.textContent = 'Sparar…';
+
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate()+wiz.deadlineDays);
+
+  try {
+    // 1. Skapa modulen
+    const createRes = await post('create_module', {
+      title: wiz.title, purpose: wiz.purpose, usage: wiz.usage,
+      lessons: wiz.lessons, quiz: wiz.quiz,
+      createdBy: admin.id
+    });
+    const moduleId = createRes.moduleId || createRes.id;
+
+    // 2. Tilldela till valda deltagare
+    const assignRes = await post('assign_module', {
+      moduleId, targetUserIds: wiz.targetUserIds,
+      deadline: deadline.toISOString(),
+      filters: { adminId: admin.id }
+    });
+
+    wzStatus(`Uppgift skapad och tilldelad till ${assignRes.count||wiz.targetUserIds.length} deltagare!`, 'ok');
+    btn.textContent = 'Klar ✓';
+    setTimeout(()=>{ closeCreateTask(); loadAllTasks(); }, 1600);
+  } catch(e){
+    // Mock: fall tillbaka på assign_task per deltagare
+    console.warn('[wizard] create_module/assign_module saknas — mockar med assign_task per deltagare');
+    let ok=0, fail=0;
+    for(const uid of wiz.targetUserIds){
+      try {
+        await post('assign_task', {
+          targetUserId: uid,
+          title: wiz.title,
+          description: wiz.purpose,
+          category: 'övrigt',
+          deadline: deadline.toISOString(),
+          filters: { adminId: admin.id }
+        });
+        ok++;
+      } catch(err){ fail++; }
+    }
+    wzStatus(fail===0
+      ? `Demo-läge: ${ok} deltagare fick uppgiften (modulinnehåll gick ej att spara utan backend).`
+      : `${ok} lyckades, ${fail} misslyckades.`,
+      fail===0?'ok':'err');
+    btn.textContent = fail===0 ? 'Klar ✓' : 'Försök igen';
+    if(fail===0) setTimeout(()=>{ closeCreateTask(); loadAllTasks(); }, 2000);
+    else btn.disabled=false;
+  }
+}
+
+// Använd befintlig uppgift istället för att skapa ny
+async function wizardUseExisting(moduleId){
+  if(!wiz.targetUserIds.length){
+    // Om inga deltagare är valda, hoppa till steg 4 för att välja
+    wiz.step = 4;
+    wzStatus('Välj deltagare att tilldela den befintliga uppgiften till.','ok');
+    renderWizard();
+    // Markera att vi använder befintlig
+    wiz._useExistingModuleId = moduleId;
+    return;
+  }
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate()+wiz.deadlineDays);
+  try {
+    await post('assign_module', {
+      moduleId, targetUserIds: wiz.targetUserIds,
+      deadline: deadline.toISOString(),
+      filters:{adminId: admin.id}
+    });
+    wzStatus('Befintlig uppgift tilldelad!', 'ok');
+    setTimeout(()=>{ closeCreateTask(); loadAllTasks(); }, 1400);
+  } catch(e){
+    wzStatus('Kunde inte tilldela: '+e.message, 'err');
+  }
+}
+
+// Stäng vid klick utanför + Esc
+document.getElementById('createTaskModal')?.addEventListener('click',(e)=>{
+  if(e.target.id==='createTaskModal') closeCreateTask();
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// FÖRHANDSVISNING — visar modulen som deltagaren kommer att se den
+// ═══════════════════════════════════════════════════════════════════════
+let pv = null;
+
+function openPreview(){
+  if(!wiz || !wiz.lessons.length){
+    wzStatus('Lägg till minst en lektion innan du förhandsvisar.','err');
+    return;
+  }
+  pv = { mode:'lessons', idx:0, answers:[] };
+  document.getElementById('previewOv').classList.add('open');
+  renderPreview();
+}
+function closePreview(){
+  document.getElementById('previewOv').classList.remove('open');
+  pv = null;
+}
+
+function renderPreview(){
+  const body = document.getElementById('pvBody');
+  const { mode, idx } = pv;
+
+  if(mode === 'lessons'){
+    const l = wiz.lessons[idx];
+    const total = wiz.lessons.length;
+    const progress = Math.round((idx+1)/total*100);
+    const isLast = idx === total-1;
+    const nextBtn = isLast
+      ? (wiz.quiz.length
+          ? `<button class="btn btn-primary" onclick="pvStartQuiz()">Starta quiz →</button>`
+          : `<button class="btn btn-primary" onclick="pvComplete()">Avsluta →</button>`)
+      : `<button class="btn btn-primary" onclick="pvNext()">Nästa →</button>`;
+
+    body.innerHTML = `
+      <div class="pv-module-h">
+        <div class="pv-module-t">${escapeHtml(wiz.title)}</div>
+        <div class="pv-module-s">LEKTION ${idx+1} AV ${total}</div>
+        <div class="pv-progress"><div class="pv-progress-bar" style="width:${progress}%"></div></div>
+      </div>
+      <div class="pv-lesson-h">${escapeHtml(l.title)}</div>
+      <div class="pv-lesson-body">${escapeHtml(l.body)||'<span style="color:var(--mu);font-style:italic">(Ingen text)</span>'}</div>
+      <div class="pv-nav">
+        <button class="btn" ${idx===0?'disabled':''} onclick="pvPrev()">← Föregående</button>
+        ${nextBtn}
+      </div>`;
+    return;
+  }
+
+  if(mode === 'quiz'){
+    const q = wiz.quiz[idx];
+    const total = wiz.quiz.length;
+    const progress = Math.round((idx+1)/total*100);
+    const answered = pv.answers[idx] !== undefined;
+    const selected = pv.answers[idx];
+    const isLast = idx === total-1;
+    const nextBtn = answered
+      ? (isLast
+          ? `<button class="btn btn-primary" onclick="pvShowResults()">Visa resultat →</button>`
+          : `<button class="btn btn-primary" onclick="pvNext()">Nästa →</button>`)
+      : `<button class="btn" disabled>Välj ett svar</button>`;
+
+    body.innerHTML = `
+      <div class="pv-module-h">
+        <div class="pv-module-t">${escapeHtml(wiz.title)}</div>
+        <div class="pv-module-s">QUIZ · FRÅGA ${idx+1} AV ${total}</div>
+        <div class="pv-progress"><div class="pv-progress-bar" style="width:${progress}%;background:var(--bl)"></div></div>
+      </div>
+      <div class="pv-quiz-q">${escapeHtml(q.q)||'<span style="color:var(--mu);font-style:italic">(Fråga saknas)</span>'}</div>
+      <div class="pv-quiz-opts">
+        ${q.options.map((opt,i)=>{
+          let cls = 'pv-quiz-opt';
+          if(answered){
+            cls += ' disabled';
+            if(i === q.correct) cls += ' correct';
+            else if(i === selected) cls += ' wrong';
+          }
+          const click = answered ? '' : `onclick="pvAnswer(${i})"`;
+          return `<div class="${cls}" ${click}>${escapeHtml(opt)||'<span style="color:var(--mu)">(Tom)</span>'}</div>`;
+        }).join('')}
+      </div>
+      <div class="pv-nav">
+        <button class="btn" ${idx===0?'disabled':''} onclick="pvPrev()">← Föregående</button>
+        ${nextBtn}
+      </div>`;
+    return;
+  }
+
+  if(mode === 'results'){
+    const hasQuiz = wiz.quiz.length > 0;
+    const correct = hasQuiz ? pv.answers.filter((a,i)=>a===wiz.quiz[i].correct).length : 0;
+    const total = wiz.quiz.length;
+    const pct = total ? Math.round(correct/total*100) : 100;
+    const pass = pct >= 80;
+    const icon = hasQuiz ? (pass ? '🎉' : '📝') : '✅';
+    const scoreDisplay = hasQuiz ? `${correct}/${total}` : 'Klar';
+    const msg = hasQuiz
+      ? (pass ? 'Bra jobbat! Uppgiften är nu markerad som slutförd.' : 'Du behöver minst 80% rätt för att klara uppgiften. Försök igen!')
+      : 'Du har läst igenom lektionerna. Uppgiften är markerad som slutförd.';
+
+    body.innerHTML = `
+      <div class="pv-results">
+        <div class="pv-results-icon">${icon}</div>
+        <div class="pv-results-score" style="color:${pass||!hasQuiz?'var(--gn)':'var(--or)'}">${scoreDisplay}</div>
+        <div class="pv-results-t">${msg}</div>
+        <div style="display:flex;gap:8px">
+          ${hasQuiz && !pass ? `<button class="btn" onclick="pvRestart()">Gör om quiz</button>` : ''}
+          <button class="btn btn-primary" onclick="closePreview()">Stäng förhandsvisning</button>
+        </div>
+      </div>`;
+  }
+}
+
+function pvNext(){ pv.idx++; renderPreview(); }
+function pvPrev(){ if(pv.idx>0){pv.idx--;renderPreview();} }
+function pvStartQuiz(){ pv.mode='quiz'; pv.idx=0; renderPreview(); }
+function pvAnswer(i){ pv.answers[pv.idx] = i; renderPreview(); }
+function pvShowResults(){ pv.mode='results'; renderPreview(); }
+function pvComplete(){ pv.mode='results'; pv.answers=[]; renderPreview(); }
+function pvRestart(){ pv.mode='quiz'; pv.idx=0; pv.answers=[]; renderPreview(); }
+
+// Stäng vid klick utanför + Esc
+document.getElementById('previewOv')?.addEventListener('click',(e)=>{
+  if(e.target.id==='previewOv') closePreview();
 });
 
 // ═══ EXPORT ═══
