@@ -10341,7 +10341,7 @@ var D={
     var h='<div class="mvhdr"><button class="back-btn" onclick="D.goHome()">←</button>';
     h+='<span style="font-size:14px;font-weight:900;color:#fff;">'+catName+'</span></div>';
     // Whitelist: 18 moduler med färdigt innehåll. Övriga visas som "Under arbete".
-    var ACTIVE=['m1','m2','m3','a_cv','a_match','a5','s1','s3','s0','h1','h2','h5','e1','e6','e15','d5','d9','d4'];
+    var ACTIVE=['m1','m2','m3','a_cv','a_match','a0','s0','s1','s2','s3'];
     mods.forEach(function(m,i){
       var pct=D.modPct(m,p),mp=p[m.id]||{};
       var un=D.modUnlocked(mods,i,p);
@@ -10380,7 +10380,7 @@ var D={
   },
 
   clickCard:function(el){
-    var ACTIVE=['m1','m2','m3','a_cv','a_match','a5','s1','s3','s0','h1','h2','h5','e1','e6','e15','d5','d9','d4'];
+    var ACTIVE=['m1','m2','m3','a_cv','a_match','a0','s0','s1','s2','s3'];
     var id=el.dataset.id;
     if(id && ACTIVE.indexOf(id)===-1){toast('🚧 Under arbete — kommer snart');return;}
     if(el.classList.contains('locked')){toast('🔒 Slutför föregående modul');return;}
