@@ -179,6 +179,53 @@ td{padding:10px 13px;vertical-align:middle}
 .modal-close{background:none;border:none;cursor:pointer;color:var(--mu);padding:4px;border-radius:5px;display:flex;float:right}
 .modal-close:hover{background:var(--bdl);color:var(--tx)}
 
+/* ═══ STJÄRNMARKERING ═══ */
+.star-btn{background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;color:var(--mu);transition:all .15s;border-radius:5px}
+.star-btn:hover{background:var(--bdl);color:var(--ac)}
+.star-btn.starred{color:var(--ac)}
+.star-btn.starred svg{fill:var(--ac)}
+
+/* ═══ FILTERCHIPS ═══ */
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border:1px solid var(--bd);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:var(--sf);color:var(--tx2);transition:all .15s;user-select:none}
+.chip:hover{border-color:var(--tx);color:var(--tx)}
+.chip.act{background:var(--nv);border-color:var(--nv);color:#fff}
+.chip-c{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:16px;padding:0 5px;background:rgba(0,0,0,.06);border-radius:8px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.chip.act .chip-c{background:rgba(255,255,255,.18);color:#fff}
+
+/* ═══ MINA-VYN ═══ */
+.mina-hero{background:linear-gradient(135deg,#0f1729 0%,#1c2942 100%);border-radius:14px;padding:20px 24px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden}
+.mina-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;background:radial-gradient(circle,rgba(212,164,54,.18) 0%,transparent 70%);pointer-events:none}
+.mina-hero-h{display:flex;align-items:center;gap:10px;margin-bottom:14px;position:relative}
+.mina-hero-h svg{color:var(--ac)}
+.mina-hero-t{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.7)}
+.mina-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;position:relative}
+.mina-stat-l{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:rgba(255,255,255,.45);margin-bottom:4px}
+.mina-stat-v{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1}
+.mina-stat-v.ac{color:var(--ac)}
+
+.mina-empty{background:var(--sf);border:2px dashed var(--bd);border-radius:14px;padding:50px 20px;text-align:center;color:var(--mu)}
+.mina-empty svg{margin:0 auto 12px;color:var(--bd);display:block}
+.mina-empty-t{font-size:15px;font-weight:600;color:var(--tx);margin-bottom:6px}
+.mina-empty-s{font-size:13px;line-height:1.55}
+
+/* ═══ BULK-SELECT BAR (flytande) ═══ */
+.bulk-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 30px));background:var(--nv);color:#fff;border-radius:12px;padding:10px 14px 10px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 32px rgba(0,0,0,.25);z-index:80;transition:transform .25s cubic-bezier(.4,0,.2,1);min-width:340px}
+.bulk-bar.show{transform:translateX(-50%) translateY(0)}
+.bulk-c{font-size:13px;font-weight:600}
+.bulk-c b{color:var(--ac)}
+.bulk-actions{display:flex;gap:6px;margin-left:auto}
+.bulk-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 12px;border-radius:7px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s}
+.bulk-btn:hover{background:rgba(255,255,255,.18)}
+.bulk-btn.primary{background:var(--ac);border-color:var(--ac);color:var(--nv)}
+.bulk-btn.primary:hover{background:#e0b347}
+
+/* Checkbox */
+.cb{appearance:none;width:16px;height:16px;border:1.5px solid var(--bd);border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;background:var(--sf);flex-shrink:0;vertical-align:middle}
+.cb:hover{border-color:var(--tx)}
+.cb:checked{background:var(--nv);border-color:var(--nv)}
+.cb:checked::after{content:'';width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg);margin-top:-2px}
+
 /* ═══════════════════════════════════════════════════════════════
    MOBIL ≤768px
    ═══════════════════════════════════════════════════════════════ */
@@ -208,6 +255,11 @@ td{padding:10px 13px;vertical-align:middle}
   .pg-head{flex-direction:column;align-items:flex-start;gap:0;margin-bottom:16px}
   .ud-head{flex-wrap:wrap}
   .ud-actions{width:100%}
+  .mina-grid{grid-template-columns:1fr 1fr}
+  .bulk-bar{left:12px;right:12px;bottom:12px;transform:translateY(calc(100% + 30px));min-width:0;flex-wrap:wrap}
+  .bulk-bar.show{transform:translateY(0)}
+  .bulk-actions{width:100%;margin-left:0}
+  .bulk-btn{flex:1}
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -324,7 +376,7 @@ td{padding:10px 13px;vertical-align:middle}
           <div class="stats" id="statCards"><div class="loading">Laddar...</div></div>
           <div class="tb">
             <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
-            <select id="statusFlt"><option value="">Alla statusar</option><option value="active">Aktiv</option><option value="new">Ny</option><option value="recent">Nyligen aktiv</option><option value="inactive">Inaktiv</option></select>
+            <select id="enhetFlt" style="min-width:140px"><option value="">Alla enheter</option></select>
             <div class="sp"></div>
             <button class="btn btn-primary" onclick="openInviteModal()">
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
@@ -332,15 +384,23 @@ td{padding:10px 13px;vertical-align:middle}
             </button>
             <button class="btn" onclick="exportData()">Exportera</button>
           </div>
+          <div class="chips" id="statusChips" style="margin-bottom:14px">
+            <div class="chip act" data-status=""><span>Alla</span><span class="chip-c" id="cnt-all">0</span></div>
+            <div class="chip" data-status="active"><span>Aktiva</span><span class="chip-c" id="cnt-active">0</span></div>
+            <div class="chip" data-status="new"><span>Nya</span><span class="chip-c" id="cnt-new">0</span></div>
+            <div class="chip" data-status="recent"><span>Nyligen aktiv</span><span class="chip-c" id="cnt-recent">0</span></div>
+            <div class="chip" data-status="inactive"><span>Inaktiva</span><span class="chip-c" id="cnt-inactive">0</span></div>
+          </div>
           <div class="tw">
             <table>
-              <thead><tr><th>Namn</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead>
-              <tbody id="tBody"><tr><td colspan="7" class="loading">Laddar ärenden...</td></tr></tbody>
+              <thead><tr><th style="width:36px;text-align:center">★</th><th>Namn</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead>
+              <tbody id="tBody"><tr><td colspan="8" class="loading">Laddar ärenden...</td></tr></tbody>
             </table>
             <div class="pg-bar"><span id="pgInfo"></span></div>
           </div>
         </div>
 
+        <div class="pan" id="p-mina"><div id="minaContent" class="loading">Laddar...</div></div>
         <div class="pan" id="p-statistik"><div id="statsContent" class="loading">Laddar statistik...</div></div>
         <div class="pan" id="p-uppgifter"><div id="tasksContent" class="loading">Laddar uppgifter...</div></div>
       </div>
@@ -371,6 +431,15 @@ td{padding:10px 13px;vertical-align:middle}
     </div>
   </main>
 
+</div>
+
+<!-- ═══ BULK-ACTION BAR (visas vid flerval) ═══ -->
+<div class="bulk-bar" id="bulkBar">
+  <div class="bulk-c"><b id="bulkCount">0</b> deltagare valda</div>
+  <div class="bulk-actions">
+    <button class="bulk-btn" onclick="clearSelection()">Avmarkera</button>
+    <button class="bulk-btn primary" onclick="openBulkAssignModal()">Tilldela uppgift</button>
+  </div>
 </div>
 
 <!-- ═══ MODAL: Bjud in deltagare ═══ -->
@@ -404,14 +473,48 @@ td{padding:10px 13px;vertical-align:middle}
   </div>
 </div>
 
+<!-- ═══ MODAL: Bulk-tilldela uppgift ═══ -->
+<div class="modal-ov" id="bulkModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeBulkModal()">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-h">Tilldela uppgift till grupp</div>
+    <div class="modal-s">Samma uppgift skickas till <b id="bulkModalCount">0</b> deltagare. Varje deltagare får en egen instans av uppgiften.</div>
+    <div class="modal-status" id="bulkStatus"></div>
+    <div class="modal-field">
+      <label class="modal-label">Snabbmall</label>
+      <div class="chips" style="margin-top:4px">
+        <div class="chip" onclick="bulkPickTemplate('cv-komplett',this)">📄 Gör klart CV</div>
+        <div class="chip" onclick="bulkPickTemplate('intervju-15',this)">🎤 Intervju 15 min</div>
+        <div class="chip" onclick="bulkPickTemplate('ovning-3',this)">📚 3 övningar</div>
+        <div class="chip" onclick="bulkPickTemplate('matcha-5',this)">🎯 Matcha 5 annonser</div>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Titel *</label>
+      <input type="text" class="modal-input" id="bulkTitle" placeholder="Vad ska deltagarna göra?" style="padding-left:12px">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Deadline</label>
+      <select id="bulkDeadline" style="width:100%;padding:9px 28px 9px 12px"><option value="3">Om 3 dagar</option><option value="7" selected>Om 1 vecka</option><option value="14">Om 2 veckor</option><option value="30">Om 1 månad</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeBulkModal()">Avbryt</button>
+      <button class="btn btn-primary" id="bulkSendBtn" onclick="bulkAssign()">Tilldela till alla</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const API = '/api/supabase';
 const SL = {active:'Aktiv',recent:'Nyligen aktiv',new:'Ny',inactive:'Inaktiv'};
 
 const PAGE_INFO = {
-  arenden:   {title:'Ärenden',   sub: () => roleSubtitle()},
-  statistik: {title:'Statistik', sub: () => 'Översikt och nyckeltal'},
-  uppgifter: {title:'Uppgifter', sub: () => 'Tilldelade uppgifter och tidsdata'}
+  arenden:   {title:'Ärenden',         sub: () => roleSubtitle()},
+  mina:      {title:'Mina deltagare',  sub: () => 'Stjärnmarkerade deltagare och gruppåtgärder'},
+  statistik: {title:'Statistik',       sub: () => 'Översikt och nyckeltal'},
+  uppgifter: {title:'Uppgifter',       sub: () => 'Tilldelade uppgifter och tidsdata'}
 };
 
 let admin = null;
@@ -419,6 +522,53 @@ let allUsers = [];
 let currentUserId = null;
 let currentUserData = null;
 let currentDetailTab = 'kurser';
+let currentTab = 'arenden';
+let currentStatus = '';
+let currentEnhet = '';
+
+// ═══ FAVORITER (stjärnmarkerade deltagare) ═══
+// Lagras i localStorage per handläggare. Byt till backend-anrop vid behov:
+// store_favorite / remove_favorite + list_favorites — tabell: caseworker_favorites(admin_id, user_id, created_at)
+function favKey(){ return 'cvm_favs_' + (admin?.id || 'anon'); }
+function getFavorites(){
+  try { return new Set(JSON.parse(localStorage.getItem(favKey())||'[]')); }
+  catch(e){ return new Set(); }
+}
+function saveFavorites(set){
+  localStorage.setItem(favKey(), JSON.stringify([...set]));
+}
+function isFavorite(uid){ return getFavorites().has(uid); }
+function toggleFavorite(uid, ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  const favs = getFavorites();
+  if(favs.has(uid)) favs.delete(uid); else favs.add(uid);
+  saveFavorites(favs);
+  // Uppdatera stjärnknappen + räknare i sidomenyn
+  document.querySelectorAll(`.star-btn[data-uid="${uid}"]`).forEach(btn=>{
+    btn.classList.toggle('starred', favs.has(uid));
+  });
+  // Om vi är på Mina-vyn — rendera om
+  if(currentTab==='mina') renderMinaView();
+}
+
+// ═══ BULK-SELECT ═══
+let selectedUsers = new Set();
+function toggleSelected(uid, ev){
+  if(ev){ ev.stopPropagation(); }
+  if(selectedUsers.has(uid)) selectedUsers.delete(uid); else selectedUsers.add(uid);
+  updateBulkBar();
+}
+function clearSelection(){
+  selectedUsers.clear();
+  document.querySelectorAll('.cb[data-uid]').forEach(cb=>cb.checked=false);
+  updateBulkBar();
+}
+function updateBulkBar(){
+  const bar = document.getElementById('bulkBar');
+  const cnt = selectedUsers.size;
+  document.getElementById('bulkCount').textContent = cnt;
+  bar.classList.toggle('show', cnt>0);
+}
 
 function ini(n){return (n||'').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'}
 function cvName(cv){if(!cv)return '';return cv.name||[cv.firstName,cv.lastName].filter(Boolean).join(' ')||'';}
@@ -494,6 +644,7 @@ function enterApp(){
 function buildNav(){
   const items=[
     {id:'arenden',label:'Ärenden',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
+    {id:'mina',label:'Mina deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'},
     {id:'statistik',label:'Statistik',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>'},
     {id:'uppgifter',label:'Uppgifter',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'}
   ];
@@ -501,6 +652,8 @@ function buildNav(){
 }
 function switchTab(id){
   closeDetail();
+  clearSelection();
+  currentTab = id;
   document.querySelectorAll('.sb-nav-item').forEach(t=>t.classList.remove('act'));
   document.querySelectorAll('.pan').forEach(p=>p.classList.remove('act'));
   document.getElementById('p-'+id)?.classList.add('act');
@@ -508,21 +661,30 @@ function switchTab(id){
   const info=PAGE_INFO[id];
   if(info){document.getElementById('pgTitle').textContent=info.title;document.getElementById('pgSub').textContent=info.sub();}
   if(id==='uppgifter') loadAllTasks();
+  if(id==='mina') renderMinaView();
 }
 
 // ═══ USERS-LISTA ═══
 async function loadUsers(){
-  document.getElementById('tBody').innerHTML='<tr><td colspan="7" class="loading">Laddar ärenden...</td></tr>';
+  document.getElementById('tBody').innerHTML='<tr><td colspan="8" class="loading">Laddar ärenden...</td></tr>';
   const filters={};
   if(admin.role==='kommunadmin'&&admin.kommun_id) filters.kommun_id=admin.kommun_id;
   if(admin.role==='handlaggare'&&admin.enhet_id) filters.enhet_id=admin.enhet_id;
   let data;
   try{data=await post('admin_list_users',{filters,adminId:admin.id});}
-  catch(e){document.getElementById('tBody').innerHTML=`<tr><td colspan="7" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;showErr('Kunde inte hämta användare: '+e.message);return;}
-  if(data.error){document.getElementById('tBody').innerHTML=`<tr><td colspan="7" class="loading" style="color:var(--rd)">Fel från API: ${data.error}</td></tr>`;showErr('API-fel: '+data.error);return;}
+  catch(e){document.getElementById('tBody').innerHTML=`<tr><td colspan="8" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;showErr('Kunde inte hämta användare: '+e.message);return;}
+  if(data.error){document.getElementById('tBody').innerHTML=`<tr><td colspan="8" class="loading" style="color:var(--rd)">Fel från API: ${data.error}</td></tr>`;showErr('API-fel: '+data.error);return;}
   allUsers=data.data||data.users||(Array.isArray(data)?data:[]);
-  if(allUsers.length===0) document.getElementById('tBody').innerHTML='<tr><td colspan="7" class="loading">Inga deltagare hittades</td></tr>';
-  renderStats();renderTable(allUsers);
+  if(allUsers.length===0) document.getElementById('tBody').innerHTML='<tr><td colspan="8" class="loading">Inga deltagare hittades</td></tr>';
+
+  // Fyll enhet-filtret
+  const enheter = [...new Set(allUsers.map(u=>u.enheter?.name||u.enhet_name).filter(Boolean))].sort();
+  const enhetSel = document.getElementById('enhetFlt');
+  if(enhetSel){
+    enhetSel.innerHTML = '<option value="">Alla enheter</option>' + enheter.map(e=>`<option value="${e}">${e}</option>`).join('');
+  }
+
+  renderStats();renderChipCounts();renderTable(allUsers);
 }
 function renderStats(){
   const u=allUsers,tot=u.length,act=u.filter(x=>x.status==='active').length;
@@ -534,14 +696,25 @@ function renderStats(){
     <div class="stc"><div class="stl">Har CV</div><div class="stv" style="color:var(--bl)">${withCV}</div></div>
     <div class="stc"><div class="stl">Gjort övningar</div><div class="stv" style="color:var(--ac)">${withProg}</div></div>`;
 }
+function renderChipCounts(){
+  document.getElementById('cnt-all').textContent = allUsers.length;
+  document.getElementById('cnt-active').textContent = allUsers.filter(u=>u.status==='active').length;
+  document.getElementById('cnt-new').textContent = allUsers.filter(u=>u.status==='new'||!u.status).length;
+  document.getElementById('cnt-recent').textContent = allUsers.filter(u=>u.status==='recent').length;
+  document.getElementById('cnt-inactive').textContent = allUsers.filter(u=>u.status==='inactive').length;
+}
 function renderTable(users){
   const q=(document.getElementById('searchIn')?.value||'').toLowerCase();
-  const st=document.getElementById('statusFlt')?.value||'';
+  const enhet=document.getElementById('enhetFlt')?.value||'';
+  const favs = getFavorites();
   let f=users.filter(u=>{
     const nm=cvName(u.cv?.data||u.cv).toLowerCase();
     const em=(u.cv?.data?.email||u.cv?.email||u.email||'').toLowerCase();
     const uid=(u.user_id||u.id||'').toLowerCase();
-    return (!q||nm.includes(q)||em.includes(q)||uid.includes(q))&&(!st||u.status===st);
+    const enhetN=u.enheter?.name||u.enhet_name||'';
+    return (!q||nm.includes(q)||em.includes(q)||uid.includes(q))
+        && (!currentStatus||u.status===currentStatus||(currentStatus==='new'&&!u.status))
+        && (!enhet||enhetN===enhet);
   });
   document.getElementById('tBody').innerHTML=f.length?f.map(u=>{
     const cvd=u.cv?.data||u.cv||{};
@@ -553,7 +726,9 @@ function renderTable(users){
     const progPct=vals.length?Math.round(doneP/vals.length*100):0;
     const uid=u.user_id||u.id||'';
     const lastSeen=u.cv?.updated_at?.split('T')[0]||u.last_seen?.split('T')[0]||'—';
+    const isStarred = favs.has(uid);
     return `<tr onclick="openDetail('${uid}')">
+      <td style="text-align:center" onclick="event.stopPropagation()"><button class="star-btn${isStarred?' starred':''}" data-uid="${uid}" onclick="toggleFavorite('${uid}',event)" title="${isStarred?'Ta bort från Mina':'Lägg till i Mina'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button></td>
       <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name}</div><div class="ue">${email}</div></div></div></td>
       <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
       <td class="dc">${lastSeen}</td>
@@ -562,11 +737,20 @@ function renderTable(users){
       <td class="hm tc">${taskInfo}</td>
       <td><span class="bd ${u.status||'new'}">${SL[u.status]||'Ny'}</span></td>
     </tr>`;
-  }).join(''):'<tr><td colspan="7" class="loading">Inga deltagare matchar sökningen</td></tr>';
+  }).join(''):'<tr><td colspan="8" class="loading">Inga deltagare matchar sökningen</td></tr>';
   document.getElementById('pgInfo').textContent=`${f.length} deltagare`;
 }
 document.getElementById('searchIn')?.addEventListener('input',()=>renderTable(allUsers));
-document.getElementById('statusFlt')?.addEventListener('change',()=>renderTable(allUsers));
+document.getElementById('enhetFlt')?.addEventListener('change',()=>renderTable(allUsers));
+// Statuschips
+document.getElementById('statusChips')?.addEventListener('click',(e)=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('act'));
+  chip.classList.add('act');
+  currentStatus = chip.dataset.status;
+  renderTable(allUsers);
+});
 
 // ═══════════════════════════════════════════════════════════════════════
 // DETALJVY — full sidvy som ersätter listan
@@ -946,6 +1130,7 @@ document.getElementById('inviteModal')?.addEventListener('click',(e)=>{
 document.addEventListener('keydown',(e)=>{
   if(e.key==='Escape'){
     if(document.getElementById('inviteModal').classList.contains('open')) closeInviteModal();
+    else if(document.getElementById('bulkModal').classList.contains('open')) closeBulkModal();
     else if(document.getElementById('detailView').classList.contains('act')) closeDetail();
   }
 });
@@ -1001,6 +1186,191 @@ async function loadAllTasks(){
     </div>
     <div style="font-size:13px;color:var(--mu)">Total tid spenderad: <b style="color:var(--tx)">${Math.round((t.total_time_sec||0)/3600)} timmar</b></div>`;
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// MINA DELTAGARE — gruppvy med stjärnmarkerade + bulk-actions
+// ═══════════════════════════════════════════════════════════════════════
+function renderMinaView(){
+  const favs = getFavorites();
+  const mina = allUsers.filter(u => favs.has(u.user_id||u.id));
+  const wrap = document.getElementById('minaContent');
+
+  if(mina.length === 0){
+    wrap.classList.remove('loading');
+    wrap.innerHTML = `<div class="mina-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <div class="mina-empty-t">Inga stjärnmarkerade deltagare ännu</div>
+      <div class="mina-empty-s">Gå till <b>Ärenden</b> och klicka på stjärnan vid en deltagare för att lägga till hen i din grupp.<br>Här kan du sedan se gruppstatistik och tilldela uppgifter till alla samtidigt.</div>
+    </div>`;
+    return;
+  }
+
+  // Aggregerad statistik för gruppen
+  const tot = mina.length;
+  const act = mina.filter(u=>u.status==='active').length;
+  const withCV = mina.filter(u=>{const c=u.cv?.data||u.cv||{};return !!(c.name||c.title);}).length;
+  const allTasks = mina.flatMap(u => u.tasks?.list || []);
+  const totalTasks = mina.reduce((s,u)=>s+(u.tasks?.total||0),0);
+  const doneTasks = mina.reduce((s,u)=>s+(u.tasks?.completed||0),0);
+  const taskPct = totalTasks ? Math.round(doneTasks/totalTasks*100) : 0;
+
+  wrap.classList.remove('loading');
+  wrap.innerHTML = `
+    <div class="mina-hero">
+      <div class="mina-hero-h">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div class="mina-hero-t">Översikt över din grupp</div>
+      </div>
+      <div class="mina-grid">
+        <div><div class="mina-stat-l">Deltagare</div><div class="mina-stat-v">${tot}</div></div>
+        <div><div class="mina-stat-l">Aktiva</div><div class="mina-stat-v">${act}</div></div>
+        <div><div class="mina-stat-l">Har CV</div><div class="mina-stat-v">${withCV}</div></div>
+        <div><div class="mina-stat-l">Uppgifter klara</div><div class="mina-stat-v ac">${taskPct}%</div></div>
+      </div>
+    </div>
+
+    <div class="tb">
+      <div style="font-size:13px;color:var(--mu)">
+        <span style="color:var(--tx);font-weight:600">Tips:</span> kryssa i flera deltagare för att tilldela samma uppgift till alla.
+      </div>
+      <div class="sp"></div>
+      <button class="btn" onclick="selectAllMina()">Markera alla</button>
+      <button class="btn btn-primary" onclick="selectAllMina();openBulkAssignModal()">Tilldela uppgift till hela gruppen</button>
+    </div>
+
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th style="width:36px;text-align:center"><input type="checkbox" class="cb" id="cbAllMina" onchange="toggleAllMina(this.checked)"></th>
+          <th style="width:36px;text-align:center">★</th>
+          <th>Namn</th>
+          <th class="hm">Enhet</th>
+          <th>Senast aktiv</th>
+          <th class="hm">CV</th>
+          <th class="hm">Uppgifter</th>
+          <th>Status</th>
+        </tr></thead>
+        <tbody>
+          ${mina.map(u=>{
+            const cvd=u.cv?.data||u.cv||{};
+            const name=cvName(cvd)||cvName(u)||(u.user_id||u.id||'').slice(0,8)||'Okänd';
+            const email=cvd.email||u.email||'';
+            const uid=u.user_id||u.id||'';
+            const lastSeen=u.cv?.updated_at?.split('T')[0]||u.last_seen?.split('T')[0]||'—';
+            const taskInfo=u.tasks?`${u.tasks.completed||0}/${u.tasks.total||0}`:'—';
+            const checked = selectedUsers.has(uid);
+            return `<tr onclick="openDetail('${uid}')">
+              <td style="text-align:center" onclick="event.stopPropagation()">
+                <input type="checkbox" class="cb" data-uid="${uid}" ${checked?'checked':''} onchange="toggleSelected('${uid}',event)">
+              </td>
+              <td style="text-align:center" onclick="event.stopPropagation()">
+                <button class="star-btn starred" data-uid="${uid}" onclick="toggleFavorite('${uid}',event)" title="Ta bort från Mina">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </button>
+              </td>
+              <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name}</div><div class="ue">${email}</div></div></div></td>
+              <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
+              <td class="dc">${lastSeen}</td>
+              <td class="hm tc">${cvd.name||cvd.title?'✅':'—'}</td>
+              <td class="hm tc">${taskInfo}</td>
+              <td><span class="bd ${u.status||'new'}">${SL[u.status]||'Ny'}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function selectAllMina(){
+  const favs = getFavorites();
+  allUsers.forEach(u=>{
+    const uid = u.user_id||u.id;
+    if(favs.has(uid)) selectedUsers.add(uid);
+  });
+  document.querySelectorAll('#minaContent .cb[data-uid]').forEach(cb=>cb.checked=true);
+  const allCb = document.getElementById('cbAllMina'); if(allCb) allCb.checked = true;
+  updateBulkBar();
+}
+function toggleAllMina(checked){
+  const favs = getFavorites();
+  if(checked){
+    allUsers.forEach(u=>{
+      const uid = u.user_id||u.id;
+      if(favs.has(uid)) selectedUsers.add(uid);
+    });
+  } else {
+    selectedUsers.clear();
+  }
+  document.querySelectorAll('#minaContent .cb[data-uid]').forEach(cb=>cb.checked=checked);
+  updateBulkBar();
+}
+
+// ═══ BULK-TILLDELA UPPGIFT ═══
+function openBulkAssignModal(){
+  if(selectedUsers.size === 0){ alert('Välj minst en deltagare först.'); return; }
+  document.getElementById('bulkModalCount').textContent = selectedUsers.size;
+  document.getElementById('bulkTitle').value = '';
+  document.getElementById('bulkDeadline').value = '7';
+  document.getElementById('bulkStatus').className = 'modal-status';
+  document.getElementById('bulkSendBtn').disabled = false;
+  document.getElementById('bulkSendBtn').textContent = 'Tilldela till alla';
+  document.querySelectorAll('#bulkModal .chip').forEach(c=>c.classList.remove('act'));
+  document.getElementById('bulkModal').classList.add('open');
+  setTimeout(()=>document.getElementById('bulkTitle').focus(),100);
+}
+function closeBulkModal(){
+  document.getElementById('bulkModal').classList.remove('open');
+}
+function bulkPickTemplate(tmplId, el){
+  document.querySelectorAll('#bulkModal .chip').forEach(c=>c.classList.remove('act'));
+  el.classList.add('act');
+  const tmpl = QUICK_TEMPLATES[tmplId];
+  if(tmpl) document.getElementById('bulkTitle').value = tmpl.title;
+}
+async function bulkAssign(){
+  const title = document.getElementById('bulkTitle').value.trim();
+  const days = parseInt(document.getElementById('bulkDeadline').value)||7;
+  if(!title){
+    document.getElementById('bulkStatus').textContent = 'Ange en titel för uppgiften.';
+    document.getElementById('bulkStatus').className = 'modal-status err';
+    return;
+  }
+  const btn = document.getElementById('bulkSendBtn');
+  btn.disabled = true; btn.textContent = 'Tilldelar…';
+  const deadline = new Date(); deadline.setDate(deadline.getDate()+days);
+  const ids = [...selectedUsers];
+  let ok = 0, fail = 0;
+  for(const uid of ids){
+    try {
+      await post('assign_task', {
+        targetUserId: uid, title, category: 'övrigt',
+        deadline: deadline.toISOString(),
+        filters: { adminId: admin.id }
+      });
+      ok++;
+    } catch(e) { fail++; }
+  }
+  document.getElementById('bulkStatus').textContent = fail===0
+    ? `Uppgift skickad till ${ok} deltagare!`
+    : `${ok} lyckades, ${fail} misslyckades. Försök igen för misslyckade.`;
+  document.getElementById('bulkStatus').className = 'modal-status ' + (fail===0?'ok':'err');
+  btn.textContent = fail===0 ? 'Skickad ✓' : 'Försök igen';
+  if(fail===0){
+    setTimeout(()=>{
+      closeBulkModal();
+      clearSelection();
+      loadUsers();
+    }, 1500);
+  } else {
+    btn.disabled = false;
+  }
+}
+
+// Stäng bulk-modal vid klick utanför
+document.getElementById('bulkModal')?.addEventListener('click',(e)=>{
+  if(e.target.id==='bulkModal') closeBulkModal();
+});
 
 // ═══ EXPORT ═══
 function exportData(){
