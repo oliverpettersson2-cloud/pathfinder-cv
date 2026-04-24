@@ -343,6 +343,38 @@ td{padding:10px 13px;vertical-align:middle}
 .mt-empty-task-t{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px}
 .mt-empty-task-s{font-size:12px;line-height:1.5}
 
+/* ═══ MINA — PER-DELTAGARE UPPGIFTSLISTA ═══ */
+.mu-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px;box-shadow:var(--sh);overflow:hidden;transition:border-color var(--tr)}
+.mu-card:hover{border-color:var(--tx2)}
+.mu-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--sf2);border-bottom:1px solid var(--bdl);cursor:pointer}
+.mu-head:hover{background:#f4f3ee}
+.mu-av{width:34px;height:34px;border-radius:50%;background:var(--gnb);color:var(--gn);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.mu-info{flex:1;min-width:0}
+.mu-name{font-size:14px;font-weight:700;letter-spacing:-.1px}
+.mu-meta{font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mu-totals{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0}
+.mu-total{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600;white-space:nowrap}
+.mu-total::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.mu-total.completed{background:var(--gnb);color:var(--gn)}
+.mu-total.active{background:var(--orb);color:var(--or)}
+.mu-total.pending{background:var(--blb);color:var(--bl)}
+.mu-total.expired{background:var(--rdb);color:var(--rd)}
+
+.mu-tasks{padding:4px 0}
+.mu-task{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--bdl);font-size:13px;cursor:pointer;transition:background var(--tr)}
+.mu-task:last-child{border-bottom:none}
+.mu-task:hover{background:var(--sf2)}
+.mu-task-icon{font-size:15px;flex-shrink:0;width:22px;text-align:center}
+.mu-task-t{flex:1;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mu-task-d{font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.mu-task-b{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
+.mu-task-b.completed{background:var(--gnb);color:var(--gn)}
+.mu-task-b.active{background:var(--orb);color:var(--or)}
+.mu-task-b.pending{background:var(--blb);color:var(--bl)}
+.mu-task-b.expired{background:var(--rdb);color:var(--rd)}
+
+.mu-no-tasks{padding:12px 16px;font-size:12px;color:var(--mu);font-style:italic}
+
 /* ═══ BULK-SELECT BAR (flytande) ═══ */
 .bulk-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(calc(100% + 30px));background:var(--nv);color:#fff;border-radius:12px;padding:10px 14px 10px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 32px rgba(0,0,0,.25);z-index:80;transition:transform .25s cubic-bezier(.4,0,.2,1);min-width:340px}
 .bulk-bar.show{transform:translateX(-50%) translateY(0)}
@@ -1332,11 +1364,10 @@ async function loadStats(){
     </div>`;
 }
 
-// ═══ UPPGIFTER UNDER MINA — per uppgift med deltagarchips ═══
-// Aggregerar alla uppgifter som är tilldelade till Mina-gruppen och visar
-// tydligt vilka deltagare som har gjort vilken, och vilka som är aktiva.
+// ═══ UPPGIFTER UNDER MINA — per deltagare, visar deras uppgifter och status ═══
+// Mycket tydligare än per-uppgift-vy: handläggaren ser direkt "vad jobbar Anna med?"
 let minaTasksCache = null;
-let minaTaskFilter = 'all'; // all | active | completed | pending | expired
+let minaTaskFilter = 'all'; // all | active | pending | completed | expired
 
 async function renderMinaTasksView(){
   const wrap = document.getElementById('tasksContent');
@@ -1345,40 +1376,40 @@ async function renderMinaTasksView(){
   if(mina.length === 0){
     wrap.innerHTML = `<div class="mt-empty-task">
       <div class="mt-empty-task-t">Inga deltagare i din grupp</div>
-      <div class="mt-empty-task-s">Lägg till stjärnmarkerade deltagare först, så kan du här se exakt vilken deltagare som har gjort vilken uppgift.</div>
+      <div class="mt-empty-task-s">Lägg till stjärnmarkerade deltagare först, så kan du här se exakt vad varje deltagare jobbar med.</div>
     </div>`;
     return;
   }
 
   wrap.innerHTML = '<div class="loading">Hämtar uppgifter för gruppen…</div>';
 
-  // Hämta detaljdata för varje mina-deltagare parallellt
   try {
     const details = await Promise.all(
       mina.map(u => post('admin_get_user', {
         targetUserId: u.user_id||u.id, adminId: admin.id
       }).catch(()=>null))
     );
-    // Bygg tasks-struktur: { [taskTitle]: [{user, status, deadline, time_spent_sec}] }
-    const byTask = {};
-    details.forEach((d, i) => {
-      if(!d) return;
-      const cvd = d.cv?.data || d.cv || {};
-      const name = cvName(cvd) || cvName(d) || 'Okänd';
-      const uid = d.user_id || d.id || mina[i].user_id || mina[i].id;
-      const tasks = d.tasks || [];
-      tasks.forEach(t => {
-        const key = (t.title||'(Namnlös uppgift)').trim();
-        if(!byTask[key]) byTask[key] = { title: key, category: t.category, assignments: [] };
-        byTask[key].assignments.push({
-          user: { name, uid, initials: ini(name) },
-          status: t.status || 'pending',
-          deadline: t.deadline,
-          time_spent_sec: t.time_spent_sec
-        });
-      });
-    });
-    minaTasksCache = Object.values(byTask);
+
+    // Bygg struktur per deltagare med deras uppgifter
+    minaTasksCache = details.map((d, i) => {
+      const base = mina[i];
+      const cvd = d?.cv?.data || d?.cv || base?.cv?.data || base?.cv || {};
+      const name = cvName(cvd) || cvName(d) || cvName(base) || 'Okänd';
+      const email = cvd.email || d?.email || base?.email || '';
+      const uid = d?.user_id || d?.id || base?.user_id || base?.id;
+      const tasks = (d?.tasks || []).map(t => ({
+        title: t.title || '(Namnlös)',
+        category: t.category || 'övrigt',
+        status: t.status || 'pending',
+        deadline: t.deadline,
+        time_spent_sec: t.time_spent_sec
+      }));
+      // Räkna per status
+      const counts = { completed:0, active:0, pending:0, expired:0 };
+      tasks.forEach(t => { counts[t.status] = (counts[t.status]||0) + 1; });
+      return { uid, name, email, initials: ini(name), tasks, counts };
+    }).filter(u => u.uid); // exkludera ev. fel
+
     renderMinaTasksList();
   } catch(e){
     wrap.innerHTML = `<div class="loading" style="color:var(--rd)">Kunde inte hämta uppgifter: ${e.message}</div>`;
@@ -1389,22 +1420,39 @@ function renderMinaTasksList(){
   const wrap = document.getElementById('tasksContent');
   if(!minaTasksCache) { wrap.innerHTML = '<div class="loading">Laddar…</div>'; return; }
 
-  // Summering över alla tilldelningar
-  let sumCompleted=0, sumActive=0, sumPending=0, sumExpired=0;
-  const activeUsers = new Set();
-  minaTasksCache.forEach(t => t.assignments.forEach(a => {
-    if(a.status==='completed') sumCompleted++;
-    else if(a.status==='active') { sumActive++; activeUsers.add(a.user.uid); }
-    else if(a.status==='expired') sumExpired++;
-    else { sumPending++; activeUsers.add(a.user.uid); }
-  }));
+  // Summera totalt över alla deltagare
+  const total = { completed:0, active:0, pending:0, expired:0 };
+  let activeUserCount = 0;
+  let totalTasks = 0;
+  minaTasksCache.forEach(u => {
+    totalTasks += u.tasks.length;
+    total.completed += u.counts.completed;
+    total.active    += u.counts.active;
+    total.pending   += u.counts.pending;
+    total.expired   += u.counts.expired;
+    if(u.counts.active > 0 || u.counts.pending > 0) activeUserCount++;
+  });
 
-  if(minaTasksCache.length === 0){
+  // Filtrera deltagare baserat på valt filter
+  let shown = minaTasksCache;
+  if(minaTaskFilter !== 'all'){
+    shown = minaTasksCache.filter(u => u.counts[minaTaskFilter] > 0);
+  }
+
+  // Sortera: deltagare med aktiva/nya uppgifter först, sedan efter antal uppgifter
+  shown = [...shown].sort((a, b) => {
+    const aActive = a.counts.active + a.counts.pending + a.counts.expired;
+    const bActive = b.counts.active + b.counts.pending + b.counts.expired;
+    if(aActive !== bActive) return bActive - aActive;
+    return b.tasks.length - a.tasks.length;
+  });
+
+  if(totalTasks === 0){
     wrap.innerHTML = `
-      ${renderMinaTaskSummary(sumCompleted,sumActive,sumPending,sumExpired,activeUsers.size)}
+      ${renderMinaTaskSummary(total.completed, total.active, total.pending, total.expired, activeUserCount)}
       <div class="mt-empty-task">
         <div class="mt-empty-task-t">Inga uppgifter tilldelade ännu</div>
-        <div class="mt-empty-task-s">Gå till Deltagare-fliken och välj deltagare att tilldela en uppgift till. Eller använd "Skapa uppgift från PowerPoint" nedan.</div>
+        <div class="mt-empty-task-s">Gå till Deltagare-fliken och välj deltagare att tilldela en uppgift till, eller skapa en ny från en PowerPoint.</div>
         <div style="margin-top:14px"><button class="btn btn-primary" onclick="openCreateTask()">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>
           Skapa uppgift från PowerPoint
@@ -1413,61 +1461,49 @@ function renderMinaTasksList(){
     return;
   }
 
-  // Filtrera uppgifter baserat på valt filter
-  let filtered = minaTasksCache;
-  if(minaTaskFilter !== 'all'){
-    filtered = minaTasksCache.filter(t => t.assignments.some(a => {
-      if(minaTaskFilter==='pending') return a.status==='pending' || !a.status;
-      return a.status===minaTaskFilter;
-    }));
-  }
-
   const SL2 = {completed:'Klar',active:'Pågår',pending:'Ny',expired:'Försenad'};
   const catIcons = {cv:'📄',övning:'📚',intervju:'🎤',matchning:'🎯',jobbsök:'🔍',övrigt:'📝'};
 
-  const tasksHTML = filtered.map(t => {
-    // Gruppera tilldelningar per status (klara först, sen aktiva, sen pending, sen expired)
-    const order = ['completed','active','pending','expired'];
-    const sorted = [...t.assignments].sort((a,b) => order.indexOf(a.status||'pending') - order.indexOf(b.status||'pending'));
-    const c = { completed:0, active:0, pending:0, expired:0 };
-    t.assignments.forEach(a => { c[a.status||'pending'] = (c[a.status||'pending']||0)+1; });
+  const userCardsHTML = shown.map(u => {
+    // Visa uppgifter sorterade: aktiva/försenade först, sedan nya, sedan klara
+    const statusOrder = {expired:0, active:1, pending:2, completed:3};
+    const tasksSorted = [...u.tasks].sort((a,b) => statusOrder[a.status] - statusOrder[b.status]);
 
-    const countsHTML = order.filter(s=>c[s]>0).map(s =>
-      `<span class="mt-count ${s}">${c[s]} ${SL2[s].toLowerCase()}</span>`
-    ).join('');
+    const totalsHTML = ['expired','active','pending','completed']
+      .filter(s => u.counts[s] > 0)
+      .map(s => `<span class="mu-total ${s}">${u.counts[s]} ${SL2[s].toLowerCase()}</span>`)
+      .join('');
 
-    const chipsHTML = sorted.map(a => {
-      const s = a.status||'pending';
-      const deadline = a.deadline ? ' · frist ' + a.deadline.split('T')[0] : '';
-      const time = a.time_spent_sec ? ' · ' + Math.round(a.time_spent_sec/60) + ' min' : '';
-      const title = `${a.user.name} — ${SL2[s]}${deadline}${time}`;
-      return `<span class="mt-chip ${s}" title="${escapeHtml(title)}" onclick="openDetail('${a.user.uid}')">
-        <span class="mt-chip-av">${a.user.initials}</span>
-        <span class="mt-chip-n">${escapeHtml(a.user.name)}</span>
-      </span>`;
-    }).join('');
+    const tasksHTML = tasksSorted.length ? tasksSorted.map(t => `
+      <div class="mu-task" onclick="openDetail('${u.uid}')">
+        <span class="mu-task-icon">${catIcons[t.category]||'📝'}</span>
+        <span class="mu-task-t">${escapeHtml(t.title)}</span>
+        ${t.deadline ? `<span class="mu-task-d">${t.deadline.split('T')[0]}</span>` : ''}
+        <span class="mu-task-b ${t.status}">${SL2[t.status]||'Ny'}</span>
+      </div>`).join('') : '<div class="mu-no-tasks">Inga uppgifter tilldelade</div>';
 
-    return `<div class="mt-task">
-      <div class="mt-task-h">
-        <div class="mt-task-info">
-          <div class="mt-task-t">${catIcons[t.category]||'📝'} ${escapeHtml(t.title)}</div>
-          <div class="mt-task-meta">${t.assignments.length} deltagare · kategori: ${t.category||'övrigt'}</div>
+    return `<div class="mu-card">
+      <div class="mu-head" onclick="openDetail('${u.uid}')">
+        <div class="mu-av">${u.initials}</div>
+        <div class="mu-info">
+          <div class="mu-name">${escapeHtml(u.name)}</div>
+          <div class="mu-meta">${escapeHtml(u.email || u.uid.slice(0,8))}</div>
         </div>
-        <div class="mt-task-counts">${countsHTML}</div>
+        <div class="mu-totals">${totalsHTML || '<span class="mu-total" style="background:var(--bdl);color:var(--mu)">Inga uppgifter</span>'}</div>
       </div>
-      <div class="mt-chips">${chipsHTML}</div>
+      <div class="mu-tasks">${tasksHTML}</div>
     </div>`;
   }).join('');
 
   wrap.innerHTML = `
-    ${renderMinaTaskSummary(sumCompleted,sumActive,sumPending,sumExpired,activeUsers.size)}
+    ${renderMinaTaskSummary(total.completed, total.active, total.pending, total.expired, activeUserCount)}
 
     <div class="mt-filters">
-      <div class="chip${minaTaskFilter==='all'?' act':''}" onclick="filterMinaTasks('all')"><span>Alla uppgifter</span><span class="chip-c">${minaTasksCache.length}</span></div>
-      <div class="chip${minaTaskFilter==='active'?' act':''}" onclick="filterMinaTasks('active')"><span>Pågående</span><span class="chip-c">${sumActive}</span></div>
-      <div class="chip${minaTaskFilter==='pending'?' act':''}" onclick="filterMinaTasks('pending')"><span>Nya</span><span class="chip-c">${sumPending}</span></div>
-      <div class="chip${minaTaskFilter==='completed'?' act':''}" onclick="filterMinaTasks('completed')"><span>Klara</span><span class="chip-c">${sumCompleted}</span></div>
-      ${sumExpired?`<div class="chip${minaTaskFilter==='expired'?' act':''}" onclick="filterMinaTasks('expired')"><span>Försenade</span><span class="chip-c">${sumExpired}</span></div>`:''}
+      <div class="chip${minaTaskFilter==='all'?' act':''}" onclick="filterMinaTasks('all')"><span>Alla deltagare</span><span class="chip-c">${minaTasksCache.length}</span></div>
+      <div class="chip${minaTaskFilter==='active'?' act':''}" onclick="filterMinaTasks('active')"><span>Har pågående</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.active>0).length}</span></div>
+      <div class="chip${minaTaskFilter==='pending'?' act':''}" onclick="filterMinaTasks('pending')"><span>Har nya</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.pending>0).length}</span></div>
+      <div class="chip${minaTaskFilter==='completed'?' act':''}" onclick="filterMinaTasks('completed')"><span>Har klara</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.completed>0).length}</span></div>
+      ${total.expired>0 ? `<div class="chip${minaTaskFilter==='expired'?' act':''}" onclick="filterMinaTasks('expired')"><span>Har försenade</span><span class="chip-c">${minaTasksCache.filter(u=>u.counts.expired>0).length}</span></div>` : ''}
       <div class="sp" style="flex:1"></div>
       <button class="btn btn-primary" onclick="openCreateTask()">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
@@ -1475,12 +1511,11 @@ function renderMinaTasksList(){
       </button>
     </div>
 
-    ${tasksHTML || '<div class="mt-empty-task"><div class="mt-empty-task-s">Inga uppgifter matchar filtret.</div></div>'}
+    ${userCardsHTML || '<div class="mt-empty-task"><div class="mt-empty-task-s">Inga deltagare matchar filtret.</div></div>'}
   `;
 }
 
 function renderMinaTaskSummary(completed, active, pending, expired, activeUserCount){
-  const total = completed + active + pending + expired;
   return `<div class="mt-summary">
     <div class="mt-card pending"><div class="mt-card-l">Nya</div><div class="mt-card-v">${pending}</div></div>
     <div class="mt-card active"><div class="mt-card-l">Pågående</div><div class="mt-card-v">${active}</div></div>
