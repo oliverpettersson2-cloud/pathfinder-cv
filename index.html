@@ -1632,6 +1632,7 @@
       vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes taskPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,.4); } 50% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(239,68,68,0); } }
     @keyframes matchaShimmer { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
 
     .auth-user-badge {
@@ -10266,7 +10267,14 @@ var D={
     CATS.forEach(function(cat){
       var pct2=cat.mods?D.catPct(cat.mods):0;
       var lock=!unlocked;
-      h+='<div class="cat-tile'+(lock?' locked':'')+'" onclick="D.openCat(\''+cat.id+'\')" style="border-color:'+(lock?'rgba(255,255,255,.07)':cat.color+'44')+';background:'+(lock?'rgba(255,255,255,.02)':cat.color+'12')+';">';
+      h+='<div class="cat-tile'+(lock?' locked':'')+'" onclick="D.openCat(\''+cat.id+'\')" style="border-color:'+(lock?'rgba(255,255,255,.07)':cat.color+'44')+';background:'+(lock?'rgba(255,255,255,.02)':cat.color+'12')+';position:relative;">';
+      // Röd notisbubbla för Uppgifter när det finns öppna att göra
+      if(!lock&&cat.id==='uppg'){
+        var openCount=getTasks().filter(function(t){return !t.done}).length;
+        if(openCount>0){
+          h+='<div style="position:absolute;top:8px;right:8px;background:#ef4444;color:#fff;font-size:11px;font-weight:900;border-radius:12px;padding:2px 9px;min-width:22px;text-align:center;animation:taskPulse 2s ease-in-out infinite;z-index:2;">'+openCount+'</div>';
+        }
+      }
       h+='<div>';
       h+='<div class="cat-tile-icon">'+cat.icon+'</div>';
       h+='<div class="cat-tile-name" style="color:'+(lock?'rgba(255,255,255,.3)':'#fff')+';">'+cat.name+'</div>';
@@ -10278,8 +10286,14 @@ var D={
         h+='<div class="cat-tile-bar"><div class="cat-tile-fill" style="width:'+pct2+'%;background:'+cat.color+';"></div></div>';
         h+='</div>';
       } else if(!lock&&cat.id==='uppg'){
-        var tasks=getTasks(),done2=tasks.filter(function(t){return t.done}).length;
-        h+='<div class="cat-tile-pct" style="color:'+cat.color+';">'+done2+'/'+tasks.length+' klara</div>';
+        var tasks=getTasks(),done2=tasks.filter(function(t){return t.done}).length,opn=tasks.length-done2;
+        if(opn>0){
+          h+='<div class="cat-tile-pct" style="color:#ef4444;">'+opn+' att göra</div>';
+        } else if(tasks.length>0){
+          h+='<div class="cat-tile-pct" style="color:'+cat.color+';">Alla klara!</div>';
+        } else {
+          h+='<div class="cat-tile-pct" style="color:'+cat.color+';">Inga ännu</div>';
+        }
       }
       h+='</div>';
     });
@@ -11731,6 +11745,14 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
   window.mobSwitchTab = function(tab) {
     if (_prevMST) _prevMST(tab);
     if (tab === 'ovningar') {
+      // Hämta uppgifter från handläggaren (för korrekt badge på "Uppgifter"-tile)
+      if (typeof window.loadAssignedTasks === 'function') {
+        window.loadAssignedTasks().then(function(){
+          if (window.D && typeof window.D.initHome === 'function' && document.getElementById('trainView-ovn').classList.contains('train-view--active')) {
+            try { window.D.initHome(); } catch(e) {}
+          }
+        }).catch(function(){});
+      }
       // Återställ till hub varje gång fliken öppnas
       setTimeout(function(){
         window.trainSwitchView('hub');
