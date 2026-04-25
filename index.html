@@ -4417,18 +4417,94 @@
     const safeStorage = {
       getItem: (key) => {
         try {
-          return localStorage.getItem(key);
+          return _scopedGet(key);
         } catch (e) {
           return null;
         }
       },
       setItem: (key, value) => {
         try {
-          localStorage.setItem(key, value);
+          _scopedSet(key, value);
+        } catch (e) {
+        }
+      },
+      removeItem: (key) => {
+        try {
+          _scopedRemove(key);
         } catch (e) {
         }
       }
     };
+
+    // ═══════════════════════════════════════════════════════════════
+    // USER-SCOPED STORAGE — ISOLERA DATA PER ANVÄNDARE
+    // ───────────────────────────────────────────────────────────────
+    // KRITISK SÄKERHETSFIX: tidigare delade alla användare på samma
+    // webbläsare samma localStorage-nycklar (t.ex. 'cvData'), så att
+    // nästa person som loggade in såg föregående persons CV.
+    // Lösning: alla användardata-nycklar suffixas med user-id.
+    // ═══════════════════════════════════════════════════════════════
+    var USER_KEYS = [
+      'cvData', 'cvmovn4',
+      'pathfinder_saved_cvs', 'pathfinder_matched_cvs',
+      'pf_saved_edu', 'pf_diary',
+      'cvmatchen_edu_saved'
+    ];
+    function _userKey(baseKey) {
+      var uid = window.authUserId;
+      if (!uid) return baseKey + '::anon';
+      return baseKey + '::' + uid;
+    }
+    function _scopedGet(key) {
+      if (USER_KEYS.indexOf(key) !== -1) {
+        var scoped = localStorage.getItem(_userKey(key));
+        return scoped; // null om inget finns — INTE det globala (skulle läcka)
+      }
+      return localStorage.getItem(key);
+    }
+    function _scopedSet(key, value) {
+      if (USER_KEYS.indexOf(key) !== -1) {
+        return localStorage.setItem(_userKey(key), value);
+      }
+      return localStorage.setItem(key, value);
+    }
+    function _scopedRemove(key) {
+      if (USER_KEYS.indexOf(key) !== -1) {
+        return localStorage.removeItem(_userKey(key));
+      }
+      return localStorage.removeItem(key);
+    }
+    // Rensa ALL user-scoped data (vid logout, kontoradering eller user-byte)
+    function clearAllUserData() {
+      try {
+        var keys = Object.keys(localStorage);
+        keys.forEach(function(k){
+          // user-scoped (innehåller '::')
+          if (k.indexOf('::') !== -1) {
+            var base = k.split('::')[0];
+            if (USER_KEYS.indexOf(base) !== -1) localStorage.removeItem(k);
+          }
+          // gamla globala nycklar som kan ligga kvar från före säkerhetsfixen
+          if (USER_KEYS.indexOf(k) !== -1) localStorage.removeItem(k);
+        });
+      } catch(e) { console.warn('clearAllUserData fail:', e); }
+    }
+    window.clearAllUserData = clearAllUserData;
+    // Engångs-migrering: vid sidladdning, rensa eventuella gamla globala data-nycklar.
+    // Vi vet inte vilken användare de tillhör, så det är säkrast att rensa dem.
+    // Moln-laddning fyller på korrekt user-scoped data när auth är klar.
+    (function migrateOldGlobalKeys(){
+      try {
+        var migrated = false;
+        USER_KEYS.forEach(function(k){
+          if (localStorage.getItem(k) !== null) {
+            localStorage.removeItem(k);
+            migrated = true;
+          }
+        });
+        if (migrated) console.log('[security] Migrerade till user-scoped storage');
+      } catch(e){}
+    })();
 
     // Data
     let cvData = {
@@ -6123,31 +6199,60 @@
       }
 
       try {
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 400,
-            system: PATHFINDER_SYSTEM_PROMPT,
-            messages: [{ role: 'user', content: prompt }]
-          })
-        });
+        // Helper: försök med given modell, returnera tasks-array eller kasta fel
+        async function tryModel(modelName) {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model: modelName,
+              max_tokens: 400,
+              system: PATHFINDER_SYSTEM_PROMPT,
+              messages: [{ role: 'user', content: prompt }]
+            })
+          });
+          if (!response.ok) {
+            let errBody = '';
+            try { errBody = await response.text(); } catch(_) {}
+            throw new Error('HTTP ' + response.status + (errBody ? ' — ' + errBody.slice(0, 200) : ''));
+          }
+          const data = await response.json();
+          // Kombinera all text från svaret (kan vara fler text-block)
+          const rawText = (data.content || [])
+            .filter(b => b && b.type === 'text' && typeof b.text === 'string')
+            .map(b => b.text)
+            .join('\n')
+            .trim()
+            .replace(/```json|```/g, '')
+            .trim();
+          if (!rawText) throw new Error('AI svarade utan text');
 
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({}));
-          throw new Error(err.error && err.error.message ? err.error.message : 'API-fel: ' + response.status);
+          // Försök parsa direkt — om det misslyckas, hitta första {…}-blocket
+          let parsed;
+          try {
+            parsed = JSON.parse(rawText);
+          } catch(e) {
+            const m = rawText.match(/\{[\s\S]*\}/);
+            if (!m) throw new Error('AI svarade i fel format (ingen JSON hittades)');
+            parsed = JSON.parse(m[0]);
+          }
+          const tasks = parsed && Array.isArray(parsed.arbetsuppgifter) ? parsed.arbetsuppgifter : [];
+          if (!tasks.length) throw new Error('AI returnerade en tom lista');
+          return tasks;
         }
 
-        const data = await response.json();
-        const rawText = data.content[0].text.trim().replace(/```json|```/g, '').trim();
-        let parsed;
-        try { parsed = JSON.parse(rawText); } catch(e) { parsed = { arbetsuppgifter: [] }; }
+        let tasks;
+        try {
+          tasks = await tryModel('claude-haiku-4-5-20251001');
+        } catch(haikuErr) {
+          // Fallback till Sonnet om Haiku misslyckas
+          console.warn('[ai-autofill] Haiku failed, trying Sonnet:', haikuErr.message);
+          tasks = await tryModel('claude-sonnet-4-6');
+        }
 
-        const tasks = parsed.arbetsuppgifter || [];
         if (tasks.length >= 1) document.getElementById('jobDesc1').value = tasks[0] || '';
         if (tasks.length >= 2) document.getElementById('jobDesc2').value = tasks[1] || '';
         if (tasks.length >= 3) document.getElementById('jobDesc3').value = tasks[2] || '';
@@ -6158,9 +6263,15 @@
 
       } catch (error) {
         console.error('aiAutofillJobDesc fel:', error);
-        if (error.message.includes('401') || error.message.includes('invalid_api_key')) {
-          showToast('⚠️ Ogiltig API-nyckel', 'error');
-          
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('http 404') || msg.includes('http 405')) {
+          showToast('⚠️ AI-tjänsten är inte tillgänglig. Skriv arbetsuppgifterna manuellt.', 'error');
+        } else if (msg.includes('http 401') || msg.includes('http 403') || msg.includes('invalid_api_key')) {
+          showToast('⚠️ Du är utloggad. Logga in igen.', 'error');
+        } else if (msg.includes('http 429')) {
+          showToast('⚠️ AI är överbelastad. Vänta en stund och försök igen.', 'error');
+        } else if (msg.includes('fel format') || msg.includes('tom lista')) {
+          showToast('⚠️ AI gav ett oväntat svar. Försök igen — det brukar funka 2:a gången.', 'error');
         } else {
           showToast('❌ ' + (error.message || 'Något gick fel'), 'error');
         }
@@ -6805,15 +6916,35 @@ ${styleTexts}
     const _authMemory = {};
 
     function pfStore(key, value) {
-      try { localStorage.setItem(key, value); } catch(e) {}
+      try {
+        if (USER_KEYS.indexOf(key) !== -1) {
+          localStorage.setItem(_userKey(key), value);
+        } else {
+          localStorage.setItem(key, value);
+        }
+      } catch(e) {}
       _authMemory[key] = value;
     }
     function pfRead(key) {
-      try { const v = localStorage.getItem(key); if (v !== null) return v; } catch(e) {}
+      try {
+        var v;
+        if (USER_KEYS.indexOf(key) !== -1) {
+          v = localStorage.getItem(_userKey(key));
+        } else {
+          v = localStorage.getItem(key);
+        }
+        if (v !== null) return v;
+      } catch(e) {}
       return _authMemory[key] || null;
     }
     function pfRemove(key) {
-      try { localStorage.removeItem(key); } catch(e) {}
+      try {
+        if (USER_KEYS.indexOf(key) !== -1) {
+          localStorage.removeItem(_userKey(key));
+        } else {
+          localStorage.removeItem(key);
+        }
+      } catch(e) {}
       delete _authMemory[key];
     }
 
@@ -6972,6 +7103,19 @@ ${styleTexts}
           while (b64.length % 4) b64 += '=';
           const payloadJson = atob(b64);
           const payload = JSON.parse(payloadJson);
+
+          // SÄKERHETSFIX: detektera user-byte (MS OAuth)
+          try {
+            var prevAuthRaw = localStorage.getItem(AUTH_STORAGE_KEY);
+            if (prevAuthRaw) {
+              var prevAuth = JSON.parse(prevAuthRaw);
+              if (prevAuth && prevAuth.email && prevAuth.email !== payload.email) {
+                console.log('[security] User-byte (MS OAuth) — rensar föregående users data');
+                clearAllUserData();
+                try { cvData = { name:'', title:'', summary:'', email:'', phone:'', city:'', jobs:[], education:[], languages:[], certifications:[], licenses:[], references:[], skills:[] }; } catch(_){}
+              }
+            }
+          } catch(_) {}
 
           // Spara auth-state — använd samma format som resten av appen förväntar
           pfStore(AUTH_STORAGE_KEY, JSON.stringify({
@@ -7135,6 +7279,20 @@ ${styleTexts}
     }
 
     function authSetLoggedIn(email, isNew, userId, accessToken) {
+      // SÄKERHETSFIX: detektera user-byte och rensa föregående users data
+      try {
+        var prevAuthRaw = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (prevAuthRaw) {
+          var prevAuth = JSON.parse(prevAuthRaw);
+          if (prevAuth && prevAuth.userId && userId && prevAuth.userId !== userId) {
+            console.log('[security] User-byte detekterad — rensar föregående users data');
+            clearAllUserData();
+            // Återställ in-memory state
+            try { cvData = { name:'', title:'', summary:'', email:'', phone:'', city:'', jobs:[], education:[], languages:[], certifications:[], licenses:[], references:[], skills:[] }; } catch(_){}
+          }
+        }
+      } catch(e) { console.warn('User-switch check fail:', e); }
+
       pfStore(AUTH_STORAGE_KEY, JSON.stringify({
         email,
         loggedIn: true,
@@ -7223,7 +7381,7 @@ ${styleTexts}
         // CV-huvuddata
         if (result.cv && typeof result.cv === 'object') {
           cvData = { ...cvData, ...result.cv };
-          try { localStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
+          try { _scopedSet('cvData', JSON.stringify(cvData)); } catch(e) {}
           if (typeof updateFormFields === 'function') updateFormFields();
           if (typeof renderJobs === 'function') { renderJobs(); renderEducation(); renderSkills(); renderLanguages(); renderLicenses(); renderCerts(); renderRefs(); }
           if (typeof updatePreview === 'function') updatePreview();
@@ -7231,24 +7389,24 @@ ${styleTexts}
 
         // Sparade CV:n
         if (Array.isArray(result.savedCvs)) {
-          try { localStorage.setItem('pathfinder_saved_cvs', JSON.stringify(result.savedCvs)); } catch(e) {}
+          try { _scopedSet('pathfinder_saved_cvs', JSON.stringify(result.savedCvs)); } catch(e) {}
         }
 
         // Matchade CV:n
         if (Array.isArray(result.matchedCvs)) {
-          try { localStorage.setItem('pathfinder_matched_cvs', JSON.stringify(result.matchedCvs)); } catch(e) {}
+          try { _scopedSet('pathfinder_matched_cvs', JSON.stringify(result.matchedCvs)); } catch(e) {}
         }
 
         // Övningsprogress
         if (result.progress && typeof result.progress === 'object') {
-          try { localStorage.setItem('cvmovn4', JSON.stringify(result.progress)); } catch(e) {}
+          try { _scopedSet('cvmovn4', JSON.stringify(result.progress)); } catch(e) {}
         }
 
         // Sparade utbildningar
         if (Array.isArray(result.savedEdu)) {
           try {
-            localStorage.setItem('pf_saved_edu', JSON.stringify(result.savedEdu));
-            localStorage.setItem('cvmatchen_edu_saved', JSON.stringify(result.savedEdu));
+            _scopedSet('pf_saved_edu', JSON.stringify(result.savedEdu));
+            _scopedSet('cvmatchen_edu_saved', JSON.stringify(result.savedEdu));
           } catch(e) {}
         }
 
@@ -7332,6 +7490,8 @@ ${styleTexts}
       const saved = pfRead(AUTH_STORAGE_KEY);
       const email = saved ? JSON.parse(saved).email : '';
       if (confirm('Inloggad som: ' + email + '\n\nVill du logga ut?')) {
+        // SÄKERHETSFIX: rensa ALL CV-data så nästa person inte ser den föregåendes
+        try { clearAllUserData(); } catch(_) {}
         pfRemove(AUTH_STORAGE_KEY);
         window.authUserId = null;
         window.authAccessToken = null;
@@ -7342,6 +7502,8 @@ ${styleTexts}
         authCurrentEmail = '';
         setNavStep(1);
         document.getElementById('authOverlay').classList.remove('hidden');
+        // Reload så all in-memory data också rensas
+        setTimeout(function(){ window.location.reload(); }, 200);
       }
     }
     // ===== SLUT AUTENTISERING =====
@@ -7458,10 +7620,10 @@ ${styleTexts}
         localStorage.removeItem('SAVED_CVS_KEY');
         localStorage.removeItem('MATCHED_CVS_KEY');
         localStorage.removeItem('_matchaSelectedAds');
-        localStorage.removeItem('pf_saved_edu');
-        localStorage.removeItem('pf_diary');
+        _scopedRemove('pf_saved_edu');
+        _scopedRemove('pf_diary');
         localStorage.removeItem('pf_ai_cache');
-        localStorage.removeItem('cvmovn4');
+        _scopedRemove('cvmovn4');
 
         // Försök radera via Supabase
         const token = window.authAccessToken;
@@ -7474,7 +7636,8 @@ ${styleTexts}
           } catch(e) { /* API kan saknas, fortsätt ändå */ }
         }
 
-        // Logga ut
+        // Logga ut + rensa ALL data (säkerhetsfix)
+        try { clearAllUserData(); } catch(_) {}
         pfRemove(AUTH_STORAGE_KEY);
         window.authUserId = null;
         window.authAccessToken = null;
@@ -13215,7 +13378,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
     // Ersätt cvData helt utan att anropa saveData() (som läser desktop-fält)
     cvData = JSON.parse(JSON.stringify(entry.data));
     // Spara direkt till localStorage
-    try { localStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
+    try { _scopedSet('cvData', JSON.stringify(cvData)); } catch(e) {}
     // Sätt desktop-fält också så autosave inte skriver över med tomma värden
     ['name','title','email','phone','summary'].forEach(function(f) {
       const el = document.getElementById(f);
@@ -14553,7 +14716,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
         if (s.value.length === 0) {
           // Hämta CV-titel för auto-sök
           try {
-            const savedCVs = JSON.parse(localStorage.getItem('pathfinder_saved_cvs') || '[]');
+            const savedCVs = JSON.parse(_scopedGet('pathfinder_saved_cvs') || '[]');
             const selId = localStorage.getItem('pathfinder_selected_cv');
             const cv = selId ? savedCVs.find(c => c.id === selId) : savedCVs[0];
             s.value = (cv && cv.title) ? cv.title : (cvData && cvData.title) ? cvData.title : 'jobb';
@@ -15083,7 +15246,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
   function matchedToday() {
     const idag = new Date().toDateString();
     try {
-      return JSON.parse(localStorage.getItem('pathfinder_matched_cvs') || '[]')
+      return JSON.parse(_scopedGet('pathfinder_matched_cvs') || '[]')
         .filter(c => new Date(c.savedAt).toDateString() === idag).length;
     } catch(e) { return 0; }
   }
@@ -15219,14 +15382,14 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
     // ══════════════════════════════════════════
     // PROFIL — 2x2 GRID
     // ══════════════════════════════════════════
-    function getSaved()   { try{ return JSON.parse(localStorage.getItem('pathfinder_saved_cvs')||'[]'); }   catch(e){ return []; } }
-    function getMatched() { try{ return JSON.parse(localStorage.getItem('pathfinder_matched_cvs')||'[]'); } catch(e){ return []; } }
+    function getSaved()   { try{ return JSON.parse(_scopedGet('pathfinder_saved_cvs')||'[]'); }   catch(e){ return []; } }
+    function getMatched() { try{ return JSON.parse(_scopedGet('pathfinder_matched_cvs')||'[]'); } catch(e){ return []; } }
     function getDiary()   {
       const TTL = 45*24*3600*1000;
       try{ return JSON.parse(localStorage.getItem('pathfinder_job_diary')||'[]').filter(e=>Date.now()-e.savedAt<TTL); }
       catch(e){ return []; }
     }
-    function getEdu()     { try{ return JSON.parse(localStorage.getItem('pf_saved_edu')||'[]'); } catch(e){ return []; } }
+    function getEdu()     { try{ return JSON.parse(_scopedGet('pf_saved_edu')||'[]'); } catch(e){ return []; } }
 
     function rd(ts) {
       const d = Math.floor((Date.now()-ts)/86400000);
@@ -15389,7 +15552,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
       // Rad 2: Övningar (% klarat) + Sparade utbildningar (🎓 animerad + badge)
       var ovnPct = (typeof window.getOvningsPct === 'function') ? window.getOvningsPct() : 0;
       var eduSaved = [];
-      try { eduSaved = JSON.parse(localStorage.getItem('cvmatchen_edu_saved') || '[]'); } catch(e) {}
+      try { eduSaved = JSON.parse(_scopedGet('cvmatchen_edu_saved') || '[]'); } catch(e) {}
       var eduN = eduSaved.length;
 
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
@@ -15526,7 +15689,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
               '<div style="font-size:11px;color:#f0c040;">' + u.typ + ' · ' + u.kommun + '</div>' +
               (u.info ? '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + u.info + '</div>' : '') +
               '</div>' +
-              '<button onclick="(function(){var l=JSON.parse(localStorage.getItem(\'pf_saved_edu\')||\'[]\');l.splice(' + i + ',1);localStorage.setItem(\'pf_saved_edu\',JSON.stringify(l));window._pt(\'edu\');})() " ' +
+              '<button onclick="(function(){var l=JSON.parse(_scopedGet(\'pf_saved_edu\')||\'[]\');l.splice(' + i + ',1);_scopedSet(\'pf_saved_edu\',JSON.stringify(l));window._pt(\'edu\');})() " ' +
               'style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:0;">✕</button>' +
               '</div>';
           });
@@ -15740,7 +15903,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
             // Sök på CV-titeln om den finns, annars brett
             var cvTitle = (cvData && cvData.title) ? cvData.title.trim() : '';
             if (!cvTitle) {
-              try { cvTitle = (JSON.parse(localStorage.getItem('cvData') || '{}')).title || ''; } catch(e) {}
+              try { cvTitle = (JSON.parse(_scopedGet('cvData') || '{}')).title || ''; } catch(e) {}
             }
             if (input) input.value = cvTitle || '';
             if (typeof matchaDoSearch === 'function') matchaDoSearch();
@@ -15759,7 +15922,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
         cvb.style.cssText = CVB_INACTIVE;
         cvb.onclick = function() {
           try {
-            var savedCVs = JSON.parse(localStorage.getItem('pathfinder_saved_cvs') || '[]');
+            var savedCVs = JSON.parse(_scopedGet('pathfinder_saved_cvs') || '[]');
             var selId = localStorage.getItem('pathfinder_selected_cv');
             var cv = selId ? savedCVs.find(function(c){ return c.id === selId; }) : savedCVs[0];
             var title = cv && cv.title ? cv.title : '';
@@ -15910,7 +16073,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
   var _lastSavedEduCount = -1;
   function setSaved(arr) {
     try { localStorage.setItem(EDU_SAVED_KEY, JSON.stringify(arr)); } catch(e) {}
-    try { localStorage.setItem('pf_saved_edu', JSON.stringify(arr)); } catch(e) {}
+    try { _scopedSet('pf_saved_edu', JSON.stringify(arr)); } catch(e) {}
     if (typeof _sbSync === 'function') _sbSync('saved_edu', arr);
     // Logga bara när antalet ändras, inte vid init
     if (_lastSavedEduCount !== -1 && typeof logEvent === 'function') {
