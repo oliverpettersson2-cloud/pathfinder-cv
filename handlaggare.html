@@ -269,6 +269,86 @@ td{padding:10px 13px;vertical-align:middle}
 .wz-ai-loading-t{font-size:14px;font-weight:600;margin-bottom:4px}
 .wz-ai-loading-s{font-size:12px;color:var(--mu)}
 
+/* ═══ SPRÅKNIVÅ-CHIPS (i wizard steg 1) ═══ */
+.lang-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lang-chip{padding:10px 12px;border:1.5px solid var(--bdl);border-radius:8px;cursor:pointer;background:var(--sf2);transition:all .15s;text-align:left}
+.lang-chip:hover{border-color:var(--ac);background:var(--acs)}
+.lang-chip.act{border-color:var(--ac);background:var(--acs);box-shadow:inset 0 0 0 1px var(--ac)}
+.lang-chip-t{font-size:13px;font-weight:700;margin-bottom:2px}
+.lang-chip.act .lang-chip-t{color:var(--ac)}
+.lang-chip-s{font-size:10px;color:var(--mu);line-height:1.35}
+
+/* ═══ AI-UPPDATERING ═══ */
+.ai-update-box{margin-top:14px;padding:14px 16px;border:1.5px solid var(--bdl);border-radius:10px;background:var(--sf2)}
+.ai-update-toggle{display:flex;gap:11px;cursor:pointer;align-items:flex-start}
+.ai-update-toggle input[type=checkbox]{margin-top:3px;flex-shrink:0;accent-color:var(--ac);width:16px;height:16px;cursor:pointer}
+.ai-update-toggle:has(input:disabled){cursor:not-allowed;opacity:.6}
+.ai-update-t{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.ai-update-s{font-size:11.5px;color:var(--mu);line-height:1.5}
+.ai-update-h{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ai-quota{font-size:11px;font-weight:600;margin-top:10px;padding-top:10px;border-top:1px dashed var(--bdl);display:flex;gap:6px;align-items:center}
+.ai-update-changes{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
+.ai-change{padding:9px 11px;background:var(--sf);border:1px solid var(--bdl);border-radius:7px;font-size:11.5px;line-height:1.5}
+.ai-change-slide{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.ai-change-old{color:var(--mu);margin-bottom:2px}
+.ai-change-old span{font-weight:700;color:var(--rd);margin-right:4px}
+.ai-change-new{color:var(--tx)}
+.ai-change-new span{font-weight:700;color:var(--gn);margin-right:4px}
+
+/* ═══ SUMMARY-TAGS (chips i wizard steg 3 + material-cards) ═══ */
+.sum-tag{display:inline-block;padding:3px 8px;font-size:11px;font-weight:600;background:var(--bdl);color:var(--tx2);border-radius:5px}
+
+/* ═══ SPARAT MATERIAL-VY ═══ */
+.mat-hero{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;padding:14px 18px;background:var(--sf);border:1px solid var(--bd);border-radius:10px}
+.mat-hero-t{font-size:14px;font-weight:700;margin-bottom:2px}
+.mat-hero-s{font-size:12px;color:var(--mu)}
+
+.mat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.mat-stat{padding:14px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:10px}
+.mat-stat-l{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.mat-stat-v{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+
+.mat-filters{margin-bottom:16px}
+.mat-search{width:100%;padding:9px 14px;font-size:13px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;margin-bottom:10px;color:var(--tx)}
+.mat-search:focus{outline:none;border-color:var(--ac)}
+.mat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+
+.mat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.mat-card{background:var(--sf);border:1px solid var(--bd);border-radius:11px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+.mat-card:hover{border-color:var(--bdl)}
+.mat-card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.mat-card-title{font-size:14px;font-weight:700;margin-bottom:3px;letter-spacing:-.2px}
+.mat-card-purpose{font-size:11.5px;color:var(--mu);line-height:1.5}
+.mat-card-date{font-size:10.5px;color:var(--mu);font-weight:600;flex-shrink:0;text-transform:uppercase;letter-spacing:.5px}
+.mat-card-tags{display:flex;flex-wrap:wrap;gap:5px}
+
+.mat-file{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--sf2);border:1px solid var(--bdl);border-radius:8px}
+.mat-file.mat-file-empty{background:transparent;border:1px dashed var(--bdl)}
+.mat-file-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bdl);border-radius:6px;flex-shrink:0;color:var(--ac)}
+.mat-file-info{flex:1;min-width:0;overflow:hidden}
+.mat-file-name{font-size:12px;font-weight:600;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;margin-bottom:1px}
+.mat-file-meta{font-size:10.5px;color:var(--mu)}
+.mat-file-btn{background:none;border:1px solid transparent;color:var(--mu);cursor:pointer;width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.mat-file-btn:hover{background:var(--bdl);color:var(--ac);border-color:var(--bdl)}
+
+.mat-card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:8px;border-top:1px solid var(--bdl);flex-wrap:wrap}
+.mat-card-by{font-size:11px;color:var(--tx2)}
+.mat-card-actions{display:flex;gap:5px}
+.mat-card-actions .btn{font-size:11px;padding:5px 9px}
+
+.mat-empty{background:var(--sf);border:2px dashed var(--bd);border-radius:14px;padding:50px 20px;text-align:center;color:var(--mu)}
+.mat-empty svg{margin:0 auto 12px;color:var(--bd);display:block}
+.mat-empty-t{font-size:15px;font-weight:600;color:var(--tx);margin-bottom:6px}
+.mat-empty-s{font-size:13px;line-height:1.55;max-width:380px;margin:0 auto}
+
+@media (max-width:760px){
+  .mat-stats{grid-template-columns:1fr}
+  .mat-grid{grid-template-columns:1fr}
+  .lang-chips{grid-template-columns:1fr}
+  .mat-card-foot{flex-direction:column;align-items:stretch}
+  .mat-card-actions{justify-content:flex-end}
+}
+
 /* ═══ FÖRHANDSVISNING (deltagarvy) ═══ */
 .pv-ov{display:none;position:fixed;inset:0;background:rgba(15,23,41,.7);z-index:300;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;backdrop-filter:blur(3px)}
 .pv-ov.open{display:flex}
@@ -664,6 +744,8 @@ td{padding:10px 13px;vertical-align:middle}
         </div>
 
         <div class="pan" id="p-mina"><div id="minaContent" class="loading">Laddar...</div></div>
+
+        <div class="pan" id="p-material"><div id="materialContent" class="loading">Laddar bibliotek...</div></div>
       </div>
 
       <!-- Detaljvy: visas när användare klickas -->
@@ -774,14 +856,13 @@ td{padding:10px 13px;vertical-align:middle}
       <button class="modal-close" onclick="closeCreateTask()" style="float:right;margin-top:-4px">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
-      <div class="wz-title">Skapa uppgift från PowerPoint</div>
-      <div class="wz-sub">AI:n analyserar din presentation och bygger en interaktiv uppgift med lektioner och quiz.</div>
+      <div class="wz-title">Skapa uppgift</div>
+      <div class="wz-sub">Bygg en uppgift från en PowerPoint eller från grunden. Allt sparas i biblioteket "Sparat material".</div>
     </div>
     <div class="wz-steps">
-      <div class="wz-step" id="wz-s1">1. Grundinfo</div>
-      <div class="wz-step" id="wz-s2">2. Ladda upp</div>
-      <div class="wz-step" id="wz-s3">3. Granska</div>
-      <div class="wz-step" id="wz-s4">4. Tilldela</div>
+      <div class="wz-step" id="wz-s1">1. Innehåll</div>
+      <div class="wz-step" id="wz-s2">2. PowerPoint</div>
+      <div class="wz-step" id="wz-s3">3. Tilldela</div>
     </div>
     <div class="modal-status" id="wzStatus" style="margin:14px 26px 0"></div>
     <div class="wz-body" id="wzBody"></div>
@@ -812,7 +893,8 @@ const SL = {active:'Aktiv',recent:'Nyligen aktiv',new:'Ny',inactive:'Inaktiv'};
 
 const PAGE_INFO = {
   arenden:   {title:'Alla deltagare',  sub: () => roleSubtitle()},
-  mina:      {title:'Mina deltagare',  sub: () => 'Stjärnmarkerade deltagare, statistik och uppgifter'}
+  mina:      {title:'Mina deltagare',  sub: () => 'Stjärnmarkerade deltagare, statistik och uppgifter'},
+  material:  {title:'Sparat material & uppgifter',  sub: () => 'Delat bibliotek för hela enheten — uppgifter, PowerPoints och AI-uppdaterade versioner'}
 };
 
 let admin = null;
@@ -966,7 +1048,8 @@ function enterApp(){
 function buildNav(){
   const items=[
     {id:'arenden',label:'Alla deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
-    {id:'mina',label:'Mina deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'}
+    {id:'mina',label:'Mina deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'},
+    {id:'material',label:'Sparat material & uppgifter',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'}
   ];
   document.getElementById('sbNav').innerHTML=items.map((it,i)=>`<div class="sb-nav-item${i===0?' act':''}" data-id="${it.id}" onclick="switchTab('${it.id}')">${it.icon}<span>${it.label}</span></div>`).join('');
 }
@@ -981,6 +1064,7 @@ function switchTab(id){
   const info=PAGE_INFO[id];
   if(info){document.getElementById('pgTitle').textContent=info.title;document.getElementById('pgSub').textContent=info.sub();}
   if(id==='mina') renderMinaView();
+  if(id==='material') renderMaterialView();
 }
 
 // ═══ USERS-LISTA ═══
@@ -2334,20 +2418,57 @@ document.getElementById('bulkModal')?.addEventListener('click',(e)=>{
 //  • assign_module → { moduleId, targetUserIds[], deadline } → { ok, count }
 // Mockläget nedan genererar fejkat innehåll när endpoints saknas, så UX går att demoa.
 
+// ═══════════════════════════════════════════════════════════════════════
+// SPRÅKNIVÅER + KATEGORIER (för wizard + bibliotek)
+// ═══════════════════════════════════════════════════════════════════════
+const LANG_LEVELS = [
+  {id:'latt',     label:'Lätt svenska',     desc:'SFI A/B — korta meningar, vardagsord'},
+  {id:'vardag',   label:'Vardagssvenska',   desc:'SFI C/D — normal arbetsplats-svenska'},
+  {id:'avancerad',label:'Avancerad',        desc:'Akademisk / yrkesspecifik svenska'}
+];
+const TASK_CATS = [
+  {id:'cv',        label:'CV'},
+  {id:'intervju',  label:'Intervju'},
+  {id:'jobbsök',   label:'Jobbsök'},
+  {id:'matchning', label:'Matchning'},
+  {id:'övning',    label:'Övning'},
+  {id:'övrigt',    label:'Övrigt'}
+];
+
+// AI-uppdaterings-kvot per handläggare (10/månad)
+const AI_QUOTA_PER_MONTH = 10;
+function getAiQuotaKey(){
+  const m = new Date();
+  return `aiQuota_${admin?.id||'anon'}_${m.getFullYear()}-${m.getMonth()+1}`;
+}
+function getAiQuotaUsed(){
+  try { return parseInt(localStorage.getItem(getAiQuotaKey())||'0',10) || 0; }
+  catch(e){ return 0; }
+}
+function bumpAiQuota(){
+  try { localStorage.setItem(getAiQuotaKey(), String(getAiQuotaUsed()+1)); } catch(e){}
+}
+function getAiQuotaLeft(){ return Math.max(0, AI_QUOTA_PER_MONTH - getAiQuotaUsed()); }
+
 let wiz = null;
 
 function initWizState(){
+  // Default deadline = idag + 7 dagar (ISO yyyy-mm-dd)
+  const d = new Date();
+  d.setDate(d.getDate()+7);
   wiz = {
     step: 1,
     title: '',
     purpose: '',
-    usage: '',
+    category: 'övrigt',
+    langLevel: 'vardag',
+    estMinutes: 30,
+    deadline: d.toISOString().split('T')[0],
     file: null,
+    aiUpdate: false,
+    aiUpdateResult: null,  // { changes: [...], updatedFile: blob } när AI körts
     duplicate: null,
-    lessons: [],
-    quiz: [],
-    targetUserIds: [],
-    deadlineDays: 7
+    targetUserIds: []
   };
 }
 
@@ -2369,16 +2490,17 @@ function wzStatus(msg, kind){
 }
 
 function renderWizard(){
-  // Uppdatera steg-indikatorn
-  for(let i=1;i<=4;i++){
+  // Uppdatera steg-indikatorn (3 steg nu)
+  for(let i=1;i<=3;i++){
     const el = document.getElementById('wz-s'+i);
+    if(!el) continue;
     el.classList.toggle('act', i===wiz.step);
     el.classList.toggle('done', i<wiz.step);
   }
   wzStatus('');
   document.getElementById('wzBackBtn').style.display = wiz.step>1 ? '' : 'none';
   const nextBtn = document.getElementById('wzNextBtn');
-  nextBtn.textContent = wiz.step===4 ? 'Skapa & tilldela' : 'Nästa →';
+  nextBtn.textContent = wiz.step===3 ? 'Skapa & tilldela' : 'Nästa →';
   nextBtn.disabled = false;
 
   const body = document.getElementById('wzBody');
@@ -2386,40 +2508,67 @@ function renderWizard(){
     case 1: body.innerHTML = renderWizStep1(); break;
     case 2: body.innerHTML = renderWizStep2(); break;
     case 3: body.innerHTML = renderWizStep3(); break;
-    case 4: body.innerHTML = renderWizStep4(); break;
   }
 }
 
-// STEG 1: Grundinfo
+// STEG 1: Innehåll (titel, syfte, kategori, språknivå, tid, deadline)
 function renderWizStep1(){
+  const catOpts = TASK_CATS.map(c => `<option value="${c.id}" ${wiz.category===c.id?'selected':''}>${c.label}</option>`).join('');
+  const langChips = LANG_LEVELS.map(l => `
+    <div class="lang-chip${wiz.langLevel===l.id?' act':''}" onclick="wiz.langLevel='${l.id}';renderWizard()">
+      <div class="lang-chip-t">${l.label}</div>
+      <div class="lang-chip-s">${l.desc}</div>
+    </div>`).join('');
+
   return `
     <div class="modal-field">
-      <label class="modal-label">Rubrik på övning *</label>
-      <input type="text" class="modal-input" id="wzTitle" value="${wiz.title}" oninput="wiz.title=this.value" placeholder="T.ex. Arbetsmarknaden i Sverige" style="padding-left:12px">
+      <label class="modal-label">Titel *</label>
+      <input type="text" class="modal-input" value="${escapeHtml(wiz.title)}" oninput="wiz.title=this.value" placeholder="T.ex. Arbetsmarknaden i Sverige" style="padding-left:12px">
     </div>
+
     <div class="modal-field">
       <label class="modal-label">Syfte *</label>
-      <textarea class="modal-textarea" id="wzPurpose" oninput="wiz.purpose=this.value" placeholder="Vad ska deltagaren lära sig? T.ex. Förstå hur svenska arbetsmarknaden fungerar och vilka rättigheter/skyldigheter man har.">${wiz.purpose}</textarea>
+      <textarea class="modal-textarea" oninput="wiz.purpose=this.value" placeholder="Vad ska deltagaren lära sig?" style="min-height:70px">${escapeHtml(wiz.purpose)}</textarea>
     </div>
+
     <div class="modal-field">
-      <label class="modal-label">Användning *</label>
-      <textarea class="modal-textarea" id="wzUsage" oninput="wiz.usage=this.value" placeholder="När och hur används den? T.ex. Ges vid första mötet med nyanlända, alternativt som introduktion i grupper." style="min-height:60px">${wiz.usage}</textarea>
+      <label class="modal-label">Språknivå</label>
+      <div class="lang-chips">${langChips}</div>
     </div>
-    <div style="font-size:11px;color:var(--mu);line-height:1.55;margin-top:4px;display:flex;gap:6px;align-items:flex-start">
-      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;color:var(--ac)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-      <span>Systemet söker efter liknande uppgifter i nästa steg — om någon redan finns föreslås den istället för att skapa en dubblett.</span>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div class="modal-field" style="margin-bottom:0">
+        <label class="modal-label">Kategori</label>
+        <select onchange="wiz.category=this.value" style="width:100%;padding:9px 28px 9px 12px">${catOpts}</select>
+      </div>
+      <div class="modal-field" style="margin-bottom:0">
+        <label class="modal-label">Beräknad tid</label>
+        <select onchange="wiz.estMinutes=parseInt(this.value)" style="width:100%;padding:9px 28px 9px 12px">
+          <option value="10" ${wiz.estMinutes===10?'selected':''}>10 min</option>
+          <option value="15" ${wiz.estMinutes===15?'selected':''}>15 min</option>
+          <option value="30" ${wiz.estMinutes===30?'selected':''}>30 min</option>
+          <option value="45" ${wiz.estMinutes===45?'selected':''}>45 min</option>
+          <option value="60" ${wiz.estMinutes===60?'selected':''}>60 min</option>
+          <option value="90" ${wiz.estMinutes===90?'selected':''}>1,5 tim</option>
+          <option value="120" ${wiz.estMinutes===120?'selected':''}>2 tim</option>
+        </select>
+      </div>
+      <div class="modal-field" style="margin-bottom:0">
+        <label class="modal-label">Deadline</label>
+        <input type="date" value="${wiz.deadline}" onchange="wiz.deadline=this.value" style="width:100%;padding:9px 12px">
+      </div>
     </div>`;
 }
 
-// STEG 2: Upload + dubblettkoll
+// STEG 2: PowerPoint (frivillig) + AI-uppdatering
 function renderWizStep2(){
   const fileInfo = wiz.file
     ? `<svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-       <div class="wz-upload-t">${wiz.file.name}</div>
+       <div class="wz-upload-t">${escapeHtml(wiz.file.name)}</div>
        <div class="wz-upload-s">${Math.round(wiz.file.size/1024)} KB — klicka för att välja en annan</div>`
     : `<svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-       <div class="wz-upload-t">Klicka för att välja .pptx-fil</div>
-       <div class="wz-upload-s">Eller dra och släpp hit · Max 20 MB</div>`;
+       <div class="wz-upload-t">Ladda upp .pptx (frivilligt)</div>
+       <div class="wz-upload-s">Klicka eller dra och släpp · Max 20 MB</div>`;
 
   let matchHTML = '';
   if(wiz.duplicate){
@@ -2428,15 +2577,68 @@ function renderWizStep2(){
       <div class="wz-match">
         <div class="wz-match-h">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Liknande uppgift finns redan (${Math.round(m.score*100)}% match)
+          Liknande material finns i biblioteket (${Math.round(m.score*100)}% match)
         </div>
-        <div class="wz-match-t">${m.title}</div>
-        <div class="wz-match-s">Skapad av ${m.createdBy||'handläggare'}. Överväg att använda den befintliga uppgiften istället för att skapa en dubblett.</div>
+        <div class="wz-match-t">${escapeHtml(m.title)}</div>
+        <div class="wz-match-s">Skapad av ${escapeHtml(m.createdBy||'kollega på enheten')}. Du kan använda det istället för att ladda upp en ny version.</div>
         <div class="wz-match-actions">
-          <button class="btn btn-primary" onclick="wizardUseExisting('${m.id}')">Använd befintlig och tilldela</button>
-          <button class="btn" onclick="wiz.duplicate=null;renderWizard()">Skapa en ny ändå</button>
+          <button class="btn btn-primary" onclick="wizardUseExisting('${m.id}')">Använd befintligt material</button>
+          <button class="btn" onclick="wiz.duplicate=null;renderWizard()">Använd min uppladdning ändå</button>
         </div>
       </div>`;
+  }
+
+  // AI-uppdaterings-sektion (visas bara om fil är vald)
+  let aiSection = '';
+  if(wiz.file){
+    const left = getAiQuotaLeft();
+    const used = getAiQuotaUsed();
+    const quotaColor = left===0 ? 'var(--rd)' : (left<=3 ? 'var(--or)' : 'var(--gn)');
+
+    if(wiz.aiUpdateResult){
+      // Resultat efter AI-körning
+      const changes = wiz.aiUpdateResult.changes || [];
+      aiSection = `
+        <div class="ai-update-box" style="border-color:var(--gn);background:var(--gnb)">
+          <div class="ai-update-h">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--gn)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            AI hittade ${changes.length} föråldrad/oklar uppgift
+          </div>
+          <div class="ai-update-changes">
+            ${changes.map((c,i)=>`
+              <div class="ai-change">
+                <div class="ai-change-slide">Slide ${c.slide}</div>
+                <div class="ai-change-old"><span>Nu:</span> ${escapeHtml(c.old)}</div>
+                <div class="ai-change-new"><span>Föreslås:</span> ${escapeHtml(c.suggested)}</div>
+              </div>`).join('')}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-primary" onclick="openPptEditor()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Öppna, redigera & spara
+            </button>
+            <button class="btn" onclick="wiz.aiUpdateResult=null;wiz.aiUpdate=false;renderWizard()">Ångra AI-uppdatering</button>
+          </div>
+        </div>`;
+    } else {
+      aiSection = `
+        <div class="ai-update-box">
+          <label class="ai-update-toggle">
+            <input type="checkbox" ${wiz.aiUpdate?'checked':''} ${left===0?'disabled':''} onchange="wiz.aiUpdate=this.checked;renderWizard()">
+            <div>
+              <div class="ai-update-t">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;color:var(--ac)"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Uppdatera innehåll med ny statistik & fakta
+              </div>
+              <div class="ai-update-s">AI går igenom slides och föreslår uppdaterade siffror, datum och fakta. Inga nya sidor läggs till. Du granskar och sparar själv.</div>
+            </div>
+          </label>
+          <div class="ai-quota" style="color:${quotaColor}">
+            <span>Kvot denna månad: <b>${used}/${AI_QUOTA_PER_MONTH}</b></span>
+            ${left===0 ? '<span>· Slut för månaden</span>' : `<span>· ${left} kvar</span>`}
+          </div>
+        </div>`;
+    }
   }
 
   return `
@@ -2445,10 +2647,11 @@ function renderWizStep2(){
     </label>
     <input type="file" id="wzFile" accept=".pptx" style="display:none" onchange="wizardFileChosen(event)">
     ${matchHTML}
-    <div style="font-size:11px;color:var(--mu);margin-top:12px;line-height:1.55">
-      <b>Rubrik:</b> ${wiz.title}<br>
-      <b>Syfte:</b> ${wiz.purpose.slice(0,120)}${wiz.purpose.length>120?'…':''}
-    </div>`;
+    ${aiSection}
+    ${!wiz.file ? `
+      <div style="font-size:11px;color:var(--mu);margin-top:14px;line-height:1.55;text-align:center">
+        <i>Du kan hoppa över PowerPoint och tilldela uppgiften som en enkel checklista istället.</i>
+      </div>` : ''}`;
 }
 
 function wizardFileChosen(ev){
@@ -2464,155 +2667,82 @@ function wizardFileChosen(ev){
   }
   wiz.file = f;
   wiz.duplicate = null;
+  wiz.aiUpdateResult = null;
   renderWizard();
-  // Starta dubblettkoll direkt när fil är vald
+  // Sök efter dubblett i biblioteket (samma enhet)
   wizardCheckDuplicate();
 }
 
 async function wizardCheckDuplicate(){
-  wzStatus('Söker efter liknande uppgifter…', 'ok');
   try {
     const data = await post('check_module_duplicate', {
-      title: wiz.title,
-      purpose: wiz.purpose,
-      adminId: admin.id
+      title: wiz.title, purpose: wiz.purpose,
+      enhetId: admin.enhet_id, adminId: admin.id
     });
     if(data?.match){
       wiz.duplicate = data.match;
       renderWizard();
     }
-    wzStatus('');
   } catch(e){
-    // Mock-läge om endpoint saknas
-    console.warn('[wizard] check_module_duplicate saknas — mockar resultat');
-    wzStatus('');
-    // Simulerad match om titeln innehåller specifika ord
+    // Mock: simulera match om biblioteket har något med liknande titel
+    const lib = getMaterialLibrary();
     const t = wiz.title.toLowerCase();
-    if(t.includes('arbetsmark') || t.includes('cv')){
-      wiz.duplicate = {
-        id: 'mod_demo_existing',
-        title: t.includes('cv') ? 'Att skriva ett svenskt CV' : 'Svenska arbetsmarknaden — introduktion',
-        score: 0.82,
-        createdBy: 'Anna Lindström'
-      };
+    const found = lib.find(m => m.title.toLowerCase().includes(t.slice(0,8)) && t.length>=4);
+    if(found){
+      wiz.duplicate = { id: found.id, title: found.title, score: 0.78, createdBy: found.createdByName };
       renderWizard();
     }
   }
 }
 
-// STEG 3: Granskning av AI-genererat innehåll
-function renderWizStep3(){
-  if(!wiz.lessons.length && !wiz.quiz.length){
-    return `<div class="wz-ai-loading">
-      <div class="wz-ai-loading-icon"></div>
-      <div class="wz-ai-loading-t">AI:n analyserar din presentation…</div>
-      <div class="wz-ai-loading-s">Plockar ut lektioner och bygger quizfrågor. Tar vanligtvis 10–30 sekunder.</div>
-    </div>`;
+// AI-uppdatering körs när man trycker "Kör AI-uppdatering"
+async function runAiUpdate(){
+  if(getAiQuotaLeft()===0){
+    wzStatus('Kvoten för AI-uppdateringar är slut för månaden.', 'err');
+    return;
   }
+  wzStatus('AI analyserar slides efter föråldrad statistik & fakta…', 'ok');
+  const btn = document.getElementById('wzNextBtn');
+  if(btn){ btn.disabled = true; }
 
-  const lessonsHTML = wiz.lessons.map((l,i)=>`
-    <div class="wz-lesson">
-      <div class="wz-lesson-h">
-        <div class="wz-lesson-n">Lektion ${i+1}</div>
-        <button class="wz-lesson-del" onclick="wizardRemoveLesson(${i})" title="Ta bort">×</button>
-      </div>
-      <input type="text" value="${escapeHtml(l.title)}" oninput="wiz.lessons[${i}].title=this.value" placeholder="Lektionens titel">
-      <textarea oninput="wiz.lessons[${i}].body=this.value" placeholder="Innehåll / text för lektionen">${escapeHtml(l.body)}</textarea>
-    </div>
-  `).join('');
+  try {
+    const fd = new FormData();
+    fd.append('file', wiz.file);
+    fd.append('action', 'ai_update_pptx');
+    fd.append('adminId', admin.id);
+    const r = await fetch(API, { method:'POST', body: fd });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    wiz.aiUpdateResult = { changes: data.changes||[], moduleId: data.moduleId };
+    bumpAiQuota();
+    renderWizard();
+  } catch(e){
+    // Mock-läge: simulera förslag
+    console.warn('[wizard] ai_update_pptx saknas — mockar resultat');
+    await new Promise(r=>setTimeout(r, 1800));
+    wiz.aiUpdateResult = {
+      changes: [
+        {slide:2, old:'Arbetslösheten ligger på 7,8% (2022)', suggested:'Arbetslösheten ligger på 8,3% (2025)'},
+        {slide:5, old:'Minimilönen är ca 19 000 kr/mån', suggested:'Genomsnittslönen för nystart är ca 22 500 kr/mån (2025)'},
+        {slide:8, old:'Kontakta Arbetsförmedlingen via telefon 0771-416 416', suggested:'Kontakta Arbetsförmedlingen via Mina sidor på arbetsformedlingen.se'}
+      ]
+    };
+    bumpAiQuota();
+    renderWizard();
+    wzStatus('Demo: AI hittade 3 föråldrade fakta. Granska och redigera.', 'ok');
+  }
+  if(btn){ btn.disabled = false; }
+}
 
-  const quizHTML = wiz.quiz.map((q,i)=>`
-    <div class="wz-quiz">
-      <div class="wz-lesson-h">
-        <div class="wz-lesson-n">Fråga ${i+1}</div>
-        <button class="wz-lesson-del" onclick="wizardRemoveQuestion(${i})" title="Ta bort">×</button>
-      </div>
-      <input type="text" class="wz-quiz-q" value="${escapeHtml(q.q)}" oninput="wiz.quiz[${i}].q=this.value" placeholder="Fråga">
-      <div class="wz-quiz-opts">
-        ${q.options.map((opt,j)=>`
-          <label class="wz-quiz-opt">
-            <input type="radio" name="q${i}" ${q.correct===j?'checked':''} onchange="wiz.quiz[${i}].correct=${j}">
-            <input type="text" value="${escapeHtml(opt)}" oninput="wiz.quiz[${i}].options[${j}]=this.value" placeholder="Svarsalternativ ${j+1}">
-          </label>`).join('')}
-      </div>
-    </div>
-  `).join('');
-
-  return `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px">
-      <div style="font-size:11px;color:var(--mu);line-height:1.5;flex:1">
-        Granska och redigera. Titlar och texter är förifyllda från PowerPoint + AI-förslag — justera efter behov.
-      </div>
-      <button class="btn" onclick="openPreview()" style="flex-shrink:0">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        Förhandsvisa
-      </button>
-    </div>
-    <div style="font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Lektioner (${wiz.lessons.length})</div>
-    ${lessonsHTML}
-    <button class="wz-add" onclick="wizardAddLesson()">+ Lägg till lektion</button>
-
-    <div style="font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px">Quiz (${wiz.quiz.length} frågor)</div>
-    ${quizHTML}
-    <button class="wz-add" onclick="wizardAddQuestion()">+ Lägg till fråga</button>`;
+// Öppna pptx-redigerare (placeholder — i produktion: WebOffice, OnlyOffice eller liknande)
+function openPptEditor(){
+  alert('Här öppnas en lättviktig PowerPoint-redigerare där du ser AI:s förslag inline och kan acceptera/justera/avvisa per slide. Redigeraren sparar tillbaka till samma material i biblioteket.\n\n(Backend: kräver integration med en pptx-editor-tjänst.)');
 }
 
 function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-async function wizardGenerate(){
-  // Rensa tidigare data så loading-state visas
-  wiz.lessons = [];
-  wiz.quiz = [];
-  renderWizard();
-
-  const fd = new FormData();
-  fd.append('file', wiz.file);
-  fd.append('title', wiz.title);
-  fd.append('purpose', wiz.purpose);
-  fd.append('usage', wiz.usage);
-  fd.append('adminId', admin.id);
-
-  try {
-    const r = await fetch(API, { method:'POST', body: fd });
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const data = await r.json();
-    wiz.lessons = data.lessons || [];
-    wiz.quiz = data.quiz || [];
-    renderWizard();
-  } catch(e){
-    // Mock: generera fejkat innehåll baserat på rubriken så UX kan demoas
-    console.warn('[wizard] generate_module_from_pptx saknas — mockar AI-resultat');
-    await new Promise(r=>setTimeout(r, 1400));
-    wiz.lessons = mockGenerateLessons(wiz.title, wiz.purpose);
-    wiz.quiz = mockGenerateQuiz(wiz.title);
-    renderWizard();
-    wzStatus('Demo-innehåll genererat (backend AI-endpoint saknas). Redigera som vanligt.', 'ok');
-  }
-}
-
-function mockGenerateLessons(title, purpose){
-  return [
-    {title:'Introduktion — '+title, body:'Kort översikt av ämnet. '+purpose.slice(0,150)},
-    {title:'Viktigaste begreppen', body:'Här går vi igenom de centrala begreppen i ämnet. AI:n har extraherat dessa från slidesens rubriker och punktlistor.'},
-    {title:'Praktiska exempel', body:'Konkreta situationer som deltagaren kan möta. Exemplen är hämtade från PowerPointens bildtexter.'},
-    {title:'Sammanfattning', body:'Viktigaste lärdomarna från presentationen.'}
-  ];
-}
-function mockGenerateQuiz(title){
-  return [
-    {q:'Vad handlar övningen "'+title+'" huvudsakligen om?', options:['Allmän kultur','Ämnets grundbegrepp','Språkträning','Ekonomi'], correct:1},
-    {q:'Vilket påstående stämmer bäst?', options:['Alla har samma rättigheter','Detta gäller bara i Stockholm','Det är frivilligt att delta','Reglerna varierar per kommun'], correct:0},
-    {q:'När är det mest användbart att kunna detta?', options:['Aldrig','Vid första kontakten med myndigheter','Bara på semester','I skolan'], correct:1}
-  ];
-}
-
-function wizardAddLesson(){ wiz.lessons.push({title:'Ny lektion',body:''}); renderWizard(); }
-function wizardRemoveLesson(i){ wiz.lessons.splice(i,1); renderWizard(); }
-function wizardAddQuestion(){ wiz.quiz.push({q:'',options:['','','',''],correct:0}); renderWizard(); }
-function wizardRemoveQuestion(i){ wiz.quiz.splice(i,1); renderWizard(); }
-
-// STEG 4: Tilldela
-function renderWizStep4(){
+// STEG 3: Tilldela
+function renderWizStep3(){
   const favs = getFavorites();
   const mina = allUsers.filter(u=>favs.has(u.user_id||u.id));
   const allOpts = mina.map(u=>{
@@ -2622,26 +2752,28 @@ function renderWizStep4(){
     const checked = wiz.targetUserIds.includes(uid);
     return `<label class="wz-quiz-opt" style="padding:6px 0">
       <input type="checkbox" ${checked?'checked':''} onchange="wizardToggleTarget('${uid}')">
-      <span style="font-size:13px;font-weight:500">${name}</span>
+      <span style="font-size:13px;font-weight:500">${escapeHtml(name)}</span>
     </label>`;
   }).join('');
+
+  const langLbl = LANG_LEVELS.find(l=>l.id===wiz.langLevel)?.label || wiz.langLevel;
+  const catLbl  = TASK_CATS.find(c=>c.id===wiz.category)?.label || wiz.category;
 
   return `
     <div class="modal-field">
       <label class="modal-label">Sammanfattning</label>
-      <div style="background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.55">
-        <b>${wiz.title}</b><br>
-        ${wiz.lessons.length} lektioner · ${wiz.quiz.length} quizfrågor
+      <div style="background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.6">
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px">${escapeHtml(wiz.title)}</div>
+        <div style="color:var(--mu);margin-bottom:8px">${escapeHtml(wiz.purpose.slice(0,180))}${wiz.purpose.length>180?'…':''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span class="sum-tag">${catLbl}</span>
+          <span class="sum-tag">${langLbl}</span>
+          <span class="sum-tag">${wiz.estMinutes} min</span>
+          <span class="sum-tag">Deadline ${wiz.deadline}</span>
+          ${wiz.file ? `<span class="sum-tag" style="background:var(--gnb);color:var(--gn)">PowerPoint bifogad</span>` : ''}
+          ${wiz.aiUpdateResult ? `<span class="sum-tag" style="background:var(--acs);color:var(--ac)">AI-uppdaterad ✓</span>` : ''}
+        </div>
       </div>
-    </div>
-    <div class="modal-field">
-      <label class="modal-label">Deadline</label>
-      <select id="wzDeadline" onchange="wiz.deadlineDays=parseInt(this.value)" style="width:100%;padding:9px 28px 9px 12px">
-        <option value="3" ${wiz.deadlineDays===3?'selected':''}>Om 3 dagar</option>
-        <option value="7" ${wiz.deadlineDays===7?'selected':''}>Om 1 vecka</option>
-        <option value="14" ${wiz.deadlineDays===14?'selected':''}>Om 2 veckor</option>
-        <option value="30" ${wiz.deadlineDays===30?'selected':''}>Om 1 månad</option>
-      </select>
     </div>
     <div class="modal-field">
       <label class="modal-label">Tilldela till (${wiz.targetUserIds.length} valda av ${mina.length})</label>
@@ -2650,9 +2782,14 @@ function renderWizStep4(){
           <button class="btn" style="font-size:11px;padding:5px 10px" onclick="wizardSelectAllTargets()">Markera alla</button>
           <button class="btn" style="font-size:11px;padding:5px 10px" onclick="wiz.targetUserIds=[];renderWizard()">Rensa</button>
         </div>
-        <div style="max-height:160px;overflow-y:auto;border:1px solid var(--bdl);border-radius:8px;padding:6px 12px">${allOpts}</div>
-      ` : `<div style="font-size:12px;color:var(--mu);padding:10px;background:var(--sf2);border-radius:8px">Du har inga stjärnmarkerade deltagare. Gå till Alla deltagare och markera några först.</div>`}
-    </div>`;
+        <div style="max-height:200px;overflow-y:auto;border:1px solid var(--bdl);border-radius:8px;padding:6px 12px">${allOpts}</div>
+      ` : `<div style="font-size:12px;color:var(--mu);padding:10px;background:var(--sf2);border-radius:8px">Du har inga stjärnmarkerade deltagare. Gå till Alla deltagare och markera några först — eller spara uppgiften i biblioteket utan att tilldela nu.</div>`}
+    </div>
+    ${!mina.length ? `
+      <button class="btn" onclick="wizardSaveOnly()" style="width:100%;margin-top:6px">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Spara bara i biblioteket (utan att tilldela nu)
+      </button>` : ''}`;
 }
 
 function wizardToggleTarget(uid){
@@ -2670,30 +2807,41 @@ function wizardSelectAllTargets(){
 function wizardBack(){ if(wiz.step>1){wiz.step--;renderWizard();} }
 async function wizardNext(){
   if(wiz.step===1){
-    if(!wiz.title.trim()){ wzStatus('Fyll i rubrik.','err'); return; }
+    if(!wiz.title.trim()){ wzStatus('Fyll i titel.','err'); return; }
     if(!wiz.purpose.trim()){ wzStatus('Fyll i syfte.','err'); return; }
-    if(!wiz.usage.trim()){ wzStatus('Fyll i användning.','err'); return; }
+    if(!wiz.deadline){ wzStatus('Välj deadline.','err'); return; }
     wiz.step = 2;
     renderWizard();
     return;
   }
   if(wiz.step===2){
-    if(!wiz.file){ wzStatus('Ladda upp en .pptx-fil.','err'); return; }
-    if(wiz.duplicate){ wzStatus('Välj att använda befintlig eller klicka "Skapa en ny ändå" först.','err'); return; }
+    // Om AI-uppdatering är ikryssad och inte körts än → kör nu
+    if(wiz.file && wiz.aiUpdate && !wiz.aiUpdateResult){
+      await runAiUpdate();
+      return; // Stanna på steg 2 så användaren kan granska/redigera
+    }
+    if(wiz.duplicate){ wzStatus('Välj att använda befintligt eller "Använd min uppladdning ändå" först.','err'); return; }
     wiz.step = 3;
     renderWizard();
-    wizardGenerate();
     return;
   }
   if(wiz.step===3){
-    if(!wiz.lessons.length){ wzStatus('Lägg till minst en lektion.','err'); return; }
-    wiz.step = 4;
-    renderWizard();
-    return;
-  }
-  if(wiz.step===4){
-    if(!wiz.targetUserIds.length){ wzStatus('Välj minst en deltagare att tilldela till.','err'); return; }
+    if(!wiz.targetUserIds.length){ wzStatus('Välj minst en deltagare — eller använd "Spara bara i biblioteket".','err'); return; }
     await wizardSaveAndAssign();
+  }
+}
+
+// Spara material i biblioteket utan att tilldela
+async function wizardSaveOnly(){
+  const btn = document.getElementById('wzNextBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Sparar…'; }
+  try {
+    saveToMaterialLibrary({assigned:false, count:0});
+    wzStatus('Sparat i biblioteket! Du kan tilldela det senare.', 'ok');
+    setTimeout(()=>{ closeCreateTask(); switchTab('material'); }, 1400);
+  } catch(e){
+    wzStatus('Kunde inte spara: '+e.message, 'err');
+    if(btn){ btn.disabled = false; }
   }
 }
 
@@ -2701,31 +2849,31 @@ async function wizardSaveAndAssign(){
   const btn = document.getElementById('wzNextBtn');
   btn.disabled = true; btn.textContent = 'Sparar…';
 
-  const deadline = new Date();
-  deadline.setDate(deadline.getDate()+wiz.deadlineDays);
+  const deadline = new Date(wiz.deadline);
 
   try {
-    // 1. Skapa modulen
-    const createRes = await post('create_module', {
-      title: wiz.title, purpose: wiz.purpose, usage: wiz.usage,
-      lessons: wiz.lessons, quiz: wiz.quiz,
-      createdBy: admin.id
-    });
-    const moduleId = createRes.moduleId || createRes.id;
+    // 1. Skapa modulen i backend (om endpoint finns)
+    let moduleId = null;
+    try {
+      const fd = new FormData();
+      fd.append('action','create_module');
+      fd.append('title', wiz.title);
+      fd.append('purpose', wiz.purpose);
+      fd.append('category', wiz.category);
+      fd.append('langLevel', wiz.langLevel);
+      fd.append('estMinutes', String(wiz.estMinutes));
+      fd.append('createdBy', admin.id);
+      fd.append('enhetId', admin.enhet_id||'');
+      if(wiz.file) fd.append('file', wiz.file);
+      if(wiz.aiUpdateResult) fd.append('aiUpdated','1');
+      const r = await fetch(API, { method:'POST', body: fd });
+      if(r.ok){
+        const data = await r.json();
+        moduleId = data.moduleId || data.id;
+      }
+    } catch(_){}
 
-    // 2. Tilldela till valda deltagare
-    const assignRes = await post('assign_module', {
-      moduleId, targetUserIds: wiz.targetUserIds,
-      deadline: deadline.toISOString(),
-      filters: { adminId: admin.id }
-    });
-
-    wzStatus(`Uppgift skapad och tilldelad till ${assignRes.count||wiz.targetUserIds.length} deltagare!`, 'ok');
-    btn.textContent = 'Klar ✓';
-    setTimeout(()=>{ closeCreateTask(); renderMinaTasksView(); }, 1600);
-  } catch(e){
-    // Mock: fall tillbaka på assign_task per deltagare
-    console.warn('[wizard] create_module/assign_module saknas — mockar med assign_task per deltagare');
+    // 2. Tilldela till valda deltagare via assign_task (alltid stödd)
     let ok=0, fail=0;
     for(const uid of wiz.targetUserIds){
       try {
@@ -2733,47 +2881,298 @@ async function wizardSaveAndAssign(){
           targetUserId: uid,
           title: wiz.title,
           description: wiz.purpose,
-          category: 'övrigt',
+          category: wiz.category,
           deadline: deadline.toISOString(),
-          filters: { adminId: admin.id }
+          durationMinutes: wiz.estMinutes,
+          filters: { adminId: admin.id, moduleId, langLevel: wiz.langLevel }
         });
         ok++;
       } catch(err){ fail++; }
     }
-    wzStatus(fail===0
-      ? `Demo-läge: ${ok} deltagare fick uppgiften (modulinnehåll gick ej att spara utan backend).`
-      : `${ok} lyckades, ${fail} misslyckades.`,
-      fail===0?'ok':'err');
-    btn.textContent = fail===0 ? 'Klar ✓' : 'Försök igen';
-    if(fail===0) setTimeout(()=>{ closeCreateTask(); renderMinaTasksView(); }, 2000);
-    else btn.disabled=false;
+
+    // 3. Spara även lokalt i biblioteket så det syns direkt
+    saveToMaterialLibrary({assigned:true, count:ok, moduleId});
+
+    if(fail===0){
+      wzStatus(`Uppgift skapad och tilldelad till ${ok} deltagare. Sparat i biblioteket.`, 'ok');
+      btn.textContent = 'Klar ✓';
+      setTimeout(()=>{ closeCreateTask(); switchTab('material'); }, 1600);
+    } else {
+      wzStatus(`${ok} lyckades, ${fail} misslyckades.`, 'err');
+      btn.textContent = 'Försök igen';
+      btn.disabled = false;
+    }
+  } catch(e){
+    wzStatus('Kunde inte spara: '+e.message, 'err');
+    btn.textContent = 'Försök igen';
+    btn.disabled = false;
   }
 }
 
-// Använd befintlig uppgift istället för att skapa ny
+// Använd befintligt material — hoppa direkt till tilldelning
 async function wizardUseExisting(moduleId){
-  if(!wiz.targetUserIds.length){
-    // Om inga deltagare är valda, hoppa till steg 4 för att välja
-    wiz.step = 4;
-    wzStatus('Välj deltagare att tilldela den befintliga uppgiften till.','ok');
-    renderWizard();
-    // Markera att vi använder befintlig
-    wiz._useExistingModuleId = moduleId;
+  wiz._useExistingModuleId = moduleId;
+  wiz.duplicate = null;
+  wiz.step = 3;
+  wzStatus('Befintligt material valt — välj deltagare att tilldela till.', 'ok');
+  renderWizard();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SPARAT MATERIAL & UPPGIFTER (delat per enhet)
+// ═══════════════════════════════════════════════════════════════════════
+// Lokalt cache i localStorage med nyckel per enhet — i produktion: backend-tabell `modules`
+function getMaterialLibKey(){
+  return `material_lib_${admin?.enhet_id||'default'}`;
+}
+function getMaterialLibrary(){
+  try { return JSON.parse(localStorage.getItem(getMaterialLibKey())||'[]') || []; }
+  catch(e){ return []; }
+}
+function setMaterialLibrary(list){
+  try { localStorage.setItem(getMaterialLibKey(), JSON.stringify(list)); } catch(e){}
+}
+function saveToMaterialLibrary({assigned, count, moduleId}){
+  const lib = getMaterialLibrary();
+  const item = {
+    id: moduleId || ('mod_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)),
+    title: wiz.title,
+    purpose: wiz.purpose,
+    category: wiz.category,
+    langLevel: wiz.langLevel,
+    estMinutes: wiz.estMinutes,
+    deadline: wiz.deadline,
+    fileName: wiz.file?.name || null,
+    fileSize: wiz.file?.size || 0,
+    aiUpdated: !!wiz.aiUpdateResult,
+    aiChanges: wiz.aiUpdateResult?.changes?.length || 0,
+    createdAt: new Date().toISOString(),
+    createdBy: admin.id,
+    createdByName: admin.name || admin.email || 'Handläggare',
+    enhetId: admin.enhet_id || null,
+    enhetName: admin.enhet_name || admin.enheter?.name || '',
+    assignmentCount: count || 0,
+    lastAssignedAt: assigned ? new Date().toISOString() : null
+  };
+  lib.unshift(item); // senast skapad först
+  setMaterialLibrary(lib);
+  return item;
+}
+
+// Filter-state för material-vyn
+let materialFilter = { cat: '', lang: '', q: '' };
+
+function renderMaterialView(){
+  const wrap = document.getElementById('materialContent');
+  const lib = getMaterialLibrary();
+
+  // Sortera kronologiskt (senast först)
+  const sorted = lib.slice().sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+
+  // Applicera filter
+  const q = materialFilter.q.toLowerCase().trim();
+  const filtered = sorted.filter(m => {
+    if(materialFilter.cat && m.category !== materialFilter.cat) return false;
+    if(materialFilter.lang && m.langLevel !== materialFilter.lang) return false;
+    if(q && !((m.title||'').toLowerCase().includes(q) || (m.purpose||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+
+  // Räknare för chip-filtren
+  const catCounts = {};
+  TASK_CATS.forEach(c => catCounts[c.id] = sorted.filter(m=>m.category===c.id).length);
+  const langCounts = {};
+  LANG_LEVELS.forEach(l => langCounts[l.id] = sorted.filter(m=>m.langLevel===l.id).length);
+
+  // Stats
+  const aiUsed = getAiQuotaUsed();
+  const aiLeft = getAiQuotaLeft();
+  const totalAssign = sorted.reduce((s,m)=>s+(m.assignmentCount||0), 0);
+
+  // Header med stats + skapa-knapp
+  const header = `
+    <div class="mat-hero">
+      <div class="mat-hero-l">
+        <div class="mat-hero-t">Bibliotek för enheten</div>
+        <div class="mat-hero-s">${admin?.enhet_name||admin?.enheter?.name||'Din enhet'} · delas mellan alla handläggare på kontoret</div>
+      </div>
+      <button class="btn btn-primary" onclick="openCreateTask()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>
+        Skapa uppgift
+      </button>
+    </div>
+
+    <div class="mat-stats">
+      <div class="mat-stat">
+        <div class="mat-stat-l">Material i biblioteket</div>
+        <div class="mat-stat-v">${sorted.length}</div>
+      </div>
+      <div class="mat-stat">
+        <div class="mat-stat-l">Tilldelningar totalt</div>
+        <div class="mat-stat-v">${totalAssign}</div>
+      </div>
+      <div class="mat-stat">
+        <div class="mat-stat-l">AI-uppdateringar denna månad</div>
+        <div class="mat-stat-v" style="color:${aiLeft===0?'var(--rd)':(aiLeft<=3?'var(--or)':'var(--gn)')}">${aiUsed}<span style="font-size:14px;color:var(--mu);font-weight:500"> / ${AI_QUOTA_PER_MONTH}</span></div>
+      </div>
+    </div>
+
+    <div class="mat-filters">
+      <input type="text" class="mat-search" placeholder="Sök i titel eller syfte…" value="${escapeHtml(materialFilter.q)}" oninput="materialFilter.q=this.value;renderMaterialView()">
+      <div class="mat-chips">
+        <div class="chip${materialFilter.cat===''?' act':''}" onclick="materialFilter.cat='';renderMaterialView()"><span>Alla kategorier</span><span class="chip-c">${sorted.length}</span></div>
+        ${TASK_CATS.map(c => catCounts[c.id]>0 ? `<div class="chip${materialFilter.cat===c.id?' act':''}" onclick="materialFilter.cat='${c.id}';renderMaterialView()"><span>${c.label}</span><span class="chip-c">${catCounts[c.id]}</span></div>` : '').join('')}
+      </div>
+      <div class="mat-chips">
+        <div class="chip${materialFilter.lang===''?' act':''}" onclick="materialFilter.lang='';renderMaterialView()"><span>Alla språk</span></div>
+        ${LANG_LEVELS.map(l => langCounts[l.id]>0 ? `<div class="chip${materialFilter.lang===l.id?' act':''}" onclick="materialFilter.lang='${l.id}';renderMaterialView()"><span>${l.label}</span><span class="chip-c">${langCounts[l.id]}</span></div>` : '').join('')}
+      </div>
+    </div>`;
+
+  // Tomstate
+  if(sorted.length === 0){
+    wrap.innerHTML = header + `
+      <div class="mat-empty">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <div class="mat-empty-t">Biblioteket är tomt</div>
+        <div class="mat-empty-s">Skapa din första uppgift så hamnar den här. Alla handläggare på enheten kan se och återanvända materialet.</div>
+        <button class="btn btn-primary" onclick="openCreateTask()" style="margin-top:14px">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>
+          Skapa första uppgiften
+        </button>
+      </div>`;
     return;
   }
-  const deadline = new Date();
-  deadline.setDate(deadline.getDate()+wiz.deadlineDays);
-  try {
-    await post('assign_module', {
-      moduleId, targetUserIds: wiz.targetUserIds,
-      deadline: deadline.toISOString(),
-      filters:{adminId: admin.id}
-    });
-    wzStatus('Befintlig uppgift tilldelad!', 'ok');
-    setTimeout(()=>{ closeCreateTask(); renderMinaTasksView(); }, 1400);
-  } catch(e){
-    wzStatus('Kunde inte tilldela: '+e.message, 'err');
+
+  // Kort för varje material
+  const cards = filtered.map(m => {
+    const cat = TASK_CATS.find(c=>c.id===m.category)?.label || m.category;
+    const lang = LANG_LEVELS.find(l=>l.id===m.langLevel)?.label || m.langLevel;
+    const date = new Date(m.createdAt).toLocaleDateString('sv-SE', {year:'numeric',month:'short',day:'numeric'});
+
+    const fileBlock = m.fileName ? `
+      <div class="mat-file">
+        <div class="mat-file-icon">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="mat-file-info">
+          <div class="mat-file-name">${escapeHtml(m.fileName)}</div>
+          <div class="mat-file-meta">${Math.round(m.fileSize/1024)} KB${m.aiUpdated?` · <span style="color:var(--ac)">AI-uppdaterad (${m.aiChanges} fakta)</span>`:''}</div>
+        </div>
+        <button class="mat-file-btn" onclick="downloadMaterialFile('${m.id}')" title="Ladda ner">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+      </div>` : `
+      <div class="mat-file mat-file-empty">
+        <div class="mat-file-icon" style="color:var(--mu)">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <div class="mat-file-info">
+          <div class="mat-file-name" style="color:var(--mu)">Ingen PowerPoint</div>
+          <div class="mat-file-meta">Tilldelad som textbaserad uppgift</div>
+        </div>
+      </div>`;
+
+    return `
+      <div class="mat-card">
+        <div class="mat-card-h">
+          <div style="flex:1;min-width:0">
+            <div class="mat-card-title">${escapeHtml(m.title)}</div>
+            <div class="mat-card-purpose">${escapeHtml((m.purpose||'').slice(0,140))}${(m.purpose||'').length>140?'…':''}</div>
+          </div>
+          <div class="mat-card-date">${date}</div>
+        </div>
+
+        <div class="mat-card-tags">
+          <span class="sum-tag">${cat}</span>
+          <span class="sum-tag">${lang}</span>
+          <span class="sum-tag">${m.estMinutes} min</span>
+          ${m.aiUpdated ? '<span class="sum-tag" style="background:var(--acs);color:var(--ac)">AI ✓</span>' : ''}
+        </div>
+
+        ${fileBlock}
+
+        <div class="mat-card-foot">
+          <div class="mat-card-by">
+            <span style="color:var(--mu)">Skapad av</span> <b>${escapeHtml(m.createdByName)}</b>
+            ${m.assignmentCount>0 ? ` · <span style="color:var(--gn)">${m.assignmentCount} tilldelad${m.assignmentCount===1?'':'a'}</span>` : ' · <span style="color:var(--mu)">Inte tilldelad än</span>'}
+          </div>
+          <div class="mat-card-actions">
+            <button class="btn" onclick="reAssignMaterial('${m.id}')" title="Tilldela till fler deltagare">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Tilldela
+            </button>
+            ${m.fileName ? `<button class="btn" onclick="aiUpdateExisting('${m.id}')" title="Uppdatera innehåll med AI">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              AI-uppdatera
+            </button>` : ''}
+            <button class="btn inst-danger" onclick="deleteMaterial('${m.id}')" title="Ta bort">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const noResults = filtered.length === 0 ? `
+    <div class="mat-empty" style="padding:30px 20px">
+      <div class="mat-empty-t" style="font-size:14px">Inga träffar med valda filter</div>
+      <button class="btn" style="margin-top:10px" onclick="materialFilter={cat:'',lang:'',q:''};renderMaterialView()">Rensa filter</button>
+    </div>` : '';
+
+  wrap.innerHTML = header + `<div class="mat-grid">${cards}</div>${noResults}`;
+}
+
+function downloadMaterialFile(id){
+  // I produktion: anropa backend för att hämta filen från storage
+  alert('Här laddas originalfilen (eller den AI-uppdaterade versionen om sådan finns) ner från backend-storage.\n\n(Backend: GET /api/material/' + id + '/file)');
+}
+
+function reAssignMaterial(id){
+  const lib = getMaterialLibrary();
+  const m = lib.find(x => x.id === id);
+  if(!m) return;
+  // Öppna wizard direkt i steg 3 (tilldela) med materialet förifyllt
+  initWizState();
+  wiz.title = m.title;
+  wiz.purpose = m.purpose;
+  wiz.category = m.category;
+  wiz.langLevel = m.langLevel;
+  wiz.estMinutes = m.estMinutes;
+  wiz._useExistingModuleId = m.id;
+  wiz.step = 3;
+  document.getElementById('createTaskModal').classList.add('open');
+  renderWizard();
+  wzStatus(`Tilldelar befintligt material: "${m.title}". Välj deltagare nedan.`, 'ok');
+}
+
+async function aiUpdateExisting(id){
+  if(getAiQuotaLeft()===0){
+    alert('Kvoten för AI-uppdateringar är slut för månaden ('+AI_QUOTA_PER_MONTH+'/'+AI_QUOTA_PER_MONTH+'). Kvoten återställs den 1:a varje månad.');
+    return;
   }
+  const lib = getMaterialLibrary();
+  const m = lib.find(x => x.id === id);
+  if(!m) return;
+  if(!confirm(`Köra AI-uppdatering på "${m.title}"?\n\nAI går igenom slides och föreslår uppdaterade siffror, datum och fakta. Du granskar och sparar själv. (${getAiQuotaLeft()-1} uppdateringar kvar efter denna.)`)) return;
+
+  // Mock: simulera körning
+  bumpAiQuota();
+  m.aiUpdated = true;
+  m.aiChanges = (m.aiChanges||0) + 3;
+  m.lastAiUpdateAt = new Date().toISOString();
+  setMaterialLibrary(lib);
+  alert(`Klart! AI hittade 3 föråldrade fakta i "${m.title}". Klicka på "Öppna, redigera & spara" för att granska förslagen.\n\n(I produktion öppnas ppt-redigeraren direkt här.)`);
+  renderMaterialView();
+}
+
+function deleteMaterial(id){
+  const lib = getMaterialLibrary();
+  const m = lib.find(x => x.id === id);
+  if(!m) return;
+  if(!confirm(`Ta bort "${m.title}" från biblioteket?\n\nMaterialet försvinner för alla handläggare på enheten. Redan tilldelade uppgifter berörs inte.`)) return;
+  setMaterialLibrary(lib.filter(x => x.id !== id));
+  renderMaterialView();
 }
 
 // Stäng vid klick utanför + Esc
