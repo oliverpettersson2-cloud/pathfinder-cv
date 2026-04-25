@@ -1805,6 +1805,72 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   function safeSet(key, val) {
     try { localStorage.setItem(key, val); return true; } catch(e) { return false; }
   }
+  function safeRemove(key) {
+    try { localStorage.removeItem(key); return true; } catch(e) { return false; }
+  }
+
+  // ── USER-SCOPED STORAGE — ISOLERA DATA PER ANVÄNDARE ─────────
+  // KRITISK SÄKERHETSFIX: tidigare delade alla användare på samma
+  // webbläsare samma localStorage-nycklar (t.ex. 'cvData'), vilket
+  // gjorde att nästa person som loggade in såg föregående persons CV.
+  // Lösning: alla användardata-nycklar suffixas med user-id.
+  // Exempel: 'cvData' → 'cvData::user_abc123'
+  // Auth-nyckeln (pathfinder_auth) är fortfarande global eftersom
+  // den används för att identifiera vem som är inloggad.
+  const USER_KEYS = [
+    'cvData', 'pathfinder_saved_cvs', 'pathfinder_matched_cvs',
+    'cvmatchen_ovning_progress', 'pf_saved_edu', 'pathfinder_job_diary'
+  ];
+  function userKey(baseKey) {
+    const uid = window.authUserId;
+    if (!uid) return baseKey + '::anon';
+    return baseKey + '::' + uid;
+  }
+  // Override safeGet/safeSet för user-scoped nycklar
+  const _origSafeGet = safeGet;
+  const _origSafeSet = safeSet;
+  const _origSafeRemove = safeRemove;
+  safeGet = function(key) {
+    if (USER_KEYS.indexOf(key) !== -1) {
+      // Migrationsläge: om ingen användarscoped finns men gammal global gör det
+      // → läs den globala MEN ENDAST om användaren just loggat in (engångsmigration)
+      const scoped = _origSafeGet(userKey(key));
+      if (scoped !== null) return scoped;
+      // Om inget scoped finns → returnera null (INTE den globala — då skulle vi
+      // läcka data mellan användare). Backend-load kommer skriva user-scoped.
+      return null;
+    }
+    return _origSafeGet(key);
+  };
+  safeSet = function(key, val) {
+    if (USER_KEYS.indexOf(key) !== -1) {
+      return _origSafeSet(userKey(key), val);
+    }
+    return _origSafeSet(key, val);
+  };
+  safeRemove = function(key) {
+    if (USER_KEYS.indexOf(key) !== -1) {
+      return _origSafeRemove(userKey(key));
+    }
+    return _origSafeRemove(key);
+  };
+  // Rensa ALL user-scoped data (vid logout, kontoradering eller user-byte)
+  function clearAllUserData() {
+    try {
+      // Rensa både user-scoped och eventuellt kvarvarande globala (gamla) nycklar
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(k => {
+        // Ta bort alla user-scoped nycklar (innehåller '::')
+        if (k.indexOf('::') !== -1) {
+          const base = k.split('::')[0];
+          if (USER_KEYS.indexOf(base) !== -1) localStorage.removeItem(k);
+        }
+        // Ta bort gamla globala nycklar som kan ligga kvar från före säkerhetsfixen
+        if (USER_KEYS.indexOf(k) !== -1) localStorage.removeItem(k);
+      });
+    } catch(e) { console.warn('clearAllUserData fail:', e); }
+  }
+  window.clearAllUserData = clearAllUserData;
 
   function loadCV() {
     const raw = safeGet(STORAGE_KEY);
@@ -2157,6 +2223,22 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
   // ── Spara login-state + ladda från moln innan onboarding-beslut ─
   async function authSetLoggedIn(email, isNew, userId, accessToken, refreshToken, expiresIn) {
+    // SÄKERHETSFIX: om en annan user-id loggar in än senast → rensa all data
+    // för att undvika att se föregående persons CV
+    try {
+      const prevAuthRaw = _origSafeGet(AUTH_STORAGE_KEY);
+      if (prevAuthRaw) {
+        const prevAuth = JSON.parse(prevAuthRaw);
+        if (prevAuth && prevAuth.userId && prevAuth.userId !== userId) {
+          console.log('[security] User-byte detekterad — rensar föregående users data');
+          clearAllUserData();
+          // Återställ in-memory state till tomt
+          cvData = createEmptyCV();
+          trainingProgress = {};
+        }
+      }
+    } catch(e) { console.warn('User-switch check fail:', e); }
+
     const expiresAt = expiresIn ? Date.now() + (expiresIn * 1000) : null;
     safeSet(AUTH_STORAGE_KEY, JSON.stringify({
       email: email,
@@ -2374,6 +2456,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   window.logout = function() {
     if (!confirm('Logga ut?')) return;
     try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch(e) {}
+    // SÄKERHETSFIX: rensa ALL CV-data så nästa person inte ser den föregåendes
+    try { clearAllUserData(); } catch(e) {}
     window.location.reload();
   };
 
@@ -2422,6 +2506,20 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         let b64 = parts[0].replace(/-/g, '+').replace(/_/g, '/');
         while (b64.length % 4) b64 += '=';
         const payload = JSON.parse(atob(b64));
+
+        // SÄKERHETSFIX: detektera user-byte
+        try {
+          const prevAuthRaw = _origSafeGet(AUTH_STORAGE_KEY);
+          if (prevAuthRaw) {
+            const prevAuth = JSON.parse(prevAuthRaw);
+            if (prevAuth && prevAuth.email && prevAuth.email !== payload.email) {
+              console.log('[security] User-byte (MS OAuth) — rensar föregående users data');
+              clearAllUserData();
+              cvData = createEmptyCV();
+              trainingProgress = {};
+            }
+          }
+        } catch(_) {}
 
         safeSet(AUTH_STORAGE_KEY, JSON.stringify({
           email: payload.email,
@@ -2997,33 +3095,82 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     if (btn) { btn.disabled = true; btn.textContent = '⏳ AI genererar...'; }
     showAiLoader('Genererar arbetsuppgifter...', 'AI skriver unika meningar');
 
-    try {
+    // Helper: försök med given modell, returnera parsed.arbetsuppgifter eller kasta fel
+    async function tryModel(modelName) {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
+          model: modelName,
           max_tokens: 400,
           messages: [{ role: 'user', content: prompt }]
         })
       });
-      if (!response.ok) throw new Error('API-fel: ' + response.status);
+      if (!response.ok) {
+        let errBody = '';
+        try { errBody = await response.text(); } catch(_) {}
+        throw new Error('HTTP ' + response.status + (errBody ? ' — ' + errBody.slice(0, 200) : ''));
+      }
       const data = await response.json();
-      const rawText = (data.content && data.content[0] && data.content[0].text || '').trim().replace(/```json|```/g, '').trim();
-      let parsed;
-      try { parsed = JSON.parse(rawText); } catch(e) { parsed = { arbetsuppgifter: [] }; }
+      // Kombinera all text från svaret (kan vara fler text-block)
+      const rawText = (data.content || [])
+        .filter(b => b && b.type === 'text' && typeof b.text === 'string')
+        .map(b => b.text)
+        .join('\n')
+        .trim()
+        .replace(/```json|```/g, '')
+        .trim();
+      if (!rawText) throw new Error('AI svarade utan text');
 
-      const tasks = parsed.arbetsuppgifter || [];
+      // Försök parsa direkt — om det misslyckas, hitta första {…}-blocket i svaret
+      let parsed;
+      try {
+        parsed = JSON.parse(rawText);
+      } catch(e) {
+        const m = rawText.match(/\{[\s\S]*\}/);
+        if (!m) throw new Error('AI svarade i fel format (ingen JSON hittades)');
+        parsed = JSON.parse(m[0]);
+      }
+      const tasks = parsed && Array.isArray(parsed.arbetsuppgifter) ? parsed.arbetsuppgifter : [];
+      if (!tasks.length) throw new Error('AI returnerade en tom lista');
+      return tasks;
+    }
+
+    try {
+      let tasks;
+      let modelUsed = 'claude-sonnet-4-6';
+      try {
+        tasks = await tryModel('claude-sonnet-4-6');
+      } catch(sonnetErr) {
+        // Fallback till Haiku 4.5 om Sonnet misslyckas (rate-limit, modell ej tillgänglig osv)
+        console.warn('[ai-autofill] Sonnet failed, trying Haiku:', sonnetErr.message);
+        modelUsed = 'claude-haiku-4-5-20251001';
+        tasks = await tryModel('claude-haiku-4-5-20251001');
+      }
+
       if (tasks[0]) document.getElementById('jobDesc1').value = tasks[0];
       if (tasks[1]) document.getElementById('jobDesc2').value = tasks[1];
       if (tasks[2]) document.getElementById('jobDesc3').value = tasks[2];
 
       hideAiLoader();
       toast('✨ AI-förslag klara!');
-      logEvent('ai_cv_analysis', { context: 'job_autofill' });
+      logEvent('ai_cv_analysis', { context: 'job_autofill', model: modelUsed });
     } catch(e) {
       hideAiLoader();
-      toast('AI-fel: ' + (e.message || 'okänt'), 'error');
+      console.error('[ai-autofill] Båda modellerna misslyckades:', e);
+      // Tydligare felmeddelande till användaren
+      const msg = (e.message || '').toLowerCase();
+      if (msg.includes('http 404') || msg.includes('http 405')) {
+        toast('AI-tjänsten är inte tillgänglig just nu. Skriv in arbetsuppgifterna manuellt.', 'error');
+      } else if (msg.includes('http 401') || msg.includes('http 403')) {
+        toast('Du är utloggad. Logga in igen för att använda AI-funktioner.', 'error');
+      } else if (msg.includes('http 429')) {
+        toast('AI är överbelastad just nu. Vänta en stund och försök igen.', 'error');
+      } else if (msg.includes('fel format') || msg.includes('tom lista')) {
+        toast('AI gav ett oväntat svar. Försök igen — det brukar funka 2:a gången.', 'error');
+      } else {
+        toast('AI-fel: ' + (e.message || 'okänt fel'), 'error');
+      }
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = originalText || '✨ AI Autofyll'; }
     }
@@ -6478,7 +6625,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     }
 
     try {
-      // Rensa all lokal data
+      // Rensa all lokal data — både user-scoped (säkerhetsfix) och övriga
+      try { clearAllUserData(); } catch(_) {}
       const localKeys = [
         SAVED_CVS_KEY, MATCHED_CVS_KEY,
         '_matchaSelectedAds', 'pf_saved_edu', 'pf_diary',
@@ -7220,6 +7368,23 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
+    // ═══════════════════════════════════════════════════════════════
+    // SÄKERHETSMIGRATION: rensa eventuella gamla GLOBALA data-nycklar
+    // (från före user-scoping). Vi vet inte vilken användare de tillhör,
+    // så det är säkrast att rensa dem helt — moln-laddning fyller på
+    // korrekt user-scoped data när auth är klar.
+    // ═══════════════════════════════════════════════════════════════
+    try {
+      let migrated = false;
+      USER_KEYS.forEach(k => {
+        if (_origSafeGet(k) !== null) {
+          _origSafeRemove(k);
+          migrated = true;
+        }
+      });
+      if (migrated) console.log('[security] Migrerade till user-scoped storage — gammal global data rensad');
+    } catch(e) {}
+
     loadCV();
     loadCVIntoForm();
     renderPreview();
