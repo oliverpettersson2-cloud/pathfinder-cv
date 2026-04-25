@@ -2522,6 +2522,15 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // VIEW SWITCHING
   // ============================================================
   window.switchView = function(view) {
+    // ALIAS: 'intervju' och 'train' → 'ovningar' (numera "Träna"-fliken som rymmer båda)
+    let openIntervju = false;
+    if (view === 'intervju') {
+      openIntervju = true;
+      view = 'ovningar';
+    } else if (view === 'train') {
+      view = 'ovningar';
+    }
+
     // Städa upp ev. pågående intervju-session när vi lämnar intervju-vyn
     if (currentView === 'intervju' && view !== 'intervju' && typeof window.ivCleanup === 'function') {
       try { window.ivCleanup(); } catch(e) {}
@@ -2556,11 +2565,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     if (view === 'matcha') {
       if (typeof renderMatchaView === 'function') renderMatchaView();
     }
-    if (view === 'intervju') {
-      if (typeof window.ivInit === 'function') {
-        try { window.ivInit(); } catch(e) { console.warn('Intervju init fail:', e); }
-      }
-    }
     if (view === 'aisyv') {
       // Alltid börja på AI-SYV startsidan (inte fastna i tidigare chat)
       if (typeof window.showHome === 'function') {
@@ -2571,8 +2575,18 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       }
     }
     if (view === 'ovningar') {
-      currentTrainCat = null;
-      renderTrainingHome();
+      // "Träna"-vyn — innehåller hub med Övningar + Intervjuträning + Uppgifter
+      if (openIntervju) {
+        // Användaren klickade på en intervju-länk eller liknande shortcut
+        currentTrainCat = 'intervju';
+        renderTrainingHome();
+        if (typeof window.ivInit === 'function') {
+          setTimeout(() => { try { window.ivInit(); } catch(e) {} }, 50);
+        }
+      } else {
+        currentTrainCat = null;
+        renderTrainingHome();
+      }
       if (typeof loadMyTasks === 'function') loadMyTasks(true);
     }
     if (view === 'profil') {
@@ -3644,35 +3658,36 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     const countEl = document.getElementById('pfTasksCount');
     if (!list) return;
 
+    // ÄNDRAT: Uppgifter visas nu BARA i Träna-fliken (inte längre dubblat i Profil).
+    // Vi visar istället en kortfattad genväg om det finns öppna uppgifter.
     const open = tasksOpen();
-    const done = tasksCompleted();
+    const totalAssigned = assignedTasks.length;
 
     if (countEl) {
       countEl.textContent = String(open.length);
       countEl.classList.toggle('warn', open.length > 0);
     }
 
-    if (!open.length && !done.length) {
+    if (open.length > 0) {
+      list.innerHTML = `
+        <div class="task-empty" style="background:rgba(240,192,64,0.08);border:1px solid rgba(240,192,64,0.3);position:relative;">
+          ${open.length > 0 ? `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:#fff;font-size:11px;font-weight:900;border-radius:12px;padding:2px 9px;">${open.length}</div>` : ''}
+          <div class="task-empty-icon" style="color:#f0c040;">✅</div>
+          <div style="font-size:13px;line-height:1.5;">
+            Du har <b style="color:#f0c040;">${open.length}</b> ${open.length === 1 ? 'uppgift' : 'uppgifter'} från din handläggare.<br>
+            <button onclick="switchView('ovningar')" style="margin-top:10px;padding:8px 14px;background:#f0c040;color:#0a1428;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;">Gå till Träna →</button>
+          </div>
+        </div>`;
+    } else {
       list.innerHTML = `
         <div class="task-empty">
           <div class="task-empty-icon">✅</div>
           <div style="font-size:13px;line-height:1.5;">
-            Du har inga uppgifter just nu.<br>
-            <span style="font-size:11px;opacity:0.7;">Uppgifter från din handläggare dyker upp här.</span>
+            ${totalAssigned > 0 ? 'Alla uppgifter slutförda — bra jobbat!' : 'Du har inga uppgifter just nu.'}<br>
+            <span style="font-size:11px;opacity:0.7;">Uppgifter från din handläggare visas under <b>Träna</b>.</span>
           </div>
         </div>`;
-      return;
     }
-
-    let html = '';
-    if (open.length) {
-      html += open.map(buildTaskCard).join('');
-    }
-    if (done.length) {
-      html += `<div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin:16px 0 8px;">Slutförda (${done.length})</div>`;
-      html += done.slice(0, 5).map(buildTaskCard).join('');
-    }
-    list.innerHTML = html;
   }
   window.renderTasksInProfil = renderTasksInProfil;
 
@@ -6661,10 +6676,74 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     const grid = document.getElementById('ovGrid');
 
-    // Om ingen kategori vald: visa 6 stora kategori-kort
+    // Specialfall: intervjuträning vald — rendera intervju-UI direkt i ov-detail
+    if (currentTrainCat === 'intervju') {
+      document.getElementById('ov-home').style.display = 'none';
+      document.getElementById('ov-detail').style.display = 'block';
+      const detail = document.getElementById('ov-detail');
+      // Bygg intervju-container om den inte finns
+      let ivCont = document.getElementById('iv-container-train');
+      if (!ivCont) {
+        detail.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <button class="ov-back" onclick="trainBackToCats()" style="margin:0;">← Tillbaka till Träna</button>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🎤</span>
+              <div>
+                <div style="font-size:17px;font-weight:800;color:#fff;">Intervjuträning</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.45);">Öva på vanliga intervjufrågor med AI-feedback.</div>
+              </div>
+            </div>
+          </div>
+          <div id="iv-container-train"></div>`;
+        ivCont = document.getElementById('iv-container-train');
+      }
+      // Initiera intervju-modulen om den finns
+      if (typeof window.ivInit === 'function') {
+        try { window.ivInit('iv-container-train'); }
+        catch(e) {
+          try { window.ivInit(); } catch(e2) { console.warn('Intervju init fail:', e2); }
+        }
+      }
+      return;
+    }
+
+    // Om ingen kategori vald: visa hub med Övningar + Intervjuträning + kategori-grid + Uppgifter
     if (!currentTrainCat) {
       const openTaskCount = (typeof tasksOpen === 'function') ? tasksOpen().length : 0;
       const totalTasks    = assignedTasks.length;
+
+      // ── Toppsektion: Hub-rubrik + 2 stora rutor (Övningar / Intervjuträning) ──
+      const topHub = `
+        <div style="grid-column:1/-1;margin-bottom:6px;">
+          <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.3px;margin-bottom:4px;">Träna</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);">Förbered dig för arbetslivet — välj ett område att träna på.</div>
+        </div>
+        <div class="train-hub-row" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px;">
+          <div class="ov-card train-hero-card" style="border-color:rgba(62,180,137,0.4);background:linear-gradient(135deg,rgba(62,180,137,0.10),rgba(62,180,137,0.04));padding:18px 18px;display:flex;flex-direction:column;gap:10px;cursor:default;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="ov-card-icon" style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:22px;">📚</div>
+              <div>
+                <div style="font-size:17px;font-weight:800;color:#fff;">Övningar</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.55);">Lektioner, praktiska övningar och quiz i din egen takt.</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;letter-spacing:0.4px;text-transform:uppercase;">Välj kategori nedan ↓</div>
+          </div>
+          <div class="ov-card train-cat-card" onclick="trainOpenCat('intervju')"
+               style="border-color:rgba(167,139,250,0.4);background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(167,139,250,0.04));padding:18px 18px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="ov-card-icon" style="background:rgba(167,139,250,0.2);color:#a78bfa;font-size:22px;">🎤</div>
+              <div>
+                <div style="font-size:17px;font-weight:800;color:#fff;">Intervjuträning</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.55);">Öva på vanliga intervjufrågor och få AI-feedback.</div>
+              </div>
+            </div>
+            <div style="font-size:12px;color:#a78bfa;font-weight:700;align-self:flex-end;">Öppna →</div>
+          </div>
+        </div>
+        <div style="grid-column:1/-1;font-size:12px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.7px;margin:14px 0 4px;">Övningskategorier</div>
+      `;
 
       const catsHtml = TRAINING_CATS.map(c => {
         const pct = getCatPct(c);
@@ -6684,12 +6763,12 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         `;
       }).join('');
 
-      // 7:e kategori: Uppgifter från handläggare
+      // Uppgifter från handläggare (med röd badge om det finns öppna)
       const taskColor = '#f0c040';
       const taskCard = `
         <div class="ov-card train-cat-card" onclick="trainOpenCat('uppg')"
              style="border-color: ${taskColor}40; background: ${taskColor}0d; position: relative;">
-          ${openTaskCount > 0 ? `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:#fff;font-size:11px;font-weight:900;border-radius:12px;padding:2px 9px;">${openTaskCount}</div>` : ''}
+          ${openTaskCount > 0 ? `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:#fff;font-size:11px;font-weight:900;border-radius:12px;padding:2px 9px;animation:pulse 2s ease-in-out infinite;">${openTaskCount}</div>` : ''}
           <div class="ov-card-icon" style="background: ${taskColor}20; color: ${taskColor};">✅</div>
           <div class="ov-card-title" style="color: #fff;">Uppgifter</div>
           <div class="ov-card-desc">${totalTasks > 0 ? 'Från din handläggare' : 'Väntar på tilldelning'}</div>
@@ -6700,7 +6779,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           </div>
         </div>`;
 
-      grid.innerHTML = catsHtml + taskCard;
+      grid.innerHTML = topHub + catsHtml + taskCard;
       return;
     }
 
@@ -7106,11 +7185,50 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   // ============================================================
   // INIT
   // ============================================================
+  // ═══════════════════════════════════════════════════════════════
+  // NAV-SETUP: en flik "Träna" istället för separat Övningar/Intervju
+  // ═══════════════════════════════════════════════════════════════
+  function setupTrainNav() {
+    try {
+      // 1. Döp om "Övningar"-tabben till "Träna"
+      const ovTab = document.querySelector('.sb-tab[data-view="ovningar"]');
+      if (ovTab) {
+        // Hitta text-noden eller span och uppdatera
+        const txtSpan = ovTab.querySelector('span:not(.sb-icon):not(.sb-badge)');
+        if (txtSpan) {
+          txtSpan.textContent = 'Träna';
+        } else {
+          // Fallback: ersätt sista textnod
+          for (const node of ovTab.childNodes) {
+            if (node.nodeType === 3 && node.textContent.trim()) {
+              node.textContent = node.textContent.replace(/Övningar/i, 'Träna');
+            }
+          }
+        }
+      }
+      // 2. Dölj "Intervjuträning"-tabben (vyn finns kvar men nås via Träna-hub)
+      const ivTab = document.querySelector('.sb-tab[data-view="intervju"]');
+      if (ivTab) {
+        ivTab.style.display = 'none';
+      }
+      // 3. Dölj "Mina uppgifter"-sektionen i Profil (uppgifterna ligger nu inom Träna)
+      // (renderProfilView hanterar detta — flagga sätts här)
+      window._tasksOnlyInTrain = true;
+    } catch(e) {
+      console.warn('setupTrainNav failed:', e);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     loadCV();
     loadCVIntoForm();
     renderPreview();
     renderHejView();
+
+    // ═══════════════════════════════════════════════════════════════
+    // NAV-SETUP: slå ihop "Övningar" + "Intervjuträning" → "Träna"
+    // ═══════════════════════════════════════════════════════════════
+    setupTrainNav();
 
     // Steg 1: kolla magic link-redirect (#access_token=... i URL-hashen)
     let magicHandled = false;
