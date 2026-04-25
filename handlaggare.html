@@ -271,12 +271,49 @@ td{padding:10px 13px;vertical-align:middle}
 
 /* ═══ SPRÅKNIVÅ-CHIPS (i wizard steg 1) ═══ */
 .lang-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lang-chips-2{grid-template-columns:repeat(2,1fr)}
 .lang-chip{padding:10px 12px;border:1.5px solid var(--bdl);border-radius:8px;cursor:pointer;background:var(--sf2);transition:all .15s;text-align:left}
 .lang-chip:hover{border-color:var(--ac);background:var(--acs)}
 .lang-chip.act{border-color:var(--ac);background:var(--acs);box-shadow:inset 0 0 0 1px var(--ac)}
 .lang-chip-t{font-size:13px;font-weight:700;margin-bottom:2px}
 .lang-chip.act .lang-chip-t{color:var(--ac)}
 .lang-chip-s{font-size:10px;color:var(--mu);line-height:1.35}
+
+/* ═══ SAVE-MODE-CHIPS (steg 3 — välj spara bara/spara+tilldela) ═══ */
+.save-mode-chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.save-mode{padding:12px 14px;border:1.5px solid var(--bdl);border-radius:9px;cursor:pointer;background:var(--sf2);transition:all .15s;display:flex;gap:11px;align-items:flex-start}
+.save-mode:hover{border-color:var(--ac);background:var(--acs)}
+.save-mode.act{border-color:var(--ac);background:var(--acs);box-shadow:inset 0 0 0 1px var(--ac)}
+.save-mode-icon{flex-shrink:0;width:36px;height:36px;background:var(--bdl);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--mu)}
+.save-mode.act .save-mode-icon{background:var(--ac);color:#fff}
+.save-mode-t{font-size:13px;font-weight:700;margin-bottom:3px}
+.save-mode.act .save-mode-t{color:var(--ac)}
+.save-mode-s{font-size:11px;color:var(--mu);line-height:1.45}
+
+/* ═══ SOURCE-TABS (steg 2 — välj befintlig modul/nytt material) ═══ */
+.src-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--sf2);border:1px solid var(--bdl);border-radius:9px;padding:4px;margin-bottom:14px}
+.src-tab{padding:9px 12px;text-align:center;font-size:12.5px;font-weight:600;color:var(--mu);cursor:pointer;border-radius:6px;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.src-tab:hover{color:var(--tx);background:var(--bdl)}
+.src-tab.act{background:var(--ac);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+
+/* ═══ MODUL-LISTA (befintliga moduler grupperat per kategori) ═══ */
+.mod-cat-group{margin-bottom:14px}
+.mod-cat-header{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;padding-left:2px}
+.mod-list{display:flex;flex-direction:column;gap:6px}
+.mod-item{display:flex;align-items:center;gap:11px;padding:10px 12px;background:var(--sf2);border:1.5px solid var(--bdl);border-radius:8px;cursor:pointer;transition:all .15s}
+.mod-item:hover{border-color:var(--ac);background:var(--acs)}
+.mod-item.act{border-color:var(--ac);background:var(--acs);box-shadow:inset 0 0 0 1px var(--ac)}
+.mod-item-icon{flex-shrink:0;width:32px;height:32px;background:var(--bdl);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.mod-item.act .mod-item-icon{background:var(--ac);color:#fff}
+.mod-item-text{flex:1;min-width:0}
+.mod-item-title{font-size:13px;font-weight:700;margin-bottom:1px;line-height:1.3}
+.mod-item.act .mod-item-title{color:var(--ac)}
+.mod-item-sub{font-size:11px;color:var(--mu);line-height:1.4}
+.mod-item-check{flex-shrink:0;width:24px;height:24px;background:var(--ac);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+.mod-selected-info{margin-top:14px;padding:11px 14px;background:var(--gnb);border:1px solid var(--gn);border-radius:8px}
+.mod-selected-h{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;color:var(--tx)}
+.mod-selected-s{font-size:11px;color:var(--mu);line-height:1.5}
 
 /* ═══ AI-UPPDATERING ═══ */
 .ai-update-box{margin-top:14px;padding:14px 16px;border:1.5px solid var(--bdl);border-radius:10px;background:var(--sf2)}
@@ -294,6 +331,26 @@ td{padding:10px 13px;vertical-align:middle}
 .ai-change-old span{font-weight:700;color:var(--rd);margin-right:4px}
 .ai-change-new{color:var(--tx)}
 .ai-change-new span{font-weight:700;color:var(--gn);margin-right:4px}
+
+/* ═══ PPT-EDITOR (granska AI-förslag) ═══ */
+.ppt-edit-bulk{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;margin-bottom:14px}
+.ppt-edit-card{padding:14px 16px;border:1.5px solid var(--bdl);border-radius:10px;background:var(--sf);margin-bottom:10px;transition:all .15s}
+.ppt-edit-card.is-approved{border-color:var(--gn);background:var(--gnb)}
+.ppt-edit-card.is-rejected{border-color:var(--bdl);background:var(--sf2);opacity:.65}
+.ppt-edit-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.ppt-edit-slide{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;padding:3px 8px;background:var(--bdl);border-radius:5px}
+.ppt-edit-status{font-size:11px}
+.ppt-edit-old, .ppt-edit-new{padding:9px 12px;border-radius:7px;background:var(--sf2);border:1px solid var(--bdl)}
+.ppt-edit-old{margin-bottom:0}
+.ppt-edit-arrow{text-align:center;color:var(--mu);font-size:14px;font-weight:700;line-height:1;padding:4px 0}
+.ppt-edit-l{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.ppt-edit-text{font-size:13px;line-height:1.5;color:var(--tx)}
+.ppt-edit-textarea{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--ac);border-radius:6px;background:var(--sf);color:var(--tx);resize:vertical;min-height:60px;font-family:inherit;line-height:1.5;box-sizing:border-box}
+.ppt-edit-actions{display:flex;gap:6px;margin-top:11px;justify-content:flex-end}
+.ppt-edit-actions .btn{font-size:11.5px;padding:6px 11px;display:flex;align-items:center;gap:4px}
+.btn.ppt-act-approve.is-active{background:var(--gn);color:#fff;border-color:var(--gn)}
+.btn.ppt-act-reject.is-active{background:var(--rd);color:#fff;border-color:var(--rd)}
+.btn.ppt-act-edit:hover{border-color:var(--ac);color:var(--ac)}
 
 /* ═══ SUMMARY-TAGS (chips i wizard steg 3 + material-cards) ═══ */
 .sum-tag{display:inline-block;padding:3px 8px;font-size:11px;font-weight:600;background:var(--bdl);color:var(--tx2);border-radius:5px}
@@ -345,6 +402,8 @@ td{padding:10px 13px;vertical-align:middle}
   .mat-stats{grid-template-columns:1fr}
   .mat-grid{grid-template-columns:1fr}
   .lang-chips{grid-template-columns:1fr}
+  .save-mode-chips{grid-template-columns:1fr}
+  .src-tabs{grid-template-columns:1fr}
   .mat-card-foot{flex-direction:column;align-items:stretch}
   .mat-card-actions{justify-content:flex-end}
 }
@@ -853,7 +912,7 @@ td{padding:10px 13px;vertical-align:middle}
 <div class="modal-ov" id="createTaskModal">
   <div class="modal wizard">
     <div class="wz-head">
-      <button class="modal-close" onclick="closeCreateTask()" style="float:right;margin-top:-4px">
+      <button class="modal-close" onclick="tryCloseCreateTask()" style="float:right;margin-top:-4px">
         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
       <div class="wz-title">Skapa uppgift</div>
@@ -869,7 +928,7 @@ td{padding:10px 13px;vertical-align:middle}
     <div class="wz-actions">
       <button class="btn" id="wzBackBtn" onclick="wizardBack()" style="display:none">← Tillbaka</button>
       <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="btn" onclick="closeCreateTask()">Avbryt</button>
+        <button class="btn" onclick="tryCloseCreateTask()">Avbryt</button>
         <button class="btn btn-primary" id="wzNextBtn" onclick="wizardNext()">Nästa →</button>
       </div>
     </div>
@@ -884,6 +943,31 @@ td{padding:10px 13px;vertical-align:middle}
       <button class="pv-close" onclick="closePreview()" title="Stäng">✕</button>
     </div>
     <div class="pv-body" id="pvBody"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: AI-uppdaterings-redigerare ═══ -->
+<div class="modal-ov" id="pptEditorModal">
+  <div class="modal wizard" style="max-width:720px">
+    <div class="wz-head">
+      <button class="modal-close" onclick="closePptEditor()" style="float:right;margin-top:-4px">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="wz-title">Granska AI:s förslag</div>
+      <div class="wz-sub">Godkänn, avvisa eller redigera varje förslag. När du är klar laddar du ner en uppdaterad pptx.</div>
+    </div>
+    <div class="modal-status" id="pptEditorStatus" style="margin:14px 26px 0"></div>
+    <div class="wz-body" id="pptEditorBody"></div>
+    <div class="wz-actions">
+      <div style="font-size:11px;color:var(--mu)" id="pptEditorCount"></div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn" onclick="closePptEditor()">Avbryt</button>
+        <button class="btn btn-primary" id="pptEditorSaveBtn" onclick="downloadUpdatedPpt()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Ladda ner uppdaterad pptx
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1820,7 +1904,7 @@ document.getElementById('inviteModal')?.addEventListener('click',(e)=>{
 document.addEventListener('keydown',(e)=>{
   if(e.key==='Escape'){
     if(document.getElementById('previewOv').classList.contains('open')) closePreview();
-    else if(document.getElementById('createTaskModal').classList.contains('open')) closeCreateTask();
+    else if(document.getElementById('createTaskModal').classList.contains('open')) tryCloseCreateTask();
     else if(document.getElementById('inviteModal').classList.contains('open')) closeInviteModal();
     else if(document.getElementById('bulkModal').classList.contains('open')) closeBulkModal();
     else if(document.getElementById('detailView').classList.contains('act')) closeDetail();
@@ -2419,24 +2503,55 @@ document.getElementById('bulkModal')?.addEventListener('click',(e)=>{
 // Mockläget nedan genererar fejkat innehåll när endpoints saknas, så UX går att demoa.
 
 // ═══════════════════════════════════════════════════════════════════════
-// SPRÅKNIVÅER + KATEGORIER (för wizard + bibliotek)
+// SPRÅKNIVÅER, MODULKATEGORIER & UPPGIFTSTYPER
 // ═══════════════════════════════════════════════════════════════════════
 const LANG_LEVELS = [
-  {id:'latt',     label:'Lätt svenska',     desc:'SFI A/B — korta meningar, vardagsord'},
-  {id:'vardag',   label:'Vardagssvenska',   desc:'SFI C/D — normal arbetsplats-svenska'},
-  {id:'avancerad',label:'Avancerad',        desc:'Akademisk / yrkesspecifik svenska'}
-];
-const TASK_CATS = [
-  {id:'cv',        label:'CV'},
-  {id:'intervju',  label:'Intervju'},
-  {id:'jobbsök',   label:'Jobbsök'},
-  {id:'matchning', label:'Matchning'},
-  {id:'övning',    label:'Övning'},
-  {id:'övrigt',    label:'Övrigt'}
+  {id:'latt',   label:'Lätt svenska',   desc:'Alla SFI-nivåer — korta meningar, vardagsord'},
+  {id:'vardag', label:'Vardagssvenska', desc:'Vana svensktalande — normalt språkbruk'}
 ];
 
-// AI-uppdaterings-kvot per handläggare (10/månad)
+// Modulkategorier (matchar deltagarens hemvy)
+const MODULE_CATS = [
+  {id:'intro',    label:'Intro'},
+  {id:'arbete',   label:'Arbete'},
+  {id:'hälsa',    label:'Hälsa'},
+  {id:'studier',  label:'Studier'},
+  {id:'ekonomi',  label:'Ekonomi'},
+  {id:'övrigt',   label:'Övrigt'}
+];
+
+// Uppgiftstyper (när handläggaren tilldelar en deltagare en uppgift)
+const TASK_TYPES = [
+  {id:'cv',       label:'CV'},
+  {id:'intervju', label:'Intervju'},
+  {id:'jobbsök',  label:'Jobbsök'},
+  {id:'övning',   label:'Övning'},
+  {id:'övrigt',   label:'Övrigt'}
+];
+
+// AI-uppdaterings-kvot per handläggare (10/månad — ändra här om du vill höja)
 const AI_QUOTA_PER_MONTH = 10;
+
+// ═══════════════════════════════════════════════════════════════════════
+// AKTIVA MODULER — befintliga övningsmoduler som handläggaren kan tilldela
+// VIKTIGT: Håll synkat med ACTIVE_MODS i desktop-app.js!
+// När en modul aktiveras där ska den läggas till här också.
+// ═══════════════════════════════════════════════════════════════════════
+const ACTIVE_MODULES = [
+  // Intro
+  {id:'m1',     cat:'intro',   icon:'📋', title:'Regler & Rättigheter',  sub:'Närvaro, frånvaro & skyldigheter'},
+  {id:'m2',     cat:'intro',   icon:'💻', title:'SKills-systemet',        sub:'Introduktion till SKills & din plan'},
+  {id:'m3',     cat:'intro',   icon:'🤖', title:'AI & CVmatchen',         sub:'Hur AI hjälper dig hitta jobb'},
+  // Arbete
+  {id:'a0',     cat:'arbete',  icon:'📊', title:'Arbetsmarknaden',        sub:'Sverige, Skåne & Öresundsregionen'},
+  {id:'a_cv',   cat:'arbete',  icon:'📄', title:'CV-byggaren',            sub:'Förstå varje del av ditt CV'},
+  {id:'a_match',cat:'arbete',  icon:'🎯', title:'Matcha med AI',          sub:'Förstå matchningslogiken'},
+  // Studier
+  {id:'s0',     cat:'studier', icon:'🗺️', title:'Utbildningskartan',      sub:'Vad finns i Studier-kategorin?'},
+  {id:'s1',     cat:'studier', icon:'🎓', title:'Vad är YH-utbildning?',  sub:'Yrkeshögskola — snabbaste vägen till jobb'},
+  {id:'s2',     cat:'studier', icon:'📚', title:'Komvux',                 sub:'Komplettera betyg som vuxen'},
+  {id:'s3',     cat:'studier', icon:'🏡', title:'Folkhögskola',           sub:'Studera i gemenskap'}
+];
 function getAiQuotaKey(){
   const m = new Date();
   return `aiQuota_${admin?.id||'anon'}_${m.getFullYear()}-${m.getMonth()+1}`;
@@ -2460,25 +2575,31 @@ function initWizState(){
     step: 1,
     title: '',
     purpose: '',
-    category: 'övrigt',
+    category: 'intro',    // modulkategori (intro/arbete/hälsa/studier/ekonomi/övrigt)
+    taskType: 'övning',   // uppgiftstyp vid tilldelning (cv/intervju/jobbsök/övning/övrigt)
     langLevel: 'vardag',
     estMinutes: 30,
     deadline: d.toISOString().split('T')[0],
+    sourceType: 'new',     // 'existing_module' (befintlig övning) | 'new' (egen pptx eller text)
+    selectedModuleId: null, // om sourceType=existing_module
     file: null,
     aiUpdate: false,
-    aiUpdateResult: null,  // { changes: [...], updatedFile: blob } när AI körts
+    aiUpdateResult: null,
     duplicate: null,
-    targetUserIds: []
+    targetUserIds: [],
+    saveMode: 'save_only'  // 'save_only' eller 'save_and_assign' — väljs i steg 3
   };
 }
 
 function openCreateTask(){
   initWizState();
   document.getElementById('createTaskModal').classList.add('open');
+  document.body.style.overflow = 'hidden';  // lås bakgrundsscroll
   renderWizard();
 }
 function closeCreateTask(){
   document.getElementById('createTaskModal').classList.remove('open');
+  document.body.style.overflow = '';  // släpp bakgrundsscroll
   wiz = null;
 }
 
@@ -2500,7 +2621,11 @@ function renderWizard(){
   wzStatus('');
   document.getElementById('wzBackBtn').style.display = wiz.step>1 ? '' : 'none';
   const nextBtn = document.getElementById('wzNextBtn');
-  nextBtn.textContent = wiz.step===3 ? 'Skapa & tilldela' : 'Nästa →';
+  if(wiz.step===3){
+    nextBtn.textContent = wiz.saveMode==='save_and_assign' ? 'Spara & tilldela →' : 'Spara i biblioteket →';
+  } else {
+    nextBtn.textContent = 'Nästa →';
+  }
   nextBtn.disabled = false;
 
   const body = document.getElementById('wzBody');
@@ -2513,7 +2638,7 @@ function renderWizard(){
 
 // STEG 1: Innehåll (titel, syfte, kategori, språknivå, tid, deadline)
 function renderWizStep1(){
-  const catOpts = TASK_CATS.map(c => `<option value="${c.id}" ${wiz.category===c.id?'selected':''}>${c.label}</option>`).join('');
+  const catOpts = MODULE_CATS.map(c => `<option value="${c.id}" ${wiz.category===c.id?'selected':''}>${c.label}</option>`).join('');
   const langChips = LANG_LEVELS.map(l => `
     <div class="lang-chip${wiz.langLevel===l.id?' act':''}" onclick="wiz.langLevel='${l.id}';renderWizard()">
       <div class="lang-chip-t">${l.label}</div>
@@ -2533,12 +2658,12 @@ function renderWizStep1(){
 
     <div class="modal-field">
       <label class="modal-label">Språknivå</label>
-      <div class="lang-chips">${langChips}</div>
+      <div class="lang-chips lang-chips-2">${langChips}</div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
       <div class="modal-field" style="margin-bottom:0">
-        <label class="modal-label">Kategori</label>
+        <label class="modal-label">Modulkategori</label>
         <select onchange="wiz.category=this.value" style="width:100%;padding:9px 28px 9px 12px">${catOpts}</select>
       </div>
       <div class="modal-field" style="margin-bottom:0">
@@ -2554,14 +2679,92 @@ function renderWizStep1(){
         </select>
       </div>
       <div class="modal-field" style="margin-bottom:0">
-        <label class="modal-label">Deadline</label>
+        <label class="modal-label">Standard-deadline</label>
         <input type="date" value="${wiz.deadline}" onchange="wiz.deadline=this.value" style="width:100%;padding:9px 12px">
       </div>
+    </div>
+    <div style="font-size:11px;color:var(--mu);margin-top:6px;line-height:1.45">
+      <i>Modulkategorin styr var materialet visas i deltagarens hemvy. Uppgiftstyp (CV/intervju/jobbsök) väljs när du tilldelar.</i>
     </div>`;
 }
 
-// STEG 2: PowerPoint (frivillig) + AI-uppdatering
+// STEG 2: Välj källa — befintlig modul ELLER nytt material (pptx/text)
 function renderWizStep2(){
+  // Tabbar överst: Befintlig modul / Nytt material
+  const tabsHtml = `
+    <div class="src-tabs">
+      <div class="src-tab${wiz.sourceType==='existing_module'?' act':''}" onclick="wiz.sourceType='existing_module';wiz.file=null;wiz.aiUpdateResult=null;renderWizard()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:5px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Befintlig övning
+      </div>
+      <div class="src-tab${wiz.sourceType==='new'?' act':''}" onclick="wiz.sourceType='new';wiz.selectedModuleId=null;renderWizard()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Eget material (pptx eller text)
+      </div>
+    </div>`;
+
+  // VYAA: BEFINTLIG MODUL
+  if(wiz.sourceType === 'existing_module'){
+    // Gruppera per kategori
+    const modCats = {
+      intro:   {label:'Intro',     icon:'🚀', color:'#3eb489'},
+      arbete:  {label:'Arbete',    icon:'💼', color:'#f87171'},
+      studier: {label:'Studier',   icon:'📖', color:'#60a5fa'},
+      hälsa:   {label:'Hälsa',     icon:'🫀', color:'#fb923c'},
+      ekonomi: {label:'Ekonomi',   icon:'💰', color:'#a78bfa'},
+      digital: {label:'Digitalt',  icon:'🌐', color:'#34d399'}
+    };
+
+    const grouped = {};
+    ACTIVE_MODULES.forEach(m => {
+      if(!grouped[m.cat]) grouped[m.cat] = [];
+      grouped[m.cat].push(m);
+    });
+
+    const modListHtml = Object.keys(grouped).map(cat => {
+      const meta = modCats[cat] || {label:cat, icon:'📘', color:'#888'};
+      const mods = grouped[cat];
+      return `
+        <div class="mod-cat-group">
+          <div class="mod-cat-header" style="color:${meta.color}">
+            <span style="font-size:14px">${meta.icon}</span>
+            <span>${meta.label}</span>
+            <span style="color:var(--mu);font-weight:500;font-size:11px">${mods.length} aktiva moduler</span>
+          </div>
+          <div class="mod-list">
+            ${mods.map(m => `
+              <div class="mod-item${wiz.selectedModuleId===m.id?' act':''}" onclick="wizardSelectModule('${m.id}')">
+                <div class="mod-item-icon">${m.icon}</div>
+                <div class="mod-item-text">
+                  <div class="mod-item-title">${escapeHtml(m.title)}</div>
+                  <div class="mod-item-sub">${escapeHtml(m.sub)}</div>
+                </div>
+                ${wiz.selectedModuleId===m.id ? `<div class="mod-item-check"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>` : ''}
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+
+    const selectedMod = wiz.selectedModuleId ? ACTIVE_MODULES.find(m=>m.id===wiz.selectedModuleId) : null;
+    const selectedInfo = selectedMod ? `
+      <div class="mod-selected-info">
+        <div class="mod-selected-h">
+          <span style="font-size:18px">${selectedMod.icon}</span>
+          <span>Vald: <b>${escapeHtml(selectedMod.title)}</b></span>
+        </div>
+        <div class="mod-selected-s">Deltagaren får en uppgift kopplad till denna befintliga övning. Den hittar materialet i appen under Träna → ${(modCats[selectedMod.cat]||{}).label||selectedMod.cat}.</div>
+      </div>` : '';
+
+    return `
+      ${tabsHtml}
+      <div style="font-size:11px;color:var(--mu);margin:0 0 12px;line-height:1.5">
+        Välj en av de aktiva övningsmodulerna nedan. Deltagaren får uppgiften att slutföra modulen.
+      </div>
+      ${modListHtml}
+      ${selectedInfo}`;
+  }
+
+  // VYAA: NYTT MATERIAL (pptx-uppladdning + AI-uppdatering — som tidigare)
   const fileInfo = wiz.file
     ? `<svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
        <div class="wz-upload-t">${escapeHtml(wiz.file.name)}</div>
@@ -2596,7 +2799,6 @@ function renderWizStep2(){
     const quotaColor = left===0 ? 'var(--rd)' : (left<=3 ? 'var(--or)' : 'var(--gn)');
 
     if(wiz.aiUpdateResult){
-      // Resultat efter AI-körning
       const changes = wiz.aiUpdateResult.changes || [];
       aiSection = `
         <div class="ai-update-box" style="border-color:var(--gn);background:var(--gnb)">
@@ -2642,6 +2844,7 @@ function renderWizStep2(){
   }
 
   return `
+    ${tabsHtml}
     <label class="wz-upload${wiz.file?' has-file':''}" onclick="document.getElementById('wzFile').click()">
       ${fileInfo}
     </label>
@@ -2652,6 +2855,20 @@ function renderWizStep2(){
       <div style="font-size:11px;color:var(--mu);margin-top:14px;line-height:1.55;text-align:center">
         <i>Du kan hoppa över PowerPoint och tilldela uppgiften som en enkel checklista istället.</i>
       </div>` : ''}`;
+}
+
+// Välj en aktiv modul
+function wizardSelectModule(modId){
+  const m = ACTIVE_MODULES.find(x=>x.id===modId);
+  if(!m) return;
+  wiz.selectedModuleId = modId;
+  // Förifyll titel/syfte om de är tomma
+  if(!wiz.title.trim()) wiz.title = m.title;
+  if(!wiz.purpose.trim()) wiz.purpose = m.sub;
+  // Mappa modulkategori till handläggar-kategori
+  const catMap = {intro:'intro', arbete:'arbete', studier:'studier', hälsa:'hälsa', ekonomi:'ekonomi', digital:'övrigt'};
+  wiz.category = catMap[m.cat] || 'övrigt';
+  renderWizard();
 }
 
 function wizardFileChosen(ev){
@@ -2734,14 +2951,220 @@ async function runAiUpdate(){
   if(btn){ btn.disabled = false; }
 }
 
-// Öppna pptx-redigerare (placeholder — i produktion: WebOffice, OnlyOffice eller liknande)
-function openPptEditor(){
-  alert('Här öppnas en lättviktig PowerPoint-redigerare där du ser AI:s förslag inline och kan acceptera/justera/avvisa per slide. Redigeraren sparar tillbaka till samma material i biblioteket.\n\n(Backend: kräver integration med en pptx-editor-tjänst.)');
+// ═══════════════════════════════════════════════════════════════════════
+// AI-FÖRSLAGS-REDIGERARE — godkänn/avvisa/redigera, ladda ner ny pptx
+// ═══════════════════════════════════════════════════════════════════════
+let pptEditorState = null; // { changes: [{...orig, status:'pending'|'approved'|'rejected', edited?:string}], moduleId, materialId }
+
+function openPptEditor(materialId){
+  // Hämta changes-listan från antingen wizard eller bibliotek
+  let changes, moduleId;
+  if(materialId){
+    const lib = getMaterialLibrary();
+    const m = lib.find(x => x.id === materialId);
+    if(!m || !m.aiChanges_data){
+      alert('Inget AI-förslag finns för det här materialet ännu. Klicka "AI-uppdatera" först.');
+      return;
+    }
+    changes = m.aiChanges_data;
+    moduleId = m.id;
+  } else if(wiz?.aiUpdateResult?.changes){
+    changes = wiz.aiUpdateResult.changes;
+    moduleId = wiz.aiUpdateResult.moduleId || null;
+  } else {
+    alert('Kör AI-uppdateringen först.');
+    return;
+  }
+
+  // Initiera state — alla förslag startar som "pending"
+  pptEditorState = {
+    materialId: materialId || null,
+    moduleId: moduleId,
+    changes: changes.map(c => ({
+      ...c,
+      status: 'pending',
+      edited: c.suggested  // kan ändras av användaren
+    }))
+  };
+
+  document.getElementById('pptEditorModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderPptEditor();
+}
+
+function closePptEditor(){
+  document.getElementById('pptEditorModal').classList.remove('open');
+  document.body.style.overflow = '';
+  pptEditorState = null;
+}
+
+function renderPptEditor(){
+  if(!pptEditorState) return;
+  const body = document.getElementById('pptEditorBody');
+  const counts = {
+    approved: pptEditorState.changes.filter(c=>c.status==='approved').length,
+    rejected: pptEditorState.changes.filter(c=>c.status==='rejected').length,
+    pending:  pptEditorState.changes.filter(c=>c.status==='pending').length
+  };
+
+  // Räknare i footer
+  const total = pptEditorState.changes.length;
+  document.getElementById('pptEditorCount').innerHTML =
+    `<b style="color:var(--gn)">${counts.approved}</b> godkända · <b style="color:var(--rd)">${counts.rejected}</b> avvisade · <b>${counts.pending}</b> väntar`;
+
+  const cards = pptEditorState.changes.map((c, i) => {
+    const isPending  = c.status === 'pending';
+    const isApproved = c.status === 'approved';
+    const isRejected = c.status === 'rejected';
+    const isEditing  = c._editing;
+
+    return `
+      <div class="ppt-edit-card ${isApproved?'is-approved':''} ${isRejected?'is-rejected':''}">
+        <div class="ppt-edit-h">
+          <div class="ppt-edit-slide">Slide ${c.slide}</div>
+          <div class="ppt-edit-status">
+            ${isApproved ? '<span style="color:var(--gn);font-weight:700">✓ Godkänd</span>' : ''}
+            ${isRejected ? '<span style="color:var(--rd);font-weight:700">✕ Avvisad</span>' : ''}
+            ${isPending  ? '<span style="color:var(--mu)">Väntar på beslut</span>' : ''}
+          </div>
+        </div>
+        <div class="ppt-edit-old">
+          <div class="ppt-edit-l">Nu i slidesen</div>
+          <div class="ppt-edit-text">${escapeHtml(c.old)}</div>
+        </div>
+        <div class="ppt-edit-arrow">↓</div>
+        <div class="ppt-edit-new">
+          <div class="ppt-edit-l">AI:s förslag${c.edited!==c.suggested?' <span style="color:var(--ac)">(redigerad av dig)</span>':''}</div>
+          ${isEditing ? `
+            <textarea class="ppt-edit-textarea" id="pptEditTxt-${i}" oninput="pptEditorState.changes[${i}].edited=this.value">${escapeHtml(c.edited)}</textarea>
+            <div style="display:flex;gap:6px;margin-top:6px">
+              <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorState.changes[${i}]._editing=false;renderPptEditor()">Klar</button>
+              <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorState.changes[${i}].edited=pptEditorState.changes[${i}].suggested;pptEditorState.changes[${i}]._editing=false;renderPptEditor()">Återställ AI:s text</button>
+            </div>
+          ` : `
+            <div class="ppt-edit-text">${escapeHtml(c.edited)}</div>
+          `}
+        </div>
+        ${!isEditing ? `
+          <div class="ppt-edit-actions">
+            <button class="btn ppt-act-approve ${isApproved?'is-active':''}" onclick="pptEditorSetStatus(${i},'approved')">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Godkänn
+            </button>
+            <button class="btn ppt-act-edit" onclick="pptEditorState.changes[${i}]._editing=true;renderPptEditor()">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Redigera
+            </button>
+            <button class="btn ppt-act-reject ${isRejected?'is-active':''}" onclick="pptEditorSetStatus(${i},'rejected')">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Avvisa
+            </button>
+          </div>` : ''}
+      </div>`;
+  }).join('');
+
+  // Bulk-actions överst
+  const bulkBar = `
+    <div class="ppt-edit-bulk">
+      <span style="font-size:12px;color:var(--mu)">${total} förslag totalt</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorSetAll('approved')">Godkänn alla</button>
+        <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorSetAll('rejected')">Avvisa alla</button>
+      </div>
+    </div>`;
+
+  body.innerHTML = bulkBar + cards;
+
+  // Uppdatera download-knapp — disabled om alla rejected eller alla pending
+  const saveBtn = document.getElementById('pptEditorSaveBtn');
+  if(counts.approved === 0){
+    saveBtn.disabled = true;
+    saveBtn.title = 'Godkänn minst ett förslag för att kunna ladda ner';
+  } else {
+    saveBtn.disabled = false;
+    saveBtn.title = '';
+  }
+}
+
+function pptEditorSetStatus(i, status){
+  pptEditorState.changes[i].status = status;
+  pptEditorState.changes[i]._editing = false;
+  renderPptEditor();
+}
+function pptEditorSetAll(status){
+  pptEditorState.changes.forEach(c => { c.status = status; c._editing = false; });
+  renderPptEditor();
+}
+
+async function downloadUpdatedPpt(){
+  const approved = pptEditorState.changes.filter(c => c.status === 'approved');
+  if(!approved.length){
+    alert('Inga förslag är godkända — det finns inget att uppdatera.');
+    return;
+  }
+  const btn = document.getElementById('pptEditorSaveBtn');
+  btn.disabled = true; btn.textContent = 'Bygger ny pptx…';
+
+  try {
+    // Backend bygger den nya pptx-filen med de godkända ändringarna applicerade
+    const r = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'apply_pptx_updates',
+        moduleId: pptEditorState.moduleId,
+        materialId: pptEditorState.materialId,
+        changes: approved.map(c => ({
+          slide: c.slide,
+          old: c.old,
+          new: c.edited
+        }))
+      })
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+
+    // Backend förväntas returnera blob (eller URL)
+    const ct = r.headers.get('content-type') || '';
+    if(ct.includes('application/vnd.openxmlformats-officedocument')){
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (wiz?.title || 'uppdaterad') + '.pptx';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } else {
+      const data = await r.json();
+      if(data.url) window.open(data.url, '_blank');
+    }
+
+    // Markera material som "applied"
+    if(pptEditorState.materialId){
+      const lib = getMaterialLibrary();
+      const m = lib.find(x => x.id === pptEditorState.materialId);
+      if(m){ m.aiAppliedCount = approved.length; m.aiAppliedAt = new Date().toISOString(); setMaterialLibrary(lib); }
+    }
+
+    pptEditorStatus(`✓ Uppdaterad pptx nedladdad med ${approved.length} ändringar.`, 'ok');
+    setTimeout(()=>{ closePptEditor(); if(typeof renderMaterialView==='function' && currentTab==='material') renderMaterialView(); }, 1400);
+  } catch(e){
+    // Mock-fallback: visa instruktioner
+    console.warn('[ppt-editor] apply_pptx_updates saknas — visar instruktioner');
+    pptEditorStatus(`Backend för pptx-bygge saknas än. ${approved.length} ändringar markerade som godkända — när backend är på plats laddas filen ner direkt här.`, 'err');
+    btn.disabled = false; btn.textContent = 'Ladda ner uppdaterad pptx';
+  }
+}
+
+function pptEditorStatus(msg, kind){
+  const el = document.getElementById('pptEditorStatus');
+  if(!msg){ el.className = 'modal-status'; el.textContent=''; return; }
+  el.className = 'modal-status ' + (kind||'err');
+  el.textContent = msg;
 }
 
 function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// STEG 3: Tilldela
+// STEG 3: Spara & tilldela
 function renderWizStep3(){
   const favs = getFavorites();
   const mina = allUsers.filter(u=>favs.has(u.user_id||u.id));
@@ -2757,9 +3180,15 @@ function renderWizStep3(){
   }).join('');
 
   const langLbl = LANG_LEVELS.find(l=>l.id===wiz.langLevel)?.label || wiz.langLevel;
-  const catLbl  = TASK_CATS.find(c=>c.id===wiz.category)?.label || wiz.category;
+  const catLbl  = MODULE_CATS.find(c=>c.id===wiz.category)?.label || wiz.category;
+  const taskTypeOpts = TASK_TYPES.map(t => `<option value="${t.id}" ${wiz.taskType===t.id?'selected':''}>${t.label}</option>`).join('');
+
+  const isAssigning = wiz.saveMode === 'save_and_assign';
+  const isExistingModule = wiz.sourceType === 'existing_module';
+  const selectedMod = isExistingModule && wiz.selectedModuleId ? ACTIVE_MODULES.find(m=>m.id===wiz.selectedModuleId) : null;
 
   return `
+    <!-- Sammanfattning -->
     <div class="modal-field">
       <label class="modal-label">Sammanfattning</label>
       <div style="background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.6">
@@ -2769,27 +3198,76 @@ function renderWizStep3(){
           <span class="sum-tag">${catLbl}</span>
           <span class="sum-tag">${langLbl}</span>
           <span class="sum-tag">${wiz.estMinutes} min</span>
-          <span class="sum-tag">Deadline ${wiz.deadline}</span>
+          ${selectedMod ? `<span class="sum-tag" style="background:var(--acs);color:var(--ac)">${selectedMod.icon} Befintlig modul: ${escapeHtml(selectedMod.title)}</span>` : ''}
           ${wiz.file ? `<span class="sum-tag" style="background:var(--gnb);color:var(--gn)">PowerPoint bifogad</span>` : ''}
           ${wiz.aiUpdateResult ? `<span class="sum-tag" style="background:var(--acs);color:var(--ac)">AI-uppdaterad ✓</span>` : ''}
         </div>
       </div>
     </div>
-    <div class="modal-field">
-      <label class="modal-label">Tilldela till (${wiz.targetUserIds.length} valda av ${mina.length})</label>
-      ${mina.length ? `
-        <div style="display:flex;gap:6px;margin-bottom:8px">
-          <button class="btn" style="font-size:11px;padding:5px 10px" onclick="wizardSelectAllTargets()">Markera alla</button>
-          <button class="btn" style="font-size:11px;padding:5px 10px" onclick="wiz.targetUserIds=[];renderWizard()">Rensa</button>
+
+    ${isExistingModule ? `
+      <!-- Befintlig modul: hoppa över sparläge-val (modulen finns redan) — visa bara info -->
+      <div style="background:var(--acs);border:1px solid var(--ac);border-radius:8px;padding:10px 14px;font-size:12px;line-height:1.5;color:var(--tx);margin-bottom:14px">
+        Modulen finns redan i appen. Välj vilka deltagare du vill tilldela uppgiften till.
+      </div>
+    ` : `
+      <!-- Sparläge: Spara bara / Spara + tilldela -->
+      <div class="modal-field">
+        <label class="modal-label">Vad vill du göra?</label>
+        <div class="save-mode-chips">
+          <div class="save-mode${wiz.saveMode==='save_only'?' act':''}" onclick="wiz.saveMode='save_only';renderWizard()">
+            <div class="save-mode-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            </div>
+            <div>
+              <div class="save-mode-t">Spara bara i biblioteket</div>
+              <div class="save-mode-s">Lägg i biblioteket nu — tilldela när du har bestämt vilka deltagare och vill ta dig tid att ställa in det.</div>
+            </div>
+          </div>
+          <div class="save-mode${wiz.saveMode==='save_and_assign'?' act':''}" onclick="wiz.saveMode='save_and_assign';renderWizard()">
+            <div class="save-mode-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </div>
+            <div>
+              <div class="save-mode-t">Spara + tilldela direkt</div>
+              <div class="save-mode-s">Skicka uppgiften till valda deltagare med en gång. Materialet sparas också i biblioteket.</div>
+            </div>
+          </div>
         </div>
-        <div style="max-height:200px;overflow-y:auto;border:1px solid var(--bdl);border-radius:8px;padding:6px 12px">${allOpts}</div>
-      ` : `<div style="font-size:12px;color:var(--mu);padding:10px;background:var(--sf2);border-radius:8px">Du har inga stjärnmarkerade deltagare. Gå till Alla deltagare och markera några först — eller spara uppgiften i biblioteket utan att tilldela nu.</div>`}
-    </div>
-    ${!mina.length ? `
-      <button class="btn" onclick="wizardSaveOnly()" style="width:100%;margin-top:6px">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Spara bara i biblioteket (utan att tilldela nu)
-      </button>` : ''}`;
+      </div>
+    `}
+
+    ${isAssigning ? `
+      <!-- Uppgiftstyp + tilldelning -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-field" style="margin-bottom:0">
+          <label class="modal-label">Uppgiftstyp för deltagaren</label>
+          <select onchange="wiz.taskType=this.value" style="width:100%;padding:9px 28px 9px 12px">${taskTypeOpts}</select>
+        </div>
+        <div class="modal-field" style="margin-bottom:0">
+          <label class="modal-label">Deadline</label>
+          <input type="date" value="${wiz.deadline}" onchange="wiz.deadline=this.value" style="width:100%;padding:9px 12px">
+        </div>
+      </div>
+
+      <div class="modal-field" style="margin-top:14px">
+        <label class="modal-label">Tilldela till (${wiz.targetUserIds.length} valda av ${mina.length})</label>
+        ${mina.length ? `
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="wizardSelectAllTargets()">Markera alla</button>
+            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="wiz.targetUserIds=[];renderWizard()">Rensa</button>
+          </div>
+          <div style="max-height:180px;overflow-y:auto;border:1px solid var(--bdl);border-radius:8px;padding:6px 12px">${allOpts}</div>
+        ` : `<div style="font-size:12px;color:var(--mu);padding:10px;background:var(--sf2);border-radius:8px;line-height:1.5">
+          Du har inga stjärnmarkerade deltagare. Gå till "Alla deltagare" och markera några först — eller välj <b>"Spara bara i biblioteket"</b> ovan.
+        </div>`}
+      </div>
+    ` : `
+      <div style="background:var(--acs);border:1px solid var(--ac);border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.55;color:var(--tx);margin-top:6px">
+        <b>Materialet sparas i biblioteket "Sparat material & uppgifter".</b><br>
+        Du tilldelar det till deltagare när du vill — gå till biblioteksfliken och klicka på "Tilldela" på det här kortet.
+      </div>
+    `}`;
 }
 
 function wizardToggleTarget(uid){
@@ -2815,19 +3293,39 @@ async function wizardNext(){
     return;
   }
   if(wiz.step===2){
-    // Om AI-uppdatering är ikryssad och inte körts än → kör nu
-    if(wiz.file && wiz.aiUpdate && !wiz.aiUpdateResult){
-      await runAiUpdate();
-      return; // Stanna på steg 2 så användaren kan granska/redigera
+    // Validering beror på källtyp
+    if(wiz.sourceType === 'existing_module'){
+      if(!wiz.selectedModuleId){
+        wzStatus('Välj en befintlig modul nedan, eller byt till "Eget material" ovan.','err');
+        return;
+      }
+    } else {
+      // sourceType === 'new': fil är frivillig (kan vara textuppgift)
+      if(wiz.file && wiz.aiUpdate && !wiz.aiUpdateResult){
+        await runAiUpdate();
+        return; // Stanna på steg 2 så användaren kan granska/redigera
+      }
+      if(wiz.duplicate){ wzStatus('Välj att använda befintligt eller "Använd min uppladdning ändå" först.','err'); return; }
     }
-    if(wiz.duplicate){ wzStatus('Välj att använda befintligt eller "Använd min uppladdning ändå" först.','err'); return; }
     wiz.step = 3;
+    // Om man valde befintlig modul, växla till save_and_assign-läge automatiskt
+    // (ingen mening att "spara bara" en modul som redan finns)
+    if(wiz.sourceType === 'existing_module'){
+      wiz.saveMode = 'save_and_assign';
+    }
     renderWizard();
     return;
   }
   if(wiz.step===3){
-    if(!wiz.targetUserIds.length){ wzStatus('Välj minst en deltagare — eller använd "Spara bara i biblioteket".','err'); return; }
-    await wizardSaveAndAssign();
+    if(wiz.saveMode === 'save_and_assign'){
+      if(!wiz.targetUserIds.length){
+        wzStatus('Välj minst en deltagare — eller välj "Spara bara i biblioteket" ovan.','err');
+        return;
+      }
+      await wizardSaveAndAssign();
+    } else {
+      await wizardSaveOnly();
+    }
   }
 }
 
@@ -2836,23 +3334,7 @@ async function wizardSaveOnly(){
   const btn = document.getElementById('wzNextBtn');
   if(btn){ btn.disabled = true; btn.textContent = 'Sparar…'; }
   try {
-    saveToMaterialLibrary({assigned:false, count:0});
-    wzStatus('Sparat i biblioteket! Du kan tilldela det senare.', 'ok');
-    setTimeout(()=>{ closeCreateTask(); switchTab('material'); }, 1400);
-  } catch(e){
-    wzStatus('Kunde inte spara: '+e.message, 'err');
-    if(btn){ btn.disabled = false; }
-  }
-}
-
-async function wizardSaveAndAssign(){
-  const btn = document.getElementById('wzNextBtn');
-  btn.disabled = true; btn.textContent = 'Sparar…';
-
-  const deadline = new Date(wiz.deadline);
-
-  try {
-    // 1. Skapa modulen i backend (om endpoint finns)
+    // Försök spara i backend (om endpoint finns), spara alltid lokalt
     let moduleId = null;
     try {
       const fd = new FormData();
@@ -2873,48 +3355,118 @@ async function wizardSaveAndAssign(){
       }
     } catch(_){}
 
-    // 2. Tilldela till valda deltagare via assign_task (alltid stödd)
+    saveToMaterialLibrary({assigned:false, count:0, moduleId});
+    wzStatus('✓ Sparat i biblioteket! Du kan tilldela det när du vill.', 'ok');
+    if(btn) btn.textContent = 'Klar ✓';
+    setTimeout(()=>{ closeCreateTask(); switchTab('material'); }, 1400);
+  } catch(e){
+    wzStatus('Kunde inte spara: '+e.message, 'err');
+    if(btn){ btn.disabled = false; btn.textContent = 'Spara i biblioteket →'; }
+  }
+}
+
+async function wizardSaveAndAssign(){
+  const btn = document.getElementById('wzNextBtn');
+  btn.disabled = true; btn.textContent = 'Sparar & tilldelar…';
+
+  // Bygg deadline som ISO-string (med tid 23:59 lokalt)
+  const deadlineDate = new Date(wiz.deadline + 'T23:59:00');
+  const deadlineISO = deadlineDate.toISOString();
+
+  // Avgör vilken modul-id som ska skickas
+  // - existing_module: använd det valda modul-id:t (m1, a_cv, etc) — deltagaren får uppgift kopplad till BEFINTLIG modul
+  // - new: skapa nytt material via create_module och få nytt id tillbaka
+  let moduleId = null;
+  let moduleSourceLabel = 'eget material';
+
+  try {
+    if(wiz.sourceType === 'existing_module' && wiz.selectedModuleId){
+      // Använd befintlig aktiv modul direkt — inget create_module behövs
+      moduleId = wiz.selectedModuleId;
+      moduleSourceLabel = `befintlig modul (${moduleId})`;
+    } else {
+      // Skapa nytt material i backend (om endpoint finns) — fortsätt även om det misslyckas
+      try {
+        const fd = new FormData();
+        fd.append('action','create_module');
+        fd.append('title', wiz.title);
+        fd.append('purpose', wiz.purpose);
+        fd.append('category', wiz.category);
+        fd.append('langLevel', wiz.langLevel);
+        fd.append('estMinutes', String(wiz.estMinutes));
+        fd.append('createdBy', admin.id);
+        fd.append('enhetId', admin.enhet_id||'');
+        if(wiz.file) fd.append('file', wiz.file);
+        if(wiz.aiUpdateResult) fd.append('aiUpdated','1');
+        const r = await fetch(API, { method:'POST', body: fd });
+        if(r.ok){
+          const data = await r.json();
+          moduleId = data.moduleId || data.id;
+        }
+      } catch(_){
+        console.warn('[wizard] create_module-endpoint saknas — fortsätter med assign_task');
+      }
+    }
+
+    // Tilldela till varje vald deltagare via assign_task
     let ok=0, fail=0;
+    const errors = [];
     for(const uid of wiz.targetUserIds){
       try {
-        await post('assign_task', {
+        const res = await post('assign_task', {
           targetUserId: uid,
           title: wiz.title,
           description: wiz.purpose,
-          category: wiz.category,
-          deadline: deadline.toISOString(),
+          category: wiz.taskType,
+          deadline: deadlineISO,
           durationMinutes: wiz.estMinutes,
-          filters: { adminId: admin.id, moduleId, langLevel: wiz.langLevel }
+          moduleId: moduleId,
+          moduleSource: wiz.sourceType,
+          langLevel: wiz.langLevel,
+          filters: { adminId: admin.id }
         });
+        if(res?.error){ throw new Error(res.error); }
         ok++;
-      } catch(err){ fail++; }
+      } catch(err){
+        fail++;
+        errors.push(err.message || 'okänt fel');
+        console.error('[wizard] assign_task misslyckades för', uid, err);
+      }
     }
 
-    // 3. Spara även lokalt i biblioteket så det syns direkt
-    saveToMaterialLibrary({assigned:true, count:ok, moduleId});
+    // Spara även lokalt i biblioteket så det syns direkt (men inte för befintliga moduler — de finns ju redan)
+    if(wiz.sourceType !== 'existing_module'){
+      saveToMaterialLibrary({assigned: ok>0, count: ok, moduleId});
+    }
 
     if(fail===0){
-      wzStatus(`Uppgift skapad och tilldelad till ${ok} deltagare. Sparat i biblioteket.`, 'ok');
+      const where = wiz.sourceType === 'existing_module' ? 'tilldelat' : 'sparat i biblioteket och tilldelat';
+      wzStatus(`✓ ${where} till ${ok} deltagare. (${moduleSourceLabel})`, 'ok');
       btn.textContent = 'Klar ✓';
-      setTimeout(()=>{ closeCreateTask(); switchTab('material'); }, 1600);
+      setTimeout(()=>{ closeCreateTask(); switchTab(wiz.sourceType === 'existing_module' ? 'mina' : 'material'); }, 1600);
+    } else if(ok>0){
+      wzStatus(`Delvis lyckat: ${ok} fick uppgiften, ${fail} misslyckades. Detaljer i konsolen.`, 'err');
+      btn.textContent = 'Försök igen';
+      btn.disabled = false;
     } else {
-      wzStatus(`${ok} lyckades, ${fail} misslyckades.`, 'err');
+      wzStatus(`Tilldelningen misslyckades för alla ${fail} deltagare. ${errors[0]||''}`, 'err');
       btn.textContent = 'Försök igen';
       btn.disabled = false;
     }
   } catch(e){
-    wzStatus('Kunde inte spara: '+e.message, 'err');
+    wzStatus('Något gick fel: '+e.message, 'err');
     btn.textContent = 'Försök igen';
     btn.disabled = false;
   }
 }
 
-// Använd befintligt material — hoppa direkt till tilldelning
+// Använd befintligt material — hoppa direkt till tilldelning (steg 3, läge save_and_assign)
 async function wizardUseExisting(moduleId){
   wiz._useExistingModuleId = moduleId;
   wiz.duplicate = null;
+  wiz.saveMode = 'save_and_assign';
   wiz.step = 3;
-  wzStatus('Befintligt material valt — välj deltagare att tilldela till.', 'ok');
+  wzStatus('Befintligt material valt — välj uppgiftstyp och deltagare nedan.', 'ok');
   renderWizard();
 }
 
@@ -2980,7 +3532,7 @@ function renderMaterialView(){
 
   // Räknare för chip-filtren
   const catCounts = {};
-  TASK_CATS.forEach(c => catCounts[c.id] = sorted.filter(m=>m.category===c.id).length);
+  MODULE_CATS.forEach(c => catCounts[c.id] = sorted.filter(m=>m.category===c.id).length);
   const langCounts = {};
   LANG_LEVELS.forEach(l => langCounts[l.id] = sorted.filter(m=>m.langLevel===l.id).length);
 
@@ -3021,7 +3573,7 @@ function renderMaterialView(){
       <input type="text" class="mat-search" placeholder="Sök i titel eller syfte…" value="${escapeHtml(materialFilter.q)}" oninput="materialFilter.q=this.value;renderMaterialView()">
       <div class="mat-chips">
         <div class="chip${materialFilter.cat===''?' act':''}" onclick="materialFilter.cat='';renderMaterialView()"><span>Alla kategorier</span><span class="chip-c">${sorted.length}</span></div>
-        ${TASK_CATS.map(c => catCounts[c.id]>0 ? `<div class="chip${materialFilter.cat===c.id?' act':''}" onclick="materialFilter.cat='${c.id}';renderMaterialView()"><span>${c.label}</span><span class="chip-c">${catCounts[c.id]}</span></div>` : '').join('')}
+        ${MODULE_CATS.map(c => catCounts[c.id]>0 ? `<div class="chip${materialFilter.cat===c.id?' act':''}" onclick="materialFilter.cat='${c.id}';renderMaterialView()"><span>${c.label}</span><span class="chip-c">${catCounts[c.id]}</span></div>` : '').join('')}
       </div>
       <div class="mat-chips">
         <div class="chip${materialFilter.lang===''?' act':''}" onclick="materialFilter.lang='';renderMaterialView()"><span>Alla språk</span></div>
@@ -3046,7 +3598,7 @@ function renderMaterialView(){
 
   // Kort för varje material
   const cards = filtered.map(m => {
-    const cat = TASK_CATS.find(c=>c.id===m.category)?.label || m.category;
+    const cat = MODULE_CATS.find(c=>c.id===m.category)?.label || m.category;
     const lang = LANG_LEVELS.find(l=>l.id===m.langLevel)?.label || m.langLevel;
     const date = new Date(m.createdAt).toLocaleDateString('sv-SE', {year:'numeric',month:'short',day:'numeric'});
 
@@ -3102,9 +3654,13 @@ function renderMaterialView(){
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               Tilldela
             </button>
-            ${m.fileName ? `<button class="btn" onclick="aiUpdateExisting('${m.id}')" title="Uppdatera innehåll med AI">
+            ${m.aiChanges_data?.length ? `<button class="btn" onclick="openPptEditor('${m.id}')" title="Granska sparade AI-förslag">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Granska AI (${m.aiChanges_data.length})
+            </button>` : ''}
+            ${m.fileName ? `<button class="btn" onclick="aiUpdateExisting('${m.id}')" title="${m.aiChanges_data?.length?'Kör AI igen':'Uppdatera innehåll med AI'}">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              AI-uppdatera
+              ${m.aiChanges_data?.length?'Kör AI igen':'AI-uppdatera'}
             </button>` : ''}
             <button class="btn inst-danger" onclick="deleteMaterial('${m.id}')" title="Ta bort">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
@@ -3140,10 +3696,12 @@ function reAssignMaterial(id){
   wiz.langLevel = m.langLevel;
   wiz.estMinutes = m.estMinutes;
   wiz._useExistingModuleId = m.id;
+  wiz.saveMode = 'save_and_assign';   // direkt i tilldelningsläge
   wiz.step = 3;
   document.getElementById('createTaskModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
   renderWizard();
-  wzStatus(`Tilldelar befintligt material: "${m.title}". Välj deltagare nedan.`, 'ok');
+  wzStatus(`Tilldelar befintligt material: "${m.title}". Välj uppgiftstyp och deltagare nedan.`, 'ok');
 }
 
 async function aiUpdateExisting(id){
@@ -3154,16 +3712,41 @@ async function aiUpdateExisting(id){
   const lib = getMaterialLibrary();
   const m = lib.find(x => x.id === id);
   if(!m) return;
-  if(!confirm(`Köra AI-uppdatering på "${m.title}"?\n\nAI går igenom slides och föreslår uppdaterade siffror, datum och fakta. Du granskar och sparar själv. (${getAiQuotaLeft()-1} uppdateringar kvar efter denna.)`)) return;
+  if(!confirm(`Köra AI-uppdatering på "${m.title}"?\n\nAI går igenom slides och föreslår uppdaterade siffror, datum och fakta. (${getAiQuotaLeft()-1} uppdateringar kvar efter denna.)`)) return;
 
-  // Mock: simulera körning
+  // Försök riktig backend, fall tillbaka på mock
+  let changes = null;
+  try {
+    const r = await fetch(API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'ai_update_pptx', moduleId:id, adminId:admin.id })
+    });
+    if(r.ok){
+      const data = await r.json();
+      changes = data.changes;
+    }
+  } catch(_){}
+
+  if(!changes){
+    // Mock-data baserat på materialets titel
+    changes = [
+      {slide:2, old:'Statistik från 2022 — arbetslösheten 7,8%', suggested:'Statistik från 2025 — arbetslösheten 8,3%'},
+      {slide:5, old:'Arbetsförmedlingen reformerades 2019', suggested:'Arbetsförmedlingen reformerades 2019, ytterligare ändringar trädde i kraft 2024'},
+      {slide:8, old:'Ring 0771-416 416 för bokning', suggested:'Boka via Mina sidor på arbetsformedlingen.se eller appen'}
+    ];
+  }
+
   bumpAiQuota();
   m.aiUpdated = true;
-  m.aiChanges = (m.aiChanges||0) + 3;
+  m.aiChanges = changes.length;
+  m.aiChanges_data = changes;
   m.lastAiUpdateAt = new Date().toISOString();
   setMaterialLibrary(lib);
-  alert(`Klart! AI hittade 3 föråldrade fakta i "${m.title}". Klicka på "Öppna, redigera & spara" för att granska förslagen.\n\n(I produktion öppnas ppt-redigeraren direkt här.)`);
+
   renderMaterialView();
+  // Öppna editorn direkt
+  openPptEditor(id);
 }
 
 function deleteMaterial(id){
@@ -3175,10 +3758,17 @@ function deleteMaterial(id){
   renderMaterialView();
 }
 
-// Stäng vid klick utanför + Esc
-document.getElementById('createTaskModal')?.addEventListener('click',(e)=>{
-  if(e.target.id==='createTaskModal') closeCreateTask();
-});
+// VIKTIGT: Modal stänger INTE vid klick utanför (förhindrar att man tappar arbete).
+// Användaren måste explicit klicka Avbryt eller X-knappen för att stänga.
+// Bekräftelsedialog visas om wizarden är delvis ifylld.
+function tryCloseCreateTask(){
+  if(!wiz) { closeCreateTask(); return; }
+  const hasContent = wiz.title || wiz.purpose || wiz.file || wiz.targetUserIds.length;
+  if(hasContent){
+    if(!confirm('Avbryta? Det du har fyllt i går förlorat.')) return;
+  }
+  closeCreateTask();
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 // FÖRHANDSVISNING — visar modulen som deltagaren kommer att se den
