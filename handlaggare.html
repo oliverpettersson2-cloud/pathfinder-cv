@@ -1396,20 +1396,20 @@ async function loadUsers(){
 
   const handlaggareSel = document.getElementById('handlaggareFlt');
   if(handlaggareSel){
-    // Sortera: inloggad först ("Mina ärenden"), sedan övriga alfabetiskt
+    // Inkludera ALLA handläggare (även inloggad själv) i alfabetisk ordning.
+    // Inloggad markeras med "(du)" i etiketten så hen vet vilken hen är.
     const entries = [...handlaggareMap.entries()]
-      .filter(([id]) => id !== admin.id)
       .sort((a,b) => a[1].localeCompare(b[1], 'sv'));
-    const myLabel = handlaggareMap.get(admin.id) || admin.name || 'Mig';
     handlaggareSel.innerHTML =
       '<option value="">Alla handläggare</option>' +
-      (admin.id
-        ? `<option value="${admin.id}">Mina ärenden (${myLabel})</option>`
-        : '') +
-      entries.map(([id,name]) => `<option value="${id}">${name}</option>`).join('');
+      entries.map(([id,name]) => {
+        const isMe = id === admin.id;
+        const label = isMe ? `${name} (du)` : name;
+        return `<option value="${id}">${label}</option>`;
+      }).join('');
 
-    // Förval: "Mina ärenden" för handläggare första gången
-    if(admin.role === 'handlaggare' && admin.id && !handlaggareSel.dataset.userSet){
+    // Förval: inloggad användare första gången
+    if(admin.id && !handlaggareSel.dataset.userSet){
       handlaggareSel.value = admin.id;
     }
   }
