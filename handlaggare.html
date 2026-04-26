@@ -744,6 +744,7 @@ td{padding:10px 13px;vertical-align:middle}
   .cnt{max-width:1800px}
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -1379,7 +1380,9 @@ const SOFT_ACTIONS = new Set([
   'create_module',         // skapa ny modul
   'ai_update_pptx',        // AI-uppdatera presentation
   'apply_pptx_updates',    // applicera AI-ändringar på pptx
-  'check_module_duplicate' // kontrollera dubbletter
+  'check_module_duplicate', // kontrollera dubbletter
+  'generate_lesson_pdf',   // AI genererar lektionsguide-innehåll
+  'generate_quiz'          // AI genererar quiz-frågor till digital modul
 ]);
 function post(action, data) {
   return fetch(API, {
@@ -3703,7 +3706,11 @@ function initWizState(){
     aiUpdateResult: null,
     duplicate: null,
     targetUserIds: [],
-    saveMode: 'save_only'  // 'save_only' eller 'save_and_assign' — väljs i steg 3
+    saveMode: 'save_only',  // 'save_only' eller 'save_and_assign' — väljs i steg 3
+    // NYTT: vad användaren vill skapa. 'digital' = interaktiv app-modul,
+    // 'inplace' = lektionsmaterial att köra i klassrummet (lektionsguide+facit),
+    // 'both' = båda. Avgör vilka knappar som visas i sista steget.
+    outputFormat: 'digital'
   };
 }
 
@@ -3762,6 +3769,27 @@ function renderWizStep1(){
     </div>`).join('');
 
   return `
+    <div class="modal-field">
+      <label class="modal-label">Vad vill du skapa? *</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div onclick="wiz.outputFormat='digital';renderWizard()" style="cursor:pointer;padding:14px 12px;border:1.5px solid ${wiz.outputFormat==='digital'?'var(--ac)':'var(--bd)'};background:${wiz.outputFormat==='digital'?'rgba(212,164,54,0.08)':'#fff'};border-radius:10px;text-align:center;transition:border-color 0.12s, background 0.12s;">
+          <div style="font-size:24px;line-height:1;margin-bottom:6px;">🖥️</div>
+          <div style="font-size:12px;font-weight:800;color:var(--tx);margin-bottom:2px;">Digital modul</div>
+          <div style="font-size:10px;color:var(--mu);line-height:1.3;">Slides + AI-quiz som deltagaren gör i appen</div>
+        </div>
+        <div onclick="wiz.outputFormat='inplace';renderWizard()" style="cursor:pointer;padding:14px 12px;border:1.5px solid ${wiz.outputFormat==='inplace'?'var(--ac)':'var(--bd)'};background:${wiz.outputFormat==='inplace'?'rgba(212,164,54,0.08)':'#fff'};border-radius:10px;text-align:center;transition:border-color 0.12s, background 0.12s;">
+          <div style="font-size:24px;line-height:1;margin-bottom:6px;">📄</div>
+          <div style="font-size:12px;font-weight:800;color:var(--tx);margin-bottom:2px;">På plats</div>
+          <div style="font-size:10px;color:var(--mu);line-height:1.3;">PP + lektionsguide & facit för klassrummet</div>
+        </div>
+        <div onclick="wiz.outputFormat='both';renderWizard()" style="cursor:pointer;padding:14px 12px;border:1.5px solid ${wiz.outputFormat==='both'?'var(--ac)':'var(--bd)'};background:${wiz.outputFormat==='both'?'rgba(212,164,54,0.08)':'#fff'};border-radius:10px;text-align:center;transition:border-color 0.12s, background 0.12s;">
+          <div style="font-size:24px;line-height:1;margin-bottom:6px;">📦</div>
+          <div style="font-size:12px;font-weight:800;color:var(--tx);margin-bottom:2px;">Båda</div>
+          <div style="font-size:10px;color:var(--mu);line-height:1.3;">Maximal flexibilitet — digital + på plats</div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-field">
       <label class="modal-label">Titel *</label>
       <input type="text" class="modal-input" value="${escapeHtml(wiz.title)}" oninput="wiz.title=this.value" placeholder="T.ex. Arbetsmarknaden i Sverige" style="padding-left:12px">
@@ -4490,10 +4518,43 @@ function renderWizStep3(){
           <span class="sum-tag">${catLbl}</span>
           <span class="sum-tag">${langLbl}</span>
           <span class="sum-tag">${wiz.estMinutes} min</span>
+          <span class="sum-tag" style="background:rgba(212,164,54,0.12);color:var(--ac)">${wiz.outputFormat==='digital'?'🖥️ Digital modul':wiz.outputFormat==='inplace'?'📄 På plats':'📦 Båda'}</span>
           ${selectedMod ? `<span class="sum-tag" style="background:var(--acs);color:var(--ac)">${selectedMod.icon} Befintlig modul: ${escapeHtml(selectedMod.title)}</span>` : ''}
           ${wiz.file ? `<span class="sum-tag" style="background:var(--gnb);color:var(--gn)">PowerPoint bifogad</span>` : ''}
           ${wiz.aiUpdateResult ? `<span class="sum-tag" style="background:var(--acs);color:var(--ac)">AI-uppdaterad ✓</span>` : ''}
         </div>
+      </div>
+    </div>
+
+    <!-- Format-baserade nedladdningsknappar -->
+    <div class="modal-field">
+      <label class="modal-label">${wiz.outputFormat==='digital'?'Förhandsgranska digital modul':wiz.outputFormat==='inplace'?'Generera lektionsmaterial':'Förhandsgranska & generera material'}</label>
+      <div style="display:grid;gap:8px;">
+        ${(wiz.outputFormat==='digital' || wiz.outputFormat==='both') ? `
+          <button onclick="previewDigitalModule()" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.25);border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:background 0.12s;" onmouseover="this.style.background='rgba(59,130,246,0.08)'" onmouseout="this.style.background='rgba(59,130,246,0.04)'">
+            <div style="width:38px;height:38px;border-radius:9px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🖥️</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:700;color:var(--tx);">Förhandsgranska digital modul</div>
+              <div style="font-size:11px;color:var(--mu);margin-top:1px;">Slides + 3 AI-genererade quiz-frågor (som m1/m2/m3)</div>
+            </div>
+            <span style="font-size:16px;color:var(--mu);flex-shrink:0;">›</span>
+          </button>
+        ` : ''}
+        ${(wiz.outputFormat==='inplace' || wiz.outputFormat==='both') ? `
+          <button onclick="generateLessonGuide()" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.25);border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:background 0.12s;" onmouseover="this.style.background='rgba(16,185,129,0.08)'" onmouseout="this.style.background='rgba(16,185,129,0.04)'">
+            <div style="width:38px;height:38px;border-radius:9px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📑</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:700;color:var(--tx);">Ladda ner lektionsguide (PDF)</div>
+              <div style="font-size:11px;color:var(--mu);margin-top:1px;">Lektionsguide för dig + uppgifter & facit för deltagarna</div>
+            </div>
+            <span style="font-size:16px;color:var(--mu);flex-shrink:0;">↓</span>
+          </button>
+        ` : ''}
+      </div>
+      <div style="font-size:10px;color:var(--mu);margin-top:6px;line-height:1.4;font-style:italic;">
+        ${wiz.outputFormat==='inplace'?'PowerPointen sparas oförändrad i biblioteket — använd PDF:erna som komplement i klassrummet.':''}
+        ${wiz.outputFormat==='digital'?'Den digitala modulen kommer synas hos deltagaren i appen efter att du tilldelat den.':''}
+        ${wiz.outputFormat==='both'?'Du får både den digitala modulen i appen och PDF-paketet att skriva ut.':''}
       </div>
     </div>
 
@@ -4572,6 +4633,264 @@ function wizardSelectAllTargets(){
   wiz.targetUserIds = allUsers.filter(u=>favs.has(u.user_id||u.id)).map(u=>u.user_id||u.id);
   renderWizard();
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// PDF-GENERERING (lektionsguide för "På plats"-läget)
+// ═══════════════════════════════════════════════════════════════════════
+// Använder jsPDF (CDN) klient-side. Bygger en lektionsguide med:
+// • Försättsblad (titel, syfte, tid)
+// • Lektionsupplägg (uppvärmning → genomgång → diskussion → uppgifter → avslut)
+// • 3-8 övningar (skalat efter tid)
+// • Facit
+async function generateLessonGuide() {
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    showErr('PDF-biblioteket laddas — försök igen om en sekund.');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+
+  // Anpassa antal uppgifter till lektionstid
+  const minutes = wiz.estMinutes || 30;
+  const numTasks = minutes <= 30 ? 3 : minutes <= 60 ? 5 : 8;
+
+  // Försök få AI-genererat innehåll först — fallback till statiskt om backend saknas
+  let lessonContent = null;
+  try {
+    const r = await post('generate_lesson_pdf', {
+      title: wiz.title,
+      purpose: wiz.purpose,
+      langLevel: wiz.langLevel,
+      estMinutes: minutes,
+      numTasks
+    });
+    if (r && !r.error && r.content) lessonContent = r.content;
+  } catch(e) {}
+
+  // Fallback: bygg generiskt innehåll baserat på titel/syfte
+  if (!lessonContent) {
+    const tasks = [];
+    for (let i = 1; i <= numTasks; i++) {
+      tasks.push({
+        title: `Uppgift ${i}: Diskussionsfråga om ${wiz.title}`,
+        instruction: `Diskutera i smågrupper (3-4 personer). Skriv ner era tankar.`,
+        prompt: `Vad är det viktigaste ni har lärt er om "${wiz.title}"? Hur kan ni använda det i ert dagliga liv?`,
+        answer: `Förslag på svar: deltagarna bör nämna 2-3 konkreta exempel kopplat till lektionens syfte: "${wiz.purpose.slice(0, 100)}". Värdera utifrån egen reflektion och förståelse, inte bara faktarepetition.`
+      });
+    }
+    lessonContent = {
+      summary: wiz.purpose,
+      structure: [
+        { phase: 'Uppvärmning', minutes: Math.round(minutes * 0.1), notes: 'Hälsa, presentera dagens ämne. Fråga deltagarna vad de redan vet om temat.' },
+        { phase: 'Genomgång', minutes: Math.round(minutes * 0.4), notes: 'Gå igenom PowerPoint-presentationen slide för slide. Pausa och fråga om förståelse vid varje slide.' },
+        { phase: 'Övningar', minutes: Math.round(minutes * 0.35), notes: `Genomför ${numTasks} övningar enligt nedan. Dela in i smågrupper.` },
+        { phase: 'Diskussion & avslut', minutes: Math.round(minutes * 0.15), notes: 'Sammanfatta tillsammans. Be varje deltagare säga en sak de tar med sig.' }
+      ],
+      tasks
+    };
+  }
+
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageW = 210, pageH = 297, margin = 18;
+  let y = margin;
+
+  // Helper för text-rendering med automatisk radbrytning
+  const writeText = (text, x, opts = {}) => {
+    const { fontSize = 11, bold = false, color = [40, 40, 40], maxWidth = pageW - margin * 2, lineHeight = 5.5 } = opts;
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setFontSize(fontSize);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(text, maxWidth);
+    lines.forEach(line => {
+      if (y > pageH - margin - 10) { doc.addPage(); y = margin; }
+      doc.text(line, x, y);
+      y += lineHeight;
+    });
+  };
+
+  // ─── SIDA 1: Försättsblad ───
+  doc.setFillColor(26, 26, 46);
+  doc.rect(0, 0, pageW, 60, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('LEKTIONSGUIDE', margin, 20);
+  doc.setFontSize(22);
+  const titleLines = doc.splitTextToSize(wiz.title || 'Lektion', pageW - margin * 2);
+  doc.text(titleLines, margin, 32);
+
+  y = 75;
+  writeText('Syfte', margin, { fontSize: 10, bold: true, color: [120, 120, 120] });
+  writeText(wiz.purpose || 'Inget syfte angivet.', margin, { fontSize: 12 });
+  y += 4;
+
+  // Metadata-rad
+  doc.setDrawColor(220, 220, 220);
+  doc.line(margin, y, pageW - margin, y);
+  y += 6;
+  const langLbl = LANG_LEVELS.find(l => l.id === wiz.langLevel)?.label || wiz.langLevel;
+  const catLbl = MODULE_CATS.find(c => c.id === wiz.category)?.label || wiz.category;
+  writeText(`📚 ${catLbl}   ·   🗣 ${langLbl}   ·   ⏱ ${minutes} min   ·   📅 ${new Date().toLocaleDateString('sv-SE')}`, margin, { fontSize: 10, color: [100, 100, 100] });
+  y += 6;
+
+  // ─── Lektionsupplägg ───
+  writeText('Lektionsupplägg', margin, { fontSize: 14, bold: true });
+  y += 2;
+  lessonContent.structure.forEach((p, i) => {
+    if (y > pageH - margin - 25) { doc.addPage(); y = margin; }
+    doc.setFillColor(245, 240, 230);
+    doc.rect(margin, y - 4, pageW - margin * 2, 8, 'F');
+    writeText(`${i + 1}. ${p.phase}  (${p.minutes} min)`, margin + 2, { fontSize: 11, bold: true, color: [212, 164, 54] });
+    y -= 1;
+    writeText(p.notes, margin + 2, { fontSize: 10, color: [80, 80, 80] });
+    y += 3;
+  });
+
+  // ─── Övningar ───
+  doc.addPage();
+  y = margin;
+  writeText('Övningar', margin, { fontSize: 16, bold: true });
+  y += 2;
+  writeText('Skriv ut sidorna nedan och dela ut till deltagarna. Facit finns längst bak.', margin, { fontSize: 10, color: [120, 120, 120] });
+  y += 4;
+  lessonContent.tasks.forEach((t, i) => {
+    if (y > pageH - margin - 35) { doc.addPage(); y = margin; }
+    doc.setDrawColor(212, 164, 54);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, y, pageW - margin * 2, 1, 'F');
+    y += 4;
+    writeText(t.title || `Uppgift ${i + 1}`, margin, { fontSize: 12, bold: true });
+    if (t.instruction) writeText(t.instruction, margin, { fontSize: 10, color: [100, 100, 100] });
+    y += 1;
+    writeText(t.prompt || '', margin, { fontSize: 11 });
+    y += 4;
+    // Plats för svar (5 tomma rader)
+    doc.setDrawColor(220, 220, 220);
+    for (let k = 0; k < 5; k++) {
+      if (y > pageH - margin - 10) { doc.addPage(); y = margin; }
+      doc.line(margin, y, pageW - margin, y);
+      y += 6;
+    }
+    y += 4;
+  });
+
+  // ─── Facit ───
+  doc.addPage();
+  y = margin;
+  writeText('Facit', margin, { fontSize: 16, bold: true });
+  y += 2;
+  writeText('Endast för dig som lärare/handläggare — dela inte ut före övningen.', margin, { fontSize: 10, color: [200, 80, 80] });
+  y += 4;
+  lessonContent.tasks.forEach((t, i) => {
+    if (y > pageH - margin - 30) { doc.addPage(); y = margin; }
+    writeText(`Uppgift ${i + 1}: ${t.title}`, margin, { fontSize: 11, bold: true });
+    writeText(t.answer || 'Inget facit angivet — bedöm utifrån syfte och målgrupp.', margin, { fontSize: 10, color: [60, 60, 60] });
+    y += 4;
+  });
+
+  // ─── Footer på alla sidor ───
+  const pageCount = doc.internal.pages.length - 1;
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(160, 160, 160);
+    doc.text(`CVmatchen · ${wiz.title}`, margin, pageH - 8);
+    doc.text(`Sida ${i} av ${pageCount}`, pageW - margin - 25, pageH - 8);
+  }
+
+  const fileName = (wiz.title || 'lektionsguide').replace(/[^a-zA-Z0-9_-]/g, '_') + '_lektionsguide.pdf';
+  doc.save(fileName);
+  showOk(`✓ Lektionsguide nedladdad: ${fileName}`);
+}
+window.generateLessonGuide = generateLessonGuide;
+
+// ═══════════════════════════════════════════════════════════════════════
+// FÖRHANDSGRANSKA DIGITAL MODUL (slides + 3 quiz-frågor)
+// ═══════════════════════════════════════════════════════════════════════
+async function previewDigitalModule() {
+  // Försök få AI-genererade quiz-frågor — fallback till generiska
+  let quiz = null;
+  try {
+    const r = await post('generate_quiz', {
+      title: wiz.title,
+      purpose: wiz.purpose,
+      langLevel: wiz.langLevel,
+      numQuestions: 3
+    });
+    if (r && !r.error && r.questions) quiz = r.questions;
+  } catch(e) {}
+
+  if (!quiz) {
+    // Generisk fallback baserat på titel
+    quiz = [
+      { q: `Vad är huvudtemat för "${wiz.title}"?`, options: [
+          { t: wiz.purpose.slice(0, 60) || 'Det som lektionen handlar om', correct: true, fb: 'Rätt — det är lektionens kärna.' },
+          { t: 'Något helt annat', correct: false, fb: 'Försök igen — tänk på lektionens titel.' },
+          { t: 'Vet inte', correct: false, fb: 'Läs igenom slidsen igen.' }
+      ]},
+      { q: `Varför är "${wiz.title}" viktigt att kunna?`, options: [
+          { t: 'För att klara vardagen och arbetet bättre', correct: true, fb: 'Rätt — det är därför vi går igenom det.' },
+          { t: 'Det är inte viktigt', correct: false, fb: 'Allt vi går igenom har ett syfte i ert sammanhang.' },
+          { t: 'Bara för betyget', correct: false, fb: 'Det handlar om praktisk nytta för er framtid.' }
+      ]},
+      { q: 'Vad ska du göra om du inte förstår något i lektionen?', options: [
+          { t: 'Fråga din handläggare eller en klasskompis', correct: true, fb: 'Bra! Att fråga är grunden för lärande.' },
+          { t: 'Hoppa över och låtsas att du förstod', correct: false, fb: 'Då missar du viktig kunskap. Våga fråga!' },
+          { t: 'Ge upp', correct: false, fb: 'Aldrig! Alla har rätt att få hjälp och förklaringar.' }
+      ]}
+    ];
+  }
+
+  // Bygg modal med slides + quiz
+  const overlay = document.createElement('div');
+  overlay.id = '_digitalPreviewOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;max-width:680px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="padding:20px 24px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--mu);letter-spacing:0.5px;text-transform:uppercase;">Förhandsgranskning</div>
+          <div style="font-size:17px;font-weight:800;color:var(--tx);">🖥️ Digital modul: ${escapeHtml(wiz.title)}</div>
+        </div>
+        <button onclick="document.getElementById('_digitalPreviewOverlay')?.remove()" style="background:rgba(0,0,0,0.04);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;color:var(--mu);">×</button>
+      </div>
+      <div style="padding:20px 24px;">
+        <div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.18);border-radius:10px;padding:14px;margin-bottom:18px;">
+          <div style="font-size:11px;font-weight:800;color:#3b82f6;letter-spacing:0.5px;margin-bottom:4px;">SÅ HÄR FÅR DELTAGAREN SE DEN</div>
+          <div style="font-size:12px;color:var(--tx);line-height:1.5;">Modulen visar slides från din PowerPoint följt av ${quiz.length} quiz-frågor som AI genererat baserat på lektionens syfte. Fungerar precis som befintliga m1, m2, m3 i appen.</div>
+        </div>
+
+        <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:8px;">📊 Slide-genomgång</div>
+        <div style="background:rgba(0,0,0,0.03);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:20px;font-size:12px;color:var(--mu);text-align:center;">
+          ${wiz.file ? `📎 ${escapeHtml(wiz.file.name)} — ${wiz.file.size ? Math.round(wiz.file.size/1024) + ' KB' : ''}` : 'Ingen PowerPoint uppladdad — lägg till en fil i steg 2 för att deltagaren ska kunna bläddra igenom slides.'}
+        </div>
+
+        <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:8px;">🎯 Quiz-frågor (${quiz.length})</div>
+        ${quiz.map((q, i) => `
+          <div style="background:#fff;border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:10px;">
+            <div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:8px;">Fråga ${i+1}: ${escapeHtml(q.q)}</div>
+            ${q.options.map(o => `
+              <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:${o.correct?'rgba(62,180,137,0.08)':'rgba(0,0,0,0.02)'};border:1px solid ${o.correct?'rgba(62,180,137,0.3)':'var(--bd)'};border-radius:7px;margin-bottom:5px;">
+                <div style="font-size:14px;flex-shrink:0;">${o.correct?'✓':'○'}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:12px;color:var(--tx);">${escapeHtml(o.t)}</div>
+                  <div style="font-size:11px;color:var(--mu);margin-top:2px;font-style:italic;">${escapeHtml(o.fb)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>
+      <div style="padding:14px 24px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:8px;">
+        <button onclick="document.getElementById('_digitalPreviewOverlay')?.remove()" style="padding:9px 16px;background:rgba(0,0,0,0.04);border:1px solid var(--bd);color:var(--tx);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Stäng</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+window.previewDigitalModule = previewDigitalModule;
+
 
 // NAVIGATION
 function wizardBack(){ if(wiz.step>1){wiz.step--;renderWizard();} }
