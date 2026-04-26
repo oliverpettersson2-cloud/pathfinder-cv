@@ -6887,75 +6887,44 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     const grid = document.getElementById('ovGrid');
 
-    // Specialfall: intervjuträning vald — rendera intervju-UI direkt i ov-detail
+    // Specialfall: intervjuträning vald — använd befintlig intervju.js-modul
+    // VIKTIGT: intervju.js är hårdkodad att leta efter #trainView-intervju
+    // (samma id som mobile använder). Vi använder samma id här.
     if (currentTrainCat === 'intervju') {
       document.getElementById('ov-home').style.display = 'none';
       document.getElementById('ov-detail').style.display = 'block';
       const detail = document.getElementById('ov-detail');
-      // Bygg intervju-container om den inte finns
-      let ivCont = document.getElementById('iv-container-train');
-      if (!ivCont) {
-        detail.innerHTML = `
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-            <button class="ov-back" onclick="trainBackToCats()" style="margin:0;">← Tillbaka till Träna</button>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:22px;">🎤</span>
-              <div>
-                <div style="font-size:17px;font-weight:800;color:#fff;">Intervjuträning</div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.45);">Öva på vanliga intervjufrågor med AI-feedback.</div>
-              </div>
+      detail.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <button class="train-back ov-back" onclick="trainBackToHub()" style="margin:0;">← Tillbaka till Träna</button>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:22px;">🎤</span>
+            <div>
+              <div style="font-size:17px;font-weight:800;color:#fff;">Intervjuträning</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.45);">Öva på vanliga intervjufrågor</div>
             </div>
           </div>
-          <div id="iv-container-train"></div>`;
-        ivCont = document.getElementById('iv-container-train');
-      }
-      // Initiera intervju-modulen om den finns
-      if (typeof window.ivInit === 'function') {
-        try { window.ivInit('iv-container-train'); }
-        catch(e) {
-          try { window.ivInit(); } catch(e2) { console.warn('Intervju init fail:', e2); }
-        }
-      }
+        </div>
+        <div id="trainView-intervju">
+          <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);">
+            <div style="font-size:14px;">Laddar intervjuträning…</div>
+          </div>
+        </div>`;
+      loadInterviewModule();
       return;
     }
 
-    // Om ingen kategori vald: visa hub med Övningar + Intervjuträning + kategori-grid + Uppgifter
-    if (!currentTrainCat) {
-      const openTaskCount = (typeof tasksOpen === 'function') ? tasksOpen().length : 0;
-      const totalTasks    = assignedTasks.length;
-
-      // ── Toppsektion: Hub-rubrik + 2 stora rutor (Övningar / Intervjuträning) ──
-      const topHub = `
+    // Specialfall: "Övningar" — visa kategorier-grid
+    if (currentTrainCat === 'ovningar_grid') {
+      document.getElementById('ov-home').style.display = 'block';
+      document.getElementById('ov-detail').style.display = 'none';
+      const grid = document.getElementById('ovGrid');
+      const backBtn = `
         <div style="grid-column:1/-1;margin-bottom:6px;">
-          <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.3px;margin-bottom:4px;">Träna</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5);">Förbered dig för arbetslivet — välj ett område att träna på.</div>
-        </div>
-        <div class="train-hub-row" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px;">
-          <div class="ov-card train-hero-card" style="border-color:rgba(62,180,137,0.4);background:linear-gradient(135deg,rgba(62,180,137,0.10),rgba(62,180,137,0.04));padding:18px 18px;display:flex;flex-direction:column;gap:10px;cursor:default;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div class="ov-card-icon" style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:22px;">📚</div>
-              <div>
-                <div style="font-size:17px;font-weight:800;color:#fff;">Övningar</div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.55);">Lektioner, praktiska övningar och quiz i din egen takt.</div>
-              </div>
-            </div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;letter-spacing:0.4px;text-transform:uppercase;">Välj kategori nedan ↓</div>
-          </div>
-          <div class="ov-card train-cat-card" onclick="trainOpenCat('intervju')"
-               style="border-color:rgba(167,139,250,0.4);background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(167,139,250,0.04));padding:18px 18px;display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div class="ov-card-icon" style="background:rgba(167,139,250,0.2);color:#a78bfa;font-size:22px;">🎤</div>
-              <div>
-                <div style="font-size:17px;font-weight:800;color:#fff;">Intervjuträning</div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.55);">Öva på vanliga intervjufrågor och få AI-feedback.</div>
-              </div>
-            </div>
-            <div style="font-size:12px;color:#a78bfa;font-weight:700;align-self:flex-end;">Öppna →</div>
-          </div>
-        </div>
-        <div style="grid-column:1/-1;font-size:12px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.7px;margin:14px 0 4px;">Övningskategorier</div>
-      `;
-
+          <button class="ov-back" onclick="trainBackToHub()" style="margin:0 0 12px;">← Tillbaka till Träna</button>
+          <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.3px;margin-bottom:4px;">Övningar</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);">Välj ett område — lektioner, praktiska övningar och quiz i din egen takt.</div>
+        </div>`;
       const catsHtml = TRAINING_CATS.map(c => {
         const pct = getCatPct(c);
         return `
@@ -6973,24 +6942,79 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           </div>
         `;
       }).join('');
+      grid.innerHTML = backBtn + catsHtml;
+      return;
+    }
 
-      // Uppgifter från handläggare (med röd badge om det finns öppna)
+    // Om ingen kategori vald: visa hub med 3 stora rutor (Övningar / Intervjuträning / Uppgifter)
+    if (!currentTrainCat) {
+      const openTaskCount = (typeof tasksOpen === 'function') ? tasksOpen().length : 0;
+      const totalTasks    = assignedTasks.length;
+
+      // Övergripande progress över alla kategorier
+      const totalMods   = TRAINING_CATS.reduce((sum, c) => sum + c.mods.filter(m => ACTIVE_MODS.indexOf(m.id) !== -1).length, 0);
+      const totalDone   = TRAINING_CATS.reduce((sum, c) => sum + c.mods.filter(m => ACTIVE_MODS.indexOf(m.id) !== -1 && (trainingProgress[m.id] || {}).done).length, 0);
+      const overallPct  = totalMods > 0 ? Math.round((totalDone / totalMods) * 100) : 0;
+
+      const grid = document.getElementById('ovGrid');
       const taskColor = '#f0c040';
-      const taskCard = `
-        <div class="ov-card train-cat-card" onclick="trainOpenCat('uppg')"
-             style="border-color: ${taskColor}40; background: ${taskColor}0d; position: relative;">
-          ${openTaskCount > 0 ? `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:#fff;font-size:11px;font-weight:900;border-radius:12px;padding:2px 9px;animation:pulse 2s ease-in-out infinite;">${openTaskCount}</div>` : ''}
-          <div class="ov-card-icon" style="background: ${taskColor}20; color: ${taskColor};">✅</div>
-          <div class="ov-card-title" style="color: #fff;">Uppgifter</div>
-          <div class="ov-card-desc">${totalTasks > 0 ? 'Från din handläggare' : 'Väntar på tilldelning'}</div>
-          <div class="ov-card-meta">
-            <span style="color: ${taskColor}; font-weight: 700;">
-              ${openTaskCount > 0 ? openTaskCount + ' att göra' : (totalTasks > 0 ? 'Alla klara!' : 'Inga ännu')}
-            </span>
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;margin-bottom:8px;">
+          <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.3px;margin-bottom:4px;">Träna</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);">Förbered dig för arbetslivet — välj ett område nedan.</div>
+        </div>
+        <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+          <!-- Övningar — leder till kategori-grid -->
+          <div class="ov-card train-cat-card" onclick="trainOpenCat('ovningar_grid')"
+               style="border-color:rgba(62,180,137,0.4);background:linear-gradient(135deg,rgba(62,180,137,0.10),rgba(62,180,137,0.04));padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:170px;">
+            <div style="display:flex;align-items:flex-start;gap:14px;">
+              <div class="ov-card-icon" style="background:rgba(62,180,137,0.2);color:#3eb489;font-size:26px;flex-shrink:0;">📚</div>
+              <div>
+                <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:2px;">Övningar</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.45;">${TRAINING_CATS.length} kategorier · ${totalMods} aktiva moduler</div>
+              </div>
+            </div>
+            <div style="margin-top:auto;">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px;">
+                <span style="color:rgba(255,255,255,0.6);font-weight:600;">${overallPct > 0 ? 'Din progress' : 'Starta'}</span>
+                <span style="color:#3eb489;font-weight:700;">${overallPct}%</span>
+              </div>
+              <div style="width:100%;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+                <div style="width:${overallPct}%;height:100%;background:#3eb489;transition:width 0.3s;"></div>
+              </div>
+            </div>
           </div>
-        </div>`;
 
-      grid.innerHTML = topHub + catsHtml + taskCard;
+          <!-- Intervjuträning -->
+          <div class="ov-card train-cat-card" onclick="trainOpenCat('intervju')"
+               style="border-color:rgba(167,139,250,0.4);background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(167,139,250,0.04));padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:170px;">
+            <div style="display:flex;align-items:flex-start;gap:14px;">
+              <div class="ov-card-icon" style="background:rgba(167,139,250,0.2);color:#a78bfa;font-size:26px;flex-shrink:0;">🎤</div>
+              <div>
+                <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:2px;">Intervjuträning</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.45;">Öva på vanliga intervjufrågor med exempelsvar.</div>
+              </div>
+            </div>
+            <div style="margin-top:auto;font-size:12px;color:#a78bfa;font-weight:700;">Öppna →</div>
+          </div>
+
+          <!-- Uppgifter från handläggare -->
+          <div class="ov-card train-cat-card" onclick="trainOpenCat('uppg')"
+               style="border-color:${taskColor}40;background:linear-gradient(135deg,${taskColor}1a,${taskColor}06);padding:22px 20px;display:flex;flex-direction:column;gap:14px;min-height:170px;position:relative;">
+            ${openTaskCount > 0 ? `<div style="position:absolute;top:12px;right:12px;background:#ef4444;color:#fff;font-size:12px;font-weight:900;border-radius:13px;padding:3px 11px;animation:pulse 2s ease-in-out infinite;">${openTaskCount}</div>` : ''}
+            <div style="display:flex;align-items:flex-start;gap:14px;">
+              <div class="ov-card-icon" style="background:${taskColor}20;color:${taskColor};font-size:26px;flex-shrink:0;">✅</div>
+              <div>
+                <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:2px;">Uppgifter</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.45;">${totalTasks > 0 ? 'Från din handläggare' : 'Inga uppgifter ännu'}</div>
+              </div>
+            </div>
+            <div style="margin-top:auto;font-size:12px;color:${taskColor};font-weight:700;">
+              ${openTaskCount > 0 ? openTaskCount + ' att göra' : (totalTasks > 0 ? 'Alla klara!' : 'Väntar på tilldelning')}
+            </div>
+          </div>
+        </div>
+      `;
       return;
     }
 
@@ -7059,10 +7083,18 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     renderTrainingHome();
   };
 
-  window.trainBackToCats = function() {
+  // Från Övningar-kategori-grid tillbaka till Träna-hub (3 rutor)
+  window.trainBackToHub = function() {
     currentTrainCat = null;
     renderTrainingHome();
   };
+
+  // Från en specifik kategori tillbaka till kategori-grid (Övningar)
+  window.trainBackToCats = function() {
+    currentTrainCat = 'ovningar_grid';
+    renderTrainingHome();
+  };
+
 
   window.trainOpen = function(modId) {
     const mod = TRAINING_MODULES.find(m => m.id === modId);
@@ -7078,6 +7110,111 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     renderTrainStep();
     if (!trainingProgress[modId]) trainingProgress[modId] = { lessonsRead: 0, quizCorrect: 0 };
   };
+
+  // ════════════════════════════════════════════════════════════════
+  // INTERVJUTRÄNING — laddar befintlig intervju.js + intervju.css
+  // dynamiskt. Modulen letar efter #trainView-intervju som vi redan
+  // har skapat ovan. Anropas utan args (samma som mobile gör).
+  // ════════════════════════════════════════════════════════════════
+  let _ivLoadPromise = null;
+  function loadInterviewModule() {
+    // Om ivInit redan finns (laddat tidigare i samma session) — kör direkt
+    if (typeof window.ivInit === 'function') {
+      try { window.ivInit(); } catch(e) { console.warn('ivInit fail:', e); }
+      return;
+    }
+
+    // Pågående laddning? Vänta på den.
+    if (_ivLoadPromise) {
+      _ivLoadPromise.then(() => {
+        if (typeof window.ivInit === 'function') {
+          try { window.ivInit(); } catch(e) {}
+        } else {
+          showInterviewLoadError();
+        }
+      });
+      return;
+    }
+
+    // Ladda CSS först (fail silently om det inte finns)
+    const cssPaths = ['/intervju.css', '/css/intervju.css', '/static/intervju.css', '/assets/intervju.css'];
+    cssPaths.forEach(href => {
+      // Lägg till länken — om filen inte finns ger det 404 men det är OK
+      if (!document.querySelector('link[data-iv-css="' + href + '"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.setAttribute('data-iv-css', href);
+        link.onerror = () => link.remove();
+        document.head.appendChild(link);
+      }
+    });
+
+    // Ladda JS — pröva flera sökvägar i ordning tills en fungerar
+    const candidatePaths = [
+      '/intervju.js',
+      '/js/intervju.js',
+      '/static/intervju.js',
+      '/assets/intervju.js',
+      '/scripts/intervju.js'
+    ];
+
+    _ivLoadPromise = new Promise((resolve) => {
+      let idx = 0;
+      function tryNext() {
+        if (idx >= candidatePaths.length) {
+          resolve(false);
+          return;
+        }
+        const path = candidatePaths[idx++];
+        const s = document.createElement('script');
+        s.src = path;
+        s.async = true;
+        s.onload = () => {
+          // Vänta lite så scripten hinner registrera sig
+          setTimeout(() => {
+            if (typeof window.ivInit === 'function') {
+              console.log('[intervju] Laddat från ' + path);
+              resolve(true);
+            } else {
+              s.remove();
+              tryNext();
+            }
+          }, 50);
+        };
+        s.onerror = () => {
+          s.remove();
+          tryNext();
+        };
+        document.head.appendChild(s);
+      }
+      tryNext();
+    });
+
+    _ivLoadPromise.then((ok) => {
+      if (ok && typeof window.ivInit === 'function') {
+        try { window.ivInit(); } catch(e) { console.warn('ivInit fail:', e); }
+      } else {
+        showInterviewLoadError();
+      }
+    });
+  }
+
+  function showInterviewLoadError() {
+    const cont = document.getElementById('trainView-intervju');
+    if (!cont) return;
+    cont.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.2);border-radius:12px;">
+        <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;">Intervjuträningen kunde inte laddas</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.5;max-width:480px;margin:0 auto;">
+          Kunde inte hitta <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;">intervju.js</code> på servern.<br>
+          Lägg till denna rad i desktop-HTML:en (t.ex. före &lt;/body&gt;):<br>
+          <code style="display:inline-block;margin-top:8px;background:rgba(255,255,255,0.06);padding:4px 8px;border-radius:4px;font-size:12px;">&lt;script src="/intervju.js"&gt;&lt;/script&gt;</code>
+        </div>
+        <button onclick="trainBackToHub()" style="margin-top:16px;padding:9px 18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">← Tillbaka till Träna</button>
+      </div>`;
+  }
 
   // ── SLIDE-LÄGE: ett kort i taget ──
   let currentTrainMod = null;
