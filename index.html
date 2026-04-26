@@ -3353,6 +3353,13 @@
   <div class="modal" id="jobModal" data-edit-idx="0">
     <div class="modal-content">
       <div class="modal-title">Lägg till arbetsupplevelse</div>
+
+      <!-- Lista över befintliga jobb i kronologisk ordning (senaste först) -->
+      <div id="jobModalExistingList" style="display:none;margin-bottom:14px;padding:10px 12px;background:rgba(62,180,137,0.06);border:1px solid rgba(62,180,137,0.25);border-radius:10px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:#3eb489;margin-bottom:6px;">Dina tidigare jobb</div>
+        <div id="jobModalExistingItems" style="font-size:12px;color:#3eb489;line-height:1.7;"></div>
+      </div>
+
       <input type="text" class="modal-input" id="jobTitle" placeholder="Jobbtitel">
       <input type="text" class="modal-input" id="jobCompany" placeholder="Företag">
       <input type="text" class="modal-input" id="jobLocation" placeholder="Plats (stad, land)">
@@ -4912,11 +4919,18 @@
     function cpickerOpen(field, title, color) {
       _cpickerField = field;
       const overlay = document.getElementById('cpickerOverlay');
+      if (!overlay) {
+        console.warn('[cpicker] Overlay saknas');
+        return;
+      }
       const titleEl = document.getElementById('cpickerTitle');
       const list = document.getElementById('cpickerList');
-      titleEl.textContent = title;
-      titleEl.style.color = color;
-      const current = document.getElementById(field).value;
+      if (titleEl) {
+        titleEl.textContent = title;
+        titleEl.style.color = color;
+      }
+      const fieldEl = document.getElementById(field);
+      const current = fieldEl ? fieldEl.value : '';
       const _endYearFields = ['jobEndYear','eduEndYear'];
       const _startYearFields = ['jobStartYear','eduStartYear'];
       const items = _endYearFields.includes(field)
@@ -4924,19 +4938,25 @@
         : _startYearFields.includes(field)
         ? [...Array.from({length:27},(_,i)=>(2026-i).toString()), 'Före 2000']
         : ['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
-      list.innerHTML = items.map(v =>
-        `<div class="cpicker-item${v===current?' selected':''}" onclick="cpickerPick('${v}')">${v}</div>`
-      ).join('');
+      if (list) {
+        list.innerHTML = items.map(v =>
+          `<div class="cpicker-item${v===current?' selected':''}" onclick="cpickerPick('${v}')">${v}</div>`
+        ).join('');
+      }
       overlay.style.display = 'block';
+      // Säkerställ att overlay är på topp (hög z-index trots ev. andra modaler)
+      overlay.style.zIndex = '999999';
       setTimeout(() => {
-        const sel = list.querySelector('.selected');
+        const sel = list && list.querySelector('.selected');
         if (sel) sel.scrollIntoView({block:'center'});
       }, 50);
     }
+    window.cpickerOpen = cpickerOpen;
 
     function cpickerPick(val) {
       if (!_cpickerField) return;
-      document.getElementById(_cpickerField).value = val;
+      const fieldEl = document.getElementById(_cpickerField);
+      if (fieldEl) fieldEl.value = val;
       const btn = document.getElementById(_cpickerField + 'Btn');
       if (btn) {
         btn.textContent = val;
@@ -4955,20 +4975,21 @@
         eduEndMonth:   'eduEndYear'
       };
       const next = nextMap[prevField];
-      // Hoppa inte till jobEndYear automatiskt (brukar vara Pågående eller väljs manuellt)
-      // Men för utbildning: vi auto-advancear hela vägen inkl. eduEndYear
       if (next) {
-        const labelMap = { jobStartYear:'FRAN - Ar', jobEndMonth:'TILL - Manad', eduStartYear:'FRAN - Ar', eduEndMonth:'TILL - Manad' };
-        const label = labelMap[next] || 'TILL - Ar';
+        const labelMap = { jobStartYear:'FRÅN — År', jobEndMonth:'TILL — Månad', eduStartYear:'FRÅN — År', eduEndMonth:'TILL — Månad' };
+        const label = labelMap[next] || 'TILL — År';
         const color = next.includes('Start') ? '#3eb489' : 'rgba(255,255,255,0.5)';
         setTimeout(() => cpickerOpen(next, label, color), 200);
       }
     }
+    window.cpickerPick = cpickerPick;
 
     function cpickerClose() {
-      document.getElementById('cpickerOverlay').style.display = 'none';
+      const ov = document.getElementById('cpickerOverlay');
+      if (ov) ov.style.display = 'none';
       _cpickerField = null;
     }
+    window.cpickerClose = cpickerClose;
 
     function toggleJobOngoing(cb) {
       const monthBtn = document.getElementById('jobEndMonthBtn');
@@ -5512,6 +5533,42 @@
       
       const modal = document.getElementById('jobModal');
       modal.dataset.editIdx = idx ?? -1;
+
+      // Bygg listan över befintliga jobb i kronologisk ordning (senaste först)
+      // Visas endast när användaren lägger till nytt jobb (idx === null), inte vid redigering
+      const existingWrap = document.getElementById('jobModalExistingList');
+      const existingItems = document.getElementById('jobModalExistingItems');
+      if (existingWrap && existingItems) {
+        if (idx === null && Array.isArray(cvData.jobs) && cvData.jobs.length > 0) {
+          // Sortera: senaste först (efter slutår, sen startår)
+          const sorted = cvData.jobs.slice().sort(function(a, b) {
+            const aIsOngoing = !a.endYear || /^(p[åa]g[åa]ende|nu|present|now)$/i.test(String(a.endYear).trim());
+            const bIsOngoing = !b.endYear || /^(p[åa]g[åa]ende|nu|present|now)$/i.test(String(b.endYear).trim());
+            // Pågående alltid först
+            if (aIsOngoing && !bIsOngoing) return -1;
+            if (!aIsOngoing && bIsOngoing) return 1;
+            // Sen efter slutår, fallback startår
+            const ay = parseInt((a.endYear === 'Pågående' ? '9999' : a.endYear) || a.startYear || '0', 10);
+            const by = parseInt((b.endYear === 'Pågående' ? '9999' : b.endYear) || b.startYear || '0', 10);
+            return by - ay;
+          });
+          existingItems.innerHTML = sorted.map(function(j) {
+            const t = (j.title || '').trim() || 'Okänd titel';
+            const c = (j.company || '').trim();
+            const fromY = j.startYear || '';
+            const toY = j.endYear || '';
+            const period = fromY && toY ? (fromY + ' – ' + toY) : (fromY || toY || '');
+            return '<div>• <strong style="color:#3eb489;">' + t + '</strong>' +
+              (c ? ' <span style="color:rgba(62,180,137,0.7);">· ' + c + '</span>' : '') +
+              (period ? ' <span style="color:rgba(62,180,137,0.55);font-size:11px;">(' + period + ')</span>' : '') +
+              '</div>';
+          }).join('');
+          existingWrap.style.display = 'block';
+        } else {
+          existingWrap.style.display = 'none';
+        }
+      }
+
       modal.classList.add('active');
     }
 
