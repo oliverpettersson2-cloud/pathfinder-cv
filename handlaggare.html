@@ -1370,7 +1370,40 @@ function roleSubtitle(){
 }
 function showErr(msg){const el=document.getElementById('errBox');if(!el)return;el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),8000);}
 function showLoginInfo(msg,type){const el=document.getElementById('loginMsg');el.textContent=msg;el.className='login-msg '+(type||'error');}
-function post(action,data){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});}
+// Lista över actions som backend inte stödjer än men som har klient-side fallbacks.
+// När en av dessa returnerar 400/404/500 returnerar vi {error:...} tyst istället
+// för att kasta — då aktiveras fallback-flödet utan att spamma console.
+const SOFT_ACTIONS = new Set([
+  'assign_task',           // tilldelning av uppgifter
+  'admin_get_user_data',   // hämta användardata via email
+  'create_module',         // skapa ny modul
+  'ai_update_pptx',        // AI-uppdatera presentation
+  'apply_pptx_updates',    // applicera AI-ändringar på pptx
+  'check_module_duplicate' // kontrollera dubbletter
+]);
+function post(action, data) {
+  return fetch(API, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action, ...data})
+  }).then(r => {
+    if (!r.ok) {
+      // För soft actions: returnera error-objekt istället för att kasta så
+      // demo-fallbacks aktiveras utan console-spam.
+      if (SOFT_ACTIONS.has(action)) {
+        return { error: 'HTTP ' + r.status, _soft: true };
+      }
+      throw new Error('HTTP ' + r.status);
+    }
+    return r.json();
+  }).catch(e => {
+    // Nätverksfel / parse-fel: samma soft-behandling
+    if (SOFT_ACTIONS.has(action)) {
+      return { error: e.message || 'fetch failed', _soft: true };
+    }
+    throw e;
+  });
+}
 
 // ═══ MICROSOFT OAUTH ═══
 function loginMicrosoft(){
