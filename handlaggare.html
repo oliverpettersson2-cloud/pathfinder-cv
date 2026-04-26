@@ -823,8 +823,19 @@ td{padding:10px 13px;vertical-align:middle}
 
         <div class="err-box" id="errBox"></div>
 
-        <div class="pan act" id="p-arenden">
+        <!-- ═══ DELTAGARE-PANEL: Mina (default) + Alla (expanderbar) ═══ -->
+        <div class="pan act" id="p-mina">
+
+          <!-- Toggle-bar: Mina / Alla -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:4px;background:rgba(0,0,0,0.04);border:1px solid var(--bd);border-radius:10px;width:fit-content;">
+            <button id="vMina" class="vb act" onclick="setVisaMode('mina')" style="padding:7px 16px;border:none;background:#fff;color:var(--tx);font-size:13px;font-weight:700;border-radius:7px;cursor:pointer;font-family:inherit;box-shadow:0 1px 3px rgba(0,0,0,0.08);">⭐ Mina deltagare</button>
+            <button id="vAlla" class="vb" onclick="setVisaMode('alla')" style="padding:7px 16px;border:none;background:transparent;color:var(--mu);font-size:13px;font-weight:600;border-radius:7px;cursor:pointer;font-family:inherit;">Visa alla deltagare →</button>
+          </div>
+
+          <!-- Stat-cards (anpassas efter vald vy) -->
           <div class="stats" id="statCards"><div class="loading">Laddar...</div></div>
+
+          <!-- Toolbar: sökfält + filter -->
           <div class="tb">
             <div class="sw"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" id="searchIn" placeholder="Sök namn eller e-post…"></div>
             <select id="handlaggareFlt" style="min-width:160px"><option value="">Alla handläggare</option></select>
@@ -832,6 +843,8 @@ td{padding:10px 13px;vertical-align:middle}
             <div class="sp"></div>
             <button class="btn" onclick="exportData()">Exportera</button>
           </div>
+
+          <!-- Status-chips -->
           <div class="chips" id="statusChips" style="margin-bottom:14px">
             <div class="chip act" data-status=""><span>Alla</span><span class="chip-c" id="cnt-all">0</span></div>
             <div class="chip" data-status="active"><span>Aktiva</span><span class="chip-c" id="cnt-active">0</span></div>
@@ -839,16 +852,16 @@ td{padding:10px 13px;vertical-align:middle}
             <div class="chip" data-status="recent"><span>Nyligen aktiv</span><span class="chip-c" id="cnt-recent">0</span></div>
             <div class="chip" data-status="inactive"><span>Inaktiva</span><span class="chip-c" id="cnt-inactive">0</span></div>
           </div>
+
+          <!-- Tabell -->
           <div class="tw">
             <table>
               <thead><tr><th style="width:36px;text-align:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:var(--mu);vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></th><th>Namn</th><th class="hm">Handläggare</th><th class="hm">Enhet</th><th>Senast aktiv</th><th class="hm">CV</th><th class="hm">Övningar</th><th class="hm">Uppgifter</th><th>Status</th></tr></thead>
-              <tbody id="tBody"><tr><td colspan="9" class="loading">Laddar ärenden...</td></tr></tbody>
+              <tbody id="tBody"><tr><td colspan="9" class="loading">Laddar deltagare...</td></tr></tbody>
             </table>
             <div class="pg-bar"><span id="pgInfo"></span></div>
           </div>
         </div>
-
-        <div class="pan" id="p-mina"><div id="minaContent" class="loading">Laddar...</div></div>
 
         <div class="pan" id="p-admins"><div id="adminsContent" class="loading">Laddar handläggare och admins...</div></div>
 
@@ -1024,8 +1037,7 @@ const API = '/api/supabase';
 const SL = {active:'Aktiv',recent:'Nyligen aktiv',new:'Ny',inactive:'Inaktiv'};
 
 const PAGE_INFO = {
-  arenden:   {title:'Alla deltagare',  sub: () => roleSubtitle()},
-  mina:      {title:'Mina deltagare',  sub: () => 'Stjärnmarkerade deltagare, statistik och uppgifter'},
+  mina:      {title:'Deltagare',  sub: () => roleSubtitle()},
   admins:    {title:'Handläggare & admins', sub: () => 'Användare med admin-roll i systemet'},
   material:  {title:'Sparat material & uppgifter',  sub: () => 'Delat bibliotek för hela enheten — uppgifter, PowerPoints och AI-uppdaterade versioner'}
 };
@@ -1035,7 +1047,7 @@ let allUsers = [];
 let currentUserId = null;
 let currentUserData = null;
 let currentDetailTab = 'kurser';
-let currentTab = 'arenden';
+let currentTab = 'mina';
 let currentStatus = '';
 let currentEnhet = '';
 
@@ -1060,8 +1072,12 @@ function toggleFavorite(uid, ev){
   document.querySelectorAll(`.star-btn[data-uid="${uid}"]`).forEach(btn=>{
     btn.classList.toggle('starred', favs.has(uid));
   });
-  // Om vi är på Mina-vyn — rendera om
-  if(currentTab==='mina') renderMinaView();
+  // Om vi är på Deltagare-fliken — rendera om så Mina-listan stämmer
+  if(currentTab==='mina') {
+    renderStats();
+    renderChipCounts();
+    renderTable(allUsers);
+  }
 }
 
 // ═══ BULK-SELECT ═══
@@ -1085,6 +1101,32 @@ function updateBulkBar(){
 
 function ini(n){return (n||'').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'}
 function cvName(cv){if(!cv)return '';return cv.name||[cv.firstName,cv.lastName].filter(Boolean).join(' ')||'';}
+
+// Snygg fallback för deltagare som inte fyllt i namn ännu.
+// Returnerar { name, isPlaceholder } så raderna kan styla placeholders annorlunda.
+// Prioritet: 1) riktigt namn  2) e-post-användarnamn  3) "Ny deltagare"
+function displayName(u){
+  const cvd = u?.cv?.data || u?.cv || {};
+  const real = cvName(cvd) || cvName(u);
+  if(real && real.trim()){ return { name: real.trim(), isPlaceholder: false }; }
+  // Försök med e-post: "anna.svensson@gmail.com" → "Anna Svensson"
+  const email = (cvd.email || u?.email || '').trim();
+  if(email){
+    const local = email.split('@')[0]; // "anna.svensson"
+    // Konvertera till titelcase: "anna.svensson" → "Anna Svensson"
+    const pretty = local
+      .replace(/[._\-+]+/g, ' ')
+      .replace(/\d+$/, '') // ta bort siffror i slutet (oliver.pettersson2 → oliver.pettersson)
+      .trim()
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+    if(pretty) return { name: pretty, isPlaceholder: true };
+  }
+  // Sista utvägen: "Ny deltagare"
+  return { name: 'Ny deltagare', isPlaceholder: true };
+}
 
 // Handläggar-helpers — hämtar info från olika möjliga datastrukturer
 function getHandlaggareId(u){
@@ -1270,9 +1312,8 @@ function enterApp(){
 // ═══ SIDOMENY ═══
 function buildNav(){
   const items=[
-    {id:'arenden',label:'Alla deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
-    {id:'mina',label:'Mina deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'},
-    {id:'admins',label:'Handläggare & admins',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>'},
+    {id:'mina',label:'Deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
+    {id:'admins',label:'Handläggare & admins',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'},
     {id:'material',label:'Sparat material & uppgifter',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'}
   ];
   document.getElementById('sbNav').innerHTML=items.map((it,i)=>`<div class="sb-nav-item${i===0?' act':''}" data-id="${it.id}" onclick="switchTab('${it.id}')">${it.icon}<span>${it.label}</span></div>`).join('');
@@ -1354,29 +1395,74 @@ async function loadUsers(){
 
   renderStats();renderChipCounts();renderTable(allUsers);
 }
+// Visa-läge: 'mina' (bara stjärnmärkta) eller 'alla' (alla deltagare)
+let visaMode = 'mina';
+function setVisaMode(mode){
+  visaMode = mode;
+  const minaBtn = document.getElementById('vMina');
+  const allaBtn = document.getElementById('vAlla');
+  if (mode === 'mina') {
+    minaBtn.classList.add('act');
+    minaBtn.style.background = '#fff';
+    minaBtn.style.color = 'var(--tx)';
+    minaBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+    allaBtn.classList.remove('act');
+    allaBtn.style.background = 'transparent';
+    allaBtn.style.color = 'var(--mu)';
+    allaBtn.style.boxShadow = '';
+  } else {
+    allaBtn.classList.add('act');
+    allaBtn.style.background = '#fff';
+    allaBtn.style.color = 'var(--tx)';
+    allaBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+    minaBtn.classList.remove('act');
+    minaBtn.style.background = 'transparent';
+    minaBtn.style.color = 'var(--mu)';
+    minaBtn.style.boxShadow = '';
+  }
+  // Rendera om allt med nya filtret
+  renderStats();
+  renderChipCounts();
+  renderTable(allUsers);
+}
+
+// Returnerar deltagar-listan filtrerad enligt visaMode (mina = bara stjärnmärkta)
+function getVisibleUsers(){
+  if (visaMode === 'alla') return allUsers;
+  // Mina: bara stjärnmärkta deltagare
+  const favs = getFavorites();
+  return allUsers.filter(u => favs.has(u.user_id || u.id));
+}
+
 function renderStats(){
-  const u=allUsers,tot=u.length,act=u.filter(x=>x.status==='active').length;
+  const u=getVisibleUsers(),tot=u.length,act=u.filter(x=>x.status==='active').length;
   const withCV=u.filter(x=>{const c=x.cv?.data||x.cv||{};return !!(c.name||c.title);}).length;
   const withProg=u.filter(x=>{const p=x.progress||{};return Object.values(p).some(v=>v&&v.done);}).length;
+  const label = visaMode === 'mina' ? 'Mina deltagare' : 'Deltagare';
   document.getElementById('statCards').innerHTML=`
-    <div class="stc"><div class="stl">Deltagare</div><div class="stv">${tot}</div></div>
+    <div class="stc"><div class="stl">${label}</div><div class="stv">${tot}</div></div>
     <div class="stc"><div class="stl">Aktiva</div><div class="stv" style="color:var(--gn)">${act}</div></div>
     <div class="stc"><div class="stl">Har CV</div><div class="stv" style="color:var(--bl)">${withCV}</div></div>
     <div class="stc"><div class="stl">Gjort övningar</div><div class="stv" style="color:var(--ac)">${withProg}</div></div>`;
 }
 function renderChipCounts(){
-  document.getElementById('cnt-all').textContent = allUsers.length;
-  document.getElementById('cnt-active').textContent = allUsers.filter(u=>u.status==='active').length;
-  document.getElementById('cnt-new').textContent = allUsers.filter(u=>u.status==='new'||!u.status).length;
-  document.getElementById('cnt-recent').textContent = allUsers.filter(u=>u.status==='recent').length;
-  document.getElementById('cnt-inactive').textContent = allUsers.filter(u=>u.status==='inactive').length;
+  const u = getVisibleUsers();
+  document.getElementById('cnt-all').textContent = u.length;
+  document.getElementById('cnt-active').textContent = u.filter(x=>x.status==='active').length;
+  document.getElementById('cnt-new').textContent = u.filter(x=>x.status==='new'||!x.status).length;
+  document.getElementById('cnt-recent').textContent = u.filter(x=>x.status==='recent').length;
+  document.getElementById('cnt-inactive').textContent = u.filter(x=>x.status==='inactive').length;
 }
 function renderTable(users){
   const q=(document.getElementById('searchIn')?.value||'').toLowerCase();
   const enhet=document.getElementById('enhetFlt')?.value||'';
   const handlaggareId=document.getElementById('handlaggareFlt')?.value||'';
   const favs = getFavorites();
-  let f=users.filter(u=>{
+  // Filtrera först på visaMode: 'mina' = bara stjärnmärkta
+  const baseUsers = visaMode === 'mina'
+    ? users.filter(u => favs.has(u.user_id || u.id))
+    : users;
+  let f=baseUsers.filter(u=>{
     const nm=cvName(u.cv?.data||u.cv).toLowerCase();
     const em=(u.cv?.data?.email||u.cv?.email||u.email||'').toLowerCase();
     const uid=(u.user_id||u.id||'').toLowerCase();
@@ -1392,7 +1478,9 @@ function renderTable(users){
   });
   document.getElementById('tBody').innerHTML=f.length?f.map(u=>{
     const cvd=u.cv?.data||u.cv||{};
-    const name=cvName(cvd)||cvName(u)||(u.user_id||u.id||'').slice(0,8)||'Okänd';
+    const dn = displayName(u);
+    const name = dn.name;
+    const isPlaceholder = dn.isPlaceholder;
     const email=cvd.email||u.email||'';
     const taskInfo=u.tasks?`${u.tasks.completed||0}/${u.tasks.total||0}`:'—';
     const progData=u.progress||{},vals=Object.values(progData);
@@ -1407,9 +1495,19 @@ function renderTable(users){
     const handlaggareCell = hname
       ? `<span${isMine?' style="font-weight:600;color:var(--ac)"':''}>${hname}</span>`
       : '<span style="color:var(--mu)">—</span>';
+    // Styling för placeholder-namn: kursiv + dämpad + liten "ej registrerat"-badge
+    const nameStyle = isPlaceholder
+      ? 'font-style:italic;color:var(--mu);'
+      : '';
+    const placeholderBadge = isPlaceholder
+      ? '<span style="display:inline-block;font-size:9px;font-weight:700;background:rgba(245,158,11,0.12);color:#d97706;padding:1px 6px;border-radius:4px;margin-left:6px;letter-spacing:0.3px;text-transform:uppercase;vertical-align:middle;">Ej ifyllt</span>'
+      : '';
+    // Avatar: visa "?" för placeholders istället för slumpartade initialer från fallback-namn
+    const avatarText = isPlaceholder ? '?' : ini(name);
+    const avatarStyle = isPlaceholder ? 'background:rgba(245,158,11,0.12);color:#d97706;' : '';
     return `<tr onclick="openDetail('${uid}')">
       <td style="text-align:center" onclick="event.stopPropagation()"><button class="star-btn${isStarred?' starred':''}" data-uid="${uid}" onclick="toggleFavorite('${uid}',event)" title="${isStarred?'Ta bort från Mina':'Lägg till i Mina'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button></td>
-      <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name}</div><div class="ue">${email}</div></div></div></td>
+      <td><div class="uc"><div class="ua" style="${avatarStyle}">${avatarText}</div><div><div class="un" style="${nameStyle}">${name}${placeholderBadge}</div><div class="ue">${email}</div></div></div></td>
       <td class="hm dc">${handlaggareCell}</td>
       <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
       <td class="dc">${lastSeen}</td>
@@ -2431,9 +2529,25 @@ function filterMinaTasks(status){
 let currentMinaSubtab = 'deltagare';
 
 function renderMinaView(){
+  // Mina-vyn är nu integrerad i Deltagare-fliken (p-mina-panelen).
+  // Säkerställ att stat-cards, chips och tabell är aktuella + att toggle-knapparna
+  // återspeglar nuvarande visaMode.
+  if (typeof renderStats === 'function') renderStats();
+  if (typeof renderChipCounts === 'function') renderChipCounts();
+  if (typeof renderTable === 'function') renderTable(allUsers);
+  // Återställ toggle-knapparnas styling om de tappat den
+  if (typeof setVisaMode === 'function' && document.getElementById('vMina')) {
+    setVisaMode(visaMode);
+  }
+}
+
+// Bevarad legacy-renderMinaView (gamla funktionen) — används om något annat ställe
+// fortfarande anropar den. Ersätts internt med en no-op.
+function _legacyRenderMinaView_unused(){
   const favs = getFavorites();
   const mina = allUsers.filter(u => favs.has(u.user_id||u.id));
   const wrap = document.getElementById('minaContent');
+  if (!wrap) return; // elementet finns inte längre — vi använder ny vy
 
   if(mina.length === 0){
     wrap.classList.remove('loading');
@@ -2508,12 +2622,20 @@ function renderMinaView(){
           <tbody>
             ${mina.map(u=>{
               const cvd=u.cv?.data||u.cv||{};
-              const name=cvName(cvd)||cvName(u)||(u.user_id||u.id||'').slice(0,8)||'Okänd';
+              const dn = displayName(u);
+              const name = dn.name;
+              const isPlaceholder = dn.isPlaceholder;
               const email=cvd.email||u.email||'';
               const uid=u.user_id||u.id||'';
               const lastSeen=u.cv?.updated_at?.split('T')[0]||u.last_seen?.split('T')[0]||'—';
               const taskInfo=u.tasks?`${u.tasks.completed||0}/${u.tasks.total||0}`:'—';
               const checked = selectedUsers.has(uid);
+              const nameStyle = isPlaceholder ? 'font-style:italic;color:var(--mu);' : '';
+              const placeholderBadge = isPlaceholder
+                ? '<span style="display:inline-block;font-size:9px;font-weight:700;background:rgba(245,158,11,0.12);color:#d97706;padding:1px 6px;border-radius:4px;margin-left:6px;letter-spacing:0.3px;text-transform:uppercase;vertical-align:middle;">Ej ifyllt</span>'
+                : '';
+              const avatarText = isPlaceholder ? '?' : ini(name);
+              const avatarStyle = isPlaceholder ? 'background:rgba(245,158,11,0.12);color:#d97706;' : '';
               return `<tr onclick="openDetail('${uid}')">
                 <td style="text-align:center" onclick="event.stopPropagation()">
                   <input type="checkbox" class="cb" data-uid="${uid}" ${checked?'checked':''} onchange="toggleSelected('${uid}',event)">
@@ -2523,7 +2645,7 @@ function renderMinaView(){
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                   </button>
                 </td>
-                <td><div class="uc"><div class="ua">${ini(name)}</div><div><div class="un">${name}</div><div class="ue">${email}</div></div></div></td>
+                <td><div class="uc"><div class="ua" style="${avatarStyle}">${avatarText}</div><div><div class="un" style="${nameStyle}">${name}${placeholderBadge}</div><div class="ue">${email}</div></div></div></td>
                 <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
                 <td class="dc">${lastSeen}</td>
                 <td class="hm tc">${cvd.name||cvd.title?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--gn);vertical-align:middle"><polyline points="20 6 9 17 4 12"/></svg>':'<span style="color:var(--mu)">—</span>'}</td>
