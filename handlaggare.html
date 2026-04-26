@@ -2320,14 +2320,6 @@ function renderTabTraning(data){
 
   let html = `<div class="ud-body-h">Träning & uppgifter</div>`;
 
-  // ── STOR "SKAPA UPPGIFT"-KNAPP ÖVERST ──
-  // Öppnar popup där handläggaren väljer uppgiftstyp (sök X jobb, intervjuträning,
-  // matcha CV mot X annonser, lägg till profilbild, spara X utbildningar) + deadline.
-  html += `<button onclick="openCreateTaskModal()" style="width:100%;padding:14px 18px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d54 100%);border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px;box-shadow:0 4px 14px rgba(0,0,0,0.15);transition:transform 0.12s, box-shadow 0.12s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 18px rgba(0,0,0,0.22)';" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.15)';">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Skapa uppgift till deltagaren
-  </button>`;
-
   // ── BEFINTLIGA UPPGIFTER ÖVERST ──
   const activeTasks = tasks.filter(t => t.status !== 'completed' && t.status !== 'cancelled');
   if (activeTasks.length) {
@@ -2346,6 +2338,29 @@ function renderTabTraning(data){
     });
     html += `</div></div>`;
   }
+
+  // ── EGEN SEKTION: 📝 SKICKA UPPGIFT (ett enda stort kort som öppnar modal) ──
+  html += `<div style="margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px 8px;border-bottom:1px solid var(--bd);margin-bottom:10px;">
+      <div>
+        <div style="font-size:13px;font-weight:800;color:var(--tx);">📝 Skicka uppgift</div>
+        <div style="font-size:11px;color:var(--mu);">Konkreta uppgifter med deadline (CV, jobb, intervjuträning m.m.)</div>
+      </div>
+    </div>
+    <button onclick="openCreateTaskModal()"
+      style="width:100%;padding:18px 20px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d54 100%);border:none;color:#fff;border-radius:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:16px;text-align:left;box-shadow:0 4px 16px rgba(26,26,46,0.18);transition:transform 0.12s, box-shadow 0.12s;"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(26,26,46,0.28)';"
+      onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(26,26,46,0.18)';">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">📝</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:800;color:#fff;line-height:1.2;">Skapa ny uppgift</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.72);margin-top:3px;line-height:1.4;">Tilldela något att göra: bygg klart CV, sök X jobb, matcha CV mot annonser, intervjuträna eller ladda upp profilbild — välj typ och deadline.</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.12);flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+    </button>
+  </div>`;
 
   // ── GRUPPERADE MODULER ──
   const GROUPS = [
@@ -2442,15 +2457,6 @@ function openAssignModuleModal(moduleId) {
         </div>
 
         <div>
-          <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Prioritet</label>
-          <div id="_amPrio" style="display:flex;gap:6px;">
-            <button data-p="low"    onclick="_amSetPrio('low')"    style="flex:1;padding:9px;border:1.5px solid var(--bd);background:transparent;color:var(--mu);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Låg</button>
-            <button data-p="normal" onclick="_amSetPrio('normal')" style="flex:1;padding:9px;border:1.5px solid var(--ac);background:rgba(212,164,54,0.1);color:var(--ac);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Normal</button>
-            <button data-p="high"   onclick="_amSetPrio('high')"   style="flex:1;padding:9px;border:1.5px solid var(--bd);background:transparent;color:var(--mu);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Hög</button>
-          </div>
-        </div>
-
-        <div>
           <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Personligt meddelande (valfritt)</label>
           <textarea id="_amMessage" rows="3" placeholder="Hej! Jag har tilldelat dig denna övning. Hör av dig om du har frågor..." style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;font-family:inherit;color:var(--tx);resize:vertical;"></textarea>
         </div>
@@ -2463,25 +2469,6 @@ function openAssignModuleModal(moduleId) {
     </div>
   `;
   document.body.appendChild(overlay);
-  window._amCurrentPrio = 'normal';
-}
-
-function _amSetPrio(p) {
-  window._amCurrentPrio = p;
-  const wrap = document.getElementById('_amPrio');
-  if (!wrap) return;
-  wrap.querySelectorAll('button').forEach(btn => {
-    const isActive = btn.dataset.p === p;
-    if (isActive) {
-      btn.style.background = 'rgba(212,164,54,0.1)';
-      btn.style.color = 'var(--ac)';
-      btn.style.borderColor = 'var(--ac)';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = 'var(--mu)';
-      btn.style.borderColor = 'var(--bd)';
-    }
-  });
 }
 
 function closeAssignModuleModal() {
@@ -2493,7 +2480,6 @@ async function confirmAssignModule(moduleId) {
   if (!m || !currentUserId) return;
   const deadline = document.getElementById('_amDeadline')?.value;
   const message = document.getElementById('_amMessage')?.value || '';
-  const priority = window._amCurrentPrio || 'normal';
   const btn = document.getElementById('_amConfirmBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Skickar...'; }
 
@@ -2504,7 +2490,6 @@ async function confirmAssignModule(moduleId) {
       description: message || m.sub,
       category: 'övning',
       deadline: deadline ? new Date(deadline + 'T23:59:59').toISOString() : null,
-      priority,
       tParams: {
         module_id: moduleId,
         module_category: m.cat,
@@ -2528,8 +2513,7 @@ async function confirmAssignModule(moduleId) {
         title: `Övning: ${m.title}`,
         status: 'pending',
         deadline,
-        module_id: moduleId,
-        priority
+        module_id: moduleId
       });
       // Rendera om aktuell flik
       renderDetailTab('traning', currentUserData);
@@ -2544,7 +2528,6 @@ async function confirmAssignModule(moduleId) {
 window.openAssignModuleModal = openAssignModuleModal;
 window.closeAssignModuleModal = closeAssignModuleModal;
 window.confirmAssignModule = confirmAssignModule;
-window._amSetPrio = _amSetPrio;
 
 // ═══════════════════════════════════════════════════════════════════════
 // SKAPA UPPGIFT-MODAL (öppnas från "Skapa uppgift till deltagaren"-knappen)
@@ -2624,13 +2607,11 @@ const CREATE_TASK_TYPES = [
 
 let _ctSelectedType = null;
 let _ctCount = null;
-let _ctPriority = 'normal';
 
 function openCreateTaskModal() {
   if (!currentUserData) return;
   _ctSelectedType = null;
   _ctCount = null;
-  _ctPriority = 'normal';
   const userName = displayName(currentUserData).name;
 
   const overlay = document.createElement('div');
@@ -2685,11 +2666,10 @@ function ctSelectType(typeId) {
   if (!t) return;
   _ctSelectedType = t;
   _ctCount = t.countable ? t.countDefault : null;
-  _ctPriority = 'normal';
   renderCreateTaskStep2();
 }
 
-// Steg 2: parametrar (antal/deadline/prioritet/meddelande)
+// Steg 2: parametrar (antal/deadline/meddelande)
 function renderCreateTaskStep2() {
   const body = document.getElementById('_ctBody');
   if (!body || !_ctSelectedType) return;
@@ -2729,16 +2709,6 @@ function renderCreateTaskStep2() {
     <input type="date" id="_ctDeadline" value="${ddStr}" style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;font-size:14px;font-family:inherit;color:var(--tx);">
   </div>`;
 
-  // Prioritet
-  html += `<div>
-    <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Prioritet</label>
-    <div id="_ctPrio" style="display:flex;gap:6px;">
-      <button data-p="low"    onclick="ctSetPrio('low')"    style="flex:1;padding:9px;border:1.5px solid var(--bd);background:transparent;color:var(--mu);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Låg</button>
-      <button data-p="normal" onclick="ctSetPrio('normal')" style="flex:1;padding:9px;border:1.5px solid var(--ac);background:rgba(212,164,54,0.1);color:var(--ac);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Normal</button>
-      <button data-p="high"   onclick="ctSetPrio('high')"   style="flex:1;padding:9px;border:1.5px solid var(--bd);background:transparent;color:var(--mu);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Hög</button>
-    </div>
-  </div>`;
-
   // Meddelande
   html += `<div>
     <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Personligt meddelande (valfritt)</label>
@@ -2775,29 +2745,10 @@ function ctSetCount(val) {
   _ctCount = n;
 }
 
-function ctSetPrio(p) {
-  _ctPriority = p;
-  const wrap = document.getElementById('_ctPrio');
-  if (!wrap) return;
-  wrap.querySelectorAll('button').forEach(btn => {
-    const isActive = btn.dataset.p === p;
-    if (isActive) {
-      btn.style.background = 'rgba(212,164,54,0.1)';
-      btn.style.color = 'var(--ac)';
-      btn.style.borderColor = 'var(--ac)';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = 'var(--mu)';
-      btn.style.borderColor = 'var(--bd)';
-    }
-  });
-}
-
 function closeCreateTaskModal() {
   document.getElementById('_createTaskOverlay')?.remove();
   _ctSelectedType = null;
   _ctCount = null;
-  _ctPriority = 'normal';
 }
 
 async function confirmCreateTask() {
@@ -2818,7 +2769,6 @@ async function confirmCreateTask() {
       description: message || t.desc,
       category: t.category,
       deadline: deadline ? new Date(deadline + 'T23:59:59').toISOString() : null,
-      priority: _ctPriority,
       tParams: { ...params, task_type: t.id, count: n },
       filters: { adminId: admin.id }
     });
@@ -2835,7 +2785,6 @@ async function confirmCreateTask() {
         title,
         status: 'pending',
         deadline,
-        priority: _ctPriority,
         category: t.category,
         task_type: t.id
       });
@@ -2853,7 +2802,6 @@ window.closeCreateTaskModal = closeCreateTaskModal;
 window.ctSelectType = ctSelectType;
 window.ctAdjustCount = ctAdjustCount;
 window.ctSetCount = ctSetCount;
-window.ctSetPrio = ctSetPrio;
 window.confirmCreateTask = confirmCreateTask;
 window.renderCreateTaskStep1 = renderCreateTaskStep1;
 window.renderCreateTaskStep2 = renderCreateTaskStep2;
