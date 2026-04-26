@@ -13314,13 +13314,14 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 
   function mobGetSavedCVs() {
     try {
-      const raw = localStorage.getItem(SAVED_CVS_KEY);
+      // SÄKERHETSFIX: använd user-scoped storage så data inte läcker mellan användare
+      const raw = _scopedGet(SAVED_CVS_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch(e) { return []; }
   }
 
   function mobPutSavedCVs(list) {
-    try { localStorage.setItem(SAVED_CVS_KEY, JSON.stringify(list)); } catch(e) {}
+    try { _scopedSet(SAVED_CVS_KEY, JSON.stringify(list)); } catch(e) {}
     if (typeof _sbSync === 'function') _sbSync('saved_cvs', list);
   }
 
