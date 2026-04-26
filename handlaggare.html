@@ -4647,7 +4647,7 @@ async function wizardSaveOnly(){
       }
     } catch(_){}
 
-    saveToMaterialLibrary({assigned:false, count:0, moduleId});
+    await saveToMaterialLibrary({assigned:false, count:0, moduleId});
     wzStatus('✓ Sparat i biblioteket! Du kan tilldela det när du vill.', 'ok');
     if(btn) btn.textContent = 'Klar ✓';
     setTimeout(()=>{ closeCreateTask(); switchTab('material'); }, 1400);
@@ -4728,7 +4728,7 @@ async function wizardSaveAndAssign(){
 
     // Spara även lokalt i biblioteket så det syns direkt (men inte för befintliga moduler — de finns ju redan)
     if(wiz.sourceType !== 'existing_module'){
-      saveToMaterialLibrary({assigned: ok>0, count: ok, moduleId});
+      await saveToMaterialLibrary({assigned: ok>0, count: ok, moduleId});
     }
 
     if(fail===0){
@@ -4769,6 +4769,10 @@ async function wizardUseExisting(moduleId){
 function getMaterialLibKey(){
   return `material_lib_${admin?.enhet_id||'default'}`;
 }
+// Separat nyckel för filinnehåll (kan vara stort) — undvik att sätta in i samma key
+function getMaterialFileKey(materialId){
+  return `material_file_${materialId}`;
+}
 function getMaterialLibrary(){
   try { return JSON.parse(localStorage.getItem(getMaterialLibKey())||'[]') || []; }
   catch(e){ return []; }
@@ -4776,10 +4780,41 @@ function getMaterialLibrary(){
 function setMaterialLibrary(list){
   try { localStorage.setItem(getMaterialLibKey(), JSON.stringify(list)); } catch(e){}
 }
-function saveToMaterialLibrary({assigned, count, moduleId}){
+// Läs en uppladdad fil som base64 så vi kan lagra den i localStorage
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result); // Returnerar "data:<mime>;base64,..."
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+async function saveToMaterialLibrary({assigned, count, moduleId}){
   const lib = getMaterialLibrary();
+  const id = moduleId || ('mod_'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
+  // Försök lagra filinnehållet (base64) så download-knappen kan returnera det
+  let fileStored = false;
+  if (wiz.file) {
+    try {
+      const base64 = await fileToBase64(wiz.file);
+      // Storleksgräns ~4MB för localStorage-säkerhet
+      if (base64.length < 4_500_000) {
+        localStorage.setItem(getMaterialFileKey(id), JSON.stringify({
+          name: wiz.file.name,
+          type: wiz.file.type,
+          size: wiz.file.size,
+          base64
+        }));
+        fileStored = true;
+      } else {
+        console.warn('[CVmatchen] Fil för stor för localStorage (>4MB):', wiz.file.name);
+      }
+    } catch(e) {
+      console.warn('[CVmatchen] Kunde inte spara filinnehåll lokalt:', e);
+    }
+  }
   const item = {
-    id: moduleId || ('mod_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)),
+    id,
     title: wiz.title,
     purpose: wiz.purpose,
     category: wiz.category,
@@ -4788,6 +4823,8 @@ function saveToMaterialLibrary({assigned, count, moduleId}){
     deadline: wiz.deadline,
     fileName: wiz.file?.name || null,
     fileSize: wiz.file?.size || 0,
+    fileType: wiz.file?.type || null,
+    fileStored, // True om filen finns lagrad lokalt → download-knappen funkar
     aiUpdated: !!wiz.aiUpdateResult,
     aiChanges: wiz.aiUpdateResult?.changes?.length || 0,
     createdAt: new Date().toISOString(),
@@ -5034,7 +5071,7 @@ function renderMaterialView(){
           <div class="mat-file-name">${escapeHtml(m.fileName)}</div>
           <div class="mat-file-meta">${Math.round(m.fileSize/1024)} KB${m.aiUpdated?` · <span style="color:var(--ac)">AI-uppdaterad (${m.aiChanges} fakta)</span>`:''}</div>
         </div>
-        <button class="mat-file-btn" onclick="downloadMaterialFile('${m.id}')" title="Ladda ner">
+        <button class="mat-file-btn" onclick="downloadMaterialFile('${m.id}')" title="${m.fileStored ? 'Ladda ner' : 'Filen är inte tillgänglig (skapades innan lokal lagring aktiverades — ladda upp på nytt för att kunna ladda ner)'}" style="${m.fileStored === false ? 'opacity:0.5;cursor:not-allowed;' : ''}">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
       </div>` : `
@@ -5107,8 +5144,39 @@ function renderMaterialView(){
 }
 
 function downloadMaterialFile(id){
-  // I produktion: anropa backend för att hämta filen från storage
-  alert('Här laddas originalfilen (eller den AI-uppdaterade versionen om sådan finns) ner från backend-storage.\n\n(Backend: GET /api/material/' + id + '/file)');
+  const lib = getMaterialLibrary();
+  const m = lib.find(x => x.id === id);
+  if (!m) {
+    showErr('Materialet kunde inte hittas');
+    return;
+  }
+  // Försök hämta filen från localStorage (sparas där vid upload)
+  try {
+    const stored = localStorage.getItem(getMaterialFileKey(id));
+    if (stored) {
+      const fileData = JSON.parse(stored);
+      // Konvertera base64 → Blob → triggera nedladdning
+      const byteString = atob(fileData.base64.split(',')[1] || fileData.base64);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+      const blob = new Blob([ab], { type: fileData.type || 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileData.name || (m.title || 'material') + '.pptx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showOk(`✓ Laddade ner: ${fileData.name || m.title}`);
+      return;
+    }
+  } catch(e) {
+    console.warn('[CVmatchen] Kunde inte ladda ner från localStorage:', e);
+  }
+  // Fallback: ingen fil sparad — meddela användaren tydligt
+  showErr(`Filen "${m.fileName || m.title}" är inte tillgänglig för nedladdning. Materialet skapades innan filer började lagras lokalt, eller så var filen för stor (>4 MB).`);
 }
 
 function reAssignMaterial(id){
