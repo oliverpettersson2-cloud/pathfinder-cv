@@ -417,15 +417,15 @@ td{padding:10px 13px;vertical-align:middle}
 .mat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
 
 .mat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
-.mat-card{background:var(--sf);border:1px solid var(--bd);border-radius:11px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s}
+.mat-card{background:var(--sf);border:1px solid var(--bd);border-radius:11px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s;min-width:0}
 .mat-card:hover{border-color:var(--bdl)}
 .mat-card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.mat-card-title{font-size:14px;font-weight:700;margin-bottom:3px;letter-spacing:-.2px}
-.mat-card-purpose{font-size:11.5px;color:var(--mu);line-height:1.5}
-.mat-card-date{font-size:10.5px;color:var(--mu);font-weight:600;flex-shrink:0;text-transform:uppercase;letter-spacing:.5px}
+.mat-card-title{font-size:14px;font-weight:700;margin-bottom:3px;letter-spacing:-.2px;word-break:break-word;line-height:1.3}
+.mat-card-purpose{font-size:11.5px;color:var(--mu);line-height:1.5;word-break:break-word}
+.mat-card-date{font-size:10.5px;color:var(--mu);font-weight:600;flex-shrink:0;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
 .mat-card-tags{display:flex;flex-wrap:wrap;gap:5px}
 
-.mat-file{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--sf2);border:1px solid var(--bdl);border-radius:8px}
+.mat-file{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--sf2);border:1px solid var(--bdl);border-radius:8px;min-width:0}
 .mat-file.mat-file-empty{background:transparent;border:1px dashed var(--bdl)}
 .mat-file-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bdl);border-radius:6px;flex-shrink:0;color:var(--ac)}
 .mat-file-info{flex:1;min-width:0;overflow:hidden}
@@ -435,9 +435,9 @@ td{padding:10px 13px;vertical-align:middle}
 .mat-file-btn:hover{background:var(--bdl);color:var(--ac);border-color:var(--bdl)}
 
 .mat-card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:8px;border-top:1px solid var(--bdl);flex-wrap:wrap}
-.mat-card-by{font-size:11px;color:var(--tx2)}
-.mat-card-actions{display:flex;gap:5px}
-.mat-card-actions .btn{font-size:11px;padding:5px 9px}
+.mat-card-by{font-size:11px;color:var(--tx2);min-width:0;flex:1}
+.mat-card-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.mat-card-actions .btn{font-size:11px;padding:5px 9px;white-space:nowrap}
 
 .mat-empty{background:var(--sf);border:2px dashed var(--bd);border-radius:14px;padding:50px 20px;text-align:center;color:var(--mu)}
 .mat-empty svg{margin:0 auto 12px;color:var(--bd);display:block}
@@ -451,7 +451,7 @@ td{padding:10px 13px;vertical-align:middle}
   .save-mode-chips{grid-template-columns:1fr}
   .src-tabs{grid-template-columns:1fr}
   .mat-card-foot{flex-direction:column;align-items:stretch}
-  .mat-card-actions{justify-content:flex-end}
+  .mat-card-actions{justify-content:flex-start}
 }
 
 /* ═══ FÖRHANDSVISNING (deltagarvy) ═══ */
@@ -3684,6 +3684,31 @@ function bumpAiQuota(){
 }
 function getAiQuotaLeft(){ return Math.max(0, AI_QUOTA_PER_MONTH - getAiQuotaUsed()); }
 
+// Per-material AI-kvot: ett material kan bara AI-granskas EN gång per kalendermånad.
+// Sparar senaste granskningsdatum på materialet och blockerar nya förrän nästa månad.
+function getMaterialAiCooldown(materialId){
+  const lib = getMaterialLibrary();
+  const m = lib.find(x => x.id === materialId);
+  if (!m || !m.lastAiUpdateAt) return { allowed: true, daysLeft: 0, lastDate: null };
+  const last = new Date(m.lastAiUpdateAt);
+  const now = new Date();
+  // Tillåt om det är en ny kalendermånad (eller år)
+  if (last.getFullYear() !== now.getFullYear() || last.getMonth() !== now.getMonth()) {
+    return { allowed: true, daysLeft: 0, lastDate: last };
+  }
+  // Annars beräkna dagar tills första nästa månad
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const daysLeft = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
+  return { allowed: false, daysLeft, lastDate: last };
+}
+function markMaterialAiUpdated(materialId){
+  const lib = getMaterialLibrary();
+  const m = lib.find(x => x.id === materialId);
+  if (!m) return;
+  m.lastAiUpdateAt = new Date().toISOString();
+  setMaterialLibrary(lib);
+}
+
 let wiz = null;
 
 function initWizState(){
@@ -4534,7 +4559,10 @@ function renderWizStep3(){
           <button onclick="previewDigitalModule()" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.25);border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:background 0.12s;" onmouseover="this.style.background='rgba(59,130,246,0.08)'" onmouseout="this.style.background='rgba(59,130,246,0.04)'">
             <div style="width:38px;height:38px;border-radius:9px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🖥️</div>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:13px;font-weight:700;color:var(--tx);">Förhandsgranska digital modul</div>
+              <div style="font-size:13px;font-weight:700;color:var(--tx);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                Förhandsgranska digital modul
+                <span style="font-size:9px;font-weight:800;background:rgba(245,158,11,0.18);color:#b45309;padding:2px 6px;border-radius:4px;letter-spacing:0.3px;text-transform:uppercase;">🚧 Under uppbyggnad</span>
+              </div>
               <div style="font-size:11px;color:var(--mu);margin-top:1px;">Slides + 3 AI-genererade quiz-frågor (som m1/m2/m3)</div>
             </div>
             <span style="font-size:16px;color:var(--mu);flex-shrink:0;">›</span>
@@ -5027,8 +5055,17 @@ async function previewDigitalModule() {
         <button onclick="document.getElementById('_digitalPreviewOverlay')?.remove()" style="background:rgba(0,0,0,0.04);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;color:var(--mu);">×</button>
       </div>
       <div style="padding:20px 24px;">
+        <!-- UNDER UPPBYGGNAD-banner -->
+        <div style="background:linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(245,158,11,0.06) 100%);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px;">
+          <div style="font-size:28px;line-height:1;flex-shrink:0;">🚧</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:800;color:#b45309;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px;">Under uppbyggnad</div>
+            <div style="font-size:13px;color:var(--tx);line-height:1.5;font-weight:500;">Den digitala modul-funktionen är fortfarande under utveckling. Förhandsgranskningen nedan visar hur det <em>kommer</em> att se ut, men slide-rendering, quiz-logik och progress-tracking är ännu inte fullt implementerat. Använd <strong>Lektionsmaterial (PDF)</strong> tills vidare för säkrast resultat.</div>
+          </div>
+        </div>
+
         <div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.18);border-radius:10px;padding:14px;margin-bottom:18px;">
-          <div style="font-size:11px;font-weight:800;color:#3b82f6;letter-spacing:0.5px;margin-bottom:4px;">SÅ HÄR FÅR DELTAGAREN SE DEN</div>
+          <div style="font-size:11px;font-weight:800;color:#3b82f6;letter-spacing:0.5px;margin-bottom:4px;">SÅ HÄR KOMMER DELTAGAREN SE DEN</div>
           <div style="font-size:12px;color:var(--tx);line-height:1.5;">Modulen visar slides från din PowerPoint följt av ${quiz.length} quiz-frågor som AI genererat baserat på lektionens syfte. Fungerar precis som befintliga m1, m2, m3 i appen.</div>
         </div>
 
@@ -5622,18 +5659,32 @@ function renderMaterialView(){
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
               Lektionsmaterial
             </button>
-            <button class="btn" onclick="reAssignMaterial('${m.id}')" title="Tilldela till fler deltagare">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-              Tilldela
-            </button>
-            ${m.aiChanges_data?.length ? `<button class="btn" onclick="openPptEditor('${m.id}')" title="Granska sparade AI-förslag">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              Granska AI (${m.aiChanges_data.length})
-            </button>` : ''}
-            ${m.fileName ? `<button class="btn" onclick="aiUpdateExisting('${m.id}')" title="${m.aiChanges_data?.length?'Kör AI igen':'Uppdatera innehåll med AI'}">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              ${m.aiChanges_data?.length?'Kör AI igen':'AI-uppdatera'}
-            </button>` : ''}
+            ${(() => {
+              // Granska AI-knapp: visar cooldown-status och låter en gång per månad
+              const cd = getMaterialAiCooldown(m.id);
+              const hasExisting = m.aiChanges_data?.length;
+              if (cd.allowed) {
+                // Får köras — antingen "Granska AI" (första gången) eller "Granska AI igen" (om månaden vänt)
+                return `<button class="btn" onclick="aiUpdateExisting('${m.id}')" title="AI går igenom slidsen och föreslår uppdateringar. Kan köras 1 gång/månad per material." style="background:rgba(124,58,237,0.06);border-color:rgba(124,58,237,0.4);color:#7c3aed;">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/><polyline points="21 4 21 10 15 10"/></svg>
+                  ${hasExisting ? 'Granska AI igen' : 'Granska med AI'}
+                </button>
+                ${hasExisting ? `<button class="btn" onclick="openPptEditor('${m.id}')" title="Visa de senaste AI-förslagen" style="background:rgba(212,164,54,0.06);border-color:rgba(212,164,54,0.4);color:var(--ac);">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                  Visa förslag (${m.aiChanges_data.length})
+                </button>` : ''}`;
+              } else {
+                // Kvarvarande dagar — visa både disabled-knapp + ev. visa-förslag
+                return `<button class="btn" disabled title="AI-granskning kan göras igen om ${cd.daysLeft} dag${cd.daysLeft===1?'':'ar'} (1:a nästa månad)." style="background:rgba(0,0,0,0.04);border-color:var(--bd);color:var(--mu);cursor:not-allowed;opacity:0.6;">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  AI igen om ${cd.daysLeft}d
+                </button>
+                ${hasExisting ? `<button class="btn" onclick="openPptEditor('${m.id}')" title="Visa AI-förslagen från denna månad" style="background:rgba(212,164,54,0.06);border-color:rgba(212,164,54,0.4);color:var(--ac);">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                  Visa förslag (${m.aiChanges_data.length})
+                </button>` : ''}`;
+              }
+            })()}
             <button class="btn inst-danger" onclick="deleteMaterial('${m.id}')" title="Ta bort">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
             </button>
@@ -5712,10 +5763,17 @@ async function aiUpdateExisting(id){
     alert('Kvoten för AI-uppdateringar är slut för månaden ('+AI_QUOTA_PER_MONTH+'/'+AI_QUOTA_PER_MONTH+'). Kvoten återställs den 1:a varje månad.');
     return;
   }
+  // Per-material spärr: bara en AI-granskning per kalendermånad och material
+  const cooldown = getMaterialAiCooldown(id);
+  if (!cooldown.allowed) {
+    const lastStr = cooldown.lastDate ? cooldown.lastDate.toLocaleDateString('sv-SE') : '?';
+    alert(`Detta material har redan AI-granskats den ${lastStr} denna månad.\n\nAI-granskning kan göras en gång per kalendermånad och material. Du kan granska igen om ${cooldown.daysLeft} dag${cooldown.daysLeft===1?'':'ar'} (1:a nästa månad).\n\nDetta sparar AI-kostnader och säkerställer att granskningar verkligen behövs.`);
+    return;
+  }
   const lib = getMaterialLibrary();
   const m = lib.find(x => x.id === id);
   if(!m) return;
-  if(!confirm(`Köra AI-uppdatering på "${m.title}"?\n\nAI går igenom slides och föreslår uppdaterade siffror, datum och fakta. (${getAiQuotaLeft()-1} uppdateringar kvar efter denna.)`)) return;
+  if(!confirm(`Köra AI-granskning på "${m.title}"?\n\nAI går igenom slides och föreslår uppdaterade siffror, datum och fakta.\n\nObs: Detta material kan bara AI-granskas en gång per kalendermånad. (${getAiQuotaLeft()-1} av månadens totala granskningar kvar efter denna.)`)) return;
 
   // Försök riktig backend, fall tillbaka på mock
   let changes = null;
