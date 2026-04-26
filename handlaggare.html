@@ -793,6 +793,12 @@ td{padding:10px 13px;vertical-align:middle}
 
     <nav class="sb-nav" id="sbNav"></nav>
 
+    <!-- Diskret admin-genväg ovanför OP-avataren (gömmer Handläggare & admins-fliken) -->
+    <button id="sbAdminsBtn" onclick="switchTab('admins')" style="margin:8px 10px 0;padding:7px 10px;background:transparent;border:none;color:rgba(255,255,255,0.32);font-size:11px;font-weight:500;cursor:pointer;text-align:left;font-family:inherit;display:flex;align-items:center;gap:7px;border-radius:6px;transition:color 0.15s, background 0.15s;letter-spacing:0.2px;" onmouseover="this.style.color='rgba(255,255,255,0.7)';this.style.background='rgba(255,255,255,0.04)';" onmouseout="this.style.color='rgba(255,255,255,0.32)';this.style.background='transparent';" title="Visa handläggare och admins">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Handläggare & admins</span>
+    </button>
+
     <div class="sb-user">
       <div class="sb-av" id="sbAv"></div>
       <div class="sb-meta">
@@ -1364,7 +1370,6 @@ function enterApp(){
 function buildNav(){
   const items=[
     {id:'mina',label:'Deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
-    {id:'admins',label:'Handläggare & admins',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'},
     {id:'material',label:'Sparat material & uppgifter',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'}
   ];
   document.getElementById('sbNav').innerHTML=items.map((it,i)=>`<div class="sb-nav-item${i===0?' act':''}" data-id="${it.id}" onclick="switchTab('${it.id}')">${it.icon}<span>${it.label}</span></div>`).join('');
@@ -2259,6 +2264,14 @@ function renderTabTraning(data){
 
   let html = `<div class="ud-body-h">Träning & uppgifter</div>`;
 
+  // ── STOR "SKAPA UPPGIFT"-KNAPP ÖVERST ──
+  // Öppnar popup där handläggaren väljer uppgiftstyp (sök X jobb, intervjuträning,
+  // matcha CV mot X annonser, lägg till profilbild, spara X utbildningar) + deadline.
+  html += `<button onclick="openCreateTaskModal()" style="width:100%;padding:14px 18px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d54 100%);border:none;color:#fff;font-size:14px;font-weight:800;border-radius:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px;box-shadow:0 4px 14px rgba(0,0,0,0.15);transition:transform 0.12s, box-shadow 0.12s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 18px rgba(0,0,0,0.22)';" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.15)';">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Skapa uppgift till deltagaren
+  </button>`;
+
   // ── BEFINTLIGA UPPGIFTER ÖVERST ──
   const activeTasks = tasks.filter(t => t.status !== 'completed' && t.status !== 'cancelled');
   if (activeTasks.length) {
@@ -2476,6 +2489,318 @@ window.openAssignModuleModal = openAssignModuleModal;
 window.closeAssignModuleModal = closeAssignModuleModal;
 window.confirmAssignModule = confirmAssignModule;
 window._amSetPrio = _amSetPrio;
+
+// ═══════════════════════════════════════════════════════════════════════
+// SKAPA UPPGIFT-MODAL (öppnas från "Skapa uppgift till deltagaren"-knappen)
+// ═══════════════════════════════════════════════════════════════════════
+// 5 uppgiftstyper. Tre av dem har antalsparameter (jobb, annonser, utbildningar).
+// Tilldelningen gör backend-anrop assign_task med uppgiftsspecifika tParams så
+// systemet kan auto-verifiera när deltagaren har gjort klart.
+const CREATE_TASK_TYPES = [
+  {
+    id: 'interview',
+    icon: '🎤',
+    color: '#a78bfa',
+    title: 'Genomför en intervjuträning',
+    desc: 'Deltagaren genomför en hel intervjuträning med AI-feedback',
+    countable: false,
+    category: 'intervju',
+    buildTitle: () => 'Genomför en intervjuträning',
+    buildParams: () => ({ verify_field: 'interview_sessions_completed', verify_operator: '>=', verify_target: '1' })
+  },
+  {
+    id: 'photo',
+    icon: '📷',
+    color: '#3b82f6',
+    title: 'Lägg till profilbild i CV',
+    desc: 'Deltagaren laddar upp en profilbild i CV-byggaren',
+    countable: false,
+    category: 'cv',
+    buildTitle: () => 'Lägg till profilbild i CV',
+    buildParams: () => ({ verify_field: 'cv_has_photo', verify_operator: '=', verify_target: 'true' })
+  },
+  {
+    id: 'save_edu',
+    icon: '🎓',
+    color: '#10b981',
+    title: 'Spara intressanta utbildningar',
+    desc: 'Använd AISYV för att hitta utbildningar som passar dig',
+    countable: true,
+    countLabel: 'utbildningar',
+    countDefault: 3,
+    countMin: 1,
+    countMax: 20,
+    category: 'studier',
+    buildTitle: (n) => `Spara ${n} intressanta utbildningar`,
+    buildParams: (n) => ({ verify_field: 'saved_edu_count', verify_operator: '>=', verify_target: String(n) })
+  },
+  {
+    id: 'apply_jobs',
+    icon: '💼',
+    color: '#f59e0b',
+    title: 'Sök jobb',
+    desc: 'Markera ett angivet antal jobb som "sökt" i Sökta arbeten',
+    countable: true,
+    countLabel: 'jobb',
+    countDefault: 5,
+    countMin: 1,
+    countMax: 30,
+    category: 'matchning',
+    buildTitle: (n) => `Sök ${n} jobb`,
+    buildParams: (n) => ({ verify_field: 'jobs_applied_count', verify_operator: '>=', verify_target: String(n) })
+  },
+  {
+    id: 'match_cv',
+    icon: '🎯',
+    color: '#ef4444',
+    title: 'Matcha CV mot annonser',
+    desc: 'Använd AI-matchningen för att skräddarsy CV mot annonser',
+    countable: true,
+    countLabel: 'annonser',
+    countDefault: 5,
+    countMin: 1,
+    countMax: 30,
+    category: 'matchning',
+    buildTitle: (n) => `Matcha CV mot ${n} annonser`,
+    buildParams: (n) => ({ verify_field: 'match_count_delta', verify_operator: '>=', verify_target: String(n) })
+  }
+];
+
+let _ctSelectedType = null;
+let _ctCount = null;
+let _ctPriority = 'normal';
+
+function openCreateTaskModal() {
+  if (!currentUserData) return;
+  _ctSelectedType = null;
+  _ctCount = null;
+  _ctPriority = 'normal';
+  const userName = displayName(currentUserData).name;
+
+  const overlay = document.createElement('div');
+  overlay.id = '_createTaskOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.onclick = (e) => { if (e.target === overlay) closeCreateTaskModal(); };
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;max-width:560px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:92vh;overflow-y:auto;">
+      <!-- Header -->
+      <div style="padding:24px 26px 16px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:#fff;z-index:1;">
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          <div style="font-size:26px;flex-shrink:0;">📋</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:700;color:var(--mu);letter-spacing:0.5px;text-transform:uppercase;">Skapa uppgift till</div>
+            <div style="font-size:18px;font-weight:800;color:var(--tx);">${escapeHtml(userName)}</div>
+          </div>
+          <button onclick="closeCreateTaskModal()" style="background:rgba(0,0,0,0.04);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;color:var(--mu);flex-shrink:0;">×</button>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div id="_ctBody" style="padding:20px 26px;"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  renderCreateTaskStep1();
+}
+
+// Steg 1: välj uppgiftstyp
+function renderCreateTaskStep1() {
+  const body = document.getElementById('_ctBody');
+  if (!body) return;
+  let html = `<div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:var(--mu);margin-bottom:12px;">Välj typ av uppgift</div>`;
+  html += '<div style="display:grid;gap:10px;">';
+  CREATE_TASK_TYPES.forEach(t => {
+    html += `<button onclick="ctSelectType('${t.id}')" style="display:flex;align-items:center;gap:14px;padding:14px;background:rgba(0,0,0,0.02);border:1.5px solid var(--bd);border-radius:12px;cursor:pointer;text-align:left;font-family:inherit;transition:border-color 0.12s, background 0.12s;" onmouseover="this.style.borderColor='${t.color}';this.style.background='${t.color}11';" onmouseout="this.style.borderColor='var(--bd)';this.style.background='rgba(0,0,0,0.02)';">
+      <div style="width:44px;height:44px;border-radius:12px;background:${t.color}22;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${t.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:var(--tx);">${escapeHtml(t.title)}${t.countable ? ' <span style="font-size:11px;color:var(--mu);font-weight:500;">(välj antal)</span>' : ''}</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:2px;line-height:1.4;">${escapeHtml(t.desc)}</div>
+      </div>
+      <span style="font-size:18px;color:var(--mu);flex-shrink:0;">›</span>
+    </button>`;
+  });
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+// Användaren valde en typ — gå till steg 2 (deadline + meddelande)
+function ctSelectType(typeId) {
+  const t = CREATE_TASK_TYPES.find(x => x.id === typeId);
+  if (!t) return;
+  _ctSelectedType = t;
+  _ctCount = t.countable ? t.countDefault : null;
+  _ctPriority = 'normal';
+  renderCreateTaskStep2();
+}
+
+// Steg 2: parametrar (antal/deadline/prioritet/meddelande)
+function renderCreateTaskStep2() {
+  const body = document.getElementById('_ctBody');
+  if (!body || !_ctSelectedType) return;
+  const t = _ctSelectedType;
+  const defaultDeadline = new Date();
+  defaultDeadline.setDate(defaultDeadline.getDate() + 7);
+  const ddStr = defaultDeadline.toISOString().split('T')[0];
+
+  let html = `<button onclick="renderCreateTaskStep1()" style="background:none;border:none;color:var(--mu);font-size:12px;font-weight:600;cursor:pointer;padding:0;margin-bottom:14px;font-family:inherit;display:flex;align-items:center;gap:6px;">‹ Byt typ</button>`;
+
+  html += `<div style="display:flex;align-items:center;gap:12px;padding:14px;background:${t.color}11;border:1px solid ${t.color}44;border-radius:12px;margin-bottom:18px;">
+    <div style="width:42px;height:42px;border-radius:10px;background:${t.color}22;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${t.icon}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13px;font-weight:700;color:var(--tx);">${escapeHtml(t.title)}</div>
+      <div style="font-size:11px;color:var(--mu);margin-top:1px;">${escapeHtml(t.desc)}</div>
+    </div>
+  </div>`;
+
+  html += '<div style="display:grid;gap:14px;">';
+
+  // Antal — bara för "countable"-typer
+  if (t.countable) {
+    html += `<div>
+      <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Antal ${t.countLabel}</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="ctAdjustCount(-1)" style="width:38px;height:38px;border-radius:10px;border:1px solid var(--bd);background:#fff;color:var(--tx);font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;">−</button>
+        <input type="number" id="_ctCountInput" value="${_ctCount}" min="${t.countMin}" max="${t.countMax}" oninput="ctSetCount(this.value)" style="flex:1;padding:9px 12px;border:1px solid var(--bd);border-radius:10px;font-size:18px;font-weight:700;font-family:inherit;color:var(--tx);text-align:center;">
+        <button onclick="ctAdjustCount(1)" style="width:38px;height:38px;border-radius:10px;border:1px solid var(--bd);background:#fff;color:var(--tx);font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;">+</button>
+      </div>
+      <div style="font-size:11px;color:var(--mu);margin-top:4px;text-align:center;">Min ${t.countMin} · Max ${t.countMax}</div>
+    </div>`;
+  }
+
+  // Deadline
+  html += `<div>
+    <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Deadline</label>
+    <input type="date" id="_ctDeadline" value="${ddStr}" style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;font-size:14px;font-family:inherit;color:var(--tx);">
+  </div>`;
+
+  // Prioritet
+  html += `<div>
+    <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Prioritet</label>
+    <div id="_ctPrio" style="display:flex;gap:6px;">
+      <button data-p="low"    onclick="ctSetPrio('low')"    style="flex:1;padding:9px;border:1.5px solid var(--bd);background:transparent;color:var(--mu);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Låg</button>
+      <button data-p="normal" onclick="ctSetPrio('normal')" style="flex:1;padding:9px;border:1.5px solid var(--ac);background:rgba(212,164,54,0.1);color:var(--ac);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Normal</button>
+      <button data-p="high"   onclick="ctSetPrio('high')"   style="flex:1;padding:9px;border:1.5px solid var(--bd);background:transparent;color:var(--mu);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Hög</button>
+    </div>
+  </div>`;
+
+  // Meddelande
+  html += `<div>
+    <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Personligt meddelande (valfritt)</label>
+    <textarea id="_ctMessage" rows="3" placeholder="Hej! Jag har skickat denna uppgift som hjälp för dig att komma vidare i din process..." style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;font-family:inherit;color:var(--tx);resize:vertical;"></textarea>
+  </div>`;
+
+  html += '</div>';
+
+  // Knappar
+  html += `<div style="display:flex;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--bd);">
+    <button onclick="closeCreateTaskModal()" style="flex:1;padding:12px;background:rgba(0,0,0,0.04);border:1px solid var(--bd);color:var(--tx);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">Avbryt</button>
+    <button onclick="confirmCreateTask()" id="_ctConfirmBtn" style="flex:2;padding:12px;background:#1a1a2e;border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">📌 Skicka uppgift</button>
+  </div>`;
+
+  body.innerHTML = html;
+}
+
+function ctAdjustCount(delta) {
+  if (!_ctSelectedType || !_ctSelectedType.countable) return;
+  const t = _ctSelectedType;
+  let n = (_ctCount || t.countDefault) + delta;
+  n = Math.max(t.countMin, Math.min(t.countMax, n));
+  _ctCount = n;
+  const inp = document.getElementById('_ctCountInput');
+  if (inp) inp.value = n;
+}
+
+function ctSetCount(val) {
+  if (!_ctSelectedType || !_ctSelectedType.countable) return;
+  const t = _ctSelectedType;
+  let n = parseInt(val, 10);
+  if (isNaN(n)) n = t.countDefault;
+  n = Math.max(t.countMin, Math.min(t.countMax, n));
+  _ctCount = n;
+}
+
+function ctSetPrio(p) {
+  _ctPriority = p;
+  const wrap = document.getElementById('_ctPrio');
+  if (!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn => {
+    const isActive = btn.dataset.p === p;
+    if (isActive) {
+      btn.style.background = 'rgba(212,164,54,0.1)';
+      btn.style.color = 'var(--ac)';
+      btn.style.borderColor = 'var(--ac)';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--mu)';
+      btn.style.borderColor = 'var(--bd)';
+    }
+  });
+}
+
+function closeCreateTaskModal() {
+  document.getElementById('_createTaskOverlay')?.remove();
+  _ctSelectedType = null;
+  _ctCount = null;
+  _ctPriority = 'normal';
+}
+
+async function confirmCreateTask() {
+  if (!_ctSelectedType || !currentUserId) return;
+  const t = _ctSelectedType;
+  const deadline = document.getElementById('_ctDeadline')?.value;
+  const message = document.getElementById('_ctMessage')?.value || '';
+  const n = t.countable ? _ctCount : null;
+  const title = t.buildTitle(n);
+  const params = t.buildParams(n);
+  const btn = document.getElementById('_ctConfirmBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Skickar...'; }
+
+  try {
+    const result = await post('assign_task', {
+      targetUserId: currentUserId,
+      title,
+      description: message || t.desc,
+      category: t.category,
+      deadline: deadline ? new Date(deadline + 'T23:59:59').toISOString() : null,
+      priority: _ctPriority,
+      tParams: { ...params, task_type: t.id, count: n },
+      filters: { adminId: admin.id }
+    });
+    if (result?.error) {
+      showOk(`✅ Uppgiften "${title}" skickad (lokalt — backend-endpoint krävs för persistering)`);
+    } else {
+      showOk(`✅ Uppgiften "${title}" skickad`);
+    }
+    closeCreateTaskModal();
+    // Lägg till uppgiften lokalt så UI uppdateras direkt
+    if (currentUserData) {
+      currentUserData.tasks = currentUserData.tasks || [];
+      currentUserData.tasks.push({
+        title,
+        status: 'pending',
+        deadline,
+        priority: _ctPriority,
+        category: t.category,
+        task_type: t.id
+      });
+      renderDetailTab('traning', currentUserData);
+    }
+  } catch (e) {
+    showErr('Kunde inte skicka uppgift: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '📌 Skicka uppgift'; }
+  }
+}
+
+// Exponera på window
+window.openCreateTaskModal = openCreateTaskModal;
+window.closeCreateTaskModal = closeCreateTaskModal;
+window.ctSelectType = ctSelectType;
+window.ctAdjustCount = ctAdjustCount;
+window.ctSetCount = ctSetCount;
+window.ctSetPrio = ctSetPrio;
+window.confirmCreateTask = confirmCreateTask;
+window.renderCreateTaskStep1 = renderCreateTaskStep1;
+window.renderCreateTaskStep2 = renderCreateTaskStep2;
 
 // ═══ TILLDELA UPPGIFT ═══
 const QUICK_TEMPLATES = {
