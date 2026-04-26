@@ -3997,20 +3997,44 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   let matchaSelectedCvId   = null;          // id från pathfinder_saved_cvs, eller 'current' för pågående
   let matchaSelectedAds    = [];            // valda jobbannonser (max 3)
   let matchaSearchQ        = '';
-  let matchaOrtFilter      = 'all';
+  let matchaOrtFilter      = 'fam';          // default: Familjen Helsingborg + Helsingør (matchar mobile)
   let matchaTidFilter      = '';
   let matchaSearchOffset   = 0;
   let matchaSearchDebounceT = null;
 
+  // Orter — samma struktur som mobile för konsistens
   const MATCHA_ORT = {
-    all: '',
-    skane: 'Skåne',
-    hbg: 'Helsingborg',
-    sthlm: 'Stockholm',
-    gbg: 'Göteborg',
-    malmo: 'Malmö',
-    uppsala: 'Uppsala',
-    linkoping: 'Linköping'
+    hbg:        'Helsingborg',
+    fam:        'Helsingborg Ängelholm Landskrona Höganäs Bjuv Åstorp Klippan Örkelljunga Perstorp Båstad',
+    helsingör:  '',   // Dansk ort — kräver Jobnet.dk, Jobtech har inga DK-jobb
+    angeholm:   'Ängelholm',
+    landskrona: 'Landskrona',
+    hoganas:    'Höganäs',
+    bjuv:       'Bjuv',
+    astorp:     'Åstorp',
+    klippan:    'Klippan',
+    skane:      'Skåne',
+    sthlm:      'Stockholm',
+    gbg:        'Göteborg',
+    malmo:      'Malmö',
+    all:        ''
+  };
+  // Visningsetiketter (vad som visas i resultatlistan)
+  const MATCHA_ORT_LABEL = {
+    hbg:        'Helsingborg',
+    fam:        'Familjen Helsingborg',
+    helsingör:  'Helsingør 🇩🇰',
+    angeholm:   'Ängelholm',
+    landskrona: 'Landskrona',
+    hoganas:    'Höganäs',
+    bjuv:       'Bjuv',
+    astorp:     'Åstorp',
+    klippan:    'Klippan',
+    skane:      'Skåne',
+    sthlm:      'Stockholm',
+    gbg:        'Göteborg',
+    malmo:      'Malmö',
+    all:        'Hela Sverige'
   };
 
   // ── Entry point från switchView('matcha') ─────────────────
@@ -4171,20 +4195,59 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   };
 
   // ── Sök jobb som matchar CV-titeln ────────────────────────
+  // PRIORITERINGSLOGIK:
+  // 1. Pågående jobb (jobs där endY är tomt) — det är där användaren faktiskt jobbar nu
+  // 2. Senaste avslutade jobb om inget pågår
+  // 3. CV:ts huvudtitel (cvData.title) som sista fallback
+  // Innan: sökte alltid på cvData.title vilket missar att användaren bytt yrke.
   window.matchaSearchByCvTitle = function() {
     const selectedCV = matchaGetSelectedCVData();
-    const title = (selectedCV && selectedCV.title || '').trim();
-    if (!title) {
-      toast('Du har ingen yrkestitel i CV:t. Fyll i den på CV-fliken först.', 'error');
+    if (!selectedCV) {
+      toast('Välj ett CV först', 'error');
       return;
     }
+
+    let title = '';
+    let source = '';
+    const jobs = Array.isArray(selectedCV.jobs) ? selectedCV.jobs : [];
+
+    // 1. Pågående jobb (endY tomt eller "nu")
+    const ongoing = jobs.find(j => j && j.title && (!j.endYear || /^(nu|pågår|present|now)$/i.test(String(j.endYear).trim())));
+    if (ongoing) {
+      title = ongoing.title.trim();
+      source = 'pågående roll: ' + (ongoing.company ? ('"' + ongoing.title + '" på ' + ongoing.company) : ('"' + ongoing.title + '"'));
+    }
+    // 2. Senaste avslutade jobb (sortera efter startår)
+    if (!title && jobs.length) {
+      const sorted = jobs.slice().sort((a, b) => {
+        const ay = parseInt(a.endYear || a.startYear || '0', 10);
+        const by = parseInt(b.endYear || b.startYear || '0', 10);
+        return by - ay;
+      });
+      const latest = sorted[0];
+      if (latest && latest.title) {
+        title = latest.title.trim();
+        source = 'senaste roll: "' + latest.title + '"';
+      }
+    }
+    // 3. CV-huvudtitel som sista fallback
+    if (!title && selectedCV.title) {
+      title = selectedCV.title.trim();
+      source = 'CV-titel';
+    }
+
+    if (!title) {
+      toast('Du har varken pågående jobb eller yrkestitel i CV:t. Fyll i på CV-fliken först.', 'error');
+      return;
+    }
+
     const input = document.getElementById('matchaSearch');
     if (input) input.value = title;
     document.querySelectorAll('.matcha-quick-chip').forEach(c => c.classList.remove('active'));
     // Markera CV-titel-knappen som aktiv
     document.querySelectorAll('.matcha-cv-title-btn').forEach(b => b.classList.add('active'));
     matchaDoSearch();
-    toast('🎯 Söker efter: ' + title);
+    toast('🎯 Söker efter ' + source + ' (' + title + ')');
   };
 
   window.matchaDoSearch = async function() {
@@ -4224,7 +4287,7 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
       resultsEl.innerHTML =
         `<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:10px;">
-          Visar ${hits.length} av ${total} annonser · ${escape(MATCHA_ORT[matchaOrtFilter] || 'Hela Sverige')}
+          Visar ${hits.length} av ${total} annonser · ${escape(MATCHA_ORT_LABEL[matchaOrtFilter] || 'Hela Sverige')}
         </div>`;
 
       hits.forEach(hit => resultsEl.appendChild(matchaBuildJobCard(hit)));
