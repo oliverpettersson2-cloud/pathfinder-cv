@@ -6906,14 +6906,47 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         </div>
         <div id="trainView-intervju"></div>`;
 
-      // Kör ivInit — den finns laddad i HTML:en sen tidigare
-      setTimeout(() => {
+      // Kör ivInit. Om scriptet redan är laddat (t.ex. via mobile-HTML) — använd direkt.
+      // Annars: ladda intervju.js + intervju.css från domänens rot.
+      const tryInit = () => {
         if (typeof window.ivInit === 'function') {
           try { window.ivInit(); } catch(e) { console.warn('ivInit fail:', e); }
-        } else {
-          console.warn('window.ivInit saknas — kontrollera att intervju.js är laddad');
+          return true;
         }
-      }, 50);
+        return false;
+      };
+      if (tryInit()) return;
+
+      // Ladda CSS (silent fail om inte hittad — UI funkar ändå med inline-styles)
+      if (!document.querySelector('link[data-iv-css]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/intervju.css';
+        link.setAttribute('data-iv-css', '1');
+        link.onerror = () => link.remove();
+        document.head.appendChild(link);
+      }
+
+      // Ladda JS från domänens rot (samma plats som mobile)
+      if (!document.querySelector('script[data-iv-js]')) {
+        const s = document.createElement('script');
+        s.src = '/intervju.js';
+        s.async = true;
+        s.setAttribute('data-iv-js', '1');
+        s.onload = () => {
+          setTimeout(() => {
+            if (!tryInit()) {
+              const cont = document.getElementById('trainView-intervju');
+              if (cont) cont.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.5);">Intervju-modulen laddade men kunde inte starta. Ladda om sidan och försök igen.</div>';
+            }
+          }, 100);
+        };
+        s.onerror = () => {
+          const cont = document.getElementById('trainView-intervju');
+          if (cont) cont.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.5);">Intervjuträningen är inte tillgänglig just nu. Försök igen senare.</div>';
+        };
+        document.head.appendChild(s);
+      }
       return;
     }
 
