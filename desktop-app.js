@@ -6887,9 +6887,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     const grid = document.getElementById('ovGrid');
 
-    // Specialfall: intervjuträning vald — använd befintlig intervju.js-modul
-    // VIKTIGT: intervju.js är hårdkodad att leta efter #trainView-intervju
-    // (samma id som mobile använder). Vi använder samma id här.
+    // Specialfall: intervjuträning vald — använd befintlig intervju.js
+    // som redan finns laddad i HTML:en. Modulen letar efter #trainView-intervju.
     if (currentTrainCat === 'intervju') {
       document.getElementById('ov-home').style.display = 'none';
       document.getElementById('ov-detail').style.display = 'block';
@@ -6905,12 +6904,16 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
             </div>
           </div>
         </div>
-        <div id="trainView-intervju">
-          <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);">
-            <div style="font-size:14px;">Laddar intervjuträning…</div>
-          </div>
-        </div>`;
-      loadInterviewModule();
+        <div id="trainView-intervju"></div>`;
+
+      // Kör ivInit — den finns laddad i HTML:en sen tidigare
+      setTimeout(() => {
+        if (typeof window.ivInit === 'function') {
+          try { window.ivInit(); } catch(e) { console.warn('ivInit fail:', e); }
+        } else {
+          console.warn('window.ivInit saknas — kontrollera att intervju.js är laddad');
+        }
+      }, 50);
       return;
     }
 
@@ -7111,110 +7114,6 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
     if (!trainingProgress[modId]) trainingProgress[modId] = { lessonsRead: 0, quizCorrect: 0 };
   };
 
-  // ════════════════════════════════════════════════════════════════
-  // INTERVJUTRÄNING — laddar befintlig intervju.js + intervju.css
-  // dynamiskt. Modulen letar efter #trainView-intervju som vi redan
-  // har skapat ovan. Anropas utan args (samma som mobile gör).
-  // ════════════════════════════════════════════════════════════════
-  let _ivLoadPromise = null;
-  function loadInterviewModule() {
-    // Om ivInit redan finns (laddat tidigare i samma session) — kör direkt
-    if (typeof window.ivInit === 'function') {
-      try { window.ivInit(); } catch(e) { console.warn('ivInit fail:', e); }
-      return;
-    }
-
-    // Pågående laddning? Vänta på den.
-    if (_ivLoadPromise) {
-      _ivLoadPromise.then(() => {
-        if (typeof window.ivInit === 'function') {
-          try { window.ivInit(); } catch(e) {}
-        } else {
-          showInterviewLoadError();
-        }
-      });
-      return;
-    }
-
-    // Ladda CSS först (fail silently om det inte finns)
-    const cssPaths = ['/intervju.css', '/css/intervju.css', '/static/intervju.css', '/assets/intervju.css'];
-    cssPaths.forEach(href => {
-      // Lägg till länken — om filen inte finns ger det 404 men det är OK
-      if (!document.querySelector('link[data-iv-css="' + href + '"]')) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        link.setAttribute('data-iv-css', href);
-        link.onerror = () => link.remove();
-        document.head.appendChild(link);
-      }
-    });
-
-    // Ladda JS — pröva flera sökvägar i ordning tills en fungerar
-    const candidatePaths = [
-      '/intervju.js',
-      '/js/intervju.js',
-      '/static/intervju.js',
-      '/assets/intervju.js',
-      '/scripts/intervju.js'
-    ];
-
-    _ivLoadPromise = new Promise((resolve) => {
-      let idx = 0;
-      function tryNext() {
-        if (idx >= candidatePaths.length) {
-          resolve(false);
-          return;
-        }
-        const path = candidatePaths[idx++];
-        const s = document.createElement('script');
-        s.src = path;
-        s.async = true;
-        s.onload = () => {
-          // Vänta lite så scripten hinner registrera sig
-          setTimeout(() => {
-            if (typeof window.ivInit === 'function') {
-              console.log('[intervju] Laddat från ' + path);
-              resolve(true);
-            } else {
-              s.remove();
-              tryNext();
-            }
-          }, 50);
-        };
-        s.onerror = () => {
-          s.remove();
-          tryNext();
-        };
-        document.head.appendChild(s);
-      }
-      tryNext();
-    });
-
-    _ivLoadPromise.then((ok) => {
-      if (ok && typeof window.ivInit === 'function') {
-        try { window.ivInit(); } catch(e) { console.warn('ivInit fail:', e); }
-      } else {
-        showInterviewLoadError();
-      }
-    });
-  }
-
-  function showInterviewLoadError() {
-    const cont = document.getElementById('trainView-intervju');
-    if (!cont) return;
-    cont.innerHTML = `
-      <div style="text-align:center;padding:40px 20px;background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.2);border-radius:12px;">
-        <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
-        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;">Intervjuträningen kunde inte laddas</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.5;max-width:480px;margin:0 auto;">
-          Kunde inte hitta <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;">intervju.js</code> på servern.<br>
-          Lägg till denna rad i desktop-HTML:en (t.ex. före &lt;/body&gt;):<br>
-          <code style="display:inline-block;margin-top:8px;background:rgba(255,255,255,0.06);padding:4px 8px;border-radius:4px;font-size:12px;">&lt;script src="/intervju.js"&gt;&lt;/script&gt;</code>
-        </div>
-        <button onclick="trainBackToHub()" style="margin-top:16px;padding:9px 18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">← Tillbaka till Träna</button>
-      </div>`;
-  }
 
   // ── SLIDE-LÄGE: ett kort i taget ──
   let currentTrainMod = null;
