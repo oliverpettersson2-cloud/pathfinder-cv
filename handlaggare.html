@@ -1266,27 +1266,85 @@ function injectDemoUsers(realUsers) {
       .replace(/\d+$/,'').trim()
       .split(' ').map(p => p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
 
-    // Specialfall för oliver.pettersson2@gmail.com — bygg in realistisk data som
-    // matchar vad användaren gjort i mobilappen på riktigt (om backend inte
-    // returnerar honom). När backend börjar svara används den datan istället.
+    // Specialfall för oliver.pettersson2@gmail.com — riktig data baserat på
+    // användarens faktiska aktivitet i mobilappen (CV, matchningar, sökta arbeten).
+    // Inscannat från skärmdumpar:
+    // • Profil: Oliver Pettersson, Lagerarbetare
+    // • Erfarenhet: DSV (Lagerarbetare/Truckförare 2018-2025), Speakers corner
+    //   (Bartender/Servitör 2018-2025), Telenor (Kundtjänst 2016-2019),
+    //   Privat sommarjobb som Murare 2009
+    // • CV-versioner: 2/3 sparade — "CVmatch Lagerarbetare" och "CVmatch Servitör/Bartender"
+    // • Mina matchningar: 2 (okategoriserade) — "Lageroperatör Åstorp" + "Extratjänst kyl/fryslager Åstorp"
+    // • Sökta arbeten: 9 (varav 2 från Boxflow synliga i bilden)
+    // • Sparade utbildningar: 0
+    // • Träning: ingen modul påbörjad än ("Regler & Rättigheter" är 0/5 lektioner)
     const isOliver2 = lc === 'oliver.pettersson2@gmail.com';
     const realisticCV = isOliver2 ? {
       name: 'Oliver Pettersson',
       title: 'Lagerarbetare',
       email,
       phone: '',
-      summary: 'Tillgänglig och driven lagerarbetare med erfarenhet av truck och paketering. Söker arbete i Helsingborg/Åstorp-området.',
+      summary: 'Driven och flexibel medarbetare med bred erfarenhet inom lager, truck, kundtjänst och servering. Söker primärt arbete inom lager och logistik i Helsingborg/Åstorp-området.',
       experience: [
-        { title:'Lagerarbetare (extra)', employer:'Boxflow Staffing Syd AB', startYear:'2024', endYear:'pågående', description:'Plock, pack och truck i fryslager.' }
+        {
+          title: 'Lagerarbetare/Truckförare',
+          employer: 'DSV',
+          location: 'Helsingborg',
+          startYear: '2018',
+          endYear: '2025',
+          description: 'Plock, pack, godshantering och truckkörning i logistikcentral. Arbetat med både dag- och kvällsskift.'
+        },
+        {
+          title: 'Bartender/Servitör',
+          employer: 'Speakers corner',
+          location: 'Helsingborg',
+          startYear: '2018',
+          endYear: '2025',
+          description: 'Servering, kassahantering och kundbemötande på pub/restaurang. Extra/helger parallellt med ordinarie jobb.'
+        },
+        {
+          title: 'Kundtjänst/försäljare',
+          employer: 'Telenor',
+          location: 'Helsingborg',
+          startYear: '2016',
+          endYear: '2019',
+          description: 'Telefonförsäljning och kundsupport för mobil och bredband. Hanterade reklamationer och merförsäljning.'
+        },
+        {
+          title: 'Murare',
+          employer: 'Privat (sommarjobb)',
+          startYear: '2009',
+          endYear: '2009',
+          description: 'Sommarjobb som muraryrkesgesäll på privat byggprojekt.'
+        }
       ],
       education: [],
-      skills: ['Truck (A-B)', 'Lagerarbete', 'Paketering', 'Svenska', 'Engelska'],
+      skills: ['Truck (A-B)', 'Lagerarbete', 'Logistik', 'Kassahantering', 'Kundbemötande', 'Försäljning', 'Svenska', 'Engelska'],
       languages: ['Svenska – modersmål', 'Engelska – flytande']
     } : { name: namePart, email };
+    // Matchade CV (2 stycken som syns i mobilen — okategoriserade än)
     const realisticMatched = isOliver2 ? [
-      { id:'m-real-1', title:'Extratjänst i kyl- och fryslager i Åstorp', employer:'Boxflow Staffing Syd AB', kommun:'Åstorp', saved_at:'2026-04-10T14:00:00Z', category:null },
-      { id:'m-real-2', title:'Extra- och heltidsmedarbetare sökes till produktion', employer:'Boxflow Staffing Syd AB', kommun:'Åstorp', saved_at:'2026-04-09T11:30:00Z', category:null }
+      {
+        id: 'm-real-1',
+        title: 'Lageroperatör till industriföretag - Åstorp',
+        employer: 'Industriföretag i Åstorp',
+        kommun: 'Åstorp',
+        cv_variant: 'Lagerarbetare',
+        saved_at: '2026-04-13T22:09:00Z',
+        category: null
+      },
+      {
+        id: 'm-real-2',
+        title: 'Extratjänst i kyl- och fryslager i Åstorp',
+        employer: 'Boxflow Staffing Syd AB',
+        kommun: 'Åstorp',
+        cv_variant: 'Lagerarbetare',
+        saved_at: '2026-04-10T21:31:00Z',
+        category: null
+      }
     ] : [];
+    // Sökta arbeten (9 totalt — de 2 första syns i mobilen, resten realistiska för matcha mot
+    // hans CV-profil som lagerarbetare/truckförare i Helsingborg/Åstorp-regionen)
     const realisticDiary = isOliver2 ? [
       { id:'d-1', title:'Extratjänst i kyl- och fryslager i Åstorp', employer:'Boxflow Staffing Syd AB', applied_at:'2026-04-10T14:00:00Z', status:'applied', kommun:'Åstorp' },
       { id:'d-2', title:'Extra- och heltidsmedarbetare sökes till produktion', employer:'Boxflow Staffing Syd AB', applied_at:'2026-04-09T11:30:00Z', status:'rejected', kommun:'Åstorp' },
@@ -1298,9 +1356,10 @@ function injectDemoUsers(realUsers) {
       { id:'d-8', title:'Lagerarbetare deltid', employer:'Coop', applied_at:'2026-03-25T09:30:00Z', status:'rejected', kommun:'Helsingborg' },
       { id:'d-9', title:'Truckförare', employer:'IKEA Logistik', applied_at:'2026-03-22T14:00:00Z', status:'applied', kommun:'Helsingborg' }
     ] : [];
+    // 2 sparade CV-versioner (visas i mobilen som "CVmatch Lagerarbetare" + "CVmatch Servitör/Bartender")
     const realisticSavedCvs = isOliver2 ? [
-      { id:'cv-1', title:'CV - Lagerarbetare', updated_at:'2026-04-10T14:00:00Z' },
-      { id:'cv-2', title:'CV - Truck/Paketering', updated_at:'2026-04-08T10:30:00Z' }
+      { id: 'cv-1', title: 'CVmatch Lagerarbetare', updated_at: '2026-04-10T14:00:00Z' },
+      { id: 'cv-2', title: 'CVmatch Servitör/Bartender', updated_at: '2026-04-08T10:30:00Z' }
     ] : [];
 
     stubs.push({
@@ -1313,8 +1372,9 @@ function injectDemoUsers(realUsers) {
       handlaggare_name: 'Oliver KA',
       enhet_id: DEMO_ENHETER.ka.id,
       enhet_name: DEMO_ENHETER.ka.name,
-      progress: isOliver2 ? { m1:true, m2:true, a_cv:true, a_match:true } : {},
-      tasks: isOliver2 ? [] : [],  // tom uppgiftslista — inga tilldelade än
+      // Träning: ingen modul påbörjad än (matchar mobil-skärmdumpens "0/5 lektioner" på m1)
+      progress: {},
+      tasks: [],  // inga tilldelade uppgifter än — du kan tilldela från handläggarvyn
       matched_cvs: realisticMatched,
       job_diary: realisticDiary,
       saved_cvs: realisticSavedCvs,
