@@ -2369,26 +2369,33 @@ function renderTabTraning(data){
     { key:'studier', title:'🎓 Studier',       desc:'YH, Komvux, Folkhögskola' }
   ];
 
-  html += `<div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-    <div>
-      <div style="font-size:14px;font-weight:800;color:var(--tx);">Tilldela övningar</div>
-      <div style="font-size:12px;color:var(--mu);margin-top:2px;">Klicka på en modul för att skicka som uppgift med deadline</div>
-    </div>
+  html += `<div style="margin-bottom:12px;padding:0 2px;">
+    <div style="font-size:13px;font-weight:800;color:var(--tx);">Tilldela övningar</div>
+    <div style="font-size:11px;color:var(--mu);margin-top:2px;">Klicka på en kategori nedan för att se modulerna</div>
   </div>`;
 
   GROUPS.forEach(g => {
     const mods = ACTIVE_MODULES.filter(m => m.cat === g.key);
     if (!mods.length) return;
     const doneCount = mods.filter(m => isModuleDone(m.id)).length;
-    html += `<div style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px 8px;border-bottom:1px solid var(--bd);margin-bottom:10px;">
-        <div>
-          <div style="font-size:13px;font-weight:800;color:var(--tx);">${g.title}</div>
-          <div style="font-size:11px;color:var(--mu);">${g.desc}</div>
+    // Kollapsat som default — handläggaren expanderar de grupper hen är intresserad av
+    // (state sparas på window._groupOpen så det persisterar mellan re-renders)
+    if (!window._groupOpen) window._groupOpen = {};
+    const isOpen = !!window._groupOpen[g.key];
+    html += `<div style="margin-bottom:12px;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:#fff;">
+      <button onclick="toggleGroup('${g.key}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:transparent;border:none;cursor:pointer;font-family:inherit;text-align:left;transition:background 0.12s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+          <svg id="grp-arrow-${g.key}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--mu);transform:rotate(${isOpen?'90':'0'}deg);transition:transform 0.18s;">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:800;color:var(--tx);">${g.title}</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:1px;">${g.desc}</div>
+          </div>
         </div>
-        <div style="font-size:11px;font-weight:700;color:var(--mu);background:rgba(0,0,0,0.04);padding:3px 8px;border-radius:8px;">${doneCount}/${mods.length} klara</div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">`;
+        <div style="font-size:11px;font-weight:700;color:var(--mu);background:rgba(0,0,0,0.04);padding:4px 9px;border-radius:8px;flex-shrink:0;">${doneCount}/${mods.length} klara</div>
+      </button>
+      <div id="grp-body-${g.key}" style="display:${isOpen?'grid':'none'};grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;padding:0 14px 14px;border-top:1px solid var(--bd);padding-top:14px;">`;
     mods.forEach(m => {
       const done = isModuleDone(m.id);
       const pct = getModuleProgress(m.id);
@@ -2420,6 +2427,18 @@ function renderTabTraning(data){
 
   return html;
 }
+
+// Toggla en modul-grupp (Intro/Arbete/Studier) — animerar pil + visar/döljer kort
+function toggleGroup(groupKey) {
+  if (!window._groupOpen) window._groupOpen = {};
+  const isOpen = !!window._groupOpen[groupKey];
+  window._groupOpen[groupKey] = !isOpen;
+  const body = document.getElementById('grp-body-' + groupKey);
+  const arrow = document.getElementById('grp-arrow-' + groupKey);
+  if (body) body.style.display = isOpen ? 'none' : 'grid';
+  if (arrow) arrow.style.transform = `rotate(${isOpen ? '0' : '90'}deg)`;
+}
+window.toggleGroup = toggleGroup;
 
 // ── DELEGERINGS-MODAL ──────────────────────────────────────────────
 function openAssignModuleModal(moduleId) {
