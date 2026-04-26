@@ -1362,17 +1362,38 @@ async function loadUsers(){
   }
 
   // Fyll handläggar-filtret — lista unika handläggare från deltagardatan
-  const handlaggareMap = new Map();
+  // Spara även enhet per handläggare så enhet-dropdownen kan auto-välja rätt
+  const handlaggareMap = new Map();   // hid → namn
+  const handlaggareEnhet = new Map(); // hid → enhetsnamn
   allUsers.forEach(u => {
     const hid = getHandlaggareId(u);
     const hname = getHandlaggareName(u);
-    if(hid && hname) handlaggareMap.set(hid, hname);
+    const enhetN = u.enheter?.name || u.enhet_name || '';
+    if (hid && hname) {
+      handlaggareMap.set(hid, hname);
+      if (enhetN && !handlaggareEnhet.has(hid)) handlaggareEnhet.set(hid, enhetN);
+    }
   });
-  // Se till att inloggad handläggare alltid finns med (även om hen inte har några deltagare ännu)
-  if(admin.role === 'handlaggare' && admin.id){
-    const myName = admin.name || admin.email?.split('@')[0] || 'Mina ärenden';
-    if(!handlaggareMap.has(admin.id)) handlaggareMap.set(admin.id, myName);
+  // Lägg till alla demo-handläggare så de syns även utan deltagare
+  if (DEMO_MODE) {
+    DEMO_HANDLAGGARE.forEach(h => {
+      // För Oliver KA: använd inloggad admin.id om det är hen som är inloggad
+      const hid = (isOliverKA() && (h.email||'').toLowerCase() === DEMO_OLIVER_EMAIL.toLowerCase())
+        ? admin.id : h.id;
+      if (!handlaggareMap.has(hid)) {
+        handlaggareMap.set(hid, h.name);
+        if (h.enhet_name) handlaggareEnhet.set(hid, h.enhet_name);
+      }
+    });
   }
+  // Se ALLTID till att inloggad användare finns med (alla roller, inte bara 'handlaggare')
+  if (admin.id && !handlaggareMap.has(admin.id)) {
+    const myName = admin.name || admin.email?.split('@')[0] || 'Mig';
+    handlaggareMap.set(admin.id, myName);
+  }
+  // Spara enhet-mappningen globalt så change-handler kan använda den
+  window._handlaggareEnhet = handlaggareEnhet;
+
   const handlaggareSel = document.getElementById('handlaggareFlt');
   if(handlaggareSel){
     // Sortera: inloggad först ("Mina ärenden"), sedan övriga alfabetiskt
@@ -1382,7 +1403,7 @@ async function loadUsers(){
     const myLabel = handlaggareMap.get(admin.id) || admin.name || 'Mig';
     handlaggareSel.innerHTML =
       '<option value="">Alla handläggare</option>' +
-      (admin.role === 'handlaggare' && admin.id
+      (admin.id
         ? `<option value="${admin.id}">Mina ärenden (${myLabel})</option>`
         : '') +
       entries.map(([id,name]) => `<option value="${id}">${name}</option>`).join('');
@@ -1507,7 +1528,7 @@ function renderTable(users){
     const avatarStyle = isPlaceholder ? 'background:rgba(245,158,11,0.12);color:#d97706;' : '';
     return `<tr onclick="openDetail('${uid}')">
       <td style="text-align:center" onclick="event.stopPropagation()"><button class="star-btn${isStarred?' starred':''}" data-uid="${uid}" onclick="toggleFavorite('${uid}',event)" title="${isStarred?'Ta bort från Mina':'Lägg till i Mina'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button></td>
-      <td><div class="uc"><div class="ua" style="${avatarStyle}">${avatarText}</div><div><div class="un" style="${nameStyle}">${name}${placeholderBadge}</div><div class="ue">${email}</div></div></div></td>
+      <td><div class="uc"><div class="ua" style="${avatarStyle}">${avatarText}</div><div style="min-width:0;flex:1;"><div class="un" style="${nameStyle}">${name}${placeholderBadge}</div><div class="ue">${email}</div>${uid?`<div style="font-size:10px;color:rgba(0,0,0,0.32);font-family:ui-monospace,'SF Mono','Menlo',monospace;letter-spacing:0.2px;margin-top:1px;cursor:pointer;" onclick="event.stopPropagation();navigator.clipboard?.writeText('${uid}');this.textContent='✓ Kopierat!';setTimeout(()=>this.textContent='ID: ${uid.substring(0,12)}${uid.length>12?'…':''}',1500);" title="Kopiera fullständigt ID: ${uid}">ID: ${uid.substring(0,12)}${uid.length>12?'…':''}</div>`:''}</div></div></td>
       <td class="hm dc">${handlaggareCell}</td>
       <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
       <td class="dc">${lastSeen}</td>
@@ -1523,7 +1544,22 @@ document.getElementById('searchIn')?.addEventListener('input',()=>renderTable(al
 document.getElementById('enhetFlt')?.addEventListener('change',()=>renderTable(allUsers));
 document.getElementById('handlaggareFlt')?.addEventListener('change',function(){
   this.dataset.userSet = '1'; // Markera att användaren aktivt ändrat — stäng av auto-förval
+  // Auto-välj rätt enhet om vald handläggare har en känd enhet
+  const hid = this.value;
+  if (hid && window._handlaggareEnhet) {
+    const enhet = window._handlaggareEnhet.get(hid);
+    if (enhet) {
+      const enhetSel = document.getElementById('enhetFlt');
+      if (enhetSel) enhetSel.value = enhet;
+    }
+  } else if (!hid) {
+    // "Alla handläggare" → nollställ enhet också
+    const enhetSel = document.getElementById('enhetFlt');
+    if (enhetSel) enhetSel.value = '';
+  }
   renderTable(allUsers);
+  renderStats();
+  renderChipCounts();
 });
 // Statuschips
 document.getElementById('statusChips')?.addEventListener('click',(e)=>{
