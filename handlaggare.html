@@ -1152,6 +1152,21 @@ const DEMO_MODE = true;
 
 const DEMO_OLIVER_EMAIL = 'cvmatchen@outlook.com';
 
+// E-postadresser som tillhör admins/handläggare och INTE ska visas som deltagare.
+// Lägg till alla mailadresser som tillhör dig själv eller andra admins så de inte
+// av misstag tilldelas Oliver KA som deltagare. Matchning är skiftlägesokänslig.
+const ADMIN_EMAILS = [
+  'cvmatchen@outlook.com'
+  // OBS: oliver.pettersson2@gmail.com är NEJ admin — det är test-deltagaren med
+  // riktigt CV, matchningar och sökta arbeten. Ska visas i deltagarlistan.
+];
+
+function isAdminEmail(email) {
+  if (!email) return false;
+  const e = email.toLowerCase().trim();
+  return ADMIN_EMAILS.some(a => a.toLowerCase().trim() === e);
+}
+
 const DEMO_ENHETER = {
   ka:     { id: 'demo-enhet-ka',     name: 'Kompetensarena' },
   ungdom: { id: 'demo-enhet-ungdom', name: 'Ungdom' }
@@ -1217,8 +1232,32 @@ function attachToOliverIfOrphan(u) {
 // Helper: lägg till fiktiva deltagare ovanpå backend-data
 function injectDemoUsers(realUsers) {
   if (!DEMO_MODE) return realUsers;
+  // Filtrera bort admin-mailar — dessa ska inte synas som deltagare
+  const adminUserIds = new Set();
+  const filtered = (realUsers || []).filter(u => {
+    const email = u.cv?.data?.email || u.cv?.email || u.email || '';
+    if (isAdminEmail(email)) {
+      console.log('[CVmatchen] Filtrerar bort admin från deltagarlistan:', email);
+      const uid = u.user_id || u.id;
+      if (uid) adminUserIds.add(uid);
+      return false;
+    }
+    return true;
+  });
+  // Rensa eventuella stjärnmärkningar för admin-användare (de auto-stjärnmärktes
+  // tidigare innan admin-filtret fanns på plats)
+  if (adminUserIds.size > 0) {
+    try {
+      const favs = getFavorites();
+      let changed = false;
+      adminUserIds.forEach(uid => {
+        if (favs.has(uid)) { favs.delete(uid); changed = true; }
+      });
+      if (changed) saveFavorites(favs);
+    } catch(e) {}
+  }
   // Koppla föräldralösa riktiga deltagare till Oliver
-  const tagged = (realUsers || []).map(attachToOliverIfOrphan);
+  const tagged = filtered.map(attachToOliverIfOrphan);
   // Lägg till Vlademars + Maritas fiktiva deltagare
   return [...tagged, ...DEMO_DELTAGARE];
 }
