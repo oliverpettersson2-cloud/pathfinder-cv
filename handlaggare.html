@@ -1193,12 +1193,24 @@ function attachToOliverIfOrphan(u) {
   if (getHandlaggareId(u)) return u; // har redan handläggare
   // Om Oliver KA är inloggad — använd hans riktiga admin.id så "Mina deltagare" matchar
   const oliverId = isOliverKA() ? admin.id : 'demo-h-oliver';
+  // Auto-stjärnmärk så hen syns även under "⭐ Mina deltagare"-toggle
+  if (isOliverKA()) {
+    try {
+      const favs = getFavorites();
+      const uid = u.user_id || u.id;
+      if (uid && !favs.has(uid)) {
+        favs.add(uid);
+        saveFavorites(favs);
+      }
+    } catch(e) {}
+  }
   return {
     ...u,
     handlaggare_id: oliverId,
     handlaggare_name: 'Oliver KA',
     enhet_id: DEMO_ENHETER.ka.id,
-    enhet_name: DEMO_ENHETER.ka.name
+    enhet_name: DEMO_ENHETER.ka.name,
+    isMyTestUser: true   // markera så vi kan visa badge
   };
 }
 
@@ -1536,12 +1548,17 @@ function renderTable(users){
     const placeholderBadge = isPlaceholder
       ? '<span style="display:inline-block;font-size:9px;font-weight:700;background:rgba(245,158,11,0.12);color:#d97706;padding:1px 6px;border-radius:4px;margin-left:6px;letter-spacing:0.3px;text-transform:uppercase;vertical-align:middle;">Ej ifyllt</span>'
       : '';
+    // Grön "TEST"-badge för riktiga användare som auto-tilldelats inloggad handläggare
+    // (Oliver Petterssons konto är ditt riktiga test-konto kopplat till Oliver KA)
+    const testBadge = u.isMyTestUser
+      ? '<span style="display:inline-block;font-size:9px;font-weight:700;background:rgba(62,180,137,0.15);color:#3eb489;padding:1px 6px;border-radius:4px;margin-left:6px;letter-spacing:0.3px;text-transform:uppercase;vertical-align:middle;" title="Ditt riktiga test-konto">⭐ Test</span>'
+      : '';
     // Avatar: visa "?" för placeholders istället för slumpartade initialer från fallback-namn
     const avatarText = isPlaceholder ? '?' : ini(name);
     const avatarStyle = isPlaceholder ? 'background:rgba(245,158,11,0.12);color:#d97706;' : '';
     return `<tr onclick="openDetail('${uid}')">
       <td style="text-align:center" onclick="event.stopPropagation()"><button class="star-btn${isStarred?' starred':''}" data-uid="${uid}" onclick="toggleFavorite('${uid}',event)" title="${isStarred?'Ta bort från Mina':'Lägg till i Mina'}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button></td>
-      <td><div class="uc"><div class="ua" style="${avatarStyle}">${avatarText}</div><div style="min-width:0;flex:1;"><div class="un" style="${nameStyle}">${name}${placeholderBadge}</div><div class="ue">${email}</div>${uid?`<div style="font-size:10px;color:rgba(0,0,0,0.32);font-family:ui-monospace,'SF Mono','Menlo',monospace;letter-spacing:0.2px;margin-top:1px;cursor:pointer;" onclick="event.stopPropagation();navigator.clipboard?.writeText('${uid}');this.textContent='✓ Kopierat!';setTimeout(()=>this.textContent='ID: ${uid.substring(0,12)}${uid.length>12?'…':''}',1500);" title="Kopiera fullständigt ID: ${uid}">ID: ${uid.substring(0,12)}${uid.length>12?'…':''}</div>`:''}</div></div></td>
+      <td><div class="uc"><div class="ua" style="${avatarStyle}">${avatarText}</div><div style="min-width:0;flex:1;"><div class="un" style="${nameStyle}">${name}${placeholderBadge}${testBadge}</div><div class="ue">${email}</div>${uid?`<div style="font-size:10px;color:rgba(0,0,0,0.32);font-family:ui-monospace,'SF Mono','Menlo',monospace;letter-spacing:0.2px;margin-top:1px;cursor:pointer;" onclick="event.stopPropagation();navigator.clipboard?.writeText('${uid}');this.textContent='✓ Kopierat!';setTimeout(()=>this.textContent='ID: ${uid.substring(0,12)}${uid.length>12?'…':''}',1500);" title="Kopiera fullständigt ID: ${uid}">ID: ${uid.substring(0,12)}${uid.length>12?'…':''}</div>`:''}</div></div></td>
       <td class="hm dc">${handlaggareCell}</td>
       <td class="hm dc">${u.enheter?.name||u.enhet_name||''}</td>
       <td class="dc">${lastSeen}</td>
