@@ -4943,7 +4943,7 @@
           `<div class="cpicker-item${v===current?' selected':''}" onclick="cpickerPick('${v}')">${v}</div>`
         ).join('');
       }
-      overlay.style.display = 'block';
+      overlay.style.display = 'flex';
       // Säkerställ att overlay är på topp (hög z-index trots ev. andra modaler)
       overlay.style.zIndex = '999999';
       setTimeout(() => {
@@ -5557,8 +5557,9 @@
             const c = (j.company || '').trim();
             const fromY = j.startYear || '';
             const toY = j.endYear || '';
-            const period = fromY && toY ? (fromY + ' – ' + toY) : (fromY || toY || '');
-            return '<div>• <strong style="color:#3eb489;">' + t + '</strong>' +
+            // Slutdatum FÖRST (senaste först = mer naturligt: "2025 – 2018")
+            const period = fromY && toY ? (toY + ' – ' + fromY) : (toY || fromY || '');
+            return '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">• <strong style="color:#3eb489;">' + t + '</strong>' +
               (c ? ' <span style="color:rgba(62,180,137,0.7);">· ' + c + '</span>' : '') +
               (period ? ' <span style="color:rgba(62,180,137,0.55);font-size:11px;">(' + period + ')</span>' : '') +
               '</div>';
@@ -15474,8 +15475,8 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 
 
   <!-- CUSTOM DATE PICKER OVERLAY -->
-  <div id="cpickerOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);" onclick="cpickerClose()">
-    <div id="cpickerSheet" onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:#1e2235;border-radius:20px 20px 0 0;padding:0 0 40px 0;max-height:70vh;display:flex;flex-direction:column;">
+  <div id="cpickerOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:20px;" onclick="cpickerClose()">
+    <div id="cpickerSheet" onclick="event.stopPropagation()" style="background:#1e2235;border-radius:20px;padding:0;max-height:65vh;width:100%;max-width:340px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);">
       <div style="padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
         <div id="cpickerTitle" style="font-size:15px;font-weight:800;letter-spacing:0.5px;"></div>
         <button onclick="cpickerClose()" style="background:rgba(255,255,255,0.1);border:none;border-radius:20px;padding:6px 14px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Stäng</button>
