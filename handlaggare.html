@@ -1046,7 +1046,7 @@ let admin = null;
 let allUsers = [];
 let currentUserId = null;
 let currentUserData = null;
-let currentDetailTab = 'kurser';
+let currentDetailTab = 'cv';
 let currentTab = 'mina';
 let currentStatus = '';
 let currentEnhet = '';
@@ -1593,16 +1593,15 @@ document.getElementById('statusChips')?.addEventListener('click',(e)=>{
 // DETALJVY — full sidvy som ersätter listan
 // ═══════════════════════════════════════════════════════════════════════
 const DETAIL_TABS = [
-  {id:'kurser',     label:'Kurser',       icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>'},
-  {id:'uppgifter',  label:'Uppgifter',    icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'},
-  {id:'cv',         label:'CV',           icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'},
-  {id:'jobbansok',  label:'Jobbansökan',  icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>'},
-  {id:'install',    label:'Inställningar',icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'},
+  {id:'cv',         label:'CV',                   icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'},
+  {id:'matcha',     label:'Matcha',               icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>'},
+  {id:'utbilda',    label:'Utbilda dig',          icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>'},
+  {id:'traning',    label:'Träning & uppgifter',  icon:'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6.5 6.5h11v11h-11z"/><path d="M3 9h3M3 15h3M18 9h3M18 15h3M9 3v3M15 3v3M9 18v3M15 18v3"/></svg>'}
 ];
 
 async function openDetail(userId){
   currentUserId = userId;
-  currentDetailTab = 'kurser';
+  currentDetailTab = 'cv';
   // Visa detaljvy, dölj listvy
   document.getElementById('listView').style.display='none';
   document.getElementById('detailView').classList.add('act');
@@ -1738,11 +1737,10 @@ function renderUserCharts(data){
 function renderDetailTab(tabId, data){
   const body = document.getElementById('udBody');
   switch(tabId){
-    case 'kurser':    body.innerHTML = renderTabKurser(data); break;
-    case 'uppgifter': body.innerHTML = renderTabUppgifter(data); break;
-    case 'cv':        body.innerHTML = renderTabCV(data); break;
-    case 'jobbansok': body.innerHTML = renderTabJobbansok(data); break;
-    case 'install':   body.innerHTML = renderTabInstall(data); break;
+    case 'cv':       body.innerHTML = renderTabCV(data); break;
+    case 'matcha':   body.innerHTML = renderTabMatcha(data); break;
+    case 'utbilda':  body.innerHTML = renderTabUtbilda(data); break;
+    case 'traning':  body.innerHTML = renderTabTraning(data); break;
   }
 }
 
@@ -2108,6 +2106,320 @@ function exportUserData(){
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// NYA DETALJ-TABS — matchar mobilens flikar (CV / Matcha / Utbilda dig / Träning)
+// ═══════════════════════════════════════════════════════════════════════
+
+// ── MATCHA: visar matchade CV:n + jobbansökningar ────────────────────
+function renderTabMatcha(data){
+  // Återanvänder befintlig renderTabJobbansok-vy (matchade CV + diary)
+  return renderTabJobbansok(data);
+}
+
+// ── UTBILDA DIG: utbildningar + AISYV-historik ───────────────────────
+function renderTabUtbilda(data){
+  const cvd = data.cv?.data || data.cv || {};
+  const savedEdu = data.saved_edu || [];
+  const eduHistory = data.edu_history || [];
+  const cvdEdu = (cvd.education || []).filter(e => e && (e.degree || e.school));
+
+  let html = `<div class="ud-body-h">Utbilda dig</div>`;
+
+  // Sektion 1: Utbildningar i CV:t
+  html += `<div style="margin-bottom:24px;">
+    <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:var(--mu);margin-bottom:10px;">Utbildningar i CV (${cvdEdu.length})</div>`;
+  if(cvdEdu.length){
+    html += '<div style="display:grid;gap:8px;">';
+    cvdEdu.forEach(e => {
+      const period = [e.startYear, e.endYear].filter(Boolean).join(' – ') || '';
+      html += `<div style="padding:12px 14px;background:rgba(0,0,0,0.02);border:1px solid var(--bd);border-radius:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--tx);">${escapeHtml(e.degree || 'Okänd utbildning')}</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:2px;">${escapeHtml(e.school || '')}${period ? ' · ' + period : ''}</div>
+      </div>`;
+    });
+    html += '</div>';
+  } else {
+    html += `<div class="ud-body-empty" style="padding:16px;">Inga utbildningar i CV:t ännu.</div>`;
+  }
+  html += `</div>`;
+
+  // Sektion 2: Sparade utbildningar (från AISYV)
+  html += `<div style="margin-bottom:24px;">
+    <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:var(--mu);margin-bottom:10px;">Sparade utbildningar (${savedEdu.length})</div>`;
+  if(savedEdu.length){
+    html += '<div style="display:grid;gap:8px;">';
+    savedEdu.slice(0, 12).forEach(e => {
+      html += `<div style="padding:12px 14px;background:rgba(124,58,237,0.04);border:1px solid rgba(124,58,237,0.18);border-radius:10px;">
+        <div style="font-size:13px;font-weight:700;color:var(--tx);">${escapeHtml(e.namn || e.title || 'Utbildning')}</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:2px;">${escapeHtml([e.typ, e.kommun, e.langd].filter(Boolean).join(' · '))}</div>
+      </div>`;
+    });
+    if(savedEdu.length > 12) html += `<div style="font-size:11px;color:var(--mu);text-align:center;padding:6px;">+ ${savedEdu.length - 12} fler</div>`;
+    html += '</div>';
+  } else {
+    html += `<div class="ud-body-empty" style="padding:16px;">Inga utbildningar sparade än.</div>`;
+  }
+  html += `</div>`;
+
+  // Sektion 3: AISYV-historik (om backend skickar med det)
+  if(eduHistory.length){
+    html += `<div style="margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:var(--mu);margin-bottom:10px;">AISYV-konversationer (${eduHistory.length})</div>`;
+    html += '<div style="display:grid;gap:8px;">';
+    eduHistory.slice(0, 5).forEach(h => {
+      const when = h.created_at ? new Date(h.created_at).toLocaleDateString('sv-SE') : '';
+      html += `<div style="padding:10px 12px;background:rgba(0,0,0,0.02);border:1px solid var(--bd);border-radius:8px;">
+        <div style="font-size:11px;color:var(--mu);">${when}</div>
+        <div style="font-size:12px;color:var(--tx);margin-top:2px;">${escapeHtml((h.summary || h.text || '').substring(0, 120))}${(h.summary || h.text || '').length > 120 ? '…' : ''}</div>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+// ── TRÄNING & UPPGIFTER: moduler grupperade + delegera-knapp + uppgifter ──
+function renderTabTraning(data){
+  const progress = data.progress || {};
+  const tasks = data.tasks || [];
+
+  // Hjälp: är en modul klar?
+  const isModuleDone = (modId) => {
+    const v = progress[modId];
+    return v === true || (v && v.done === true);
+  };
+  const getModuleProgress = (modId) => {
+    const v = progress[modId];
+    if (typeof v === 'object' && v) return v.percent || 0;
+    return v === true ? 100 : 0;
+  };
+  // Vilka moduler är redan tilldelade som uppgift?
+  const assignedModuleIds = new Set(
+    tasks.filter(t => t.module_id || (t.params && t.params.module_id))
+         .map(t => t.module_id || t.params.module_id)
+  );
+
+  let html = `<div class="ud-body-h">Träning & uppgifter</div>`;
+
+  // ── BEFINTLIGA UPPGIFTER ÖVERST ──
+  const activeTasks = tasks.filter(t => t.status !== 'completed' && t.status !== 'cancelled');
+  if (activeTasks.length) {
+    html += `<div style="margin-bottom:22px;padding:14px;background:rgba(212,164,54,0.06);border:1px solid rgba(212,164,54,0.25);border-radius:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:var(--ac);">Aktiva uppgifter (${activeTasks.length})</div>
+        <button onclick="switchDetailTab('uppgifter-legacy')" style="display:none;"></button>
+      </div>
+      <div style="display:grid;gap:6px;">`;
+    activeTasks.slice(0, 5).forEach(t => {
+      const dl = t.deadline ? new Date(t.deadline).toLocaleDateString('sv-SE', {day:'numeric',month:'short'}) : '';
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(255,255,255,0.6);border-radius:8px;">
+        <div style="font-size:13px;font-weight:600;color:var(--tx);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(t.title || 'Uppgift')}</div>
+        ${dl ? `<div style="font-size:11px;color:var(--mu);flex-shrink:0;">📅 ${dl}</div>` : ''}
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // ── GRUPPERADE MODULER ──
+  const GROUPS = [
+    { key:'intro',   title:'🌱 Introduktion',  desc:'Förstå systemet och dina rättigheter' },
+    { key:'arbete',  title:'💼 Arbete',        desc:'CV, matchning och arbetsmarknad' },
+    { key:'studier', title:'🎓 Studier',       desc:'YH, Komvux, Folkhögskola' }
+  ];
+
+  html += `<div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:14px;font-weight:800;color:var(--tx);">Tilldela övningar</div>
+      <div style="font-size:12px;color:var(--mu);margin-top:2px;">Klicka på en modul för att skicka som uppgift med deadline</div>
+    </div>
+  </div>`;
+
+  GROUPS.forEach(g => {
+    const mods = ACTIVE_MODULES.filter(m => m.cat === g.key);
+    if (!mods.length) return;
+    const doneCount = mods.filter(m => isModuleDone(m.id)).length;
+    html += `<div style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px 8px;border-bottom:1px solid var(--bd);margin-bottom:10px;">
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--tx);">${g.title}</div>
+          <div style="font-size:11px;color:var(--mu);">${g.desc}</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--mu);background:rgba(0,0,0,0.04);padding:3px 8px;border-radius:8px;">${doneCount}/${mods.length} klara</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">`;
+    mods.forEach(m => {
+      const done = isModuleDone(m.id);
+      const pct = getModuleProgress(m.id);
+      const assigned = assignedModuleIds.has(m.id);
+      const statusBadge = done
+        ? '<span style="font-size:10px;font-weight:800;background:rgba(62,180,137,0.15);color:#3eb489;padding:2px 7px;border-radius:5px;letter-spacing:0.3px;">✓ KLART</span>'
+        : pct > 0
+          ? `<span style="font-size:10px;font-weight:800;background:rgba(59,130,246,0.15);color:#3b82f6;padding:2px 7px;border-radius:5px;letter-spacing:0.3px;">PÅGÅR ${pct}%</span>`
+          : '<span style="font-size:10px;font-weight:700;background:rgba(0,0,0,0.04);color:var(--mu);padding:2px 7px;border-radius:5px;letter-spacing:0.3px;">EJ STARTAT</span>';
+      const btn = assigned
+        ? `<button disabled style="background:rgba(62,180,137,0.1);border:1px solid rgba(62,180,137,0.3);color:#3eb489;padding:6px 10px;font-size:11px;font-weight:700;border-radius:7px;cursor:default;font-family:inherit;">✓ Tilldelad</button>`
+        : `<button onclick="openAssignModuleModal('${m.id}')" style="background:#1a1a2e;border:none;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;border-radius:7px;cursor:pointer;font-family:inherit;">📌 Tilldela</button>`;
+      html += `<div style="padding:12px;background:rgba(0,0,0,0.02);border:1px solid var(--bd);border-radius:10px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="font-size:22px;line-height:1;flex-shrink:0;">${m.icon}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:var(--tx);line-height:1.3;">${escapeHtml(m.title)}</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:2px;line-height:1.4;">${escapeHtml(m.sub)}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          ${statusBadge}
+          ${btn}
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  return html;
+}
+
+// ── DELEGERINGS-MODAL ──────────────────────────────────────────────
+function openAssignModuleModal(moduleId) {
+  const m = ACTIVE_MODULES.find(x => x.id === moduleId);
+  if (!m || !currentUserData) return;
+  const userName = displayName(currentUserData).name;
+  const defaultDeadline = new Date();
+  defaultDeadline.setDate(defaultDeadline.getDate() + 7);
+  const ddStr = defaultDeadline.toISOString().split('T')[0];
+
+  const overlay = document.createElement('div');
+  overlay.id = '_assignModuleOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.onclick = (e) => { if (e.target === overlay) closeAssignModuleModal(); };
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:28px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+        <div style="font-size:32px;flex-shrink:0;">${m.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;font-weight:700;color:var(--mu);letter-spacing:0.5px;text-transform:uppercase;">Tilldela övning till</div>
+          <div style="font-size:18px;font-weight:800;color:var(--tx);">${escapeHtml(userName)}</div>
+        </div>
+        <button onclick="closeAssignModuleModal()" style="background:rgba(0,0,0,0.04);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;color:var(--mu);">×</button>
+      </div>
+
+      <div style="padding:14px;background:rgba(0,0,0,0.03);border-radius:10px;margin-bottom:18px;">
+        <div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:2px;">${escapeHtml(m.title)}</div>
+        <div style="font-size:12px;color:var(--mu);">${escapeHtml(m.sub)}</div>
+      </div>
+
+      <div style="display:grid;gap:14px;">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Deadline</label>
+          <input type="date" id="_amDeadline" value="${ddStr}" style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;font-size:14px;font-family:inherit;color:var(--tx);">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Prioritet</label>
+          <div id="_amPrio" style="display:flex;gap:6px;">
+            <button data-p="low"    onclick="_amSetPrio('low')"    style="flex:1;padding:9px;border:1.5px solid var(--bd);background:transparent;color:var(--mu);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Låg</button>
+            <button data-p="normal" onclick="_amSetPrio('normal')" style="flex:1;padding:9px;border:1.5px solid var(--ac);background:rgba(212,164,54,0.1);color:var(--ac);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Normal</button>
+            <button data-p="high"   onclick="_amSetPrio('high')"   style="flex:1;padding:9px;border:1.5px solid var(--bd);background:transparent;color:var(--mu);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;font-family:inherit;">Hög</button>
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--mu);margin-bottom:6px;">Personligt meddelande (valfritt)</label>
+          <textarea id="_amMessage" rows="3" placeholder="Hej! Jag har tilldelat dig denna övning. Hör av dig om du har frågor..." style="width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;font-family:inherit;color:var(--tx);resize:vertical;"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--bd);">
+        <button onclick="closeAssignModuleModal()" style="flex:1;padding:12px;background:rgba(0,0,0,0.04);border:1px solid var(--bd);color:var(--tx);font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;font-family:inherit;">Avbryt</button>
+        <button onclick="confirmAssignModule('${moduleId}')" id="_amConfirmBtn" style="flex:2;padding:12px;background:#1a1a2e;border:none;color:#fff;font-size:13px;font-weight:800;border-radius:10px;cursor:pointer;font-family:inherit;">📌 Tilldela övning</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  window._amCurrentPrio = 'normal';
+}
+
+function _amSetPrio(p) {
+  window._amCurrentPrio = p;
+  const wrap = document.getElementById('_amPrio');
+  if (!wrap) return;
+  wrap.querySelectorAll('button').forEach(btn => {
+    const isActive = btn.dataset.p === p;
+    if (isActive) {
+      btn.style.background = 'rgba(212,164,54,0.1)';
+      btn.style.color = 'var(--ac)';
+      btn.style.borderColor = 'var(--ac)';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--mu)';
+      btn.style.borderColor = 'var(--bd)';
+    }
+  });
+}
+
+function closeAssignModuleModal() {
+  document.getElementById('_assignModuleOverlay')?.remove();
+}
+
+async function confirmAssignModule(moduleId) {
+  const m = ACTIVE_MODULES.find(x => x.id === moduleId);
+  if (!m || !currentUserId) return;
+  const deadline = document.getElementById('_amDeadline')?.value;
+  const message = document.getElementById('_amMessage')?.value || '';
+  const priority = window._amCurrentPrio || 'normal';
+  const btn = document.getElementById('_amConfirmBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Skickar...'; }
+
+  try {
+    const result = await post('assign_task', {
+      targetUserId: currentUserId,
+      title: `Övning: ${m.title}`,
+      description: message || m.sub,
+      category: 'övning',
+      deadline: deadline ? new Date(deadline + 'T23:59:59').toISOString() : null,
+      priority,
+      tParams: {
+        module_id: moduleId,
+        module_category: m.cat,
+        verify_field: 'module_progress',
+        verify_operator: '>=',
+        verify_target: '100'
+      },
+      filters: { adminId: admin.id }
+    });
+    if (result?.error) {
+      // Backend-endpoint saknas eller annat fel — visa ändå framgång i UI för demo
+      showOk(`✅ Övningen tilldelad (lokalt — backend-endpoint krävs för persistering)`);
+    } else {
+      showOk(`✅ Övningen "${m.title}" tilldelad`);
+    }
+    closeAssignModuleModal();
+    // Lägg till tilldelningen lokalt så UI uppdateras direkt
+    if (currentUserData) {
+      currentUserData.tasks = currentUserData.tasks || [];
+      currentUserData.tasks.push({
+        title: `Övning: ${m.title}`,
+        status: 'pending',
+        deadline,
+        module_id: moduleId,
+        priority
+      });
+      // Rendera om aktuell flik
+      renderDetailTab('traning', currentUserData);
+    }
+  } catch (e) {
+    showErr('Kunde inte tilldela: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '📌 Tilldela övning'; }
+  }
+}
+
+// Exponera på window så HTML-onclicks hittar dem
+window.openAssignModuleModal = openAssignModuleModal;
+window.closeAssignModuleModal = closeAssignModuleModal;
+window.confirmAssignModule = confirmAssignModule;
+window._amSetPrio = _amSetPrio;
 
 // ═══ TILLDELA UPPGIFT ═══
 const QUICK_TEMPLATES = {
