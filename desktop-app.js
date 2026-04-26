@@ -7404,17 +7404,46 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       // 1. Döp om "Övningar"-tabben till "Träna"
       const ovTab = document.querySelector('.sb-tab[data-view="ovningar"]');
       if (ovTab) {
-        // Hitta text-noden eller span och uppdatera
-        const txtSpan = ovTab.querySelector('span:not(.sb-icon):not(.sb-badge)');
-        if (txtSpan) {
-          txtSpan.textContent = 'Träna';
-        } else {
-          // Fallback: ersätt sista textnod
-          for (const node of ovTab.childNodes) {
-            if (node.nodeType === 3 && node.textContent.trim()) {
-              node.textContent = node.textContent.replace(/Övningar/i, 'Träna');
-            }
+        // Logga DOM-strukturen så vi ser vad som faktiskt finns där
+        try {
+          console.log('[setupTrainNav] ovTab innerHTML:', ovTab.innerHTML);
+        } catch(_){}
+
+        // Rensa alla textnoder som innehåller "Övningar" (rekursivt)
+        const nodesToReplace = [];
+        const walker = document.createTreeWalker(ovTab, NodeFilter.SHOW_TEXT, null, false);
+        let n;
+        while (n = walker.nextNode()) {
+          if (n.textContent && /Övningar/i.test(n.textContent)) {
+            nodesToReplace.push(n);
           }
+        }
+        nodesToReplace.forEach(node => {
+          node.textContent = node.textContent.replace(/Övningar/gi, 'Träna');
+        });
+
+        // Uppdatera attribut som kan ha "Övningar"
+        ['title', 'aria-label', 'data-tooltip', 'data-label'].forEach(attr => {
+          const v = ovTab.getAttribute(attr);
+          if (v && /Övningar/i.test(v)) {
+            ovTab.setAttribute(attr, v.replace(/Övningar/gi, 'Träna'));
+          }
+        });
+
+        // KRITISK FIX: dolda CSS pseudo-elements (::before/::after) kan ha "Övningar"
+        // som innehåll. Vi kan inte komma åt dem via JS, men vi kan injicera CSS
+        // som tvingar dem att visa något annat.
+        if (!document.getElementById('_trainNavOverride')) {
+          const style = document.createElement('style');
+          style.id = '_trainNavOverride';
+          style.textContent = `
+            /* Tvinga om eventuella pseudo-element på Träna-tabben */
+            .sb-tab[data-view="ovningar"]::before,
+            .sb-tab[data-view="ovningar"]::after {
+              content: none !important;
+            }
+          `;
+          document.head.appendChild(style);
         }
       }
       // 2. Dölj "Intervjuträning"-tabben (vyn finns kvar men nås via Träna-hub)
@@ -7422,9 +7451,18 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       if (ivTab) {
         ivTab.style.display = 'none';
       }
-      // 3. Dölj "Mina uppgifter"-sektionen i Profil (uppgifterna ligger nu inom Träna)
-      // (renderProfilView hanterar detta — flagga sätts här)
+      // 3. Flagga: uppgifter visas bara inom Träna, inte i Profil
       window._tasksOnlyInTrain = true;
+
+      // 4. Kör om efter en kort stund i fall sidofältet renderas dynamiskt
+      // (t.ex. efter inloggning eller async data-laddning)
+      setTimeout(() => {
+        const t = document.querySelector('.sb-tab[data-view="ovningar"]');
+        if (t && /Övningar/i.test(t.textContent)) {
+          console.log('[setupTrainNav] Övningar finns kvar — kör igen');
+          setupTrainNav();
+        }
+      }, 500);
     } catch(e) {
       console.warn('setupTrainNav failed:', e);
     }
