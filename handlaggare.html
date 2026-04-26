@@ -4937,16 +4937,44 @@ function renderMaterialView(){
   const totalAssign = sorted.reduce((s,m)=>s+(m.assignmentCount||0), 0);
 
   // Header med stats + skapa-knapp
+  // Bestäm delnings-kontext (enhet eller förvaltning)
+  const enhetName = admin?.enhet_name || admin?.enheter?.name || 'din enhet';
+  const kommunName = admin?.kommun_name || admin?.kommuner?.name || '';
+  // Räkna antal handläggare på samma enhet/förvaltning (för att visa "delas med X kollegor")
+  const colleagueCount = (window._enhetColleagueCount || 0);
+
   const header = `
+    <!-- Tydlig delningsbanner — visar att materialet är delat -->
+    <div style="background:linear-gradient(135deg,rgba(62,180,137,0.08) 0%,rgba(62,180,137,0.04) 100%);border:1px solid rgba(62,180,137,0.25);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;border-radius:10px;background:rgba(62,180,137,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="20" height="20" fill="none" stroke="#3eb489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:800;color:#1f6f4d;line-height:1.3;">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:5px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Delat bibliotek — alla på ${escapeHtml(enhetName)} har tillgång
+        </div>
+        <div style="font-size:11px;color:#3eb489;margin-top:3px;line-height:1.4;font-weight:600;">
+          Material du skapar, AI-uppdaterar eller laddar upp blir tillgängligt för alla handläggare på ${escapeHtml(enhetName)}${kommunName ? ' (' + escapeHtml(kommunName) + ')' : ''}. Du behöver inte börja om — använd kollegornas arbete och låt dem använda ditt.
+        </div>
+      </div>
+    </div>
+
     <div class="mat-hero">
       <div class="mat-hero-l">
-        <div class="mat-hero-t">Bibliotek för enheten</div>
-        <div class="mat-hero-s">${admin?.enhet_name||admin?.enheter?.name||'Din enhet'} · delas mellan alla handläggare på kontoret</div>
+        <div class="mat-hero-t">📚 Bibliotek · ${escapeHtml(enhetName)}</div>
+        <div class="mat-hero-s">Skapa lektionspaket eller uppgifter — allt sparas i det delade biblioteket</div>
       </div>
-      <button class="btn btn-primary" onclick="openCreateTask()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>
-        Skapa uppgift
-      </button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="openLessonBuilder()" style="background:linear-gradient(135deg,#7c3aed 0%,#a78bfa 100%);">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Skapa lektionspaket
+        </button>
+        <button class="btn btn-primary" onclick="openCreateTask()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>
+          Skapa uppgift
+        </button>
+      </div>
     </div>
 
     <div class="mat-stats">
@@ -5041,6 +5069,10 @@ function renderMaterialView(){
 
         <div class="mat-card-foot">
           <div class="mat-card-by">
+            <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(62,180,137,0.1);color:#1f6f4d;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;margin-right:6px;" title="Synligt för alla på enheten">
+              <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Delat
+            </span>
             <span style="color:var(--mu)">Skapad av</span> <b>${escapeHtml(m.createdByName)}</b>
             ${m.assignmentCount>0 ? ` · <span style="color:var(--gn)">${m.assignmentCount} tilldelad${m.assignmentCount===1?'':'a'}</span>` : ' · <span style="color:var(--mu)">Inte tilldelad än</span>'}
           </div>
