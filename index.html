@@ -7478,6 +7478,18 @@ ${styleTexts}
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
 
+      // ── AUTO-FYLL E-POST I CV ──
+      // Om användaren saknar e-post i sitt CV (t.ex. återkommande inloggning
+      // utan onboarding), fyll i den automatiskt från auth. Användaren kan
+      // ändra den manuellt i CV-formuläret om hen vill ha en annan adress.
+      if (email && !cvData.email) {
+        cvData.email = email;
+        // Synka DOM-fält
+        const _de = document.getElementById('email');     if (_de) _de.value = email;
+        const _me = document.getElementById('mob-email'); if (_me) _me.value = email;
+        try { safeStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
+      }
+
       document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
 
       if (isNew) {
@@ -7636,6 +7648,13 @@ ${styleTexts}
       const emailEl = document.getElementById('authUserEmail');
       if (emailEl) emailEl.textContent = email;
       document.getElementById('authUserBadge').style.display = 'flex';
+      // Auto-fyll e-post i CV om användaren saknar en (återkommande inloggning)
+      if (email && !cvData.email) {
+        cvData.email = email;
+        const _de = document.getElementById('email');     if (_de) _de.value = email;
+        const _me = document.getElementById('mob-email'); if (_me) _me.value = email;
+        try { safeStorage.setItem('cvData', JSON.stringify(cvData)); } catch(e) {}
+      }
       setShowPhoto(cvData.showPhoto === true, true); // tyst vid login — splash fyller rollen
       showLoginSplash(email);                        // visa splash på Hej-sidan
       if (userId && accessToken) {
