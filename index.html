@@ -12187,15 +12187,15 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
             </div>
           </div>
 
-          <!-- Övningar -->
+          <!-- Träna -->
           <div onclick="mobSwitchTab(&#39;ovningar&#39;)" style="background:rgba(240,192,64,0.07);border:1.5px solid rgba(240,192,64,0.2);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;">
             <div style="width:48px;height:48px;border-radius:14px;background:rgba(240,192,64,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🏋️</div>
             <div style="flex:1;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                <div style="font-size:15px;font-weight:800;color:#f0c040;">Övningar</div>
+                <div style="font-size:15px;font-weight:800;color:#f0c040;">Träna</div>
                 <span style="font-size:16px;color:rgba(240,192,64,0.3);">›</span>
               </div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Träna jobbsökning, CV-skrivning och presentationsteknik med interaktiva lektioner och quiz.</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">Övningar i jobbsökning, CV-skrivning och presentationsteknik — plus intervjuträning med AI-feedback.</div>
             </div>
           </div>
 
@@ -15466,7 +15466,16 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
       try{ return JSON.parse(localStorage.getItem('pathfinder_job_diary')||'[]').filter(e=>Date.now()-e.savedAt<TTL); }
       catch(e){ return []; }
     }
-    function getEdu()     { try{ return JSON.parse(_scopedGet('pf_saved_edu')||'[]'); } catch(e){ return []; } }
+    function getEdu() {
+      // Läs från båda nycklarna (cvmatchen_edu_saved och pf_saved_edu)
+      // och returnera den med flest poster — så data inte försvinner om
+      // synkningen mellan nycklarna är ofullständig.
+      try {
+        const a = JSON.parse(_scopedGet('cvmatchen_edu_saved') || '[]');
+        const b = JSON.parse(_scopedGet('pf_saved_edu') || '[]');
+        return a.length >= b.length ? a : b;
+      } catch(e) { return [];}
+    }
 
     function rd(ts) {
       const d = Math.floor((Date.now()-ts)/86400000);
@@ -15629,7 +15638,12 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
       // Rad 2: Övningar (% klarat) + Sparade utbildningar (🎓 animerad + badge)
       var ovnPct = (typeof window.getOvningsPct === 'function') ? window.getOvningsPct() : 0;
       var eduSaved = [];
-      try { eduSaved = JSON.parse(_scopedGet('cvmatchen_edu_saved') || '[]'); } catch(e) {}
+      try {
+        // Läs från båda — använd den med flest poster
+        var _a = JSON.parse(_scopedGet('cvmatchen_edu_saved') || '[]');
+        var _b = JSON.parse(_scopedGet('pf_saved_edu') || '[]');
+        eduSaved = _a.length >= _b.length ? _a : _b;
+      } catch(e) {}
       var eduN = eduSaved.length;
 
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
@@ -15761,7 +15775,7 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
               '<div style="font-size:11px;color:#f0c040;">' + u.typ + ' · ' + u.kommun + '</div>' +
               (u.info ? '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + u.info + '</div>' : '') +
               '</div>' +
-              '<button onclick="(function(){var l=JSON.parse(_scopedGet(\'pf_saved_edu\')||\'[]\');l.splice(' + i + ',1);_scopedSet(\'pf_saved_edu\',JSON.stringify(l));window._pt(\'edu\');})() " ' +
+              '<button onclick="(function(){var l=JSON.parse(_scopedGet(\'pf_saved_edu\')||_scopedGet(\'cvmatchen_edu_saved\')||\'[]\');l.splice(' + i + ',1);var s=JSON.stringify(l);_scopedSet(\'pf_saved_edu\',s);_scopedSet(\'cvmatchen_edu_saved\',s);window._pt(\'edu\');})() " ' +
               'style="background:none;border:none;color:rgba(255,255,255,0.2);font-size:16px;cursor:pointer;padding:0;">✕</button>' +
               '</div>';
           });
@@ -16191,11 +16205,19 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 
   // Spara-funktioner
   function getSaved() {
-    try { return JSON.parse(localStorage.getItem(EDU_SAVED_KEY) || '[]'); } catch(e) { return []; }
+    // SÄKERHETSFIX: använd user-scoped storage så data inte läcker mellan användare
+    // Läs från båda nycklarna (cvmatchen_edu_saved och pf_saved_edu) och returnera
+    // den som har flest poster — så datan inte försvinner om bara den ena synkats.
+    try {
+      const a = JSON.parse(_scopedGet(EDU_SAVED_KEY) || '[]');
+      const b = JSON.parse(_scopedGet('pf_saved_edu') || '[]');
+      return a.length >= b.length ? a : b;
+    } catch(e) { return []; }
   }
   var _lastSavedEduCount = -1;
   function setSaved(arr) {
-    try { localStorage.setItem(EDU_SAVED_KEY, JSON.stringify(arr)); } catch(e) {}
+    // SÄKERHETSFIX: skriv till BÅDA user-scoped nycklarna så badge + lista är synkade
+    try { _scopedSet(EDU_SAVED_KEY, JSON.stringify(arr)); } catch(e) {}
     try { _scopedSet('pf_saved_edu', JSON.stringify(arr)); } catch(e) {}
     if (typeof _sbSync === 'function') _sbSync('saved_edu', arr);
     // Logga bara när antalet ändras, inte vid init
