@@ -1764,31 +1764,17 @@ async function openDetail(userId){
   // Hämta data
   let data;
   // Om detta är en force-show-stub (admin som visas som test-deltagare),
-  // försök hämta riktig data via email istället för userId
+  // använd stub-datan direkt — backend stödjer ännu inte targetEmail-lookup
   const stubUser = allUsers.find(u => (u.user_id||u.id) === userId);
   const isStub = stubUser?.isForceShowStub;
-  const stubEmail = stubUser?._forceEmail;
 
-  try{
-    if (isStub && stubEmail) {
-      console.log('[CVmatchen] Hämtar riktig data för admin-test-konto:', stubEmail);
-      // Försök hämta via email — backend måste stödja detta
-      data = await post('admin_get_user',{targetEmail:stubEmail,adminId:admin.id});
-      // Om det inte gick, fall back till stub-datan så åtminstone UI fungerar
-      if (!data || data.error) {
-        console.warn('[CVmatchen] Backend stödjer inte targetEmail — visar stub-data');
-        data = stubUser;
-      }
-    } else {
+  if (isStub) {
+    console.log('[CVmatchen] Visar stub-data för admin-test-konto:', stubUser._forceEmail);
+    data = { ...stubUser, _stubFallback: true };
+  } else {
+    try {
       data = await post('admin_get_user',{targetUserId:userId,adminId:admin.id});
-    }
-  }
-  catch(e){
-    if (isStub) {
-      // För stub-användare: visa stub-datan med en hjälpsam förklaring
-      console.warn('[CVmatchen] Kunde inte hämta admin-test-konto:', e.message);
-      data = { ...stubUser, _stubFallback: true };
-    } else {
+    } catch(e) {
       document.getElementById('udBody').innerHTML=`<div class="ud-body-empty" style="color:var(--rd)">Kunde inte hämta: ${e.message}</div>`;
       return;
     }
