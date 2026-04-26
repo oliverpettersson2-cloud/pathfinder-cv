@@ -1096,6 +1096,96 @@ function getHandlaggareName(u){
       || (u.handlaggare?.email?.split('@')[0]) || '';
 }
 
+// ═══════════════════════════════════════════════════════════════
+// FIKTIV DEMO-DATA (handläggare + deltagare)
+// ═══════════════════════════════════════════════════════════════
+// Stuktur:
+// - cvmatchen@outlook.com är "Oliver KA" (riktig handläggare på Kompetensarena)
+//   Riktiga deltagare som registrerar sig kopplas till Oliver via backend.
+// - Vlademar KA + Marita Ungdom är fiktiva handläggare med fiktiva deltagare.
+// - Demo-data injiceras OVANPÅ backend-data så riktiga användare visas också.
+// För att stänga av demo-data: sätt DEMO_MODE = false.
+// ═══════════════════════════════════════════════════════════════
+const DEMO_MODE = true;
+
+const DEMO_OLIVER_EMAIL = 'cvmatchen@outlook.com';
+
+const DEMO_ENHETER = {
+  ka:     { id: 'demo-enhet-ka',     name: 'Kompetensarena' },
+  ungdom: { id: 'demo-enhet-ungdom', name: 'Ungdom' }
+};
+
+const DEMO_HANDLAGGARE = [
+  { id: 'demo-h-oliver',   name: 'Oliver KA',     email: DEMO_OLIVER_EMAIL,         role: 'handlaggare', enhet_id: DEMO_ENHETER.ka.id,     enhet_name: DEMO_ENHETER.ka.name,     kommun_name: 'Helsingborg',  isReal: true  },
+  { id: 'demo-h-vlademar', name: 'Vlademar KA',   email: 'vlademar.ka@demo.local',  role: 'handlaggare', enhet_id: DEMO_ENHETER.ka.id,     enhet_name: DEMO_ENHETER.ka.name,     kommun_name: 'Helsingborg',  isReal: false },
+  { id: 'demo-h-marita',   name: 'Marita Ungdom', email: 'marita.ungdom@demo.local',role: 'handlaggare', enhet_id: DEMO_ENHETER.ungdom.id, enhet_name: DEMO_ENHETER.ungdom.name, kommun_name: 'Helsingborg',  isReal: false }
+];
+
+// Fiktiva deltagare — 5 per fiktiv handläggare (Vlademar + Marita)
+// Olivers deltagare är riktiga och kommer från backend
+const DEMO_DELTAGARE = [
+  // ─── Vlademar KA — Kompetensarena ───
+  { id:'demo-u-v1', user_id:'demo-u-v1', email:'erik.lindqvist@demo.local', cv:{ data:{ name:'Erik Lindqvist', title:'Lagerarbetare', email:'erik.lindqvist@demo.local', phone:'0701234567' }, updated_at:'2026-04-22T10:30:00Z' }, status:'active', handlaggare_id:'demo-h-vlademar', handlaggare_name:'Vlademar KA', enhet_id:DEMO_ENHETER.ka.id, enhet_name:DEMO_ENHETER.ka.name, progress:{ m1:true, m2:true, a0:true }, tasks:{ completed:2, total:5 }, isDemo:true },
+  { id:'demo-u-v2', user_id:'demo-u-v2', email:'fatima.al-rashid@demo.local', cv:{ data:{ name:'Fatima Al-Rashid', title:'Undersköterska', email:'fatima.al-rashid@demo.local', phone:'0732345678' }, updated_at:'2026-04-23T09:15:00Z' }, status:'active', handlaggare_id:'demo-h-vlademar', handlaggare_name:'Vlademar KA', enhet_id:DEMO_ENHETER.ka.id, enhet_name:DEMO_ENHETER.ka.name, progress:{ m1:true, a_cv:true, a_match:true }, tasks:{ completed:3, total:5 }, isDemo:true },
+  { id:'demo-u-v3', user_id:'demo-u-v3', email:'mikael.berg@demo.local', cv:{ data:{ name:'Mikael Berg', title:'Truckförare', email:'mikael.berg@demo.local', phone:'0709876543' }, updated_at:'2026-04-20T14:50:00Z' }, status:'active', handlaggare_id:'demo-h-vlademar', handlaggare_name:'Vlademar KA', enhet_id:DEMO_ENHETER.ka.id, enhet_name:DEMO_ENHETER.ka.name, progress:{ m1:true }, tasks:{ completed:1, total:4 }, isDemo:true },
+  { id:'demo-u-v4', user_id:'demo-u-v4', email:'anna.sjoberg@demo.local', cv:{ data:{ name:'Anna Sjöberg', title:'Kundtjänstmedarbetare', email:'anna.sjoberg@demo.local', phone:'0768765432' }, updated_at:'2026-04-25T11:20:00Z' }, status:'active', handlaggare_id:'demo-h-vlademar', handlaggare_name:'Vlademar KA', enhet_id:DEMO_ENHETER.ka.id, enhet_name:DEMO_ENHETER.ka.name, progress:{ m1:true, m2:true, m3:true, a0:true, a_cv:true }, tasks:{ completed:5, total:5 }, isDemo:true },
+  { id:'demo-u-v5', user_id:'demo-u-v5', email:'jonas.karlsson@demo.local', cv:{ data:{ name:'Jonas Karlsson', title:'Servitör/Bartender', email:'jonas.karlsson@demo.local', phone:'0723456789' }, updated_at:'2026-04-19T16:40:00Z' }, status:'new', handlaggare_id:'demo-h-vlademar', handlaggare_name:'Vlademar KA', enhet_id:DEMO_ENHETER.ka.id, enhet_name:DEMO_ENHETER.ka.name, progress:{}, tasks:{ completed:0, total:3 }, isDemo:true },
+
+  // ─── Marita Ungdom — Ungdom ───
+  { id:'demo-u-m1', user_id:'demo-u-m1', email:'sara.nilsson@demo.local', cv:{ data:{ name:'Sara Nilsson', title:'Studieuppehåll, sökt YH', email:'sara.nilsson@demo.local', phone:'0701112233' }, updated_at:'2026-04-24T13:25:00Z' }, status:'active', handlaggare_id:'demo-h-marita', handlaggare_name:'Marita Ungdom', enhet_id:DEMO_ENHETER.ungdom.id, enhet_name:DEMO_ENHETER.ungdom.name, progress:{ s0:true, s1:true }, tasks:{ completed:2, total:4 }, isDemo:true },
+  { id:'demo-u-m2', user_id:'demo-u-m2', email:'liam.johansson@demo.local', cv:{ data:{ name:'Liam Johansson', title:'Sökt jobb efter gymnasiet', email:'liam.johansson@demo.local', phone:'0723344556' }, updated_at:'2026-04-22T08:10:00Z' }, status:'active', handlaggare_id:'demo-h-marita', handlaggare_name:'Marita Ungdom', enhet_id:DEMO_ENHETER.ungdom.id, enhet_name:DEMO_ENHETER.ungdom.name, progress:{ m1:true, a_cv:true }, tasks:{ completed:1, total:3 }, isDemo:true },
+  { id:'demo-u-m3', user_id:'demo-u-m3', email:'amanda.persson@demo.local', cv:{ data:{ name:'Amanda Persson', title:'Praktik på vårdcentral', email:'amanda.persson@demo.local', phone:'0764455667' }, updated_at:'2026-04-25T10:00:00Z' }, status:'active', handlaggare_id:'demo-h-marita', handlaggare_name:'Marita Ungdom', enhet_id:DEMO_ENHETER.ungdom.id, enhet_name:DEMO_ENHETER.ungdom.name, progress:{ m1:true, m2:true, s0:true, s2:true, s3:true }, tasks:{ completed:4, total:5 }, isDemo:true },
+  { id:'demo-u-m4', user_id:'demo-u-m4', email:'omar.hassan@demo.local', cv:{ data:{ name:'Omar Hassan', title:'Vill bli elektriker', email:'omar.hassan@demo.local', phone:'0735566778' }, updated_at:'2026-04-21T15:30:00Z' }, status:'new', handlaggare_id:'demo-h-marita', handlaggare_name:'Marita Ungdom', enhet_id:DEMO_ENHETER.ungdom.id, enhet_name:DEMO_ENHETER.ungdom.name, progress:{}, tasks:{ completed:0, total:3 }, isDemo:true },
+  { id:'demo-u-m5', user_id:'demo-u-m5', email:'isabella.lund@demo.local', cv:{ data:{ name:'Isabella Lund', title:'Söker första jobbet', email:'isabella.lund@demo.local', phone:'0746677889' }, updated_at:'2026-04-26T09:45:00Z' }, status:'active', handlaggare_id:'demo-h-marita', handlaggare_name:'Marita Ungdom', enhet_id:DEMO_ENHETER.ungdom.id, enhet_name:DEMO_ENHETER.ungdom.name, progress:{ m1:true, a0:true }, tasks:{ completed:1, total:4 }, isDemo:true }
+];
+
+// Helper: är inloggad admin "Oliver KA"? (riktig handläggare på Kompetensarena)
+function isOliverKA() {
+  if (!admin) return false;
+  return (admin.email || '').toLowerCase() === DEMO_OLIVER_EMAIL.toLowerCase();
+}
+
+// Helper: koppla riktiga deltagare som inte har handläggare till Oliver KA
+function attachToOliverIfOrphan(u) {
+  if (!DEMO_MODE) return u;
+  if (getHandlaggareId(u)) return u; // har redan handläggare
+  // Om Oliver KA är inloggad — använd hans riktiga admin.id så "Mina deltagare" matchar
+  const oliverId = isOliverKA() ? admin.id : 'demo-h-oliver';
+  return {
+    ...u,
+    handlaggare_id: oliverId,
+    handlaggare_name: 'Oliver KA',
+    enhet_id: DEMO_ENHETER.ka.id,
+    enhet_name: DEMO_ENHETER.ka.name
+  };
+}
+
+// Helper: lägg till fiktiva deltagare ovanpå backend-data
+function injectDemoUsers(realUsers) {
+  if (!DEMO_MODE) return realUsers;
+  // Koppla föräldralösa riktiga deltagare till Oliver
+  const tagged = (realUsers || []).map(attachToOliverIfOrphan);
+  // Lägg till Vlademars + Maritas fiktiva deltagare
+  return [...tagged, ...DEMO_DELTAGARE];
+}
+
+// Helper: lägg till fiktiva handläggare ovanpå backend-data
+function injectDemoAdmins(realAdmins) {
+  if (!DEMO_MODE) return realAdmins;
+  const real = realAdmins || [];
+  // Filtrera ut fiktiva som krockar med riktiga (matcha på e-post)
+  const realEmails = new Set(real.map(a => (a.email||'').toLowerCase()));
+  const fakes = DEMO_HANDLAGGARE.filter(d => !realEmails.has((d.email||'').toLowerCase()));
+  // Om Oliver KA är inloggad men inte i real-listan → använd hans admin.id som id
+  const adapted = fakes.map(f => {
+    if (isOliverKA() && (f.email||'').toLowerCase() === DEMO_OLIVER_EMAIL.toLowerCase()) {
+      return { ...f, id: admin.id, isReal: true };
+    }
+    return f;
+  });
+  return [...real, ...adapted];
+}
+
 // Kategori-ikoner — SVG istället för emojis
 const CAT_SVG = {
   cv:       '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
@@ -1215,7 +1305,9 @@ async function loadUsers(){
   try{data=await post('admin_list_users',{filters,adminId:admin.id});}
   catch(e){document.getElementById('tBody').innerHTML=`<tr><td colspan="9" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;showErr('Kunde inte hämta användare: '+e.message);return;}
   if(data.error){document.getElementById('tBody').innerHTML=`<tr><td colspan="9" class="loading" style="color:var(--rd)">Fel från API: ${data.error}</td></tr>`;showErr('API-fel: '+data.error);return;}
-  allUsers=data.data||data.users||(Array.isArray(data)?data:[]);
+  let backendUsers = data.data||data.users||(Array.isArray(data)?data:[]);
+  // Injicera demo-handläggare + deltagare för demonstration
+  allUsers = injectDemoUsers(backendUsers);
   if(allUsers.length===0) document.getElementById('tBody').innerHTML='<tr><td colspan="9" class="loading">Inga deltagare hittades</td></tr>';
 
   // Fyll enhet-filtret — inkludera "Utan enhet" för användare som loggat in själva
@@ -3766,25 +3858,18 @@ async function renderAdminsView(){
   try {
     const data = await post('admin_list_admins', { adminId: admin.id });
     if (data.error) {
-      wrap.innerHTML = `<div class="loading" style="padding:40px;text-align:center;color:var(--rd);">
-        <div style="font-size:14px;font-weight:600;margin-bottom:8px;">Backend-endpoint saknas</div>
-        <div style="font-size:12px;opacity:0.7;line-height:1.5;">
-          API-action <code>admin_list_admins</code> är inte implementerad.<br>
-          Lägg till den i <code>/api/supabase</code> så den listar alla admins/handläggare.
-        </div>
-      </div>`;
+      // Backend-endpoint saknas — fall tillbaka på enbart demo-data
+      adminsCache = injectDemoAdmins([]);
+      renderAdminsList(wrap, adminsCache);
       return;
     }
-    adminsCache = data.data || data.admins || (Array.isArray(data) ? data : []);
+    const realAdmins = data.data || data.admins || (Array.isArray(data) ? data : []);
+    adminsCache = injectDemoAdmins(realAdmins);
     renderAdminsList(wrap, adminsCache);
   } catch (e) {
-    wrap.innerHTML = `<div class="loading" style="padding:40px;text-align:center;color:var(--rd);">
-      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">Kunde inte hämta admins</div>
-      <div style="font-size:12px;opacity:0.7;line-height:1.5;">
-        ${e.message}<br><br>
-        Backend-action <code>admin_list_admins</code> behöver implementeras i <code>/api/supabase</code>.
-      </div>
-    </div>`;
+    // Inget API alls — visa enbart demo-data
+    adminsCache = injectDemoAdmins([]);
+    renderAdminsList(wrap, adminsCache);
   }
 }
 
@@ -3834,13 +3919,14 @@ function renderAdminsList(wrap, admins) {
       const email = a.email || '—';
       const enhet = a.enheter?.name || a.enhet_name || a.enhet || '';
       const kommun = a.kommuner?.name || a.kommun_name || a.kommun || '';
-      const isMe = a.id === admin.id;
+      const isMe = a.id === admin.id || (a.email && admin.email && a.email.toLowerCase() === admin.email.toLowerCase());
       const placering = [enhet, kommun].filter(Boolean).join(' · ') || 'Ingen enhet/kommun';
       html += '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(0,0,0,0.02);border:1px solid var(--bd);border-radius:10px;">';
       html += '<div style="width:36px;height:36px;border-radius:50%;background:' + meta.color + '22;border:2px solid ' + meta.color + ';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:' + meta.color + ';flex-shrink:0;">' + (name.charAt(0).toUpperCase() || '?') + '</div>';
       html += '<div style="flex:1;min-width:0;">';
       html += '<div style="font-size:13px;font-weight:700;color:var(--tx);display:flex;align-items:center;gap:6px;">' + name;
       if (isMe) html += '<span style="font-size:10px;font-weight:700;background:rgba(62,180,137,0.15);color:#3eb489;padding:2px 6px;border-radius:6px;">DU</span>';
+      if (a.isReal === false) html += '<span style="font-size:10px;font-weight:700;background:rgba(124,58,237,0.15);color:#a78bfa;padding:2px 6px;border-radius:6px;">DEMO</span>';
       html += '</div>';
       html += '<div style="font-size:11px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + email + '</div>';
       html += '<div style="font-size:11px;color:var(--mu);margin-top:2px;">' + placering + '</div>';
