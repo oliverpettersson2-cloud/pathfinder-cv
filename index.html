@@ -5034,21 +5034,13 @@
         clearTimeout(_saveDebounce);
         _saveDebounce = setTimeout(saveCVToSupabase, 3000);
       }
-      // ── AUTO-SPARA TILLBAKA TILL MATCHAT CV ──
-      // Om användaren redigerar ett matchat CV, skriv tillbaka cvData → matched_cvs[id].data
-      // så ändringar persisterar (annars tappar man redigeringen när vyn lämnas)
-      if (window._editingMatchedId && typeof mobGetMatchedCVs === 'function' && typeof mobPutMatchedCVs === 'function') {
-        try {
-          const list = mobGetMatchedCVs();
-          const idx = list.findIndex(c => c.id === window._editingMatchedId);
-          if (idx >= 0) {
-            list[idx].data = JSON.parse(JSON.stringify(cvData));
-            list[idx].updatedAt = Date.now();
-            mobPutMatchedCVs(list);
-            // Visa "✓ Sparat"-indikator
-            if (typeof showSavedIndicator === 'function') showSavedIndicator();
-          }
-        } catch(e) { /* tyst fail */ }
+      // ── MARKERA OSPARAT när matchat CV redigeras ──
+      // Sparar INTE direkt — användaren måste trycka "Spara ändringar"-knappen.
+      // Vi sätter bara en flagga så vi kan visa varning vid lämning.
+      if (window._editingMatchedId) {
+        window._matchedCvDirty = true;
+        // Visa "Spara"-knappen + osparat-indikator
+        if (typeof updateMatchedSaveBar === 'function') updateMatchedSaveBar();
       }
     }
 
@@ -6816,32 +6808,103 @@ ${styleTexts}
       }, 3000);
     }
 
-    // Liten "✓ Sparat"-indikator som visas i 1.5s när matchat CV auto-sparas
-    // Återanvänder samma element så vi inte spammar DOM:en vid flera ändringar i rad
-    let _savedIndDebounce = null;
-    function showSavedIndicator() {
-      let el = document.getElementById('_savedInd');
-      if (!el) {
-        el = document.createElement('div');
-        el.id = '_savedInd';
-        el.style.cssText = 'position:fixed;top:14px;right:14px;background:rgba(62,180,137,0.95);color:#fff;font-size:12px;font-weight:800;padding:6px 12px;border-radius:20px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-family:inherit;letter-spacing:0.2px;opacity:0;transform:translateY(-8px);transition:opacity 0.18s, transform 0.18s;pointer-events:none;';
-        el.textContent = '✓ Sparat';
-        document.body.appendChild(el);
-      }
-      // Triggra reflow + animera in
-      requestAnimationFrame(() => {
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-      });
-      clearTimeout(_savedIndDebounce);
-      _savedIndDebounce = setTimeout(() => {
-        if (el) {
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(-8px)';
-        }
-      }, 1400);
+    // ════════════════════════════════════════════════════════════════
+    // SPARA-BAR FÖR MATCHAT CV
+    // Visas sticky längst ner i förhandsgranskningen när användaren
+    // redigerar ett matchat CV. Två tillstånd:
+    //   - Inga ändringar  → "✓ Inga osparade ändringar"
+    //   - Osparade ändringar  → röd badge + "💾 Spara ändringar"-knapp
+    // När man trycker Spara → cvData skrivs tillbaka till matched_cvs[id].data
+    // ════════════════════════════════════════════════════════════════
+    function ensureMatchedSaveBar() {
+      let bar = document.getElementById('_matchedSaveBar');
+      if (bar) return bar;
+      bar = document.createElement('div');
+      bar.id = '_matchedSaveBar';
+      bar.style.cssText = 'position:fixed;left:0;right:0;bottom:62px;z-index:9998;display:none;justify-content:center;padding:10px 14px;pointer-events:none;';
+      bar.innerHTML =
+        '<div style="background:#1a1a2e;border:1.5px solid rgba(240,192,64,0.4);border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;max-width:480px;width:100%;box-shadow:0 -4px 20px rgba(0,0,0,0.4);pointer-events:auto;">' +
+          '<div id="_matchedSaveStatus" style="flex:1;min-width:0;font-size:12px;font-weight:700;color:#f0c040;">⚠️ Osparade ändringar</div>' +
+          '<button id="_matchedSaveDiscard" style="padding:8px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:12px;font-weight:700;border-radius:9px;cursor:pointer;font-family:inherit;flex-shrink:0;">Kasta</button>' +
+          '<button id="_matchedSaveBtn" style="padding:8px 14px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;color:#fff;font-size:12px;font-weight:800;border-radius:9px;cursor:pointer;font-family:inherit;flex-shrink:0;">💾 Spara ändringar</button>' +
+        '</div>';
+      document.body.appendChild(bar);
+      // Bind knappar
+      bar.querySelector('#_matchedSaveBtn').onclick = saveMatchedCvNow;
+      bar.querySelector('#_matchedSaveDiscard').onclick = discardMatchedCvChanges;
+      return bar;
     }
-    window.showSavedIndicator = showSavedIndicator;
+
+    function updateMatchedSaveBar() {
+      const bar = ensureMatchedSaveBar();
+      if (!window._editingMatchedId) {
+        bar.style.display = 'none';
+        return;
+      }
+      bar.style.display = 'flex';
+      const statusEl = document.getElementById('_matchedSaveStatus');
+      const saveBtn = document.getElementById('_matchedSaveBtn');
+      if (window._matchedCvDirty) {
+        if (statusEl) statusEl.innerHTML = '⚠️ Osparade ändringar';
+        if (statusEl) statusEl.style.color = '#f0c040';
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.style.opacity = '1';
+          saveBtn.style.cursor = 'pointer';
+        }
+      } else {
+        if (statusEl) statusEl.innerHTML = '✓ Sparat';
+        if (statusEl) statusEl.style.color = '#3eb489';
+        if (saveBtn) {
+          saveBtn.disabled = true;
+          saveBtn.style.opacity = '0.4';
+          saveBtn.style.cursor = 'default';
+        }
+      }
+    }
+    window.updateMatchedSaveBar = updateMatchedSaveBar;
+
+    // Spara cvData → matched_cvs[id].data
+    function saveMatchedCvNow() {
+      if (!window._editingMatchedId) return;
+      try {
+        const list = mobGetMatchedCVs();
+        const idx = list.findIndex(c => c.id === window._editingMatchedId);
+        if (idx >= 0) {
+          list[idx].data = JSON.parse(JSON.stringify(cvData));
+          list[idx].updatedAt = Date.now();
+          mobPutMatchedCVs(list);
+          window._matchedCvDirty = false;
+          updateMatchedSaveBar();
+          showToast('✅ Sparat i Mina matchningar', 'success');
+        }
+      } catch(e) {
+        showToast('⚠️ Kunde inte spara — försök igen', 'error');
+      }
+    }
+    window.saveMatchedCvNow = saveMatchedCvNow;
+
+    // Återställ cvData från snapshotets ursprungliga data (kasta ändringar)
+    function discardMatchedCvChanges() {
+      if (!window._editingMatchedId) return;
+      if (!confirm('Vill du kasta dina ändringar?\n\nDe osparade ändringarna går förlorade.')) return;
+      const list = mobGetMatchedCVs();
+      const entry = list.find(c => c.id === window._editingMatchedId);
+      if (!entry) return;
+      Object.assign(cvData, JSON.parse(JSON.stringify(entry.data)));
+      // Synka DOM-fält
+      const _sd = document.getElementById('summary'); if (_sd) _sd.value = cvData.summary || '';
+      const _sn = document.getElementById('name');    if (_sn) _sn.value = cvData.name    || '';
+      const _st = document.getElementById('title');   if (_st) _st.value = cvData.title   || '';
+      const _se = document.getElementById('email');   if (_se) _se.value = cvData.email   || '';
+      const _sp = document.getElementById('phone');   if (_sp) _sp.value = cvData.phone   || '';
+      if (typeof updatePreview === 'function') updatePreview();
+      if (typeof mobLoadFields === 'function') mobLoadFields();
+      window._matchedCvDirty = false;
+      updateMatchedSaveBar();
+      showToast('↩️ Ändringar kastade', 'success');
+    }
+    window.discardMatchedCvChanges = discardMatchedCvChanges;
 
     // ===== INSTÄLLNINGAR: API-NYCKEL =====
     function toggleSettingsPanel() {
@@ -12881,8 +12944,25 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
         try { refreshHubMeta(); } catch(e) {}
       }
     } else {
-      // Användaren lämnar Profil — sluta auto-spara till matchat CV
-      if (window._editingMatchedId) window._editingMatchedId = null;
+      // Användaren lämnar Profil — varna om osparade ändringar i matchat CV
+      if (window._editingMatchedId && window._matchedCvDirty) {
+        const ok = confirm('Du har osparade ändringar i matchat CV.\n\nKlicka OK för att kasta ändringarna.\nKlicka Avbryt för att stanna kvar och spara.');
+        if (!ok) {
+          // Användaren ångrade sig — gå tillbaka till Profil
+          if (typeof mobSwitchTab === 'function') {
+            setTimeout(() => mobSwitchTab('export'), 50);
+          }
+          return;
+        }
+        // Användaren valde att kasta ändringarna
+        window._matchedCvDirty = false;
+      }
+      // Rensa edit-state
+      window._editingMatchedId = null;
+      window._matchedCvDirty = false;
+      // Dölj spara-baren
+      const bar = document.getElementById('_matchedSaveBar');
+      if (bar) bar.style.display = 'none';
     }
     if (tab === 'matcha') { matchaPopulateCvSelect(); }
   }
@@ -13294,9 +13374,15 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
     const _sd = document.getElementById('summary'); if (_sd) _sd.value = cvData.summary || '';
     const _sn = document.getElementById('name');    if (_sn) _sn.value = cvData.name    || '';
     const _st = document.getElementById('title');   if (_st) _st.value = cvData.title   || '';
-    // FLAGGA: vi redigerar nu DETTA matchade CV — saveData skriver tillbaka automatiskt
-    window._editingMatchedId = id;
+    // FLAGGA: vi redigerar nu DETTA matchade CV
+    // Sätt INTE _editingMatchedId förrän EFTER saveData/mobLoadFields körts —
+    // annars flaggar de initiala anropen "dirty" felaktigt
+    window._editingMatchedId = null;
+    window._matchedCvDirty = false;
     saveData(); updatePreview(); mobLoadFields();
+    // NU sätter vi flaggan så efterföljande edits markeras som dirty
+    window._editingMatchedId = id;
+    window._matchedCvDirty = false;
     // Spara annonstext globalt för PDF-export
     window._activeMatchedAdText = entry.adText || '';
     window._activeMatchedAdTitle = entry.title || '';
@@ -13306,7 +13392,9 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
     const cb = document.getElementById('mobAdPdfToggle');
     if (cb) cb.checked = true;
     mobEnterCVMode(); mobSwitchSubTab('forhandsgranska');
-    showToast('✅ ' + entry.title + ' öppnat — ändringar sparas automatiskt', 'success');
+    // Visa spara-baren (start: inga osparade ändringar)
+    if (typeof updateMatchedSaveBar === 'function') updateMatchedSaveBar();
+    showToast('✏️ ' + entry.title + ' öppnat — gör dina ändringar och spara', 'success');
   }
 
   function mobDeleteSavedCV(id) {
