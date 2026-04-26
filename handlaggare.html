@@ -4666,26 +4666,90 @@ async function generateLessonGuide() {
     if (r && !r.error && r.content) lessonContent = r.content;
   } catch(e) {}
 
-  // Fallback: bygg generiskt innehåll baserat på titel/syfte
+  // Fallback: bygg pedagogiskt strukturerat innehåll med varierade uppgiftstyper
   if (!lessonContent) {
-    const tasks = [];
-    for (let i = 1; i <= numTasks; i++) {
-      tasks.push({
-        title: `Uppgift ${i}: Diskussionsfråga om ${wiz.title}`,
-        instruction: `Diskutera i smågrupper (3-4 personer). Skriv ner era tankar.`,
-        prompt: `Vad är det viktigaste ni har lärt er om "${wiz.title}"? Hur kan ni använda det i ert dagliga liv?`,
-        answer: `Förslag på svar: deltagarna bör nämna 2-3 konkreta exempel kopplat till lektionens syfte: "${wiz.purpose.slice(0, 100)}". Värdera utifrån egen reflektion och förståelse, inte bara faktarepetition.`
-      });
-    }
+    // Extrahera nyckelord från titel + syfte för innehållsspecifika uppgifter
+    const topic = (wiz.title || 'lektionens ämne').trim();
+    const purpose = (wiz.purpose || '').trim();
+    // Hämta huvudbegrepp från syftet (de första 4-6 substantiviska orden, längd > 4)
+    const keyWords = purpose
+      .split(/[\s,.!?;:()]+/)
+      .filter(w => w.length > 4)
+      .filter(w => !/^(deltagare|deltagaren|deltagarna|skall|kunna|förstå|lära|sig|olika|inom|samt|eller|vilka|vilket|deras|denna|detta|dessa)$/i.test(w))
+      .slice(0, 6);
+    const kw = (i) => keyWords[i % Math.max(keyWords.length, 1)] || topic;
+
+    // Pedagogisk progression: börja med konkret förståelse, gå mot analys & tillämpning
+    // Vi har en "bank" av uppgiftsmallar — väljer numTasks olika så de blir UNIKA
+    const taskTemplates = [
+      // 1. Begreppskoll — konkret kunskapscheck
+      {
+        title: `Begreppen i ${topic}`,
+        instruction: 'Arbeta enskilt först (5 min), sen jämför med en granne (5 min).',
+        prompt: `Skriv med egna ord vad följande betyder i sammanhanget "${topic}":\n\na) ${kw(0)}\nb) ${kw(1)}\nc) ${kw(2)}\n\nGe också ett konkret exempel för varje begrepp.`,
+        answer: `Bedöm utifrån om deltagaren visar konkret förståelse, inte bara repeterar definitioner. Goda svar förbinder begreppet med ett verkligt sammanhang. Acceptera olika formuleringar så länge kärnan stämmer.`
+      },
+      // 2. Sant-eller-falskt — snabb diskussion
+      {
+        title: `Sant eller falskt om ${topic}?`,
+        instruction: 'Helklass eller smågrupper. Rösta först, motivera sedan.',
+        prompt: `Diskutera följande påståenden. Vilka stämmer? Vilka stämmer delvis? Vilka är fel?\n\n1. "${topic} berör mest unga personer."\n2. "Det går att lyckas utan kunskap om ${kw(0)}."\n3. "${kw(1)} är samma sak som ${kw(2)}."\n4. "Det finns bara ett rätt sätt att hantera ${topic}."`,
+        answer: `Påstående 1: oftast falskt — ${topic} berör flera grupper. Påstående 2: falskt — kunskap om ${kw(0)} ger bättre förutsättningar. Påstående 3: falskt — det är två olika saker. Påstående 4: falskt — det finns ofta flera fungerande tillvägagångssätt. Värdera resonemanget mer än de exakta svaren.`
+      },
+      // 3. Tillämpning — ditt eget liv
+      {
+        title: `Koppla till ditt eget liv`,
+        instruction: 'Skriv enskilt (10 min). Den som vill får dela med klassen.',
+        prompt: `Hur märker du av "${topic}" i ditt eget liv eller din vardag?\n\n• Beskriv en konkret situation där det blivit aktuellt för dig.\n• Vad gjorde du då? Var det rätt agerande?\n• Skulle du göra annorlunda nästa gång? Varför?`,
+        answer: `Personliga svar — bedöm ärlighet, reflektion och förmåga att se sin egen roll. Goda svar visar att deltagaren kan applicera lektionens innehåll på sin egen situation, inte bara teoretiskt.`
+      },
+      // 4. Caseuppgift — analys
+      {
+        title: `Casescenario`,
+        instruction: 'Smågrupper på 3-4 personer (15 min). Redovisning på 2 min/grupp.',
+        prompt: `Maria, 32 år, har precis flyttat till en ny stad. Hon möter en utmaning som handlar om "${topic}".\n\n• Vilka tre frågor borde Maria ställa sig först?\n• Vilka är hennes tre viktigaste handlingsalternativ?\n• Vad rekommenderar ni att hon gör — och varför?`,
+        answer: `Goda svar visar att deltagarna identifierar relevanta frågor (inte irrelevanta detaljer), väger flera alternativ mot varandra och kan motivera sitt val med argument från lektionens innehåll. Acceptera olika rekommendationer om motiveringen är logisk.`
+      },
+      // 5. Argumentationsövning
+      {
+        title: `Argumentera för och emot`,
+        instruction: 'Två lag. Lag A argumenterar för, Lag B emot. 10 min förberedelse, 10 min debatt.',
+        prompt: `Påstående att debattera:\n\n"Det är alltid bättre att lära sig om ${topic} tidigt än sent i livet."\n\n• Lag A: Hitta minst tre argument FÖR påståendet.\n• Lag B: Hitta minst tre argument MOT (eller nyanserande argument).`,
+        answer: `Värdera kvalitet i argumenten, inte vinnaren. Goda lag använder konkreta exempel, hänvisar till lektionens innehåll och motargumenterar varandra respektfullt. Lyft fram nyanser i avslutningen — sällan är något "alltid".`
+      },
+      // 6. Reflektion — vad har jag lärt
+      {
+        title: `Reflektionspapper`,
+        instruction: 'Enskilt (10 min). Lämnas in eller behålls för eget bruk.',
+        prompt: `Avsluta meningarna nedan i 1-3 meningar var:\n\n1. Det viktigaste jag lärt mig idag om "${topic}" är...\n2. Något jag fortfarande undrar över är...\n3. Tre saker jag tar med mig från lektionen är...\n4. En sak jag tänker pröva eller göra annorlunda är...`,
+        answer: `Personlig reflektion. Bedöm djup och ärlighet — inte volym. Använd som underlag för individuella samtal eller för att anpassa nästa lektion. Frågorna under "fortfarande undrar" är viktiga signaler om vad som behöver fördjupas.`
+      },
+      // 7. Skapa-en-fråga
+      {
+        title: `Skapa egna kunskapsfrågor`,
+        instruction: 'Par eller smågrupper (10 min). Byt frågor med en annan grupp och lös varandras (10 min).',
+        prompt: `Formulera tre frågor om "${topic}" som ni tycker är viktiga att kunna svara på:\n\n• En enkel faktafråga (svar: ja/nej eller ett ord)\n• En "varför"-fråga (svar: 1-2 meningar)\n• En "hur skulle du göra om..."-fråga (svar: ett resonemang)\n\nByt sen frågor med ett annat par och svara på deras.`,
+        answer: `Värdera frågekvaliteten. Goda frågor är begripliga, inte triviala, och täcker olika kognitiva nivåer (faktakunskap, förståelse, tillämpning). När de svarar på varandras: värdera om svaren stämmer och har djup.`
+      },
+      // 8. Handlingsplan — fram-i-tid
+      {
+        title: `Min handlingsplan`,
+        instruction: 'Enskilt arbete (15 min). Den som vill får dela med en granne.',
+        prompt: `Utifrån vad du lärt dig om "${topic}", skriv en konkret handlingsplan:\n\n• En sak du tänker göra inom 24 timmar:\n• En sak du tänker göra inom en vecka:\n• En sak du tänker göra inom en månad:\n\nFör varje punkt: hur vet du att du faktiskt har gjort det? (mätbart resultat)`,
+        answer: `Värdera om handlingarna är konkreta, realistiska och mätbara — inte vaga ("jag ska bli bättre") utan specifika ("jag ska kontakta X om Y senast fredag"). Bra handlingsplaner har ett tydligt "klart-kriterium". Använd som uppföljning vid nästa möte.`
+      }
+    ];
+
+    // Ta exakt numTasks olika uppgifter — alltid samma ordning för pedagogisk progression
     lessonContent = {
       summary: wiz.purpose,
       structure: [
-        { phase: 'Uppvärmning', minutes: Math.round(minutes * 0.1), notes: 'Hälsa, presentera dagens ämne. Fråga deltagarna vad de redan vet om temat.' },
-        { phase: 'Genomgång', minutes: Math.round(minutes * 0.4), notes: 'Gå igenom PowerPoint-presentationen slide för slide. Pausa och fråga om förståelse vid varje slide.' },
-        { phase: 'Övningar', minutes: Math.round(minutes * 0.35), notes: `Genomför ${numTasks} övningar enligt nedan. Dela in i smågrupper.` },
-        { phase: 'Diskussion & avslut', minutes: Math.round(minutes * 0.15), notes: 'Sammanfatta tillsammans. Be varje deltagare säga en sak de tar med sig.' }
+        { phase: 'Uppvärmning & introduktion', minutes: Math.round(minutes * 0.1), notes: `Hälsa deltagarna välkomna. Presentera dagens ämne: "${topic}". Fråga: "Vad tänker ni på när ni hör denna rubrik?" Skriv ord på tavlan/blädderblock.` },
+        { phase: 'Genomgång av materialet', minutes: Math.round(minutes * 0.35), notes: 'Gå igenom PowerPoint-presentationen slide för slide. Pausa minst en gång per slide för att fråga om förståelse. Be deltagare berätta vad de ser med egna ord.' },
+        { phase: 'Övningar (se nästa sida)', minutes: Math.round(minutes * 0.4), notes: `Genomför ${numTasks} övningar i den ordning de står — de är upplagda för pedagogisk progression från enkel förståelse till tillämpning.` },
+        { phase: 'Avslut & sammanfattning', minutes: Math.round(minutes * 0.15), notes: 'Be varje deltagare säga en sak de tar med sig. Sammanfatta lektionens nyckelpunkter på 2 minuter. Berätta vad nästa steg är.' }
       ],
-      tasks
+      tasks: taskTemplates.slice(0, numTasks)
     };
   }
 
@@ -4693,13 +4757,13 @@ async function generateLessonGuide() {
   const pageW = 210, pageH = 297, margin = 18;
   let y = margin;
 
-  // Helper för text-rendering med automatisk radbrytning
+  // Helper för text-rendering med automatisk radbrytning + sidbyte
   const writeText = (text, x, opts = {}) => {
     const { fontSize = 11, bold = false, color = [40, 40, 40], maxWidth = pageW - margin * 2, lineHeight = 5.5 } = opts;
     doc.setFont('helvetica', bold ? 'bold' : 'normal');
     doc.setFontSize(fontSize);
     doc.setTextColor(...color);
-    const lines = doc.splitTextToSize(text, maxWidth);
+    const lines = doc.splitTextToSize(String(text || ''), maxWidth);
     lines.forEach(line => {
       if (y > pageH - margin - 10) { doc.addPage(); y = margin; }
       doc.text(line, x, y);
@@ -4707,100 +4771,180 @@ async function generateLessonGuide() {
     });
   };
 
-  // ─── SIDA 1: Försättsblad ───
+  // Helper för rubriker med understreck
+  const writeHeading = (text, opts = {}) => {
+    const { fontSize = 16, color = [26, 26, 46] } = opts;
+    if (y > pageH - margin - 25) { doc.addPage(); y = margin; }
+    writeText(text, margin, { fontSize, bold: true, color });
+    y += 1;
+    doc.setDrawColor(212, 164, 54);
+    doc.setLineWidth(0.6);
+    doc.line(margin, y, margin + 30, y);
+    y += 6;
+  };
+
+  // ═══ SIDA 1: FÖRSÄTTSBLAD ═══
   doc.setFillColor(26, 26, 46);
-  doc.rect(0, 0, pageW, 60, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.rect(0, 0, pageW, 65, 'F');
+  doc.setTextColor(212, 164, 54);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('LEKTIONSGUIDE', margin, 20);
-  doc.setFontSize(22);
+  doc.setFontSize(10);
+  doc.text('LEKTIONSGUIDE', margin, 18);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
   const titleLines = doc.splitTextToSize(wiz.title || 'Lektion', pageW - margin * 2);
   doc.text(titleLines, margin, 32);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(200, 200, 200);
+  doc.text('CVmatchen — Material för handlaggare', margin, 58);
 
-  y = 75;
-  writeText('Syfte', margin, { fontSize: 10, bold: true, color: [120, 120, 120] });
-  writeText(wiz.purpose || 'Inget syfte angivet.', margin, { fontSize: 12 });
-  y += 4;
+  y = 80;
 
-  // Metadata-rad
-  doc.setDrawColor(220, 220, 220);
-  doc.line(margin, y, pageW - margin, y);
+  // Syfte i ruta
+  doc.setFillColor(248, 244, 235);
+  doc.rect(margin, y - 4, pageW - margin * 2, 30, 'F');
+  writeText('SYFTE', margin + 4, { fontSize: 9, bold: true, color: [150, 130, 80] });
+  y += 1;
+  writeText(wiz.purpose || 'Inget syfte angivet.', margin + 4, { fontSize: 11, maxWidth: pageW - margin * 2 - 8 });
   y += 6;
+
+  // Metadata-rad utan emoji
   const langLbl = LANG_LEVELS.find(l => l.id === wiz.langLevel)?.label || wiz.langLevel;
   const catLbl = MODULE_CATS.find(c => c.id === wiz.category)?.label || wiz.category;
-  writeText(`📚 ${catLbl}   ·   🗣 ${langLbl}   ·   ⏱ ${minutes} min   ·   📅 ${new Date().toLocaleDateString('sv-SE')}`, margin, { fontSize: 10, color: [100, 100, 100] });
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, pageW - margin, y);
+  y += 6;
+  writeText(`Kategori: ${catLbl}     Spraknivaa: ${langLbl}     Tidsaatgaang: ${minutes} min     Datum: ${new Date().toLocaleDateString('sv-SE')}`.replace(/aa/g, 'å'), margin, { fontSize: 9, color: [100, 100, 100] });
+  y += 8;
+
+  // ═══ LEKTIONSUPPLAGG ═══
+  writeHeading('Lektionsupplägg');
+  lessonContent.structure.forEach((p, i) => {
+    if (y > pageH - margin - 30) { doc.addPage(); y = margin; }
+    // Numrerad cirkel + fas-namn
+    doc.setFillColor(212, 164, 54);
+    doc.circle(margin + 3, y + 1, 3.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(String(i + 1), margin + 3, y + 2.5, { align: 'center' });
+    // Fas-titel + tid
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text(p.phase, margin + 10, y + 2);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`(${p.minutes} min)`, margin + 10 + doc.getTextWidth(p.phase) + 3, y + 2);
+    y += 7;
+    // Fas-anteckning
+    writeText(p.notes, margin + 10, { fontSize: 10, color: [80, 80, 80], maxWidth: pageW - margin * 2 - 10 });
+    y += 5;
+  });
+
+  // ═══ ÖVNINGAR ═══
+  doc.addPage();
+  y = margin;
+  writeHeading('Övningar för deltagarna');
+  writeText('Skriv ut följande sidor och dela ut till deltagarna. Facit finns längst bak — dela inte ut det före övningen.', margin, { fontSize: 10, color: [100, 100, 100] });
   y += 6;
 
-  // ─── Lektionsupplägg ───
-  writeText('Lektionsupplägg', margin, { fontSize: 14, bold: true });
-  y += 2;
-  lessonContent.structure.forEach((p, i) => {
-    if (y > pageH - margin - 25) { doc.addPage(); y = margin; }
-    doc.setFillColor(245, 240, 230);
-    doc.rect(margin, y - 4, pageW - margin * 2, 8, 'F');
-    writeText(`${i + 1}. ${p.phase}  (${p.minutes} min)`, margin + 2, { fontSize: 11, bold: true, color: [212, 164, 54] });
-    y -= 1;
-    writeText(p.notes, margin + 2, { fontSize: 10, color: [80, 80, 80] });
-    y += 3;
-  });
-
-  // ─── Övningar ───
-  doc.addPage();
-  y = margin;
-  writeText('Övningar', margin, { fontSize: 16, bold: true });
-  y += 2;
-  writeText('Skriv ut sidorna nedan och dela ut till deltagarna. Facit finns längst bak.', margin, { fontSize: 10, color: [120, 120, 120] });
-  y += 4;
   lessonContent.tasks.forEach((t, i) => {
-    if (y > pageH - margin - 35) { doc.addPage(); y = margin; }
-    doc.setDrawColor(212, 164, 54);
-    doc.setLineWidth(0.5);
-    doc.rect(margin, y, pageW - margin * 2, 1, 'F');
-    y += 4;
-    writeText(t.title || `Uppgift ${i + 1}`, margin, { fontSize: 12, bold: true });
-    if (t.instruction) writeText(t.instruction, margin, { fontSize: 10, color: [100, 100, 100] });
-    y += 1;
-    writeText(t.prompt || '', margin, { fontSize: 11 });
-    y += 4;
-    // Plats för svar (5 tomma rader)
-    doc.setDrawColor(220, 220, 220);
-    for (let k = 0; k < 5; k++) {
-      if (y > pageH - margin - 10) { doc.addPage(); y = margin; }
-      doc.line(margin, y, pageW - margin, y);
-      y += 6;
+    // Ny sida för varje uppgift om det är ont om plats
+    if (y > pageH - margin - 80) { doc.addPage(); y = margin; }
+
+    // Uppgift-header
+    doc.setFillColor(26, 26, 46);
+    doc.rect(margin, y - 2, pageW - margin * 2, 9, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(`UPPGIFT ${i + 1}`, margin + 3, y + 4);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(t.title || '', margin + 28, y + 4);
+    y += 12;
+
+    // Instruktion (kursiv-stil — italic stöds av helvetica)
+    if (t.instruction) {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      const instrLines = doc.splitTextToSize('Hur: ' + t.instruction, pageW - margin * 2);
+      instrLines.forEach(line => {
+        if (y > pageH - margin - 10) { doc.addPage(); y = margin; }
+        doc.text(line, margin, y);
+        y += 4.5;
+      });
+      y += 2;
     }
+
+    // Uppgiftsfråga
+    writeText(t.prompt || '', margin, { fontSize: 11, color: [40, 40, 40], lineHeight: 5.8 });
     y += 4;
+
+    // Skrivlinjer (8 rader = ca halv sida)
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    const numLines = 8;
+    for (let k = 0; k < numLines; k++) {
+      if (y > pageH - margin - 8) { doc.addPage(); y = margin; }
+      doc.line(margin, y, pageW - margin, y);
+      y += 7;
+    }
+    y += 6;
   });
 
-  // ─── Facit ───
+  // ═══ FACIT ═══
   doc.addPage();
   y = margin;
-  writeText('Facit', margin, { fontSize: 16, bold: true });
-  y += 2;
-  writeText('Endast för dig som lärare/handläggare — dela inte ut före övningen.', margin, { fontSize: 10, color: [200, 80, 80] });
-  y += 4;
+  writeHeading('Facit & vägledning');
+
+  // Varningsruta
+  doc.setFillColor(254, 240, 230);
+  doc.setDrawColor(220, 100, 60);
+  doc.setLineWidth(0.4);
+  doc.rect(margin, y - 4, pageW - margin * 2, 14, 'FD');
+  writeText('OBS: Endast för dig som handlaggare — dela inte ut till deltagarna före övningen.', margin + 4, { fontSize: 10, bold: true, color: [180, 60, 40] });
+  y += 6;
+
   lessonContent.tasks.forEach((t, i) => {
     if (y > pageH - margin - 30) { doc.addPage(); y = margin; }
-    writeText(`Uppgift ${i + 1}: ${t.title}`, margin, { fontSize: 11, bold: true });
-    writeText(t.answer || 'Inget facit angivet — bedöm utifrån syfte och målgrupp.', margin, { fontSize: 10, color: [60, 60, 60] });
-    y += 4;
+    // Uppgift-rubrik
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`Uppgift ${i + 1}: ${t.title}`, margin, y);
+    y += 6;
+    // Vägledning
+    writeText(t.answer || 'Inget facit angivet.', margin, { fontSize: 10, color: [60, 60, 60], lineHeight: 5.2 });
+    y += 6;
+    // Skiljelinje mellan uppgifter
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y - 2, pageW - margin, y - 2);
+    y += 2;
   });
 
-  // ─── Footer på alla sidor ───
+  // ═══ FOOTER PÅ ALLA SIDOR ═══
   const pageCount = doc.internal.pages.length - 1;
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(160, 160, 160);
-    doc.text(`CVmatchen · ${wiz.title}`, margin, pageH - 8);
-    doc.text(`Sida ${i} av ${pageCount}`, pageW - margin - 25, pageH - 8);
+    doc.setFontSize(8);
+    doc.setTextColor(170, 170, 170);
+    doc.text('CVmatchen', margin, pageH - 8);
+    const titleStr = (wiz.title || '').slice(0, 40);
+    doc.text(titleStr, pageW / 2, pageH - 8, { align: 'center' });
+    doc.text(`Sida ${i} / ${pageCount}`, pageW - margin, pageH - 8, { align: 'right' });
   }
 
   const fileName = (wiz.title || 'lektionsguide').replace(/[^a-zA-Z0-9_-]/g, '_') + '_lektionsguide.pdf';
   doc.save(fileName);
-  showOk(`✓ Lektionsguide nedladdad: ${fileName}`);
+  showOk(`Lektionsguide nedladdad: ${fileName}`);
 }
 window.generateLessonGuide = generateLessonGuide;
 
