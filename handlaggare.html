@@ -1163,14 +1163,26 @@ const DEMO_OLIVER_EMAIL = 'cvmatchen@outlook.com';
 // av misstag tilldelas Oliver KA som deltagare. Matchning är skiftlägesokänslig.
 const ADMIN_EMAILS = [
   'cvmatchen@outlook.com'
-  // OBS: oliver.pettersson2@gmail.com är NEJ admin — det är test-deltagaren med
-  // riktigt CV, matchningar och sökta arbeten. Ska visas i deltagarlistan.
+];
+
+// E-postadresser som är admins i Supabase men som ändå ska VISAS som deltagare
+// i frontend (testflöden där samma person agerar både handläggare och test-
+// deltagare). Backend filtrerar bort dem från admin_list_users men vi lägger
+// till dem manuellt här så de syns i deltagarlistan ändå.
+const FORCE_SHOW_AS_USER = [
+  'oliver.pettersson2@gmail.com'
 ];
 
 function isAdminEmail(email) {
   if (!email) return false;
   const e = email.toLowerCase().trim();
   return ADMIN_EMAILS.some(a => a.toLowerCase().trim() === e);
+}
+
+function isForceShowEmail(email) {
+  if (!email) return false;
+  const e = email.toLowerCase().trim();
+  return FORCE_SHOW_AS_USER.some(a => a.toLowerCase().trim() === e);
 }
 
 const DEMO_ENHETER = {
@@ -1212,60 +1224,68 @@ function isOliverKA() {
 function attachToOliverIfOrphan(u) {
   if (!DEMO_MODE) return u;
   if (getHandlaggareId(u)) return u; // har redan handläggare
-  // Om Oliver KA är inloggad — använd hans riktiga admin.id så "Mina deltagare" matchar
+  // Om Oliver KA är inloggad — använd hans riktiga admin.id så filter på "Mina ärenden" funkar
   const oliverId = isOliverKA() ? admin.id : 'demo-h-oliver';
-  // Auto-stjärnmärk så hen syns även under "⭐ Mina deltagare"-toggle
-  if (isOliverKA()) {
-    try {
-      const favs = getFavorites();
-      const uid = u.user_id || u.id;
-      if (uid && !favs.has(uid)) {
-        favs.add(uid);
-        saveFavorites(favs);
-      }
-    } catch(e) {}
-  }
   return {
     ...u,
     handlaggare_id: oliverId,
     handlaggare_name: 'Oliver KA',
     enhet_id: DEMO_ENHETER.ka.id,
     enhet_name: DEMO_ENHETER.ka.name,
-    isMyTestUser: true   // markera så vi kan visa badge
+    isMyTestUser: true   // markera så vi kan visa TEST-badge
   };
 }
 
 // Helper: lägg till fiktiva deltagare ovanpå backend-data
 function injectDemoUsers(realUsers) {
   if (!DEMO_MODE) return realUsers;
-  // Filtrera bort admin-mailar — dessa ska inte synas som deltagare
-  const adminUserIds = new Set();
+  // Filtrera bort admin-mailar (cvmatchen@outlook.com etc.) — de syns inte som deltagare
   const filtered = (realUsers || []).filter(u => {
     const email = u.cv?.data?.email || u.cv?.email || u.email || '';
-    if (isAdminEmail(email)) {
-      console.log('[CVmatchen] Filtrerar bort admin från deltagarlistan:', email);
-      const uid = u.user_id || u.id;
-      if (uid) adminUserIds.add(uid);
-      return false;
-    }
-    return true;
+    return !isAdminEmail(email);
   });
-  // Rensa eventuella stjärnmärkningar för admin-användare (de auto-stjärnmärktes
-  // tidigare innan admin-filtret fanns på plats)
-  if (adminUserIds.size > 0) {
-    try {
-      const favs = getFavorites();
-      let changed = false;
-      adminUserIds.forEach(uid => {
-        if (favs.has(uid)) { favs.delete(uid); changed = true; }
-      });
-      if (changed) saveFavorites(favs);
-    } catch(e) {}
-  }
-  // Koppla föräldralösa riktiga deltagare till Oliver
+
+  // Lägg till stub-rader för FORCE_SHOW_AS_USER-mailar som saknas i backend.
+  // Backend filtrerar bort dem eftersom de är admins, men vi vill se dem som
+  // deltagare i frontend för att kunna testa flödet.
+  const existingEmails = new Set(filtered.map(u => {
+    const e = u.cv?.data?.email || u.cv?.email || u.email || '';
+    return e.toLowerCase().trim();
+  }));
+  const stubs = [];
+  FORCE_SHOW_AS_USER.forEach(email => {
+    const lc = email.toLowerCase().trim();
+    if (existingEmails.has(lc)) return; // backend returnerade redan
+    // Bygg stub-rad. När handläggaren klickar laddar openDetail() den riktiga
+    // CV-datan via admin_get_user_data eller liknande backend-anrop.
+    const oliverId = isOliverKA() ? admin.id : 'demo-h-oliver';
+    // Härled trolig user_id från email (matchar mönstret "oliver.pettersson2")
+    const namePart = email.split('@')[0].replace(/\./g,' ')
+      .replace(/\d+$/,'').trim()
+      .split(' ').map(p => p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+    stubs.push({
+      id: 'force-' + lc.replace(/[^a-z0-9]/g,'_'),
+      user_id: 'force-' + lc.replace(/[^a-z0-9]/g,'_'),
+      email,
+      cv: { data: { name: namePart, email }, updated_at: null },
+      status: 'active',
+      handlaggare_id: oliverId,
+      handlaggare_name: 'Oliver KA',
+      enhet_id: DEMO_ENHETER.ka.id,
+      enhet_name: DEMO_ENHETER.ka.name,
+      progress: {},
+      tasks: { completed:0, total:0 },
+      isMyTestUser: true,
+      isForceShowStub: true,  // markera så vi vet att riktig data ska hämtas vid klick
+      _forceEmail: email
+    });
+    console.log('[CVmatchen] La till stub-rad för admin-test-konto:', email);
+  });
+
+  // Koppla föräldralösa riktiga deltagare till Oliver KA (om hen är inloggad)
   const tagged = filtered.map(attachToOliverIfOrphan);
-  // Lägg till Vlademars + Maritas fiktiva deltagare
-  return [...tagged, ...DEMO_DELTAGARE];
+  // Lägg till stubs + Vlademars + Maritas fiktiva deltagare
+  return [...tagged, ...stubs, ...DEMO_DELTAGARE];
 }
 
 // Helper: lägg till fiktiva handläggare ovanpå backend-data
@@ -1403,6 +1423,14 @@ async function loadUsers(){
   catch(e){document.getElementById('tBody').innerHTML=`<tr><td colspan="9" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;showErr('Kunde inte hämta användare: '+e.message);return;}
   if(data.error){document.getElementById('tBody').innerHTML=`<tr><td colspan="9" class="loading" style="color:var(--rd)">Fel från API: ${data.error}</td></tr>`;showErr('API-fel: '+data.error);return;}
   let backendUsers = data.data||data.users||(Array.isArray(data)?data:[]);
+  // DIAGNOSTIK: logga vad backend returnerar så vi kan se varför Oliver Pettersson saknas
+  console.log('[CVmatchen] Backend returnerade ' + backendUsers.length + ' användare:',
+    backendUsers.map(u => ({
+      email: u.cv?.data?.email || u.cv?.email || u.email || '(saknas)',
+      name: cvName(u.cv?.data || u.cv) || '(saknas)',
+      handlaggare: getHandlaggareName(u) || '(ingen)'
+    }))
+  );
   // Injicera demo-handläggare + deltagare för demonstration
   allUsers = injectDemoUsers(backendUsers);
   if(allUsers.length===0) document.getElementById('tBody').innerHTML='<tr><td colspan="9" class="loading">Inga deltagare hittades</td></tr>';
@@ -1683,8 +1711,36 @@ async function openDetail(userId){
 
   // Hämta data
   let data;
-  try{ data = await post('admin_get_user',{targetUserId:userId,adminId:admin.id}); }
-  catch(e){ document.getElementById('udBody').innerHTML=`<div class="ud-body-empty" style="color:var(--rd)">Kunde inte hämta: ${e.message}</div>`; return; }
+  // Om detta är en force-show-stub (admin som visas som test-deltagare),
+  // försök hämta riktig data via email istället för userId
+  const stubUser = allUsers.find(u => (u.user_id||u.id) === userId);
+  const isStub = stubUser?.isForceShowStub;
+  const stubEmail = stubUser?._forceEmail;
+
+  try{
+    if (isStub && stubEmail) {
+      console.log('[CVmatchen] Hämtar riktig data för admin-test-konto:', stubEmail);
+      // Försök hämta via email — backend måste stödja detta
+      data = await post('admin_get_user',{targetEmail:stubEmail,adminId:admin.id});
+      // Om det inte gick, fall back till stub-datan så åtminstone UI fungerar
+      if (!data || data.error) {
+        console.warn('[CVmatchen] Backend stödjer inte targetEmail — visar stub-data');
+        data = stubUser;
+      }
+    } else {
+      data = await post('admin_get_user',{targetUserId:userId,adminId:admin.id});
+    }
+  }
+  catch(e){
+    if (isStub) {
+      // För stub-användare: visa stub-datan med en hjälpsam förklaring
+      console.warn('[CVmatchen] Kunde inte hämta admin-test-konto:', e.message);
+      data = { ...stubUser, _stubFallback: true };
+    } else {
+      document.getElementById('udBody').innerHTML=`<div class="ud-body-empty" style="color:var(--rd)">Kunde inte hämta: ${e.message}</div>`;
+      return;
+    }
+  }
   currentUserData = data;
 
   const cvd = data.cv?.data || data.cv || {};
