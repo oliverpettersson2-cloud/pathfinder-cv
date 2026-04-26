@@ -4920,6 +4920,12 @@
         console.warn('[cpicker] Overlay saknas');
         return;
       }
+      // KRITISK FIX: flytta overlay till <body> så den inte fångas inuti
+      // någon annan modal/container som kan ha en stacking context som
+      // klipper z-index. Annars kan listan hamna bakom jobModalen.
+      if (overlay.parentNode !== document.body) {
+        document.body.appendChild(overlay);
+      }
       const titleEl = document.getElementById('cpickerTitle');
       const list = document.getElementById('cpickerList');
       if (titleEl) {
