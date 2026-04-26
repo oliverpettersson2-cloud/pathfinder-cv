@@ -850,6 +850,8 @@ td{padding:10px 13px;vertical-align:middle}
 
         <div class="pan" id="p-mina"><div id="minaContent" class="loading">Laddar...</div></div>
 
+        <div class="pan" id="p-admins"><div id="adminsContent" class="loading">Laddar handläggare och admins...</div></div>
+
         <div class="pan" id="p-material"><div id="materialContent" class="loading">Laddar bibliotek...</div></div>
       </div>
 
@@ -1024,6 +1026,7 @@ const SL = {active:'Aktiv',recent:'Nyligen aktiv',new:'Ny',inactive:'Inaktiv'};
 const PAGE_INFO = {
   arenden:   {title:'Alla deltagare',  sub: () => roleSubtitle()},
   mina:      {title:'Mina deltagare',  sub: () => 'Stjärnmarkerade deltagare, statistik och uppgifter'},
+  admins:    {title:'Handläggare & admins', sub: () => 'Användare med admin-roll i systemet'},
   material:  {title:'Sparat material & uppgifter',  sub: () => 'Delat bibliotek för hela enheten — uppgifter, PowerPoints och AI-uppdaterade versioner'}
 };
 
@@ -1179,6 +1182,7 @@ function buildNav(){
   const items=[
     {id:'arenden',label:'Alla deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'},
     {id:'mina',label:'Mina deltagare',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'},
+    {id:'admins',label:'Handläggare & admins',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>'},
     {id:'material',label:'Sparat material & uppgifter',icon:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'}
   ];
   document.getElementById('sbNav').innerHTML=items.map((it,i)=>`<div class="sb-nav-item${i===0?' act':''}" data-id="${it.id}" onclick="switchTab('${it.id}')">${it.icon}<span>${it.label}</span></div>`).join('');
@@ -1194,6 +1198,7 @@ function switchTab(id){
   const info=PAGE_INFO[id];
   if(info){document.getElementById('pgTitle').textContent=info.title;document.getElementById('pgSub').textContent=info.sub();}
   if(id==='mina') renderMinaView();
+  if(id==='admins') renderAdminsView();
   if(id==='material') renderMaterialView();
 }
 
@@ -3742,8 +3747,113 @@ function saveToMaterialLibrary({assigned, count, moduleId}){
   return item;
 }
 
-// Filter-state för material-vyn
-let materialFilter = { cat: '', lang: '', q: '' };
+// ═══ ADMINS-VY ═══
+// Cachear admin-listan så vi inte gör nya backend-anrop varje gång man byter flik
+let adminsCache = null;
+
+async function renderAdminsView(){
+  const wrap = document.getElementById('adminsContent');
+  if (!wrap) return;
+
+  // Om vi har cachen, rendera från den direkt
+  if (adminsCache) {
+    renderAdminsList(wrap, adminsCache);
+    return;
+  }
+
+  wrap.innerHTML = '<div class="loading" style="padding:40px;text-align:center;">Laddar handläggare och admins...</div>';
+
+  try {
+    const data = await post('admin_list_admins', { adminId: admin.id });
+    if (data.error) {
+      wrap.innerHTML = `<div class="loading" style="padding:40px;text-align:center;color:var(--rd);">
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px;">Backend-endpoint saknas</div>
+        <div style="font-size:12px;opacity:0.7;line-height:1.5;">
+          API-action <code>admin_list_admins</code> är inte implementerad.<br>
+          Lägg till den i <code>/api/supabase</code> så den listar alla admins/handläggare.
+        </div>
+      </div>`;
+      return;
+    }
+    adminsCache = data.data || data.admins || (Array.isArray(data) ? data : []);
+    renderAdminsList(wrap, adminsCache);
+  } catch (e) {
+    wrap.innerHTML = `<div class="loading" style="padding:40px;text-align:center;color:var(--rd);">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">Kunde inte hämta admins</div>
+      <div style="font-size:12px;opacity:0.7;line-height:1.5;">
+        ${e.message}<br><br>
+        Backend-action <code>admin_list_admins</code> behöver implementeras i <code>/api/supabase</code>.
+      </div>
+    </div>`;
+  }
+}
+
+function renderAdminsList(wrap, admins) {
+  if (!admins || admins.length === 0) {
+    wrap.innerHTML = '<div class="loading" style="padding:40px;text-align:center;">Inga admins hittades.</div>';
+    return;
+  }
+
+  // Gruppera efter roll: superadmin → kommunadmin → handlaggare
+  const ROLE_ORDER = ['superadmin', 'kommunadmin', 'handlaggare'];
+  const ROLE_LABEL = {
+    superadmin:   { name: 'Superadmin',   color: '#ef4444', desc: 'Full åtkomst — alla kommuner och enheter' },
+    kommunadmin:  { name: 'Kommunadmin',  color: '#f59e0b', desc: 'Hanterar en hel kommun med flera enheter' },
+    handlaggare:  { name: 'Handläggare',  color: '#3b82f6', desc: 'Hanterar deltagare på en specifik enhet' }
+  };
+
+  const grouped = {};
+  ROLE_ORDER.forEach(r => grouped[r] = []);
+  admins.forEach(a => {
+    const role = a.role || 'handlaggare';
+    if (!grouped[role]) grouped[role] = [];
+    grouped[role].push(a);
+  });
+
+  let html = '<div style="padding:20px 24px;">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">';
+  html += '<div style="font-size:13px;color:var(--mu);">Totalt <strong style="color:var(--tx);">' + admins.length + '</strong> admin' + (admins.length !== 1 ? 's' : '') + ' i systemet</div>';
+  html += '<button onclick="adminsCache=null;renderAdminsView();" style="background:rgba(0,0,0,0.04);border:1px solid var(--bd);color:var(--tx);padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;">↻ Uppdatera</button>';
+  html += '</div>';
+
+  ROLE_ORDER.forEach(role => {
+    const list = grouped[role];
+    if (!list || !list.length) return;
+    const meta = ROLE_LABEL[role] || { name: role, color: '#6b7280', desc: '' };
+    html += '<div style="margin-bottom:24px;">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bd);">';
+    html += '<div style="width:8px;height:8px;border-radius:50%;background:' + meta.color + ';"></div>';
+    html += '<div style="font-size:13px;font-weight:700;color:var(--tx);">' + meta.name + '</div>';
+    html += '<div style="font-size:11px;color:var(--mu);">' + list.length + ' st</div>';
+    html += '<div style="flex:1;"></div>';
+    html += '<div style="font-size:11px;color:var(--mu);font-style:italic;">' + meta.desc + '</div>';
+    html += '</div>';
+    html += '<div style="display:grid;gap:8px;">';
+    list.forEach(a => {
+      const name = a.name || a.email?.split('@')[0] || 'Okänd';
+      const email = a.email || '—';
+      const enhet = a.enheter?.name || a.enhet_name || a.enhet || '';
+      const kommun = a.kommuner?.name || a.kommun_name || a.kommun || '';
+      const isMe = a.id === admin.id;
+      const placering = [enhet, kommun].filter(Boolean).join(' · ') || 'Ingen enhet/kommun';
+      html += '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(0,0,0,0.02);border:1px solid var(--bd);border-radius:10px;">';
+      html += '<div style="width:36px;height:36px;border-radius:50%;background:' + meta.color + '22;border:2px solid ' + meta.color + ';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:' + meta.color + ';flex-shrink:0;">' + (name.charAt(0).toUpperCase() || '?') + '</div>';
+      html += '<div style="flex:1;min-width:0;">';
+      html += '<div style="font-size:13px;font-weight:700;color:var(--tx);display:flex;align-items:center;gap:6px;">' + name;
+      if (isMe) html += '<span style="font-size:10px;font-weight:700;background:rgba(62,180,137,0.15);color:#3eb489;padding:2px 6px;border-radius:6px;">DU</span>';
+      html += '</div>';
+      html += '<div style="font-size:11px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + email + '</div>';
+      html += '<div style="font-size:11px;color:var(--mu);margin-top:2px;">' + placering + '</div>';
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
 
 function renderMaterialView(){
   const wrap = document.getElementById('materialContent');
