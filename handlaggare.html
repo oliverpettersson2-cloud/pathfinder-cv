@@ -1419,6 +1419,7 @@ async function loadUsers(){
 // Visa-läge: 'mina' (bara stjärnmärkta) eller 'alla' (alla deltagare)
 let visaMode = 'mina';
 function setVisaMode(mode){
+  const previousMode = visaMode;
   visaMode = mode;
   const minaBtn = document.getElementById('vMina');
   const allaBtn = document.getElementById('vAlla');
@@ -1431,6 +1432,18 @@ function setVisaMode(mode){
     allaBtn.style.background = 'transparent';
     allaBtn.style.color = 'var(--mu)';
     allaBtn.style.boxShadow = '';
+    // Nollställ dropdown-filtren när man går till Mina (stjärnmärkta) så
+    // gamla val inte krockar med stjärn-filtret
+    if (previousMode !== 'mina') {
+      const handlaggareSel = document.getElementById('handlaggareFlt');
+      const enhetSel = document.getElementById('enhetFlt');
+      if (handlaggareSel) handlaggareSel.value = '';
+      if (enhetSel) enhetSel.value = '';
+      currentStatus = '';
+      // Återställ status-chip-aktiv-state
+      document.querySelectorAll('#statusChips .chip').forEach(c => c.classList.remove('act'));
+      document.querySelector('#statusChips .chip[data-status=""]')?.classList.add('act');
+    }
   } else {
     allaBtn.classList.add('act');
     allaBtn.style.background = '#fff';
@@ -1544,6 +1557,11 @@ document.getElementById('searchIn')?.addEventListener('input',()=>renderTable(al
 document.getElementById('enhetFlt')?.addEventListener('change',()=>renderTable(allUsers));
 document.getElementById('handlaggareFlt')?.addEventListener('change',function(){
   this.dataset.userSet = '1'; // Markera att användaren aktivt ändrat — stäng av auto-förval
+  // Om man valt en handläggare i dropdownen — växla till "Alla deltagare"-läget
+  // så filtret faktiskt syns (annars dubbelfilter: mina-stjärnor OCH handläggare = ofta tomt)
+  if (this.value && visaMode === 'mina') {
+    setVisaMode('alla');
+  }
   // Auto-välj rätt enhet om vald handläggare har en känd enhet
   const hid = this.value;
   if (hid && window._handlaggareEnhet) {
