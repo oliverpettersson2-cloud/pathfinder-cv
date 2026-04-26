@@ -7566,6 +7566,28 @@ ${styleTexts}
           if (typeof updatePreview === 'function') updatePreview();
         }
 
+        // ── AUTO-FYLL E-POST OCH NAMN FRÅN AUTH-SESSION ──
+        // Om CV:t saknar e-post efter molnladdning, fyll i från sparad auth-data.
+        // Hjälper användare som loggade in innan onboarding fanns, eller där
+        // e-posten av någon anledning inte sparats till backend.
+        try {
+          const savedAuth = pfRead(AUTH_STORAGE_KEY);
+          if (savedAuth) {
+            const authObj = JSON.parse(savedAuth);
+            if (authObj && authObj.email && !cvData.email) {
+              cvData.email = authObj.email;
+              const _de = document.getElementById('email');     if (_de) _de.value = authObj.email;
+              const _me = document.getElementById('mob-email'); if (_me) _me.value = authObj.email;
+              try { _scopedSet('cvData', JSON.stringify(cvData)); } catch(e) {}
+              // Spara även till backend så det persisteras
+              if (typeof saveCVToSupabase === 'function') {
+                clearTimeout(_saveDebounce);
+                _saveDebounce = setTimeout(saveCVToSupabase, 1000);
+              }
+            }
+          }
+        } catch(e) {}
+
         // Sparade CV:n
         if (Array.isArray(result.savedCvs)) {
           try { _scopedSet('pathfinder_saved_cvs', JSON.stringify(result.savedCvs)); } catch(e) {}
