@@ -15588,11 +15588,11 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
       var eduN = eduSaved.length;
 
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
-      // Träna — visar % klarat
+      // Träna — leder till Träna-fliken (procent visas där, inte här)
       html += '<div onclick="mobSwitchTab(\'ovningar\')" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(240,192,64,0.07);border:2px solid rgba(240,192,64,0.2);transition:all 0.15s;">' +
         '<div style="font-size:28px;margin-bottom:6px;">🏋️</div>' +
         '<div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.65);line-height:1.3;margin-bottom:8px;">Träna</div>' +
-        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(240,192,64,0.15);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:#f0c040;">' + ovnPct + '% klarat</div>' +
+        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(240,192,64,0.15);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:800;color:#f0c040;">Öppna →</div>' +
         '</div>';
       // Sparade utbildningar — 🎓 animerad, röd badge om sparade finns
       html += '<div onclick="mobSwitchTab(\'aisyv\');setTimeout(function(){if(typeof showChat===\'function\')showChat(\'saved\');},120);" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(124,58,237,0.07);border:2px solid rgba(124,58,237,0.2);transition:all 0.15s;">' +
@@ -15603,20 +15603,15 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
         '</div>';
       html += '</div>';
 
-      // Rad 3: Sökta Arbeten + Intervjuträning som lika stora fyrkanter
+      // Rad 3: Sökta Arbeten (full bredd — Intervjuträning ligger under Träna-fliken)
       const aDiary = window._ps === 'diary';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
+      html += '<div style="margin-bottom:10px;">';
       html += '<div onclick="window._pt(\'diary\')" style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;' +
         'background:' + (aDiary ? 'rgba(62,180,137,0.12)' : 'rgba(255,255,255,0.05)') + ';' +
         'border:2px solid ' + (aDiary ? '#3eb489' : 'rgba(255,255,255,0.08)') + ';transition:all 0.15s;">' +
         '<div style="font-size:28px;margin-bottom:6px;">💼</div>' +
-        '<div style="font-size:12px;font-weight:700;color:' + (aDiary ? '#fff' : 'rgba(255,255,255,0.65)') + ';line-height:1.3;margin-bottom:8px;">Sökta<br>Arbeten</div>' +
+        '<div style="font-size:12px;font-weight:700;color:' + (aDiary ? '#fff' : 'rgba(255,255,255,0.65)') + ';line-height:1.3;margin-bottom:8px;">Sökta Arbeten</div>' +
         '<div style="display:inline-flex;align-items:center;justify-content:center;background:' + (aDiary ? 'rgba(62,180,137,0.25)' : 'rgba(255,255,255,0.08)') + ';border-radius:20px;padding:2px 10px;font-size:12px;font-weight:800;color:' + (aDiary ? '#3eb489' : 'rgba(255,255,255,0.4)') + ';">' + diary.length + '</div>' +
-        '</div>';
-      html += '<div style="position:relative;border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;background:rgba(167,139,250,0.08);border:2px solid rgba(167,139,250,0.3);transition:all 0.15s;" onclick="profileGoToTrain(\'intervju\')">' +
-        '<div style="font-size:28px;margin-bottom:6px;">🎤</div>' +
-        '<div style="font-size:12px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;">Intervju-<br>träning</div>' +
-        '<div style="display:inline-flex;align-items:center;justify-content:center;background:rgba(167,139,250,0.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:800;color:#a78bfa;">Öppna →</div>' +
         '</div>';
       html += '</div>';
 
