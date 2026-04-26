@@ -11863,10 +11863,16 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
 
   // Uppdatera hub-kortets meta-badge (t.ex. "42% klarat")
   function refreshHubMeta() {
-    var meta = document.getElementById('trainOvnMeta');
-    if (!meta) return;
     var pct = computeOvnPct();
-    meta.textContent = pct + '% klarat';
+    var meta = document.getElementById('trainOvnMeta');
+    if (meta) meta.textContent = pct + '% klarat';
+    // Visa även progress i profil-genvägen om den finns
+    var profileSub = document.getElementById('profileOvningarSub');
+    if (profileSub) {
+      profileSub.textContent = pct > 0
+        ? pct + '% klarat — fortsätt där du slutade'
+        : 'Lektioner, övningar och quiz';
+    }
   }
 
   window.trainSwitchView = function(view) {
@@ -11901,6 +11907,24 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
         try { window.ivCleanup(); } catch(e) {}
       }
     }
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // Genväg från Profil-fliken till Träna-fliken på en specifik vy.
+  // 'ovn'      → Träna → Övningar
+  // 'intervju' → Träna → Intervjuträning
+  // ═══════════════════════════════════════════════════════════════
+  window.profileGoToTrain = function(view) {
+    // 1. Byt till Träna-fliken
+    if (typeof window.mobSwitchTab === 'function') {
+      window.mobSwitchTab('ovningar');
+    }
+    // 2. Öppna rätt under-vy (efter att fliken hunnit byta)
+    setTimeout(function() {
+      if (typeof window.trainSwitchView === 'function') {
+        window.trainSwitchView(view);
+      }
+    }, 100);
   };
 
   // Hook into mobSwitchTab: starta alltid Träning på hub-vyn
@@ -11946,6 +11970,31 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
       </div>
 
       <!-- Övningar och Sparade utbildningar hanteras i kortraden ovan -->
+
+      <!-- ═══ TRÄNA — genvägar till Övningar och Intervjuträning ═══ -->
+      <div style="padding:0 4px;margin-top:24px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:10px;padding:0 2px;">Träna</div>
+
+        <!-- Övningar -->
+        <div onclick="profileGoToTrain('ovn')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;background:rgba(62,180,137,0.06);border:1px solid rgba(62,180,137,0.2);margin-bottom:8px;">
+          <div style="font-size:20px;flex-shrink:0;">📚</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#3eb489;">Övningar</div>
+            <div id="profileOvningarSub" style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:1px;">Lektioner, övningar och quiz</div>
+          </div>
+          <span style="font-size:16px;color:rgba(62,180,137,0.35);">›</span>
+        </div>
+
+        <!-- Intervjuträning -->
+        <div onclick="profileGoToTrain('intervju')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;cursor:pointer;background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.2);margin-bottom:8px;">
+          <div style="font-size:20px;flex-shrink:0;">🎤</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#a78bfa;">Intervjuträning</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:1px;">Öva på vanliga intervjufrågor</div>
+          </div>
+          <span style="font-size:16px;color:rgba(167,139,250,0.35);">›</span>
+        </div>
+      </div>
 
       <!-- Avtal och inställningar -->
       <div style="padding:0 4px;margin-top:24px;">
@@ -12805,7 +12854,15 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
     const btn = document.getElementById('tabBtn-' + tab);
     if (btn) btn.classList.add('mob-tab--active');
 
-    if (tab === 'export') { mobBuildTemplateGrid(); mobRenderSavedCVs(); _initProfilePanel(); }
+    if (tab === 'export') {
+      mobBuildTemplateGrid();
+      mobRenderSavedCVs();
+      _initProfilePanel();
+      // Uppdatera progress på Träna-genvägen
+      if (typeof refreshHubMeta === 'function') {
+        try { refreshHubMeta(); } catch(e) {}
+      }
+    }
     if (tab === 'matcha') { matchaPopulateCvSelect(); }
   }
 
