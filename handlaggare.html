@@ -352,6 +352,52 @@ td{padding:10px 13px;vertical-align:middle}
 .btn.ppt-act-reject.is-active{background:var(--rd);color:#fff;border-color:var(--rd)}
 .btn.ppt-act-edit:hover{border-color:var(--ac);color:var(--ac)}
 
+/* ═══ PPT-EDITOR — En-i-taget-flöde ═══ */
+.ppt-edit-progress{margin-bottom:14px;padding:12px 14px;background:var(--sf2);border:1px solid var(--bdl);border-radius:9px}
+.ppt-edit-progress-text{font-size:12px;color:var(--mu);margin-bottom:6px}
+.ppt-edit-progress-text b{color:var(--tx);font-weight:700}
+.ppt-edit-progress-bar{height:6px;background:var(--bdl);border-radius:3px;overflow:hidden;margin-bottom:9px}
+.ppt-edit-progress-fill{height:100%;background:var(--ac);border-radius:3px;transition:width .25s}
+.ppt-edit-progress-dots{display:flex;gap:5px;flex-wrap:wrap}
+.ppt-edit-dot{width:10px;height:10px;border-radius:50%;background:var(--bdl);cursor:pointer;transition:all .15s;border:1.5px solid transparent}
+.ppt-edit-dot:hover{transform:scale(1.3)}
+.ppt-edit-dot.cur{background:var(--ac);border-color:var(--ac);transform:scale(1.3)}
+.ppt-edit-dot.app{background:var(--gn)}
+.ppt-edit-dot.rej{background:var(--rd);opacity:.6}
+
+.ppt-edit-card-single{padding:18px 20px;border:1.5px solid var(--bdl);border-radius:11px;background:var(--sf);margin-bottom:14px;transition:all .2s}
+.ppt-edit-card-single.is-approved{border-color:var(--gn);background:var(--gnb)}
+.ppt-edit-card-single.is-rejected{border-color:var(--bdl);background:var(--sf2);opacity:.85}
+
+.ppt-edit-source{margin-top:14px;padding:10px 12px;background:var(--sf2);border:1px solid var(--bdl);border-radius:7px}
+.ppt-edit-source-empty{background:transparent;border-style:dashed}
+.ppt-edit-source-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ppt-edit-source-link{font-size:12.5px;font-weight:600;color:var(--ac);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s}
+.ppt-edit-source-link:hover{border-bottom-color:var(--ac)}
+.ppt-edit-source-date{font-size:11px;color:var(--mu)}
+
+.ppt-edit-actions-single{margin-top:18px;justify-content:space-between;gap:8px}
+.ppt-edit-actions-single .btn{flex:1;justify-content:center;padding:9px 12px;font-size:13px;font-weight:600}
+.ppt-edit-actions-single .btn-primary{flex:1.5}
+
+.ppt-edit-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px;flex-wrap:wrap}
+.ppt-edit-nav .btn{font-size:11.5px;padding:6px 11px}
+
+/* Sammanfattningsvy */
+.ppt-summary-hero{padding:14px 16px;background:var(--sf2);border:1px solid var(--bdl);border-radius:9px;margin-bottom:6px}
+.ppt-summary-counts{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;font-size:13px}
+.ppt-summary-count b{font-size:18px;font-weight:800;margin-right:3px}
+.ppt-summary-help{font-size:12px;color:var(--mu);line-height:1.55}
+.ppt-summary-list{display:flex;flex-direction:column;gap:6px}
+.ppt-summary-item{display:flex;gap:10px;padding:9px 12px;background:var(--sf);border:1px solid var(--bdl);border-radius:7px;cursor:pointer;transition:all .15s}
+.ppt-summary-item:hover{border-color:var(--ac);background:var(--acs)}
+.ppt-summary-item.is-approved{border-color:var(--gn)}
+.ppt-summary-icon{flex-shrink:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:var(--bdl);border-radius:50%;font-weight:700}
+.ppt-summary-body{flex:1;min-width:0}
+.ppt-summary-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;gap:8px}
+.ppt-summary-status{font-size:10.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px}
+.ppt-summary-text{font-size:12px;color:var(--tx2);line-height:1.4}
+
 /* ═══ SUMMARY-TAGS (chips i wizard steg 3 + material-cards) ═══ */
 .sum-tag{display:inline-block;padding:3px 8px;font-size:11px;font-weight:600;background:var(--bdl);color:var(--tx2);border-radius:5px}
 
@@ -1154,9 +1200,12 @@ function switchTab(id){
 // ═══ USERS-LISTA ═══
 async function loadUsers(){
   document.getElementById('tBody').innerHTML='<tr><td colspan="9" class="loading">Laddar ärenden...</td></tr>';
+  // Skicka inga filter till backend — visa ALLA registrerade användare.
+  // Handläggaren styr själv via enhet- och handläggar-dropdownsen i UI:t.
+  // (Tidigare filtrerade backend automatiskt på admin.kommun_id/enhet_id
+  // vilket dolde användare som registrerat sig själva via OTP-login utan
+  // att vara kopplade till någon enhet/kommun.)
   const filters={};
-  if(admin.role==='kommunadmin'&&admin.kommun_id) filters.kommun_id=admin.kommun_id;
-  if(admin.role==='handlaggare'&&admin.enhet_id) filters.enhet_id=admin.enhet_id;
   let data;
   try{data=await post('admin_list_users',{filters,adminId:admin.id});}
   catch(e){document.getElementById('tBody').innerHTML=`<tr><td colspan="9" class="loading" style="color:var(--rd)">API-anslutningsfel: ${e.message}</td></tr>`;showErr('Kunde inte hämta användare: '+e.message);return;}
@@ -1164,11 +1213,14 @@ async function loadUsers(){
   allUsers=data.data||data.users||(Array.isArray(data)?data:[]);
   if(allUsers.length===0) document.getElementById('tBody').innerHTML='<tr><td colspan="9" class="loading">Inga deltagare hittades</td></tr>';
 
-  // Fyll enhet-filtret
+  // Fyll enhet-filtret — inkludera "Utan enhet" för användare som loggat in själva
   const enheter = [...new Set(allUsers.map(u=>u.enheter?.name||u.enhet_name).filter(Boolean))].sort();
+  const hasUnassigned = allUsers.some(u => !(u.enheter?.name || u.enhet_name));
   const enhetSel = document.getElementById('enhetFlt');
   if(enhetSel){
-    enhetSel.innerHTML = '<option value="">Alla enheter</option>' + enheter.map(e=>`<option value="${e}">${e}</option>`).join('');
+    enhetSel.innerHTML = '<option value="">Alla enheter</option>'
+      + (hasUnassigned ? '<option value="__none__">⚠️ Utan enhet (självregistrerade)</option>' : '')
+      + enheter.map(e=>`<option value="${e}">${e}</option>`).join('');
   }
 
   // Fyll handläggar-filtret — lista unika handläggare från deltagardatan
@@ -1233,9 +1285,12 @@ function renderTable(users){
     const uid=(u.user_id||u.id||'').toLowerCase();
     const enhetN=u.enheter?.name||u.enhet_name||'';
     const hid=getHandlaggareId(u);
+    // Enhet-matchning: '' = alla, '__none__' = utan enhet, annars exakt namn
+    const enhetMatch = !enhet
+      || (enhet === '__none__' ? !enhetN : enhetN === enhet);
     return (!q||nm.includes(q)||em.includes(q)||uid.includes(q))
         && (!currentStatus||u.status===currentStatus||(currentStatus==='new'&&!u.status))
-        && (!enhet||enhetN===enhet)
+        && enhetMatch
         && (!handlaggareId||hid===handlaggareId);
   });
   document.getElementById('tBody').innerHTML=f.length?f.map(u=>{
@@ -2934,19 +2989,35 @@ async function runAiUpdate(){
     bumpAiQuota();
     renderWizard();
   } catch(e){
-    // Mock-läge: simulera förslag
+    // Mock-läge: simulera förslag (med källor — backend bör returnera samma struktur)
     console.warn('[wizard] ai_update_pptx saknas — mockar resultat');
     await new Promise(r=>setTimeout(r, 1800));
+    const today = new Date().toISOString().split('T')[0];
     wiz.aiUpdateResult = {
       changes: [
-        {slide:2, old:'Arbetslösheten ligger på 7,8% (2022)', suggested:'Arbetslösheten ligger på 8,3% (2025)'},
-        {slide:5, old:'Minimilönen är ca 19 000 kr/mån', suggested:'Genomsnittslönen för nystart är ca 22 500 kr/mån (2025)'},
-        {slide:8, old:'Kontakta Arbetsförmedlingen via telefon 0771-416 416', suggested:'Kontakta Arbetsförmedlingen via Mina sidor på arbetsformedlingen.se'}
+        {
+          slide: 2,
+          old: 'Arbetslösheten ligger på 7,8% (2022)',
+          suggested: 'Arbetslösheten ligger på 8,3% (2025)',
+          source: { url: 'https://www.scb.se/hitta-statistik/statistik-efter-amne/arbetsmarknad/arbetskraftsundersokningar/', site: 'SCB · Arbetskraftsundersökningarna', date: today }
+        },
+        {
+          slide: 5,
+          old: 'Minimilönen är ca 19 000 kr/mån',
+          suggested: 'Genomsnittslönen för nystart är ca 22 500 kr/mån (2025)',
+          source: { url: 'https://www.medlingsinstitutet.se/lonestatistik/', site: 'Medlingsinstitutet · Lönestatistik 2025', date: today }
+        },
+        {
+          slide: 8,
+          old: 'Kontakta Arbetsförmedlingen via telefon 0771-416 416',
+          suggested: 'Kontakta Arbetsförmedlingen via Mina sidor på arbetsformedlingen.se eller appen',
+          source: { url: 'https://arbetsformedlingen.se/for-arbetssokande/kontakt', site: 'Arbetsförmedlingen · Kontakt', date: today }
+        }
       ]
     };
     bumpAiQuota();
     renderWizard();
-    wzStatus('Demo: AI hittade 3 föråldrade fakta. Granska och redigera.', 'ok');
+    wzStatus('Demo: AI hittade 3 föråldrade fakta. Granska en åt gången.', 'ok');
   }
   if(btn){ btn.disabled = false; }
 }
@@ -2954,10 +3025,10 @@ async function runAiUpdate(){
 // ═══════════════════════════════════════════════════════════════════════
 // AI-FÖRSLAGS-REDIGERARE — godkänn/avvisa/redigera, ladda ner ny pptx
 // ═══════════════════════════════════════════════════════════════════════
-let pptEditorState = null; // { changes: [{...orig, status:'pending'|'approved'|'rejected', edited?:string}], moduleId, materialId }
+let pptEditorState = null;
+// State: { materialId, moduleId, changes:[{slide,old,suggested,source,status,edited,_editing}], currentIdx }
 
 function openPptEditor(materialId){
-  // Hämta changes-listan från antingen wizard eller bibliotek
   let changes, moduleId;
   if(materialId){
     const lib = getMaterialLibrary();
@@ -2976,14 +3047,15 @@ function openPptEditor(materialId){
     return;
   }
 
-  // Initiera state — alla förslag startar som "pending"
   pptEditorState = {
     materialId: materialId || null,
     moduleId: moduleId,
+    currentIdx: 0,
     changes: changes.map(c => ({
       ...c,
       status: 'pending',
-      edited: c.suggested  // kan ändras av användaren
+      edited: c.suggested,
+      _editing: false
     }))
   };
 
@@ -3001,112 +3073,228 @@ function closePptEditor(){
 function renderPptEditor(){
   if(!pptEditorState) return;
   const body = document.getElementById('pptEditorBody');
+  const total = pptEditorState.changes.length;
   const counts = {
     approved: pptEditorState.changes.filter(c=>c.status==='approved').length,
     rejected: pptEditorState.changes.filter(c=>c.status==='rejected').length,
     pending:  pptEditorState.changes.filter(c=>c.status==='pending').length
   };
 
-  // Räknare i footer
-  const total = pptEditorState.changes.length;
   document.getElementById('pptEditorCount').innerHTML =
-    `<b style="color:var(--gn)">${counts.approved}</b> godkända · <b style="color:var(--rd)">${counts.rejected}</b> avvisade · <b>${counts.pending}</b> väntar`;
+    `<b style="color:var(--gn)">${counts.approved}</b> godkända · <b style="color:var(--rd)">${counts.rejected}</b> avvisade · <b>${counts.pending}</b> kvar`;
 
-  const cards = pptEditorState.changes.map((c, i) => {
-    const isPending  = c.status === 'pending';
-    const isApproved = c.status === 'approved';
-    const isRejected = c.status === 'rejected';
-    const isEditing  = c._editing;
+  const allDecided = counts.pending === 0;
+  const showSummary = pptEditorState.currentIdx >= total || pptEditorState._summary;
 
-    return `
-      <div class="ppt-edit-card ${isApproved?'is-approved':''} ${isRejected?'is-rejected':''}">
-        <div class="ppt-edit-h">
-          <div class="ppt-edit-slide">Slide ${c.slide}</div>
-          <div class="ppt-edit-status">
-            ${isApproved ? '<span style="color:var(--gn);font-weight:700">✓ Godkänd</span>' : ''}
-            ${isRejected ? '<span style="color:var(--rd);font-weight:700">✕ Avvisad</span>' : ''}
-            ${isPending  ? '<span style="color:var(--mu)">Väntar på beslut</span>' : ''}
-          </div>
-        </div>
-        <div class="ppt-edit-old">
-          <div class="ppt-edit-l">Nu i slidesen</div>
-          <div class="ppt-edit-text">${escapeHtml(c.old)}</div>
-        </div>
-        <div class="ppt-edit-arrow">↓</div>
-        <div class="ppt-edit-new">
-          <div class="ppt-edit-l">AI:s förslag${c.edited!==c.suggested?' <span style="color:var(--ac)">(redigerad av dig)</span>':''}</div>
-          ${isEditing ? `
-            <textarea class="ppt-edit-textarea" id="pptEditTxt-${i}" oninput="pptEditorState.changes[${i}].edited=this.value">${escapeHtml(c.edited)}</textarea>
-            <div style="display:flex;gap:6px;margin-top:6px">
-              <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorState.changes[${i}]._editing=false;renderPptEditor()">Klar</button>
-              <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorState.changes[${i}].edited=pptEditorState.changes[${i}].suggested;pptEditorState.changes[${i}]._editing=false;renderPptEditor()">Återställ AI:s text</button>
-            </div>
-          ` : `
-            <div class="ppt-edit-text">${escapeHtml(c.edited)}</div>
-          `}
-        </div>
-        ${!isEditing ? `
-          <div class="ppt-edit-actions">
-            <button class="btn ppt-act-approve ${isApproved?'is-active':''}" onclick="pptEditorSetStatus(${i},'approved')">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              Godkänn
-            </button>
-            <button class="btn ppt-act-edit" onclick="pptEditorState.changes[${i}]._editing=true;renderPptEditor()">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              Redigera
-            </button>
-            <button class="btn ppt-act-reject ${isRejected?'is-active':''}" onclick="pptEditorSetStatus(${i},'rejected')">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              Avvisa
-            </button>
-          </div>` : ''}
-      </div>`;
-  }).join('');
+  if(showSummary){
+    body.innerHTML = renderPptEditorSummary();
+    const saveBtn = document.getElementById('pptEditorSaveBtn');
+    if(saveBtn){
+      saveBtn.style.display = '';
+      saveBtn.disabled = counts.approved === 0;
+      saveBtn.title = counts.approved === 0 ? 'Inga ändringar är godkända' : '';
+    }
+    return;
+  }
 
-  // Bulk-actions överst
-  const bulkBar = `
-    <div class="ppt-edit-bulk">
-      <span style="font-size:12px;color:var(--mu)">${total} förslag totalt</span>
-      <div style="display:flex;gap:6px">
-        <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorSetAll('approved')">Godkänn alla</button>
-        <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorSetAll('rejected')">Avvisa alla</button>
+  const idx = pptEditorState.currentIdx;
+  const c = pptEditorState.changes[idx];
+  if(!c){ body.innerHTML = ''; return; }
+
+  const isEditing  = c._editing;
+  const isApproved = c.status === 'approved';
+  const isRejected = c.status === 'rejected';
+
+  const src = c.source || {};
+  const sourceHtml = (src.url || src.site) ? `
+    <div class="ppt-edit-source">
+      <div class="ppt-edit-l">Källa för ändringen</div>
+      <div class="ppt-edit-source-row">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;color:var(--ac)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <a href="${escapeHtml(src.url||'#')}" target="_blank" rel="noopener" class="ppt-edit-source-link">${escapeHtml(src.site || src.url || 'Okänd källa')}</a>
+        ${src.date ? `<span class="ppt-edit-source-date">· hämtad ${escapeHtml(src.date)}</span>` : ''}
+      </div>
+    </div>` : `
+    <div class="ppt-edit-source ppt-edit-source-empty">
+      <div class="ppt-edit-l">Källa för ändringen</div>
+      <div style="font-size:12px;color:var(--mu);font-style:italic">Ingen källa angiven av AI:n</div>
+    </div>`;
+
+  const progressBar = `
+    <div class="ppt-edit-progress">
+      <div class="ppt-edit-progress-text">Förslag <b>${idx + 1}</b> av <b>${total}</b></div>
+      <div class="ppt-edit-progress-bar">
+        <div class="ppt-edit-progress-fill" style="width:${Math.round(((idx+1)/total)*100)}%"></div>
+      </div>
+      <div class="ppt-edit-progress-dots">
+        ${pptEditorState.changes.map((cc, i) => {
+          const klass = cc.status === 'approved' ? 'app' : cc.status === 'rejected' ? 'rej' : (i===idx ? 'cur' : '');
+          return `<div class="ppt-edit-dot ${klass}" onclick="pptEditorGoTo(${i})" title="Förslag ${i+1}"></div>`;
+        }).join('')}
       </div>
     </div>`;
 
-  body.innerHTML = bulkBar + cards;
+  body.innerHTML = `
+    ${progressBar}
+    <div class="ppt-edit-card-single ${isApproved?'is-approved':''} ${isRejected?'is-rejected':''}">
+      <div class="ppt-edit-h">
+        <div class="ppt-edit-slide">Slide ${c.slide}</div>
+        <div class="ppt-edit-status">
+          ${isApproved ? '<span style="color:var(--gn);font-weight:700">✓ Godkänd</span>' : ''}
+          ${isRejected ? '<span style="color:var(--rd);font-weight:700">✕ Avvisad</span>' : ''}
+          ${!isApproved && !isRejected ? '<span style="color:var(--mu)">Väntar på beslut</span>' : ''}
+        </div>
+      </div>
 
-  // Uppdatera download-knapp — disabled om alla rejected eller alla pending
+      <div class="ppt-edit-old">
+        <div class="ppt-edit-l">Nu i slidesen</div>
+        <div class="ppt-edit-text">${escapeHtml(c.old)}</div>
+      </div>
+
+      <div class="ppt-edit-arrow">↓</div>
+
+      <div class="ppt-edit-new">
+        <div class="ppt-edit-l">AI:s förslag${c.edited!==c.suggested?' <span style="color:var(--ac)">(redigerad av dig)</span>':''}</div>
+        ${isEditing ? `
+          <textarea class="ppt-edit-textarea" oninput="pptEditorState.changes[${idx}].edited=this.value">${escapeHtml(c.edited)}</textarea>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorState.changes[${idx}]._editing=false;renderPptEditor()">Klar</button>
+            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="pptEditorState.changes[${idx}].edited=pptEditorState.changes[${idx}].suggested;pptEditorState.changes[${idx}]._editing=false;renderPptEditor()">Återställ AI:s text</button>
+          </div>
+        ` : `
+          <div class="ppt-edit-text">${escapeHtml(c.edited)}</div>
+        `}
+      </div>
+
+      ${sourceHtml}
+
+      ${!isEditing ? `
+        <div class="ppt-edit-actions ppt-edit-actions-single">
+          <button class="btn ppt-act-reject" onclick="pptEditorDecide('rejected')" title="Behåll original-texten">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Avvisa
+          </button>
+          <button class="btn ppt-act-edit" onclick="pptEditorState.changes[${idx}]._editing=true;renderPptEditor()" title="Redigera AI:s förslag innan du godkänner">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Redigera
+          </button>
+          <button class="btn btn-primary ppt-act-approve" onclick="pptEditorDecide('approved')" title="Godkänn och gå vidare">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Godkänn & nästa →
+          </button>
+        </div>` : ''}
+    </div>
+
+    <div class="ppt-edit-nav">
+      ${idx > 0 ? `<button class="btn" onclick="pptEditorPrev()">← Föregående</button>` : '<span></span>'}
+      ${idx < total - 1 && (isApproved || isRejected) ? `<button class="btn" onclick="pptEditorNext()">Nästa →</button>` : ''}
+      ${allDecided ? `<button class="btn btn-primary" onclick="pptEditorState._summary=true;renderPptEditor()">Visa sammanfattning →</button>` : ''}
+    </div>
+  `;
+
   const saveBtn = document.getElementById('pptEditorSaveBtn');
-  if(counts.approved === 0){
-    saveBtn.disabled = true;
-    saveBtn.title = 'Godkänn minst ett förslag för att kunna ladda ner';
-  } else {
-    saveBtn.disabled = false;
-    saveBtn.title = '';
+  if(saveBtn){
+    saveBtn.style.display = 'none';
   }
 }
 
-function pptEditorSetStatus(i, status){
-  pptEditorState.changes[i].status = status;
-  pptEditorState.changes[i]._editing = false;
+function renderPptEditorSummary(){
+  const total = pptEditorState.changes.length;
+  const approved = pptEditorState.changes.filter(c=>c.status==='approved');
+  const rejected = pptEditorState.changes.filter(c=>c.status==='rejected');
+  const pending  = pptEditorState.changes.filter(c=>c.status==='pending');
+
+  const summaryItems = pptEditorState.changes.map((c, i) => {
+    const icon = c.status === 'approved' ? '<span style="color:var(--gn);font-size:14px">✓</span>'
+              : c.status === 'rejected' ? '<span style="color:var(--rd);font-size:14px">✕</span>'
+              : '<span style="color:var(--mu);font-size:14px">○</span>';
+    const lbl = c.status === 'approved' ? 'Godkänd' : c.status === 'rejected' ? 'Avvisad' : 'Ej beslutad';
+    return `
+      <div class="ppt-summary-item ${c.status==='approved'?'is-approved':''}" onclick="pptEditorGoTo(${i})">
+        <div class="ppt-summary-icon">${icon}</div>
+        <div class="ppt-summary-body">
+          <div class="ppt-summary-h">
+            <span class="ppt-edit-slide">Slide ${c.slide}</span>
+            <span class="ppt-summary-status">${lbl}</span>
+          </div>
+          <div class="ppt-summary-text">${escapeHtml((c.status==='approved'?c.edited:c.old).slice(0,140))}${(c.status==='approved'?c.edited:c.old).length>140?'…':''}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="ppt-summary-hero">
+      <div class="ppt-summary-counts">
+        <div class="ppt-summary-count" style="color:var(--gn)"><b>${approved.length}</b> godkända</div>
+        <div class="ppt-summary-count" style="color:var(--rd)"><b>${rejected.length}</b> avvisade</div>
+        ${pending.length > 0 ? `<div class="ppt-summary-count" style="color:var(--mu)"><b>${pending.length}</b> ej beslutade</div>` : ''}
+      </div>
+      <div class="ppt-summary-help">
+        ${approved.length > 0
+          ? `Klicka "Ladda ner uppdaterad pptx" nedan för att få en ny fil med ${approved.length} ${approved.length===1?'ändring':'ändringar'} applicerad${approved.length===1?'':'e'}.`
+          : 'Inga ändringar är godkända — det finns inget att ladda ner. Klicka på ett förslag nedan för att granska igen.'}
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin:14px 0 8px">Alla förslag (klicka för att ändra)</div>
+    <div class="ppt-summary-list">${summaryItems}</div>
+    <div style="margin-top:10px;text-align:center">
+      <button class="btn" onclick="pptEditorState._summary=false;pptEditorState.currentIdx=0;renderPptEditor()">← Tillbaka till förslag</button>
+    </div>`;
+}
+
+function pptEditorDecide(status){
+  const idx = pptEditorState.currentIdx;
+  pptEditorState.changes[idx].status = status;
+  pptEditorState.changes[idx]._editing = false;
+
+  const total = pptEditorState.changes.length;
+  let nextIdx = -1;
+  for(let i = idx + 1; i < total; i++){
+    if(pptEditorState.changes[i].status === 'pending'){ nextIdx = i; break; }
+  }
+  if(nextIdx === -1){
+    for(let i = 0; i < idx; i++){
+      if(pptEditorState.changes[i].status === 'pending'){ nextIdx = i; break; }
+    }
+  }
+  if(nextIdx === -1){
+    pptEditorState._summary = true;
+  } else {
+    pptEditorState.currentIdx = nextIdx;
+  }
   renderPptEditor();
 }
-function pptEditorSetAll(status){
-  pptEditorState.changes.forEach(c => { c.status = status; c._editing = false; });
+
+function pptEditorNext(){
+  if(pptEditorState.currentIdx < pptEditorState.changes.length - 1){
+    pptEditorState.currentIdx++;
+    pptEditorState._summary = false;
+    renderPptEditor();
+  }
+}
+function pptEditorPrev(){
+  if(pptEditorState.currentIdx > 0){
+    pptEditorState.currentIdx--;
+    pptEditorState._summary = false;
+    renderPptEditor();
+  }
+}
+function pptEditorGoTo(i){
+  pptEditorState.currentIdx = i;
+  pptEditorState._summary = false;
   renderPptEditor();
 }
 
 async function downloadUpdatedPpt(){
   const approved = pptEditorState.changes.filter(c => c.status === 'approved');
   if(!approved.length){
-    alert('Inga förslag är godkända — det finns inget att uppdatera.');
+    pptEditorStatus('Inga förslag är godkända — det finns inget att uppdatera.', 'err');
     return;
   }
   const btn = document.getElementById('pptEditorSaveBtn');
   btn.disabled = true; btn.textContent = 'Bygger ny pptx…';
 
   try {
-    // Backend bygger den nya pptx-filen med de godkända ändringarna applicerade
     const r = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3117,15 +3305,15 @@ async function downloadUpdatedPpt(){
         changes: approved.map(c => ({
           slide: c.slide,
           old: c.old,
-          new: c.edited
+          new: c.edited,
+          source: c.source || null
         }))
       })
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
 
-    // Backend förväntas returnera blob (eller URL)
     const ct = r.headers.get('content-type') || '';
-    if(ct.includes('application/vnd.openxmlformats-officedocument')){
+    if(ct.includes('application/vnd.openxmlformats-officedocument') || ct.includes('octet-stream')){
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -3138,20 +3326,63 @@ async function downloadUpdatedPpt(){
       if(data.url) window.open(data.url, '_blank');
     }
 
-    // Markera material som "applied"
     if(pptEditorState.materialId){
       const lib = getMaterialLibrary();
       const m = lib.find(x => x.id === pptEditorState.materialId);
       if(m){ m.aiAppliedCount = approved.length; m.aiAppliedAt = new Date().toISOString(); setMaterialLibrary(lib); }
     }
 
-    pptEditorStatus(`✓ Uppdaterad pptx nedladdad med ${approved.length} ändringar.`, 'ok');
+    pptEditorStatus(`✓ Uppdaterad pptx nedladdad med ${approved.length} ändring${approved.length===1?'':'ar'}.`, 'ok');
     setTimeout(()=>{ closePptEditor(); if(typeof renderMaterialView==='function' && currentTab==='material') renderMaterialView(); }, 1400);
   } catch(e){
-    // Mock-fallback: visa instruktioner
-    console.warn('[ppt-editor] apply_pptx_updates saknas — visar instruktioner');
-    pptEditorStatus(`Backend för pptx-bygge saknas än. ${approved.length} ändringar markerade som godkända — när backend är på plats laddas filen ner direkt här.`, 'err');
-    btn.disabled = false; btn.textContent = 'Ladda ner uppdaterad pptx';
+    // Fallback: skapa demo-rapport-fil i klienten så användaren får något att ladda ner
+    console.warn('[ppt-editor] apply_pptx_updates saknas — bygger demo-textfil i klienten');
+    try {
+      const baseName = (wiz?.title || 'uppdaterad').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const today = new Date().toISOString().split('T')[0];
+      let txt = `UPPDATERINGSRAPPORT — ${wiz?.title || 'PowerPoint'}\n`;
+      txt += `Skapad: ${today}\n`;
+      txt += `Antal godkända ändringar: ${approved.length}\n`;
+      txt += '═'.repeat(60) + '\n\n';
+      approved.forEach((c, i) => {
+        txt += `ÄNDRING ${i+1} — Slide ${c.slide}\n`;
+        txt += '─'.repeat(60) + '\n';
+        txt += `NU:        ${c.old}\n`;
+        txt += `ÄNDRA TILL: ${c.edited}\n`;
+        if(c.source && (c.source.url || c.source.site)){
+          txt += `KÄLLA:     ${c.source.site || c.source.url}`;
+          if(c.source.date) txt += ` (hämtad ${c.source.date})`;
+          if(c.source.url && c.source.site) txt += `\n           ${c.source.url}`;
+          txt += '\n';
+        }
+        txt += '\n';
+      });
+      txt += '═'.repeat(60) + '\n';
+      txt += '\nObs: backend för pptx-bygge är inte aktiverat ännu.\n';
+      txt += 'Denna textfil listar de ändringar som ska göras.\n';
+      txt += 'Öppna originalfilen i PowerPoint och applicera ändringarna manuellt.\n';
+
+      const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${baseName}_uppdateringar_${today}.txt`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+
+      if(pptEditorState.materialId){
+        const lib = getMaterialLibrary();
+        const m = lib.find(x => x.id === pptEditorState.materialId);
+        if(m){ m.aiAppliedCount = approved.length; m.aiAppliedAt = new Date().toISOString(); setMaterialLibrary(lib); }
+      }
+
+      pptEditorStatus(`✓ Demoläge: textrapport nedladdad med ${approved.length} ändring${approved.length===1?'':'ar'}. (Riktig pptx kräver backend-endpoint apply_pptx_updates.)`, 'ok');
+      btn.textContent = 'Ladda ner uppdaterad pptx';
+      setTimeout(()=>{ closePptEditor(); if(typeof renderMaterialView==='function' && currentTab==='material') renderMaterialView(); }, 2500);
+    } catch(err2){
+      pptEditorStatus('Kunde inte ladda ner: '+err2.message, 'err');
+      btn.disabled = false; btn.textContent = 'Ladda ner uppdaterad pptx';
+    }
   }
 }
 
@@ -3729,11 +3960,27 @@ async function aiUpdateExisting(id){
   } catch(_){}
 
   if(!changes){
-    // Mock-data baserat på materialets titel
+    // Mock-data baserat på materialets titel — backend bör returnera samma struktur med source-fält
+    const today = new Date().toISOString().split('T')[0];
     changes = [
-      {slide:2, old:'Statistik från 2022 — arbetslösheten 7,8%', suggested:'Statistik från 2025 — arbetslösheten 8,3%'},
-      {slide:5, old:'Arbetsförmedlingen reformerades 2019', suggested:'Arbetsförmedlingen reformerades 2019, ytterligare ändringar trädde i kraft 2024'},
-      {slide:8, old:'Ring 0771-416 416 för bokning', suggested:'Boka via Mina sidor på arbetsformedlingen.se eller appen'}
+      {
+        slide: 2,
+        old: 'Statistik från 2022 — arbetslösheten 7,8%',
+        suggested: 'Statistik från 2025 — arbetslösheten 8,3%',
+        source: { url: 'https://www.scb.se/hitta-statistik/statistik-efter-amne/arbetsmarknad/arbetskraftsundersokningar/', site: 'SCB · Arbetskraftsundersökningarna', date: today }
+      },
+      {
+        slide: 5,
+        old: 'Arbetsförmedlingen reformerades 2019',
+        suggested: 'Arbetsförmedlingen reformerades 2019, ytterligare ändringar trädde i kraft 2024',
+        source: { url: 'https://www.regeringen.se/pressmeddelanden/', site: 'Regeringen.se · Pressmeddelanden', date: today }
+      },
+      {
+        slide: 8,
+        old: 'Ring 0771-416 416 för bokning',
+        suggested: 'Boka via Mina sidor på arbetsformedlingen.se eller appen',
+        source: { url: 'https://arbetsformedlingen.se/for-arbetssokande/kontakt', site: 'Arbetsförmedlingen · Kontakt', date: today }
+      }
     ];
   }
 
