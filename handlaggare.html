@@ -4948,6 +4948,33 @@ async function generateLessonGuide() {
 }
 window.generateLessonGuide = generateLessonGuide;
 
+// Wrapper: ladda ner lektionsmaterial från ett befintligt material i biblioteket.
+// Sätter wiz till materialets data och anropar samma generator.
+async function downloadLessonGuideForMaterial(materialId) {
+  const lib = getMaterialLibrary();
+  const m = lib.find(x => x.id === materialId);
+  if (!m) {
+    showErr('Materialet kunde inte hittas');
+    return;
+  }
+  // Spara nuvarande wiz-state om wizarden är öppen, restaurera efter
+  const savedWiz = wiz ? { ...wiz } : null;
+  wiz = {
+    title: m.title || '',
+    purpose: m.purpose || '',
+    category: m.category || 'intro',
+    langLevel: m.langLevel || 'vardag',
+    estMinutes: m.estMinutes || 30,
+    file: null
+  };
+  try {
+    await generateLessonGuide();
+  } finally {
+    if (savedWiz) wiz = savedWiz;
+  }
+}
+window.downloadLessonGuideForMaterial = downloadLessonGuideForMaterial;
+
 // ═══════════════════════════════════════════════════════════════════════
 // FÖRHANDSGRANSKA DIGITAL MODUL (slides + 3 quiz-frågor)
 // ═══════════════════════════════════════════════════════════════════════
@@ -5587,6 +5614,14 @@ function renderMaterialView(){
             ${m.assignmentCount>0 ? ` · <span style="color:var(--gn)">${m.assignmentCount} tilldelad${m.assignmentCount===1?'':'a'}</span>` : ' · <span style="color:var(--mu)">Inte tilldelad än</span>'}
           </div>
           <div class="mat-card-actions">
+            ${m.fileStored ? `<button class="btn" onclick="downloadMaterialFile('${m.id}')" title="Ladda ner originalet eller AI-uppdaterad version" style="background:rgba(212,164,54,0.08);border-color:var(--ac);color:var(--ac);">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              PowerPoint
+            </button>` : ''}
+            <button class="btn" onclick="downloadLessonGuideForMaterial('${m.id}')" title="Generera lektionsguide-PDF med uppgifter och facit" style="background:rgba(16,185,129,0.08);border-color:#10b981;color:#10b981;">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Lektionsmaterial
+            </button>
             <button class="btn" onclick="reAssignMaterial('${m.id}')" title="Tilldela till fler deltagare">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:3px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               Tilldela
