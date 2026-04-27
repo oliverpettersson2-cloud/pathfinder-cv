@@ -746,6 +746,7 @@ td{padding:10px 13px;vertical-align:middle}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -4793,101 +4794,208 @@ async function generateLessonGuide() {
   const minutes = wiz.estMinutes || 30;
   const numTasks = minutes <= 30 ? 3 : minutes <= 60 ? 5 : 8;
 
-  // Försök få AI-genererat innehåll först — fallback till statiskt om backend saknas
+  // ═══ AI-DRIVEN UPPGIFTSGENERERING (via /api/chat) ═══
+  // Skickar slide-text + lektionsdata till Anthropic API via befintlig backend-proxy.
+  // Faller tillbaka på inbyggda mallar om AI:n inte svarar med giltig JSON.
   let lessonContent = null;
+
+  // Hämta slide-text från materialet (från extractPptxText vid uppladdning) ELLER från
+  // wiz om vi har en uppladdad fil i denna wizard-session
+  let slideTextForAi = null;
+  if (wiz._materialId) {
+    // Vid downloadLessonGuideForMaterial() — hämta från sparat material
+    const lib = getMaterialLibrary();
+    const m = lib.find(x => x.id === wiz._materialId);
+    if (m?.slideText) slideTextForAi = m.slideText;
+  } else if (wiz.file) {
+    // I wizarden — extrahera direkt om vi inte redan gjort det
+    try {
+      const slides = await extractPptxText(wiz.file);
+      if (slides.length > 0) slideTextForAi = slides.join('\n').slice(0, 10000);
+    } catch(e) {}
+  } else if (wiz.sourceType === 'existing_module' && wiz.selectedModuleId) {
+    // Befintlig modul — vi har inte slidetext, AI:n får bara titel/syfte
+    const m = ACTIVE_MODULES.find(x => x.id === wiz.selectedModuleId);
+    if (m) slideTextForAi = `Befintlig modul: ${m.title}\n${m.sub || ''}`;
+  }
+
   try {
-    const r = await post('generate_lesson_pdf', {
-      title: wiz.title,
-      purpose: wiz.purpose,
-      langLevel: wiz.langLevel,
-      estMinutes: minutes,
-      numTasks
+    const systemPrompt = `Du är pedagogisk expert på svenska för vuxenutbildning (SFI/Komvux/AMU/Folkhögskola). Du skapar uppgifter för deltagare på arbetsmarknadsutbildningar.
+
+VIKTIGA KRAV:
+1. Skriv på vardagssvenska. Korta meningar. Du-tilltal. Inga akademiska ord.
+2. INGA slutna frågor med rätt/fel-svar. Bara öppna reflektionsfrågor.
+3. Pedagogisk progression i ${numTasks} uppgifter:
+   - Första 1-3 uppgifterna: REFLEKTION (deltagaren tänker själv, kopplar till sin erfarenhet)
+   - Mitten: PRAKTISK TILLÄMPNING (deltagaren gör något i verkligheten)
+   - Sista 1-2 uppgifterna (vid 60+ min): DISKUSSION i grupp
+4. Uppgifterna SKA referera direkt till specifikt innehåll från slidsen — citera exakta meningar, siffror eller exempel från slidsen i frågorna.
+5. Varje uppgift ska kännas personlig och provocerande på ett konstruktivt sätt.
+
+SVARA ENBART MED GILTIG JSON, inget annat. Inga markdown-backticks, inga förklaringar utanför JSON.
+
+Format:
+{
+  "tasks": [
+    {
+      "title": "Kort, fängslande titel (3-7 ord)",
+      "category": "reflektion" | "tillämpning" | "diskussion",
+      "instruction": "Hur uppgiften görs: enskilt/par/grupp + tid (10-20 ord)",
+      "prompt": "Själva uppgiften för deltagaren. Refererar till slide-innehåll. Använder du-tilltal. 50-150 ord.",
+      "answer": "Vägledning till handläggaren om hur uppgiften bedöms och vad som är viktigt att leta efter. Inte ett facit. 30-80 ord."
+    }
+  ],
+  "structure": [
+    { "phase": "Öppning — vad bär de med sig?", "minutes": <antal>, "notes": "Konkret instruktion till handläggaren" },
+    { "phase": "Genomgång", "minutes": <antal>, "notes": "..." },
+    { "phase": "Övningar", "minutes": <antal>, "notes": "..." },
+    { "phase": "Avslut", "minutes": <antal>, "notes": "..." }
+  ]
+}`;
+
+    const userPrompt = `LEKTION: "${wiz.title}"
+SYFTE: "${wiz.purpose}"
+TID: ${minutes} minuter (varav ca ${Math.round(minutes * 0.45)} min för övningar)
+ANTAL UPPGIFTER: ${numTasks}
+${slideTextForAi ? `\nSLIDE-INNEHÅLL FRÅN POWERPOINT:\n${slideTextForAi}` : '\n(Ingen slide-text tillgänglig — basera uppgifterna enbart på titel och syfte.)'}
+
+Skapa ${numTasks} uppgifter som följer kraven. Varje uppgift ska konkret hänvisa till innehåll från slidsen där det är möjligt.`;
+
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
     });
-    if (r && !r.error && r.content) lessonContent = r.content;
-  } catch(e) {}
+
+    if (resp.ok) {
+      const data = await resp.json();
+      const raw = (data.content || []).map(b => b.text || '').join('').replace(/```json|```/g, '').trim();
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.tasks && Array.isArray(parsed.tasks) && parsed.tasks.length > 0) {
+          lessonContent = {
+            summary: wiz.purpose,
+            structure: parsed.structure || null,  // Om null → bygg standard nedan
+            tasks: parsed.tasks.slice(0, numTasks)
+          };
+          console.log(`[CVmatchen] AI genererade ${parsed.tasks.length} uppgifter${slideTextForAi ? ' baserade på slide-innehåll' : ' (utan slide-text)'}`);
+        }
+      } catch(e) {
+        console.warn('[CVmatchen] Kunde inte parsa AI-svar som JSON:', e);
+      }
+    } else {
+      console.warn('[CVmatchen] /api/chat returnerade fel:', resp.status);
+    }
+  } catch(e) {
+    console.warn('[CVmatchen] AI-anrop misslyckades:', e);
+  }
+
+  // Om AI gav strukturerade uppgifter men ingen lektionsstruktur, bygg en default
+  if (lessonContent && !lessonContent.structure) {
+    lessonContent.structure = [
+      { phase: 'Öppning — vad bär de med sig?', minutes: Math.round(minutes * 0.1), notes: `Hälsa välkommen. Säg ämnet — "${wiz.title}" — och stoppa där. Be deltagarna i 2 minuter skriva tre ord som dyker upp. Samla in på blädderblocket.` },
+      { phase: 'Genomgång av materialet', minutes: Math.round(minutes * 0.3), notes: 'Kör PowerPoint-presentationen. Stanna ofta. Fråga "Vad ser du?" innan du förklarar. Pausa när någon ser fundersam ut.' },
+      { phase: 'Övningar — tänk, tillämpa, diskutera', minutes: Math.round(minutes * 0.45), notes: `Genomför ${numTasks} övningar (se nästa sida) i den ordning de står — pedagogisk progression från reflektion till tillämpning.` },
+      { phase: 'Avslut — en sak var', minutes: Math.round(minutes * 0.15), notes: 'Varje deltagare säger en sak — en mening — som de tar med sig. Ingen får upprepa något. Det tvingar dem att lyssna.' }
+    ];
+  }
 
   // Fallback: bygg pedagogiskt strukturerat innehåll med varierade uppgiftstyper
   if (!lessonContent) {
     // Extrahera nyckelord från titel + syfte för innehållsspecifika uppgifter
     const topic = (wiz.title || 'lektionens ämne').trim();
     const purpose = (wiz.purpose || '').trim();
-    // Hämta huvudbegrepp från syftet (de första 4-6 substantiviska orden, längd > 4)
-    const keyWords = purpose
-      .split(/[\s,.!?;:()]+/)
-      .filter(w => w.length > 4)
-      .filter(w => !/^(deltagare|deltagaren|deltagarna|skall|kunna|förstå|lära|sig|olika|inom|samt|eller|vilka|vilket|deras|denna|detta|dessa)$/i.test(w))
-      .slice(0, 6);
-    const kw = (i) => keyWords[i % Math.max(keyWords.length, 1)] || topic;
 
-    // Pedagogisk progression: börja med konkret förståelse, gå mot analys & tillämpning
-    // Vi har en "bank" av uppgiftsmallar — väljer numTasks olika så de blir UNIKA
+    // ═══ NYA MALLAR — fokus på REFLEKTION → TILLÄMPNING → DISKUSSION ═══
+    // Designfilosofi:
+    //   • Inga slutna frågor med "rätt svar"
+    //   • Vardagssvenska, du-tilltal
+    //   • Koppling till deltagarens egen verklighet
+    //   • Stigande svårighet: tänka → tillämpa → diskutera
+    //   • Ingen mall är "fyll i luckan" — alla kräver eget tänkande
     const taskTemplates = [
-      // 1. Begreppskoll — konkret kunskapscheck
+      // ─── REFLEKTION (1-3) ─────────────────────────────────────────
+      // 1. Personlig ingångsfråga — börja från deltagarens egen erfarenhet
       {
-        title: `Begreppen i ${topic}`,
-        instruction: 'Arbeta enskilt först (5 min), sen jämför med en granne (5 min).',
-        prompt: `Skriv med egna ord vad följande betyder i sammanhanget "${topic}":\n\na) ${kw(0)}\nb) ${kw(1)}\nc) ${kw(2)}\n\nGe också ett konkret exempel för varje begrepp.`,
-        answer: `Bedöm utifrån om deltagaren visar konkret förståelse, inte bara repeterar definitioner. Goda svar förbinder begreppet med ett verkligt sammanhang. Acceptera olika formuleringar så länge kärnan stämmer.`
+        title: 'Innan vi börjar — vad tänker DU?',
+        category: 'reflektion',
+        instruction: 'Skriv enskilt i 5 minuter. Du behöver inte visa det för någon.',
+        prompt: `När du hör "${topic}" — vad är det första som dyker upp i huvudet?\n\nSkriv fritt om:\n• En gång när detta var aktuellt för dig (jobb, familj, vardagen)\n• Vad du redan vet om det\n• Vad som är oklart eller känns krångligt\n\nDet finns inga rätta svar. Skriv som du tänker.`,
+        answer: 'Detta är en startuppgift för att aktivera deltagarens egna erfarenheter innan du presenterar nytt material. Om du läser svaren — leta efter missförstånd och frågor du kan adressera under genomgången. Vissa kommer skriva mycket, andra lite. Båda är OK.'
       },
-      // 2. Sant-eller-falskt — snabb diskussion
+      // 2. Argumentera mot dig själv — metakognitiv övning
       {
-        title: `Sant eller falskt om ${topic}?`,
-        instruction: 'Helklass eller smågrupper. Rösta först, motivera sedan.',
-        prompt: `Diskutera följande påståenden. Vilka stämmer? Vilka stämmer delvis? Vilka är fel?\n\n1. "${topic} berör mest unga personer."\n2. "Det går att lyckas utan kunskap om ${kw(0)}."\n3. "${kw(1)} är samma sak som ${kw(2)}."\n4. "Det finns bara ett rätt sätt att hantera ${topic}."`,
-        answer: `Påstående 1: oftast falskt — ${topic} berör flera grupper. Påstående 2: falskt — kunskap om ${kw(0)} ger bättre förutsättningar. Påstående 3: falskt — det är två olika saker. Påstående 4: falskt — det finns ofta flera fungerande tillvägagångssätt. Värdera resonemanget mer än de exakta svaren.`
+        title: 'Argumentera mot dig själv',
+        category: 'reflektion',
+        instruction: 'Enskilt arbete i 15 minuter. Den som vill får dela med en granne efteråt.',
+        prompt: `Välj ETT av påståendena nedan som du först håller med om:\n\n☐ "Det är arbetsgivarens ansvar att lära mig det jag behöver"\n☐ "Min bakgrund är min styrka — inte ett hinder"\n☐ "Det är aldrig för sent att ändra riktning i livet"\n☐ "Jag vet vad som är bäst för mig"\n\nSteg 1: Skriv tre starka argument FÖR ditt valda påstående.\n\nSteg 2: Skriv tre lika starka argument MOT samma påstående. Inga "men ändå", inga kompromisser. Bli din egen motståndare.\n\nSteg 3: Står du fast vid din ursprungliga åsikt? Varför / varför inte?`,
+        answer: 'Övningen tränar kritiskt tänkande. Värdera kvaliteten på argumenten — kan deltagaren se sin egen åsikt utifrån? Det är OK att ändra eller behålla åsikt. Det är INTE OK att inte ens försöka argumentera mot.'
       },
-      // 3. Tillämpning — ditt eget liv
+      // 3. Det svåraste samtalet — emotionell reflektion
       {
-        title: `Koppla till ditt eget liv`,
-        instruction: 'Skriv enskilt (10 min). Den som vill får dela med klassen.',
-        prompt: `Hur märker du av "${topic}" i ditt eget liv eller din vardag?\n\n• Beskriv en konkret situation där det blivit aktuellt för dig.\n• Vad gjorde du då? Var det rätt agerande?\n• Skulle du göra annorlunda nästa gång? Varför?`,
-        answer: `Personliga svar — bedöm ärlighet, reflektion och förmåga att se sin egen roll. Goda svar visar att deltagaren kan applicera lektionens innehåll på sin egen situation, inte bara teoretiskt.`
+        title: 'Det svåraste samtalet',
+        category: 'reflektion',
+        instruction: 'Enskilt arbete (10 min). Innehållet är privat — du delar bara om du vill.',
+        prompt: `Tänk på en gång när du behövde säga något viktigt till någon — och det var jobbigt.\n\n• Vad handlade det om?\n• Vad var du rädd för skulle hända?\n• Hur gick det till slut?\n\nKoppla nu till "${topic}":\nFinns det något du borde säga till någon om detta ämne — som du inte sagt än? Till en chef, en partner, dig själv? Skriv det i ett kuvert eller på en lapp som ingen ser.`,
+        answer: 'Stark reflektionsövning som ofta öppnar upp deltagare. Var beredd på att vissa kan bli berörda — det är meningen. Erbjud att prata efter lektionen. Använd inte gruppdiskussion direkt efter denna uppgift.'
       },
-      // 4. Caseuppgift — analys
+      // ─── PRAKTISK TILLÄMPNING (4-6) ──────────────────────────────
+      // 4. 24-timmars-experiment — verklighetsbaserad uppgift
       {
-        title: `Casescenario`,
-        instruction: 'Smågrupper på 3-4 personer (15 min). Redovisning på 2 min/grupp.',
-        prompt: `Maria, 32 år, har precis flyttat till en ny stad. Hon möter en utmaning som handlar om "${topic}".\n\n• Vilka tre frågor borde Maria ställa sig först?\n• Vilka är hennes tre viktigaste handlingsalternativ?\n• Vad rekommenderar ni att hon gör — och varför?`,
-        answer: `Goda svar visar att deltagarna identifierar relevanta frågor (inte irrelevanta detaljer), väger flera alternativ mot varandra och kan motivera sitt val med argument från lektionens innehåll. Acceptera olika rekommendationer om motiveringen är logisk.`
+        title: '24-timmars-experiment',
+        category: 'tillämpning',
+        instruction: 'Detta gör du UTANFÖR klassrummet — innan nästa träff. Anteckna efteråt.',
+        prompt: `Välj EN handling att genomföra inom 24 timmar:\n\n☐ Prata med någon på 60+ år om hur arbetslivet såg ut för 30 år sen\n☐ Sök upp lediga jobb i ett yrke du ALDRIG sett dig själv i — bara för att se\n☐ Ring eller mejla en person på LinkedIn som har jobbet du drömmer om — fråga ett konkret \nHur länge tog det att lära sig?\n☐ Gå förbi en arbetsplats du undrar över — bara titta\n☐ Hitta på en egen handling kopplad till "${topic}"\n\nAnteckna efteråt (3 meningar):\n1. Vad gjorde du faktiskt?\n2. Vad förväntade du dig skulle hända?\n3. Vad blev annorlunda?`,
+        answer: 'Den viktigaste uppgiften om du vill ha verklig förändring. Följ upp vid nästa träff — fråga vem som faktiskt gjort det. De som inte gjort det säger ofta att de tänkt göra det "snart". Pusha vänligt.'
       },
-      // 5. Argumentationsövning
+      // 5. Min vardag, mitt val
       {
-        title: `Argumentera för och emot`,
-        instruction: 'Två lag. Lag A argumenterar för, Lag B emot. 10 min förberedelse, 10 min debatt.',
-        prompt: `Påstående att debattera:\n\n"Det är alltid bättre att lära sig om ${topic} tidigt än sent i livet."\n\n• Lag A: Hitta minst tre argument FÖR påståendet.\n• Lag B: Hitta minst tre argument MOT (eller nyanserande argument).`,
-        answer: `Värdera kvalitet i argumenten, inte vinnaren. Goda lag använder konkreta exempel, hänvisar till lektionens innehåll och motargumenterar varandra respektfullt. Lyft fram nyanser i avslutningen — sällan är något "alltid".`
+        title: 'Min vardag, mitt val',
+        category: 'tillämpning',
+        instruction: 'Enskilt (15 min). Konkret och ärlig — inga drömmar.',
+        prompt: `Lektionen handlar om "${topic}". Men teorin är värdelös om du inte kan använda den i din egen vardag.\n\nSvara konkret:\n\n1. Var i din vardag möter du detta? (Skriv minst tre platser, situationer eller personer.)\n\n2. Vilken EN sak kan du göra annorlunda redan imorgon? Inte "tänka på" — göra. Med när, var och hur.\n\n3. Vad är det som hindrat dig hittills? Var ärlig — skriv inte vad som låter bra.\n\n4. Hur märker DU att du faktiskt gjort det? (Inte din handläggare — du själv. Vad förändras i ditt liv?)`,
+        answer: 'Tvinga konkretion. Otydliga svar ("jag ska bli mer aktiv") betyder ingenting. Be deltagaren skriva om tills det finns ett när, var och hur. Punkten om hindret är ofta den ärligaste och viktigaste.'
       },
-      // 6. Reflektion — vad har jag lärt
+      // 6. Casescenario som blir personligt
       {
-        title: `Reflektionspapper`,
-        instruction: 'Enskilt (10 min). Lämnas in eller behålls för eget bruk.',
-        prompt: `Avsluta meningarna nedan i 1-3 meningar var:\n\n1. Det viktigaste jag lärt mig idag om "${topic}" är...\n2. Något jag fortfarande undrar över är...\n3. Tre saker jag tar med mig från lektionen är...\n4. En sak jag tänker pröva eller göra annorlunda är...`,
-        answer: `Personlig reflektion. Bedöm djup och ärlighet — inte volym. Använd som underlag för individuella samtal eller för att anpassa nästa lektion. Frågorna under "fortfarande undrar" är viktiga signaler om vad som behöver fördjupas.`
+        title: 'Vad skulle DU göra?',
+        category: 'tillämpning',
+        instruction: 'Smågrupper (3-4 personer, 15 min). Diskutera, men varje person skriver sitt eget svar.',
+        prompt: `Maria, 35 år, har precis fått ett besked som påverkar hennes liv. Det handlar om "${topic}".\n\nHon har tre alternativ:\n• Alternativ A: Det säkra — det hon vet fungerar, även om hon inte är lycklig.\n• Alternativ B: Det djärva — risk för att misslyckas, chans till stor förändring.\n• Alternativ C: Vänta och se — låta tiden visa vad som händer.\n\nSteg 1 (i grupp): Diskutera varje alternativ. Vad kan gå bra? Vad kan gå fel?\n\nSteg 2 (enskilt): Vad skulle DU göra om du vore Maria? Inte vad som är "rätt" — vad du, med din historia, skulle göra.\n\nSteg 3 (i grupp): Berätta för varandra och förklara varför.`,
+        answer: 'Den bästa varianten av case-uppgifter. Lyft fram skillnader i grupperna efteråt — varför valde olika personer olika alternativ? Det säger något om varje persons värderingar och risktolerans, inte om "rätt svar".'
       },
-      // 7. Skapa-en-fråga
+      // ─── DISKUSSION (7-8) ────────────────────────────────────────
+      // 7. Det vi inte pratar om
       {
-        title: `Skapa egna kunskapsfrågor`,
-        instruction: 'Par eller smågrupper (10 min). Byt frågor med en annan grupp och lös varandras (10 min).',
-        prompt: `Formulera tre frågor om "${topic}" som ni tycker är viktiga att kunna svara på:\n\n• En enkel faktafråga (svar: ja/nej eller ett ord)\n• En "varför"-fråga (svar: 1-2 meningar)\n• En "hur skulle du göra om..."-fråga (svar: ett resonemang)\n\nByt sen frågor med ett annat par och svara på deras.`,
-        answer: `Värdera frågekvaliteten. Goda frågor är begripliga, inte triviala, och täcker olika kognitiva nivåer (faktakunskap, förståelse, tillämpning). När de svarar på varandras: värdera om svaren stämmer och har djup.`
+        title: 'Det vi inte pratar om',
+        category: 'diskussion',
+        instruction: 'Helklass eller stora grupper (15-20 min). Ingen behöver dela något privat — bara vad de tycker.',
+        prompt: `Kring "${topic}" finns saker som folk SÄLLAN pratar om öppet.\n\nDiskutera:\n\n1. Vilka är de jobbigaste sanningarna kring detta ämne? Det folk vet men inte säger högt?\n\n2. Vad är skammen kopplad till? (Det finns nästan alltid skam runt viktiga ämnen.)\n\n3. Vad skulle förändras om vi PRATADE om det öppet?\n\n4. Vad hindrar oss?`,
+        answer: 'Kraftfull men kan vara känslig. Sätt tydliga regler först: "Vi pratar om ämnet generellt — inte om enskilda personer i rummet." Var beredd att avbryta om någon utlämnar sig själv eller andra för mycket. Avsluta med något hoppfullt.'
       },
-      // 8. Handlingsplan — fram-i-tid
+      // 8. Skapa nästa lektion
       {
-        title: `Min handlingsplan`,
-        instruction: 'Enskilt arbete (15 min). Den som vill får dela med en granne.',
-        prompt: `Utifrån vad du lärt dig om "${topic}", skriv en konkret handlingsplan:\n\n• En sak du tänker göra inom 24 timmar:\n• En sak du tänker göra inom en vecka:\n• En sak du tänker göra inom en månad:\n\nFör varje punkt: hur vet du att du faktiskt har gjort det? (mätbart resultat)`,
-        answer: `Värdera om handlingarna är konkreta, realistiska och mätbara — inte vaga ("jag ska bli bättre") utan specifika ("jag ska kontakta X om Y senast fredag"). Bra handlingsplaner har ett tydligt "klart-kriterium". Använd som uppföljning vid nästa möte.`
+        title: 'Skapa nästa lektion',
+        category: 'diskussion',
+        instruction: 'Smågrupper (15 min). Resultatet används av läraren för att forma nästa lektion.',
+        prompt: `Ni är nu "experter" på "${topic}" — eller åtminstone har ni tänkt mer kring det än många andra.\n\nGruppens uppgift:\n\nNi ska designa nästa lektion. Inte bara välja ämne — bestämma:\n\n1. Vilken EN frågan är viktigast att fortsätta med? (Vad missade vi? Vad behöver fördjupas?)\n\n2. Vad fungerade bäst idag? (Vilken övning lärde ni er mest av?)\n\n3. Vad fungerade sämst? Var ärliga.\n\n4. Vilket format borde nästa lektion ha? Föreläsning? Praktisk övning? Studiebesök?\n\nLämna in eller redovisa muntligt — läraren använder detta på riktigt.`,
+        answer: 'Ger DIG som handläggare guldvärd feedback. Ta det på allvar — om grupperna säger samma sak om vad som inte funkar, ändra det. Att deltagarna får påverka är i sig en av de starkaste motivationsfaktorerna.'
       }
     ];
 
-    // Ta exakt numTasks olika uppgifter — alltid samma ordning för pedagogisk progression
+    // Ta exakt numTasks olika uppgifter — pedagogisk progression: reflektion → tillämpning → diskussion
     lessonContent = {
       summary: wiz.purpose,
       structure: [
-        { phase: 'Uppvärmning & introduktion', minutes: Math.round(minutes * 0.1), notes: `Hälsa deltagarna välkomna. Presentera dagens ämne: "${topic}". Fråga: "Vad tänker ni på när ni hör denna rubrik?" Skriv ord på tavlan/blädderblock.` },
-        { phase: 'Genomgång av materialet', minutes: Math.round(minutes * 0.35), notes: 'Gå igenom PowerPoint-presentationen slide för slide. Pausa minst en gång per slide för att fråga om förståelse. Be deltagare berätta vad de ser med egna ord.' },
-        { phase: 'Övningar (se nästa sida)', minutes: Math.round(minutes * 0.4), notes: `Genomför ${numTasks} övningar i den ordning de står — de är upplagda för pedagogisk progression från enkel förståelse till tillämpning.` },
-        { phase: 'Avslut & sammanfattning', minutes: Math.round(minutes * 0.15), notes: 'Be varje deltagare säga en sak de tar med sig. Sammanfatta lektionens nyckelpunkter på 2 minuter. Berätta vad nästa steg är.' }
+        { phase: 'Öppning — vad bär de med sig?', minutes: Math.round(minutes * 0.1), notes: `Hälsa välkommen. Säg ämnet — "${topic}" — och stoppa där. Be deltagarna i 2 minuter skriva tre ord som dyker upp. Samla in på blädderblocket. Det blir en spegel av rummet du sen kan återkomma till.` },
+        { phase: 'Genomgång av materialet', minutes: Math.round(minutes * 0.3), notes: 'Kör PowerPoint-presentationen, men inte slide för slide i ordning. Stanna ofta. Fråga "Vad ser du?" innan du förklarar. Be deltagare själva läsa rubriker högt. Pausa när någon ser fundersam ut.' },
+        { phase: 'Övningar — tänk, tillämpa, diskutera', minutes: Math.round(minutes * 0.45), notes: `Genomför ${numTasks} övningar (se nästa sida). Ordningen är medvetet vald: först reflektion, sen tillämpning, sen diskussion. Hoppa INTE över de personliga frågorna — det är där lärandet sätter sig.` },
+        { phase: 'Avslut — en sak var', minutes: Math.round(minutes * 0.15), notes: 'Varje deltagare säger en sak — en mening — som de tar med sig. Ingen får upprepa något som redan sagts. Det tvingar dem att lyssna på varandra. Du säger inget eget förrän alla har talat. Avsluta med vad som händer härnäst.' }
       ],
       tasks: taskTemplates.slice(0, numTasks)
     };
@@ -4996,7 +5104,21 @@ async function generateLessonGuide() {
     // Ny sida för varje uppgift om det är ont om plats
     if (y > pageH - margin - 80) { doc.addPage(); y = margin; }
 
-    // Uppgift-header
+    // Kategori-färg (reflektion=lila, tillämpning=grön, diskussion=orange)
+    const catColors = {
+      'reflektion': [124, 58, 237],     // lila
+      'tillämpning': [16, 185, 129],    // grön
+      'diskussion': [217, 119, 6]       // orange
+    };
+    const catLabels = {
+      'reflektion': 'REFLEKTION',
+      'tillämpning': 'TILLÄMPNING',
+      'diskussion': 'DISKUSSION'
+    };
+    const catColor = catColors[t.category] || [26, 26, 46];
+    const catLabel = catLabels[t.category] || '';
+
+    // Uppgift-header (mörkblå banner)
     doc.setFillColor(26, 26, 46);
     doc.rect(margin, y - 2, pageW - margin * 2, 9, 'F');
     doc.setTextColor(255, 255, 255);
@@ -5007,6 +5129,18 @@ async function generateLessonGuide() {
     doc.setFontSize(10);
     doc.text(t.title || '', margin + 28, y + 4);
     y += 12;
+
+    // Kategori-badge (om kategori finns)
+    if (catLabel) {
+      doc.setFillColor(...catColor);
+      const badgeW = doc.getTextWidth(catLabel) / 2.83 + 8;  // konvertera pt -> mm
+      doc.roundedRect(margin, y - 3, badgeW, 5, 1, 1, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.text(catLabel, margin + 4, y + 0.5);
+      y += 5;
+    }
 
     // Instruktion (kursiv-stil — italic stöds av helvetica)
     if (t.instruction) {
@@ -5097,6 +5231,8 @@ async function downloadLessonGuideForMaterial(materialId) {
     showErr('Materialet kunde inte hittas');
     return;
   }
+  // Visa enkel "AI tänker"-indikator
+  showOk('AI skapar lektionsmaterial — vänta 5-15 sek…');
   // Spara nuvarande wiz-state om wizarden är öppen, restaurera efter
   const savedWiz = wiz ? { ...wiz } : null;
   wiz = {
@@ -5105,7 +5241,8 @@ async function downloadLessonGuideForMaterial(materialId) {
     category: m.category || 'intro',
     langLevel: m.langLevel || 'vardag',
     estMinutes: m.estMinutes || 30,
-    file: null
+    file: null,
+    _materialId: materialId  // Så AI-anropet kan hitta sparad slide-text
   };
   try {
     await generateLessonGuide();
@@ -5438,11 +5575,60 @@ function fileToBase64(file){
     r.readAsDataURL(file);
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// SLIDE-TEXT-EXTRAHERING
+// ═══════════════════════════════════════════════════════════════════════
+// Läser en .pptx-fil och extraherar all text från slidsen.
+// Returnerar: ["Slide 1: text...", "Slide 2: text...", ...] eller [] vid fel.
+//
+// .pptx är en zippad XML-struktur. Slide-text ligger i ppt/slides/slide*.xml
+// inuti <a:t>-taggar. Vi använder JSZip för att packa upp och DOMParser för XML.
+async function extractPptxText(file) {
+  if (!window.JSZip || !file) return [];
+  try {
+    const zip = await window.JSZip.loadAsync(file);
+    const slideFiles = Object.keys(zip.files)
+      .filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))
+      .sort((a, b) => {
+        // Sortera numeriskt: slide1, slide2, ..., slide10 (inte slide1, slide10, slide2)
+        const na = parseInt(a.match(/slide(\d+)/)[1], 10);
+        const nb = parseInt(b.match(/slide(\d+)/)[1], 10);
+        return na - nb;
+      });
+
+    const slides = [];
+    for (let i = 0; i < slideFiles.length; i++) {
+      const xml = await zip.files[slideFiles[i]].async('string');
+      // Plocka ut all text från <a:t>...</a:t>-taggar (där PowerPoint sparar text)
+      const matches = xml.match(/<a:t[^>]*>([^<]*)<\/a:t>/g) || [];
+      const texts = matches
+        .map(m => m.replace(/<a:t[^>]*>/, '').replace(/<\/a:t>/, ''))
+        .map(t => t
+          // HTML-entities → riktiga tecken
+          .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+        )
+        .filter(t => t.trim().length > 0);
+      const slideText = texts.join(' ').trim();
+      if (slideText) {
+        slides.push(`Slide ${i + 1}: ${slideText}`);
+      }
+    }
+    return slides;
+  } catch (e) {
+    console.warn('[CVmatchen] Kunde inte extrahera slide-text:', e);
+    return [];
+  }
+}
+window.extractPptxText = extractPptxText;
+
 async function saveToMaterialLibrary({assigned, count, moduleId}){
   const lib = getMaterialLibrary();
   const id = moduleId || ('mod_'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
   // Försök lagra filinnehållet (base64) så download-knappen kan returnera det
   let fileStored = false;
+  let slideText = null;
   if (wiz.file) {
     try {
       const base64 = await fileToBase64(wiz.file);
@@ -5461,6 +5647,19 @@ async function saveToMaterialLibrary({assigned, count, moduleId}){
     } catch(e) {
       console.warn('[CVmatchen] Kunde inte spara filinnehåll lokalt:', e);
     }
+
+    // Extrahera slide-text för senare AI-användning vid lektionsmaterial-generering
+    try {
+      const slides = await extractPptxText(wiz.file);
+      if (slides.length > 0) {
+        slideText = slides.join('\n');
+        // Begränsa till ~10 KB så det inte blir absurt stort i localStorage
+        if (slideText.length > 10000) slideText = slideText.slice(0, 10000) + '\n[trunkerad…]';
+        console.log(`[CVmatchen] Extraherade ${slides.length} slides text från ${wiz.file.name}`);
+      }
+    } catch(e) {
+      console.warn('[CVmatchen] Kunde inte extrahera slide-text:', e);
+    }
   }
   const item = {
     id,
@@ -5474,6 +5673,7 @@ async function saveToMaterialLibrary({assigned, count, moduleId}){
     fileSize: wiz.file?.size || 0,
     fileType: wiz.file?.type || null,
     fileStored, // True om filen finns lagrad lokalt → download-knappen funkar
+    slideText,  // Slide-innehåll som text (för AI-prompt vid lektionsmaterial-generering)
     aiUpdated: !!wiz.aiUpdateResult,
     aiChanges: wiz.aiUpdateResult?.changes?.length || 0,
     createdAt: new Date().toISOString(),
