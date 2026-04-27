@@ -589,6 +589,7 @@ td{padding:10px 13px;vertical-align:middle}
 .ja-job-score-l{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 .ja-status{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
 .ja-status.sent{background:var(--blb);color:var(--bl)}
+.ja-status.applied{background:var(--gnb);color:var(--gn)}
 .ja-status.interview{background:var(--orb);color:var(--or)}
 .ja-status.offer{background:var(--gnb);color:var(--gn)}
 .ja-status.rejected{background:var(--rdb);color:var(--rd)}
@@ -2156,8 +2157,10 @@ function renderTabCV(data){
 
 let currentJaSubtab = 'sokta';
 function renderTabJobbansok(data){
-  const apps = data.applications || data.jobApplications || [];
-  const matches = data.matches || data.jobMatches || data.matchedJobs || [];
+  // Stöd flera fältnamn — backend kan använda "applications", "jobApplications" eller "job_diary".
+  // Stub-datan för Oliver Pettersson använder job_diary + matched_cvs (mobilappens namnvall).
+  const apps = data.applications || data.jobApplications || data.job_diary || [];
+  const matches = data.matches || data.jobMatches || data.matchedJobs || data.matched_cvs || [];
 
   if(!apps.length && !matches.length){
     return `<div class="ud-body-h">Jobbansökan</div>
@@ -2166,11 +2169,12 @@ function renderTabJobbansok(data){
 
   const STATUS_LABEL = {
     sent: 'Skickad', draft: 'Utkast', interview: 'På intervju',
-    offer: 'Fått erbjudande', rejected: 'Avslag', withdrawn: 'Återkallad'
+    offer: 'Fått erbjudande', rejected: 'Avslag', withdrawn: 'Återkallad',
+    applied: 'Sökt'
   };
 
-  // Statistik-sammanställning
-  const sent = apps.filter(a => a.status === 'sent' || !a.status || a.status === 'interview' || a.status === 'offer').length;
+  // Statistik-sammanställning (räkna 'applied' som skickad också)
+  const sent = apps.filter(a => a.status === 'sent' || a.status === 'applied' || !a.status || a.status === 'interview' || a.status === 'offer').length;
   const interviews = apps.filter(a => a.status === 'interview' || a.status === 'offer').length;
   const offers = apps.filter(a => a.status === 'offer').length;
 
@@ -2178,20 +2182,29 @@ function renderTabJobbansok(data){
   const sortedMatches = [...matches].sort((a,b) => (b.score || b.matchScore || 0) - (a.score || a.matchScore || 0));
 
   const matchesHTML = sortedMatches.length ? sortedMatches.map(m => {
-    const score = Math.round((m.score || m.matchScore || 0) * (m.score > 1 ? 1 : 100));
-    const cls = score >= 80 ? 'high' : score >= 50 ? 'mid' : 'low';
+    // Stöd både score (0-1 eller 0-100) och fallback för stub-data utan score
+    const rawScore = m.score || m.matchScore;
+    const score = rawScore != null
+      ? Math.round(rawScore * (rawScore > 1 ? 1 : 100))
+      : null;
+    const cls = (score != null && score >= 80) ? 'high' : (score != null && score >= 50) ? 'mid' : 'low';
+    const matchedAt = m.matchedAt || m.saved_at || m.matched_at;
+    const location = m.location || m.kommun;
     return `<div class="ja-job">
       <div class="ja-job-score">
-        <div class="ja-job-score-v ${cls}">${score}%</div>
-        <div class="ja-job-score-l">Match</div>
+        ${score != null
+          ? `<div class="ja-job-score-v ${cls}">${score}%</div><div class="ja-job-score-l">Match</div>`
+          : `<div class="ja-job-score-v" style="font-size:18px;color:var(--mu);">—</div><div class="ja-job-score-l">Okat.</div>`
+        }
       </div>
       <div class="ja-job-body">
         <div class="ja-job-h">
           <div class="ja-job-t">${escapeHtml(m.title || m.jobTitle || 'Jobb')}</div>
         </div>
-        <div class="ja-job-c">${escapeHtml(m.company || m.employer || '')}${m.location ? ' · ' + escapeHtml(m.location) : ''}</div>
+        <div class="ja-job-c">${escapeHtml(m.company || m.employer || '')}${location ? ' · ' + escapeHtml(location) : ''}</div>
         <div class="ja-job-meta">
-          ${m.matchedAt ? `<span>Matchad: ${m.matchedAt.split('T')[0]}</span>` : ''}
+          ${matchedAt ? `<span>Matchad: ${matchedAt.split('T')[0]}</span>` : ''}
+          ${m.cv_variant ? `<span>CV: ${escapeHtml(m.cv_variant)}</span>` : ''}
           ${m.source ? `<span>Källa: ${escapeHtml(m.source)}</span>` : ''}
           ${m.applied ? `<span style="color:var(--gn);font-weight:700">Ansökt</span>` : ''}
         </div>
@@ -2201,13 +2214,14 @@ function renderTabJobbansok(data){
 
   const appsHTML = apps.length ? apps.map(a => {
     const status = a.status || 'sent';
+    const location = a.location || a.kommun;
     return `<div class="ja-job">
       <div class="ja-job-body">
         <div class="ja-job-h">
           <div class="ja-job-t">${escapeHtml(a.title || a.jobTitle || 'Tjänst')}</div>
           <span class="ja-status ${status}">${STATUS_LABEL[status] || status}</span>
         </div>
-        <div class="ja-job-c">${escapeHtml(a.company || a.employer || '')}${a.location ? ' · ' + escapeHtml(a.location) : ''}</div>
+        <div class="ja-job-c">${escapeHtml(a.company || a.employer || '')}${location ? ' · ' + escapeHtml(location) : ''}</div>
         <div class="ja-job-meta">
           ${a.applied_at || a.appliedAt ? `<span>Skickad: ${(a.applied_at || a.appliedAt).split('T')[0]}</span>` : ''}
           ${a.deadline ? `<span>Deadline: ${a.deadline.split('T')[0]}</span>` : ''}
