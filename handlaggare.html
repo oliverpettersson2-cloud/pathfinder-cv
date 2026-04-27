@@ -1330,7 +1330,17 @@ function injectDemoUsers(realUsers) {
           description: 'Sommarjobb som muraryrkesgesäll på privat byggprojekt.'
         }
       ],
-      education: [],
+      education: [
+        {
+          program: 'Samhäll/Ekonomi',
+          school: 'Allvar Gullstrandgymnasiet',
+          location: 'Landskrona',
+          level: 'Gymnasieskola',
+          startYear: '2006',
+          endYear: '2009',
+          description: 'Gymnasieexamen med inriktning samhälle och ekonomi.'
+        }
+      ],
       skills: ['Truck (A-B)', 'Lagerarbete', 'Logistik', 'Kassahantering', 'Kundbemötande', 'Försäljning', 'Svenska', 'Engelska'],
       languages: ['Svenska – modersmål', 'Engelska – flytande']
     } : { name: namePart, email };
@@ -2450,7 +2460,8 @@ function renderTabUtbilda(data){
   const cvd = data.cv?.data || data.cv || {};
   const savedEdu = data.saved_edu || [];
   const eduHistory = data.edu_history || [];
-  const cvdEdu = (cvd.education || []).filter(e => e && (e.degree || e.school));
+  // Stötta både degree (gamla mobilen) och program (nya mobilen)
+  const cvdEdu = (cvd.education || []).filter(e => e && (e.degree || e.program || e.school));
 
   let html = `<div class="ud-body-h">Utbilda dig</div>`;
 
@@ -2461,9 +2472,14 @@ function renderTabUtbilda(data){
     html += '<div style="display:grid;gap:8px;">';
     cvdEdu.forEach(e => {
       const period = [e.startYear, e.endYear].filter(Boolean).join(' – ') || '';
+      const titel = e.program || e.degree || 'Okänd utbildning';
+      const skola = e.school || '';
+      const ort = e.location ? ' · ' + e.location : '';
+      const niva = e.level ? ` · ${e.level}` : '';
       html += `<div style="padding:12px 14px;background:rgba(0,0,0,0.02);border:1px solid var(--bd);border-radius:10px;">
-        <div style="font-size:13px;font-weight:700;color:var(--tx);">${escapeHtml(e.degree || 'Okänd utbildning')}</div>
-        <div style="font-size:12px;color:var(--mu);margin-top:2px;">${escapeHtml(e.school || '')}${period ? ' · ' + period : ''}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--tx);">${escapeHtml(titel)}</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:2px;">${escapeHtml(skola)}${escapeHtml(ort)}${period ? ' · ' + period : ''}${escapeHtml(niva)}</div>
+        ${e.description ? `<div style="font-size:11.5px;color:var(--tx2);margin-top:6px;line-height:1.45;">${escapeHtml(e.description)}</div>` : ''}
       </div>`;
     });
     html += '</div>';
