@@ -1958,24 +1958,26 @@ function renderUserCharts(data){
   const weeks = lastWeeks(6);
   // Hämta veckostatistik från activity-data om den finns
   const act = data.activity || {};
-  let matchArr = act.matches_per_week || null;
+  let appsArr = act.applications_per_week || act.jobs_applied_per_week || null;
   let ovnArr = act.exercises_per_week || act.events_per_week || null;
   let logArr = act.logins_per_week || null;
 
   // Fallback: härled rimlig statistik från övriga datafält
-  if (!matchArr || !ovnArr || !logArr) {
-    // Antal totalt (matchningar, klara moduler/uppgifter, ungefärlig inloggningsfrekvens)
-    const totalMatches = (data.matched_cvs?.length) || (data.matches?.length) || 0;
+  if (!appsArr || !ovnArr || !logArr) {
+    // Antal totalt (sökta arbeten, klara moduler/uppgifter)
+    const totalApps = (data.job_diary?.length) || (data.applications?.length) || 0;
     const progVals = Object.values(data.progress || {});
     const totalDone = progVals.filter(v => v === true || (v && v.done === true)).length;
     const totalTasksDone = (data.tasks || []).filter(t => t.status === 'completed').length;
     const totalOvningar = totalDone + totalTasksDone;
 
     // För Oliver Pettersson (stub) — sätt realistisk fördelning över 6 veckor
-    // baserat på hans data (2 matchningar, 9 ansökningar gjorda främst senaste 2-3 veckor)
+    // baserat på hans data (9 ansökningar fördelat över 4 veckor i mars-april)
     if (data.isForceShowStub || data._stubFallback) {
-      matchArr = matchArr || [0, 0, 0, 0, 1, 1];     // 2 matchningar (senaste 2 veckor)
-      ovnArr = ovnArr || [1, 2, 1, 3, 2, 1];          // 10 ansökningar/övningar fördelat
+      // Fördelning matchar applied_at-datum från job_diary:
+      // V.13: 1, V.14: 2, V.15: 2, V.16: 1, V.17: 2, V.18: 1 = 9 totalt
+      appsArr = appsArr || [1, 2, 2, 1, 2, 1];        // 9 sökta arbeten
+      ovnArr = ovnArr || [0, 0, 1, 1, 2, 1];          // 5 övningar (modulprogress)
       logArr = logArr || [2, 3, 4, 5, 6, 4];          // aktiv användare, ökande
     } else {
       // Generisk fördelning för andra användare utan activity-data
@@ -1991,23 +1993,23 @@ function renderUserCharts(data){
         });
         return out;
       };
-      matchArr = matchArr || distribute(totalMatches);
+      appsArr = appsArr || distribute(totalApps);
       ovnArr = ovnArr || distribute(totalOvningar);
       // Inloggningar: uppskatta från aktivitet (fler aktiviteter = fler inloggningar)
-      logArr = logArr || distribute(Math.max(totalMatches + totalOvningar, 0));
+      logArr = logArr || distribute(Math.max(totalApps + totalOvningar, 0));
     }
   }
 
   // Sammanlagda värden
-  const matchSum = matchArr.reduce((a,b)=>a+b,0);
+  const appsSum = appsArr.reduce((a,b)=>a+b,0);
   const ovnSum = ovnArr.reduce((a,b)=>a+b,0);
   const logSum = logArr.reduce((a,b)=>a+b,0);
 
   document.getElementById('udCharts').innerHTML = `
     <div class="ud-chart">
-      <div class="ud-chart-h"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Matchningar</div>
-      <div class="ud-chart-v">${matchSum} st</div>
-      ${lineChartSVG(matchArr, weeks)}
+      <div class="ud-chart-h"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 13.255A23.931 23.931 0 0 1 12 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2m4 6h.01M5 20h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg> Sökta arbeten</div>
+      <div class="ud-chart-v">${appsSum} st</div>
+      ${lineChartSVG(appsArr, weeks)}
     </div>
     <div class="ud-chart">
       <div class="ud-chart-h"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Övningar</div>
