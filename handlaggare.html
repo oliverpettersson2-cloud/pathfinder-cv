@@ -4699,7 +4699,7 @@ function renderWizStep3(){
           </button>
         ` : ''}
         ${(wiz.outputFormat==='inplace' || wiz.outputFormat==='both') ? `
-          <button onclick="generateLessonGuide()" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.25);border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:background 0.12s;" onmouseover="this.style.background='rgba(16,185,129,0.08)'" onmouseout="this.style.background='rgba(16,185,129,0.04)'">
+          <button onclick="(async()=>{const l=showLoadingOverlay('AI skapar lektionsmaterial');try{await generateLessonGuide();}finally{l.hide();}})()" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.25);border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;transition:background 0.12s;" onmouseover="this.style.background='rgba(16,185,129,0.08)'" onmouseout="this.style.background='rgba(16,185,129,0.04)'">
             <div style="width:38px;height:38px;border-radius:9px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📑</div>
             <div style="flex:1;min-width:0;">
               <div style="font-size:13px;font-weight:700;color:var(--tx);">Ladda ner lektionsguide (PDF)</div>
@@ -4848,29 +4848,50 @@ async function _generateLessonGuideImpl() {
   }
 
   try {
-    const systemPrompt = `Du är pedagogisk expert på svenska för vuxenutbildning (SFI/Komvux/AMU/Folkhögskola). Du skapar uppgifter för deltagare på arbetsmarknadsutbildningar.
+    const systemPrompt = `Du är pedagogisk expert på svenska för vuxenutbildning (SFI/Komvux/AMU/Folkhögskola). Du skapar uppgifter för vuxna deltagare på arbetsmarknadsutbildningar — människor som söker arbete eller vill byta yrkesriktning.
 
-VIKTIGA KRAV:
-1. Skriv på vardagssvenska. Korta meningar. Du-tilltal. Inga akademiska ord.
-2. INGA slutna frågor med rätt/fel-svar. Bara öppna reflektionsfrågor.
-3. Pedagogisk progression i ${numTasks} uppgifter:
-   - Första 1-3 uppgifterna: REFLEKTION (deltagaren tänker själv, kopplar till sin erfarenhet)
-   - Mitten: PRAKTISK TILLÄMPNING (deltagaren gör något i verkligheten)
-   - Sista 1-2 uppgifterna (vid 60+ min): DISKUSSION i grupp
-4. Uppgifterna SKA referera direkt till specifikt innehåll från slidsen — citera exakta meningar, siffror eller exempel från slidsen i frågorna.
-5. Varje uppgift ska kännas personlig och provocerande på ett konstruktivt sätt.
+═══ KÄRNFILOSOFI ═══
+ALLA uppgifter ska främja deltagarens EGEN UTVECKLING och FRAMTIDA ARBETSLIV. Lektionens ämne är bara ingången — målet är alltid att deltagaren kommer närmare:
+• Sitt drömjobb / nästa karriärsteg
+• Insikt om sina styrkor och möjligheter
+• Konkreta handlingar som leder framåt
+• Förståelse för hur omvärlden påverkar DEM personligen
 
-SVARA ENBART MED GILTIG JSON, inget annat. Inga markdown-backticks, inga förklaringar utanför JSON.
+Generella reflektionsfrågor som "Vad tänker du om X?" är förbjudna. ALLTID koppla tillbaka till deltagarens eget liv, jobb, framtid.
+
+═══ FRÅGE-EXEMPEL (för Omvärldsanalys) ═══
+SÄMRE: "Vad tänker du om geopolitik?"
+BÄTTRE: "Vad är ditt drömjobb? Hur tror du AI och digitalisering påverkar det jobbet om 5 år?"
+
+SÄMRE: "Hur ser globaliseringen ut?"
+BÄTTRE: "Hur påverkas DU av AI redan idag — i jobbsökandet, vardagen, lärandet? Skriv tre konkreta exempel."
+
+SÄMRE: "Diskutera klimatets påverkan på arbetsmarknaden."
+BÄTTRE: "Tänk dig själv om 10 år. Vilket jobb har du? Vilka val måste du göra de närmaste 12 månaderna för att komma dit?"
+
+═══ KRAV ═══
+1. SPRÅK: Vardagssvenska. Korta meningar. Du-tilltal. Inga akademiska ord.
+2. INGA slutna frågor med rätt/fel-svar.
+3. ALLTID koppla till: drömjobb, framtid, personliga styrkor, konkreta nästa steg.
+4. Pedagogisk progression i ${numTasks} uppgifter:
+   - Första 1-3: REFLEKTION över egen situation och framtid
+   - Mitten: PRAKTISK TILLÄMPNING — något deltagaren faktiskt gör i sitt liv
+   - Sista 1-2 (vid 60+ min): DISKUSSION i grupp om framtid och val
+5. Referera till SPECIFIKT INNEHÅLL från slidsen — citera exakta meningar/siffror — och vrid frågan mot deltagarens framtid.
+6. Varje uppgift ska kännas personlig, framåtriktad och ge deltagaren en insikt eller handling.
+
+═══ SVARA ENBART MED GILTIG JSON ═══
+Inga markdown-backticks. Inga förklaringar utanför JSON.
 
 Format:
 {
   "tasks": [
     {
-      "title": "Kort, fängslande titel (3-7 ord)",
+      "title": "Kort, framåtriktad titel (3-7 ord). Exempel: 'Ditt drömjobb om 5 år', 'Vad du måste göra nu'",
       "category": "reflektion" | "tillämpning" | "diskussion",
       "instruction": "Hur uppgiften görs: enskilt/par/grupp + tid (10-20 ord)",
-      "prompt": "Själva uppgiften för deltagaren. Refererar till slide-innehåll. Använder du-tilltal. 50-150 ord.",
-      "answer": "Vägledning till handläggaren om hur uppgiften bedöms och vad som är viktigt att leta efter. Inte ett facit. 30-80 ord."
+      "prompt": "Själva uppgiften för deltagaren. Du-tilltal. Refererar till slide-innehåll OCH ber deltagaren tänka på sitt eget liv/framtid/jobb. 60-180 ord.",
+      "answer": "Vägledning till handläggaren om hur uppgiften bedöms — leta efter konkretion, ärlighet, framtidsperspektiv. Inte ett facit. 30-80 ord."
     }
   ],
   "structure": [
@@ -4887,7 +4908,7 @@ TID: ${minutes} minuter (varav ca ${Math.round(minutes * 0.45)} min för övning
 ANTAL UPPGIFTER: ${numTasks}
 ${slideTextForAi ? `\nSLIDE-INNEHÅLL FRÅN POWERPOINT:\n${slideTextForAi}` : '\n(Ingen slide-text tillgänglig — basera uppgifterna enbart på titel och syfte.)'}
 
-Skapa ${numTasks} uppgifter som följer kraven. Varje uppgift ska konkret hänvisa till innehåll från slidsen där det är möjligt.`;
+Skapa ${numTasks} uppgifter som ALLA kopplar lektionens ämne till deltagarens egen framtid, drömjobb och personliga utveckling. Använd slide-innehållet som ingång — vrid sedan varje fråga mot deltagaren själv.`;
 
     const resp = await fetch('/api/chat', {
       method: 'POST',
@@ -4939,80 +4960,80 @@ Skapa ${numTasks} uppgifter som följer kraven. Varje uppgift ska konkret hänvi
     const topic = (wiz.title || 'lektionens ämne').trim();
     const purpose = (wiz.purpose || '').trim();
 
-    // ═══ NYA MALLAR — fokus på REFLEKTION → TILLÄMPNING → DISKUSSION ═══
+    // ═══ NYA MALLAR — fokus på PERSONLIG UTVECKLING & FRAMTIDA ARBETSLIV ═══
     // Designfilosofi:
+    //   • ALLTID koppla till deltagarens drömjobb, framtid, val
     //   • Inga slutna frågor med "rätt svar"
     //   • Vardagssvenska, du-tilltal
-    //   • Koppling till deltagarens egen verklighet
-    //   • Stigande svårighet: tänka → tillämpa → diskutera
-    //   • Ingen mall är "fyll i luckan" — alla kräver eget tänkande
+    //   • Stigande svårighet: tänka på sig själv → göra något → diskutera med andra
+    //   • Slutmålet är en konkret handling eller insikt
     const taskTemplates = [
-      // ─── REFLEKTION (1-3) ─────────────────────────────────────────
-      // 1. Personlig ingångsfråga — börja från deltagarens egen erfarenhet
+      // ─── REFLEKTION (1-3) — om dig själv och din framtid ─────────
+      // 1. Drömjobbet — kopplar lektionsämnet till framtiden
       {
-        title: 'Innan vi börjar — vad tänker DU?',
+        title: 'Ditt drömjobb om 5 år',
         category: 'reflektion',
-        instruction: 'Skriv enskilt i 5 minuter. Du behöver inte visa det för någon.',
-        prompt: `När du hör "${topic}" — vad är det första som dyker upp i huvudet?\n\nSkriv fritt om:\n• En gång när detta var aktuellt för dig (jobb, familj, vardagen)\n• Vad du redan vet om det\n• Vad som är oklart eller känns krångligt\n\nDet finns inga rätta svar. Skriv som du tänker.`,
-        answer: 'Detta är en startuppgift för att aktivera deltagarens egna erfarenheter innan du presenterar nytt material. Om du läser svaren — leta efter missförstånd och frågor du kan adressera under genomgången. Vissa kommer skriva mycket, andra lite. Båda är OK.'
+        instruction: 'Skriv enskilt i 10 minuter. Du behöver inte visa det för någon.',
+        prompt: `Stäng ögonen i 30 sekunder. Föreställ dig själv om 5 år.\n\n• Vilket jobb har du? (Var konkret — företag, roll, miljö.)\n• Hur ser en vanlig arbetsdag ut?\n• Hur har "${topic}" påverkat din väg dit?\n\nSkriv det fritt. Det är inte ett kontrakt — det är en tanke. Men ju mer konkret du skriver, desto mer kommer det styra dina val.`,
+        answer: 'Värdefull insikt om vart deltagaren vill. Vissa har tydlig bild — andra har ingen alls. Båda är OK. De utan bild behöver mer hjälp att utforska — de med bild kan ifrågasättas: är det DITT drömjobb eller någon annans förväntan?'
       },
-      // 2. Argumentera mot dig själv — metakognitiv övning
+      // 2. Hur påverkas DU redan idag
       {
-        title: 'Argumentera mot dig själv',
+        title: `Hur påverkar "${topic}" dig redan idag?`,
         category: 'reflektion',
-        instruction: 'Enskilt arbete i 15 minuter. Den som vill får dela med en granne efteråt.',
-        prompt: `Välj ETT av påståendena nedan som du först håller med om:\n\n☐ "Det är arbetsgivarens ansvar att lära mig det jag behöver"\n☐ "Min bakgrund är min styrka — inte ett hinder"\n☐ "Det är aldrig för sent att ändra riktning i livet"\n☐ "Jag vet vad som är bäst för mig"\n\nSteg 1: Skriv tre starka argument FÖR ditt valda påstående.\n\nSteg 2: Skriv tre lika starka argument MOT samma påstående. Inga "men ändå", inga kompromisser. Bli din egen motståndare.\n\nSteg 3: Står du fast vid din ursprungliga åsikt? Varför / varför inte?`,
-        answer: 'Övningen tränar kritiskt tänkande. Värdera kvaliteten på argumenten — kan deltagaren se sin egen åsikt utifrån? Det är OK att ändra eller behålla åsikt. Det är INTE OK att inte ens försöka argumentera mot.'
+        instruction: 'Enskilt arbete i 10 minuter. Konkret — inga drömmar, inga teorier.',
+        prompt: `Lektionen handlar om "${topic}". Men vänta — det är inte något i framtiden eller långt borta. Det påverkar dig REDAN, varje dag.\n\nSkriv tre konkreta exempel:\n\n1. Hur märker du av detta i ditt jobbsökande? (Annonser, krav, möten, beslut.)\n\n2. Hur märker du av det i din vardag? (Teknik, betalningar, kommunikation, prylar.)\n\n3. Hur har det förändrat något du gör NU jämfört med för 5 år sen?\n\nVar konkret. "Påverkas av digitalisering" räknas inte — vad GÖR du annorlunda?`,
+        answer: 'Tvinga konkretion. Allmänna svar ("digitaliseringen påverkar allt") betyder inget. Be deltagaren skriva om tills det finns ett konkret beteende eller val. Detta visar om de förstår att teorin är på riktigt.'
       },
-      // 3. Det svåraste samtalet — emotionell reflektion
+      // 3. Vilka val har DU framöver
       {
-        title: 'Det svåraste samtalet',
+        title: 'Tre val du måste göra',
         category: 'reflektion',
-        instruction: 'Enskilt arbete (10 min). Innehållet är privat — du delar bara om du vill.',
-        prompt: `Tänk på en gång när du behövde säga något viktigt till någon — och det var jobbigt.\n\n• Vad handlade det om?\n• Vad var du rädd för skulle hända?\n• Hur gick det till slut?\n\nKoppla nu till "${topic}":\nFinns det något du borde säga till någon om detta ämne — som du inte sagt än? Till en chef, en partner, dig själv? Skriv det i ett kuvert eller på en lapp som ingen ser.`,
-        answer: 'Stark reflektionsövning som ofta öppnar upp deltagare. Var beredd på att vissa kan bli berörda — det är meningen. Erbjud att prata efter lektionen. Använd inte gruppdiskussion direkt efter denna uppgift.'
+        instruction: 'Enskilt (15 min). Det här är på riktigt — inte en övning.',
+        prompt: `Med tanke på "${topic}" — vilka tre val står DU inför de närmaste 12 månaderna?\n\nSkriv konkret:\n\nVal 1: ___________________________________\n  Varför är det svårt? \n  Vad händer om du inte väljer (livet väljer åt dig)?\n  När senast måste du bestämt dig?\n\nVal 2: ___________________________________\n  Samma frågor.\n\nVal 3: ___________________________________\n  Samma frågor.\n\nLämna inte tomt. Ingen lever utan val.`,
+        answer: 'Tunga frågor. Vissa kommer ha svårt att skriva tre — då räcker det med ett. Det viktiga är att de blir medvetna om att val händer även när man inte väljer aktivt. Erbjud individuella samtal efteråt om någon ser bekymrad ut.'
       },
-      // ─── PRAKTISK TILLÄMPNING (4-6) ──────────────────────────────
-      // 4. 24-timmars-experiment — verklighetsbaserad uppgift
+      // ─── PRAKTISK TILLÄMPNING (4-6) — gör något i verkligheten ──
+      // 4. 24-timmars-experiment riktat mot drömjobb
       {
-        title: '24-timmars-experiment',
+        title: 'Närma dig drömjobbet på 24 timmar',
         category: 'tillämpning',
         instruction: 'Detta gör du UTANFÖR klassrummet — innan nästa träff. Anteckna efteråt.',
-        prompt: `Välj EN handling att genomföra inom 24 timmar:\n\n☐ Prata med någon på 60+ år om hur arbetslivet såg ut för 30 år sen\n☐ Sök upp lediga jobb i ett yrke du ALDRIG sett dig själv i — bara för att se\n☐ Ring eller mejla en person på LinkedIn som har jobbet du drömmer om — fråga ett konkret \nHur länge tog det att lära sig?\n☐ Gå förbi en arbetsplats du undrar över — bara titta\n☐ Hitta på en egen handling kopplad till "${topic}"\n\nAnteckna efteråt (3 meningar):\n1. Vad gjorde du faktiskt?\n2. Vad förväntade du dig skulle hända?\n3. Vad blev annorlunda?`,
-        answer: 'Den viktigaste uppgiften om du vill ha verklig förändring. Följ upp vid nästa träff — fråga vem som faktiskt gjort det. De som inte gjort det säger ofta att de tänkt göra det "snart". Pusha vänligt.'
+        prompt: `Inom 24 timmar — välj EN handling som tar dig närmare ditt drömjobb (eller hjälper dig hitta det):\n\n☐ Sök upp 3 personer på LinkedIn som har det jobb du vill ha. Läs deras CV. Vad har de för bakgrund?\n\n☐ Hitta 5 lediga jobb i den riktning du vill — även om du inte är kvalificerad än. Vilka krav återkommer?\n\n☐ Mejla en konkret fråga till någon som jobbar med det du drömmer om. (En fråga, inte fem.)\n\n☐ Boka in 30 min för att utforska en utbildning som leder dit. Skriv ner ansökningsdatum.\n\n☐ Hitta på en egen handling kopplad till "${topic}" och drömjobbet.\n\nAnteckna efteråt:\n1. Vad gjorde du faktiskt?\n2. Vad blev du klokare på?\n3. Nästa steg?`,
+        answer: 'DEN viktigaste uppgiften om du vill ha verklig förändring. Följ upp vid nästa träff — fråga vem som faktiskt gjort det. De som inte gjort det säger ofta att de tänkt göra det "snart". Pusha vänligt men tydligt.'
       },
-      // 5. Min vardag, mitt val
+      // 5. AI-test idag
       {
-        title: 'Min vardag, mitt val',
+        title: 'AI och din framtid — testa själv',
         category: 'tillämpning',
-        instruction: 'Enskilt (15 min). Konkret och ärlig — inga drömmar.',
-        prompt: `Lektionen handlar om "${topic}". Men teorin är värdelös om du inte kan använda den i din egen vardag.\n\nSvara konkret:\n\n1. Var i din vardag möter du detta? (Skriv minst tre platser, situationer eller personer.)\n\n2. Vilken EN sak kan du göra annorlunda redan imorgon? Inte "tänka på" — göra. Med när, var och hur.\n\n3. Vad är det som hindrat dig hittills? Var ärlig — skriv inte vad som låter bra.\n\n4. Hur märker DU att du faktiskt gjort det? (Inte din handläggare — du själv. Vad förändras i ditt liv?)`,
-        answer: 'Tvinga konkretion. Otydliga svar ("jag ska bli mer aktiv") betyder ingenting. Be deltagaren skriva om tills det finns ett när, var och hur. Punkten om hindret är ofta den ärligaste och viktigaste.'
+        instruction: 'Enskilt arbete (15 min). Behöver tillgång till mobil/dator.',
+        prompt: `AI förändrar arbetslivet redan nu. Inte i framtiden — IDAG.\n\nGör detta:\n\n1. Öppna ChatGPT, Claude eller Gemini (gratis).\n\n2. Skriv: "Jag funderar på att jobba som [ditt drömyrke]. Vilka delar av det jobbet kommer AI ta över de närmaste 5 åren? Vilka delar förblir mänskliga?"\n\n3. Läs svaret. Anteckna:\n   • Vad överraskade dig?\n   • Vad höll du med om?\n   • Vad höll du INTE med om?\n\n4. Ställ en följdfråga som AI:n inte kan svara på. Skriv vilken.\n\nReflektion: Hur påverkar detta dina val nu?`,
+        answer: 'Ger deltagaren konkret AI-erfarenhet. Många har aldrig provat. Bedöm om de tar AI:s svar som sanning (problematiskt) eller som en utgångspunkt för egen tänkande (önskvärt). Diskutera kritiskt tänkande efteråt.'
       },
-      // 6. Casescenario som blir personligt
+      // 6. Min plan
       {
-        title: 'Vad skulle DU göra?',
+        title: 'Din plan — vad gör du nu?',
         category: 'tillämpning',
-        instruction: 'Smågrupper (3-4 personer, 15 min). Diskutera, men varje person skriver sitt eget svar.',
-        prompt: `Maria, 35 år, har precis fått ett besked som påverkar hennes liv. Det handlar om "${topic}".\n\nHon har tre alternativ:\n• Alternativ A: Det säkra — det hon vet fungerar, även om hon inte är lycklig.\n• Alternativ B: Det djärva — risk för att misslyckas, chans till stor förändring.\n• Alternativ C: Vänta och se — låta tiden visa vad som händer.\n\nSteg 1 (i grupp): Diskutera varje alternativ. Vad kan gå bra? Vad kan gå fel?\n\nSteg 2 (enskilt): Vad skulle DU göra om du vore Maria? Inte vad som är "rätt" — vad du, med din historia, skulle göra.\n\nSteg 3 (i grupp): Berätta för varandra och förklara varför.`,
-        answer: 'Den bästa varianten av case-uppgifter. Lyft fram skillnader i grupperna efteråt — varför valde olika personer olika alternativ? Det säger något om varje persons värderingar och risktolerans, inte om "rätt svar".'
+        instruction: 'Enskilt (15 min). Konkret. Mätbart. På riktigt.',
+        prompt: `Utifrån "${topic}" och vad du tänkt om din framtid — gör en konkret plan:\n\nINOM 24 TIMMAR ska du:\n_____________________\n(Ja, redan i kväll eller imorgon. Inte "nästa vecka".)\n\nINOM 1 VECKA ska du:\n_____________________\n\nINOM 1 MÅNAD ska du:\n_____________________\n\nFör varje punkt — hur märker DU att du faktiskt gjort det? Inte din handläggare. Du själv. Vad förändras i ditt liv?\n\nVad är det STÖRSTA hindret som kan stoppa dig? Var ärlig.`,
+        answer: 'Värdera konkretion. "Bli bättre på X" är inte en plan — "kontakta Y senast fredag" är det. Ärlighet om hinder är viktigast — det är där det brister oftast. Använd planen som uppföljning vid nästa möte.'
       },
-      // ─── DISKUSSION (7-8) ────────────────────────────────────────
-      // 7. Det vi inte pratar om
+      // ─── DISKUSSION (7-8) — med andra om framtid ─────────────────
+      // 7. Vad kan vi lära av varandra?
       {
-        title: 'Det vi inte pratar om',
+        title: 'Vad gör de andra som funkar?',
         category: 'diskussion',
-        instruction: 'Helklass eller stora grupper (15-20 min). Ingen behöver dela något privat — bara vad de tycker.',
-        prompt: `Kring "${topic}" finns saker som folk SÄLLAN pratar om öppet.\n\nDiskutera:\n\n1. Vilka är de jobbigaste sanningarna kring detta ämne? Det folk vet men inte säger högt?\n\n2. Vad är skammen kopplad till? (Det finns nästan alltid skam runt viktiga ämnen.)\n\n3. Vad skulle förändras om vi PRATADE om det öppet?\n\n4. Vad hindrar oss?`,
-        answer: 'Kraftfull men kan vara känslig. Sätt tydliga regler först: "Vi pratar om ämnet generellt — inte om enskilda personer i rummet." Var beredd att avbryta om någon utlämnar sig själv eller andra för mycket. Avsluta med något hoppfullt.'
+        instruction: 'Smågrupper (4-5 personer, 20 min). Lyssna mer än prata.',
+        prompt: `I gruppen — varje person berättar:\n\n1. Vilket är ditt drömjobb (eller den riktning du letar)?\n\n2. Vad är det STÖRSTA hindret på vägen dit?\n\n3. Vad har du gjort som faktiskt fungerat — något konkret som tagit dig framåt?\n\nNär alla berättat:\n• Vilka likheter finns? (Ofta samma hinder återkommer.)\n• Vilka goda idéer kan du STJÄLA från någon annan i gruppen?\n• Vem i gruppen kan hjälpa vem framöver?\n\nGör en lista — den som behöver hjälp + den som kan hjälpa.`,
+        answer: 'Stark grupp-uppgift. Deltagare lär sig mest av varandra, inte av läraren. Lyft fram konkreta erbjudanden som dykt upp ("Jag kan visa dig hur man söker jobb i den branschen"). Pusha grupperna att faktiskt kontakta varandra efteråt.'
       },
-      // 8. Skapa nästa lektion
+      // 8. Skapa nästa steg tillsammans
       {
-        title: 'Skapa nästa lektion',
+        title: 'Vad behöver du av oss härnäst?',
         category: 'diskussion',
-        instruction: 'Smågrupper (15 min). Resultatet används av läraren för att forma nästa lektion.',
-        prompt: `Ni är nu "experter" på "${topic}" — eller åtminstone har ni tänkt mer kring det än många andra.\n\nGruppens uppgift:\n\nNi ska designa nästa lektion. Inte bara välja ämne — bestämma:\n\n1. Vilken EN frågan är viktigast att fortsätta med? (Vad missade vi? Vad behöver fördjupas?)\n\n2. Vad fungerade bäst idag? (Vilken övning lärde ni er mest av?)\n\n3. Vad fungerade sämst? Var ärliga.\n\n4. Vilket format borde nästa lektion ha? Föreläsning? Praktisk övning? Studiebesök?\n\nLämna in eller redovisa muntligt — läraren använder detta på riktigt.`,
-        answer: 'Ger DIG som handläggare guldvärd feedback. Ta det på allvar — om grupperna säger samma sak om vad som inte funkar, ändra det. Att deltagarna får påverka är i sig en av de starkaste motivationsfaktorerna.'
+        instruction: 'Smågrupper (15 min). Resultatet används av handläggaren för att forma kommande lektioner.',
+        prompt: `Ni har nu tänkt mycket på er framtid utifrån "${topic}".\n\nSom grupp:\n\n1. Vad VET ni nu som ni inte visste innan? (Tre saker.)\n\n2. Vad skulle hjälpa er mest framöver? Konkret.\n   • En specifik gästföreläsare? (Vem?)\n   • En specifik praktikplats? (Var?)\n   • En specifik utbildning? (Vilken?)\n   • Något annat?\n\n3. Vad är det viktigaste handläggaren behöver veta om er nu? Var ärliga.\n\nLämna in eller redovisa muntligt — det här används på riktigt.`,
+        answer: 'Ger DIG som handläggare guldvärd input. Ta det på allvar — om grupperna säger samma sak om vad de behöver, ordna det. Att deltagarna får påverka är i sig en av de starkaste motivationsfaktorerna.'
       }
     ];
 
@@ -5252,6 +5273,59 @@ window.generateLessonGuide = generateLessonGuide;
 
 // Wrapper: ladda ner lektionsmaterial från ett befintligt material i biblioteket.
 // Sätter wiz till materialets data och anropar samma generator.
+// Visa stort timglas-overlay medan AI tänker. Returnerar en hide-funktion.
+function showLoadingOverlay(text) {
+  // Ta bort ev. gammal overlay först
+  const existing = document.getElementById('_aiLoadingOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = '_aiLoadingOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;animation:_overlayFade 0.2s ease-out;';
+
+  // CSS för animationer (lägg bara till en gång)
+  if (!document.getElementById('_aiLoadingStyles')) {
+    const style = document.createElement('style');
+    style.id = '_aiLoadingStyles';
+    style.textContent = `
+      @keyframes _overlayFade { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes _hourglassFlip {
+        0%   { transform: rotate(0deg)   scale(1); }
+        45%  { transform: rotate(0deg)   scale(1); }
+        50%  { transform: rotate(180deg) scale(1.1); }
+        95%  { transform: rotate(180deg) scale(1); }
+        100% { transform: rotate(360deg) scale(1); }
+      }
+      @keyframes _dotPulse {
+        0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+        40%           { opacity: 1;   transform: scale(1.2); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:18px;padding:36px 44px;text-align:center;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+      <div style="font-size:64px;line-height:1;margin-bottom:18px;display:inline-block;animation:_hourglassFlip 2.4s ease-in-out infinite;transform-origin:center;">⏳</div>
+      <div id="_aiLoadingText" style="font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">${text || 'AI tänker…'}</div>
+      <div style="font-size:12px;color:#6b7280;line-height:1.5;margin-bottom:14px;">Detta tar 5-15 sekunder. Stäng inte fönstret.</div>
+      <div style="display:flex;justify-content:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#d4a436;animation:_dotPulse 1.4s ease-in-out infinite;"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#d4a436;animation:_dotPulse 1.4s ease-in-out infinite 0.2s;"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#d4a436;animation:_dotPulse 1.4s ease-in-out infinite 0.4s;"></span>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // Returnera funktion för att stänga + uppdatera text
+  return {
+    hide: () => { const el = document.getElementById('_aiLoadingOverlay'); if (el) el.remove(); },
+    setText: (newText) => { const el = document.getElementById('_aiLoadingText'); if (el) el.textContent = newText; }
+  };
+}
+window.showLoadingOverlay = showLoadingOverlay;
+
 async function downloadLessonGuideForMaterial(materialId) {
   const lib = getMaterialLibrary();
   const m = lib.find(x => x.id === materialId);
@@ -5259,8 +5333,8 @@ async function downloadLessonGuideForMaterial(materialId) {
     showErr('Materialet kunde inte hittas');
     return;
   }
-  // Visa enkel "AI tänker"-indikator
-  showOk('AI skapar lektionsmaterial — vänta 5-15 sek…');
+  // Visa stort timglas-overlay
+  const loader = showLoadingOverlay('AI skapar lektionsmaterial');
   // Spara nuvarande wiz-state om wizarden är öppen, restaurera efter
   const savedWiz = wiz ? { ...wiz } : null;
   wiz = {
@@ -5276,6 +5350,7 @@ async function downloadLessonGuideForMaterial(materialId) {
     await generateLessonGuide();
   } finally {
     if (savedWiz) wiz = savedWiz;
+    loader.hide();
   }
 }
 window.downloadLessonGuideForMaterial = downloadLessonGuideForMaterial;
