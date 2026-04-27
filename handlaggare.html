@@ -434,10 +434,13 @@ td{padding:10px 13px;vertical-align:middle}
 .mat-file-btn{background:none;border:1px solid transparent;color:var(--mu);cursor:pointer;width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
 .mat-file-btn:hover{background:var(--bdl);color:var(--ac);border-color:var(--bdl)}
 
-.mat-card-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:8px;border-top:1px solid var(--bdl);flex-wrap:wrap}
-.mat-card-by{font-size:11px;color:var(--tx2);min-width:0;flex:1}
-.mat-card-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.mat-card-actions .btn{font-size:11px;padding:5px 9px;white-space:nowrap}
+.mat-card-foot{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-top:10px;border-top:1px solid var(--bdl);flex-wrap:wrap}
+.mat-card-by{font-size:11px;color:var(--tx2);min-width:0;flex:1 1 auto;line-height:1.5;align-self:center}
+.mat-card-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.mat-card-actions .btn{font-size:11px;padding:6px 11px;white-space:nowrap;display:inline-flex;align-items:center;gap:0;font-weight:600;border-radius:7px;line-height:1.2}
+.mat-card-actions .btn svg{flex-shrink:0}
+/* Soptunna-knappen kompakt */
+.mat-card-actions .btn.inst-danger{padding:6px 8px;min-width:auto}
 
 .mat-empty{background:var(--sf);border:2px dashed var(--bd);border-radius:14px;padding:50px 20px;text-align:center;color:var(--mu)}
 .mat-empty svg{margin:0 auto 12px;color:var(--bd);display:block}
@@ -4807,12 +4810,14 @@ async function generateLessonGuide() {
     const lib = getMaterialLibrary();
     const m = lib.find(x => x.id === wiz._materialId);
     if (m?.slideText) slideTextForAi = m.slideText;
-  } else if (wiz.file) {
+  } else if (wiz.file && typeof window.extractPptxText === 'function') {
     // I wizarden — extrahera direkt om vi inte redan gjort det
     try {
-      const slides = await extractPptxText(wiz.file);
-      if (slides.length > 0) slideTextForAi = slides.join('\n').slice(0, 10000);
-    } catch(e) {}
+      const slides = await window.extractPptxText(wiz.file);
+      if (slides && slides.length > 0) slideTextForAi = slides.join('\n').slice(0, 10000);
+    } catch(e) {
+      console.warn('[CVmatchen] Slide-extrahering misslyckades:', e);
+    }
   } else if (wiz.sourceType === 'existing_module' && wiz.selectedModuleId) {
     // Befintlig modul — vi har inte slidetext, AI:n får bara titel/syfte
     const m = ACTIVE_MODULES.find(x => x.id === wiz.selectedModuleId);
@@ -5649,16 +5654,18 @@ async function saveToMaterialLibrary({assigned, count, moduleId}){
     }
 
     // Extrahera slide-text för senare AI-användning vid lektionsmaterial-generering
-    try {
-      const slides = await extractPptxText(wiz.file);
-      if (slides.length > 0) {
-        slideText = slides.join('\n');
-        // Begränsa till ~10 KB så det inte blir absurt stort i localStorage
-        if (slideText.length > 10000) slideText = slideText.slice(0, 10000) + '\n[trunkerad…]';
-        console.log(`[CVmatchen] Extraherade ${slides.length} slides text från ${wiz.file.name}`);
+    if (typeof window.extractPptxText === 'function') {
+      try {
+        const slides = await window.extractPptxText(wiz.file);
+        if (slides && slides.length > 0) {
+          slideText = slides.join('\n');
+          // Begränsa till ~10 KB så det inte blir absurt stort i localStorage
+          if (slideText.length > 10000) slideText = slideText.slice(0, 10000) + '\n[trunkerad…]';
+          console.log(`[CVmatchen] Extraherade ${slides.length} slides text från ${wiz.file.name}`);
+        }
+      } catch(e) {
+        console.warn('[CVmatchen] Kunde inte extrahera slide-text:', e);
       }
-    } catch(e) {
-      console.warn('[CVmatchen] Kunde inte extrahera slide-text:', e);
     }
   }
   const item = {
