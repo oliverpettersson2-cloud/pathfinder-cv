@@ -5105,13 +5105,38 @@ Skapa ${numTasks} uppgifter som ALLA kopplar lektionens ämne till deltagarens e
 
   y = 80;
 
-  // Syfte i ruta
+  // ═══ SYFTE — stor och tydlig sektion ═══
+  // Beräkna höjd baserat på text-längd så rutan inte blir för liten/stor
+  const purposeText = wiz.purpose || 'Inget syfte angivet.';
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  const purposeLines = doc.splitTextToSize(purposeText, pageW - margin * 2 - 16);
+  const purposeBoxH = 26 + (purposeLines.length * 9); // mer padding + 9mm/rad för 18pt fet
+
+  // Bakgrundsruta med beige fyllning
   doc.setFillColor(248, 244, 235);
-  doc.rect(margin, y - 4, pageW - margin * 2, 30, 'F');
-  writeText('SYFTE', margin + 4, { fontSize: 9, bold: true, color: [150, 130, 80] });
-  y += 1;
-  writeText(wiz.purpose || 'Inget syfte angivet.', margin + 4, { fontSize: 11, maxWidth: pageW - margin * 2 - 8 });
-  y += 6;
+  doc.rect(margin, y - 4, pageW - margin * 2, purposeBoxH, 'F');
+  // Orange accentlinje till vänster (matchar handläggar-vyns kategori-stripa)
+  doc.setFillColor(212, 164, 54);
+  doc.rect(margin, y - 4, 3, purposeBoxH, 'F');
+
+  // Rubrik "SYFTE" — större och tydligare
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(180, 130, 50);
+  doc.text('SYFTE', margin + 9, y + 2);
+  y += 11;
+
+  // Själva syftestexten — STOR (18pt) och fet, mörk färg för max kontrast
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(20, 20, 35);
+  purposeLines.forEach(line => {
+    if (y > pageH - margin - 10) { doc.addPage(); y = margin; }
+    doc.text(line, margin + 9, y + 4);
+    y += 9;
+  });
+  y += 10;
 
   // Metadata-rad utan emoji
   const langLbl = LANG_LEVELS.find(l => l.id === wiz.langLevel)?.label || wiz.langLevel;
@@ -5153,7 +5178,7 @@ Skapa ${numTasks} uppgifter som ALLA kopplar lektionens ämne till deltagarens e
   doc.addPage();
   y = margin;
   writeHeading('Övningar för deltagarna');
-  writeText('Skriv ut följande sidor och dela ut till deltagarna. Facit finns längst bak — dela inte ut det före övningen.', margin, { fontSize: 10, color: [100, 100, 100] });
+  writeText('Skriv ut följande sidor och dela ut till deltagarna.', margin, { fontSize: 10, color: [100, 100, 100] });
   y += 6;
 
   lessonContent.tasks.forEach((t, i) => {
@@ -5186,16 +5211,22 @@ Skapa ${numTasks} uppgifter som ALLA kopplar lektionens ämne till deltagarens e
     doc.text(t.title || '', margin + 28, y + 4);
     y += 12;
 
-    // Kategori-badge (om kategori finns)
+    // Kategori-badge (om kategori finns) — stor och tydlig pill med färgad bakgrund
     if (catLabel) {
-      doc.setFillColor(...catColor);
-      const badgeW = doc.getTextWidth(catLabel) / 2.83 + 8;  // konvertera pt -> mm
-      doc.roundedRect(margin, y - 3, badgeW, 5, 1, 1, 'F');
-      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7);
-      doc.text(catLabel, margin + 4, y + 0.5);
-      y += 5;
+      // getTextWidth returnerar i samma enhet som dokumentet (mm).
+      // Lägg till generös padding (8mm vänster + höger = 16mm totalt) så texten aldrig klipps.
+      const textW = doc.getTextWidth(catLabel);
+      const badgeW = textW + 16;
+      const badgeH = 8;
+      // Färgad bakgrund med rundad form
+      doc.setFillColor(...catColor);
+      doc.roundedRect(margin, y, badgeW, badgeH, 2.5, 2.5, 'F');
+      // Vit text på färgad pill, centrerad i pillen
+      doc.setTextColor(255, 255, 255);
+      doc.text(catLabel, margin + 8, y + 5.5);
+      y += badgeH + 5;
     }
 
     // Instruktion (kursiv-stil — italic stöds av helvetica)
@@ -5226,37 +5257,6 @@ Skapa ${numTasks} uppgifter som ALLA kopplar lektionens ämne till deltagarens e
       y += 7;
     }
     y += 6;
-  });
-
-  // ═══ FACIT ═══
-  doc.addPage();
-  y = margin;
-  writeHeading('Facit & vägledning');
-
-  // Varningsruta
-  doc.setFillColor(254, 240, 230);
-  doc.setDrawColor(220, 100, 60);
-  doc.setLineWidth(0.4);
-  doc.rect(margin, y - 4, pageW - margin * 2, 14, 'FD');
-  writeText('OBS: Endast för dig som handlaggare — dela inte ut till deltagarna före övningen.', margin + 4, { fontSize: 10, bold: true, color: [180, 60, 40] });
-  y += 6;
-
-  lessonContent.tasks.forEach((t, i) => {
-    if (y > pageH - margin - 30) { doc.addPage(); y = margin; }
-    // Uppgift-rubrik
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(40, 40, 40);
-    doc.text(`Uppgift ${i + 1}: ${t.title}`, margin, y);
-    y += 6;
-    // Vägledning
-    writeText(t.answer || 'Inget facit angivet.', margin, { fontSize: 10, color: [60, 60, 60], lineHeight: 5.2 });
-    y += 6;
-    // Skiljelinje mellan uppgifter
-    doc.setDrawColor(230, 230, 230);
-    doc.setLineWidth(0.3);
-    doc.line(margin, y - 2, pageW - margin, y - 2);
-    y += 2;
   });
 
   // ═══ FOOTER PÅ ALLA SIDOR ═══
