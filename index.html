@@ -1630,6 +1630,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes taskPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,.4); } 50% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(239,68,68,0); } }
+    @keyframes csFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     @keyframes matchaShimmer { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
 
     .auth-user-badge {
@@ -7809,7 +7810,41 @@ ${styleTexts}
       try { email = JSON.parse(saved).email || ''; } catch(e) {}
       var preview = document.getElementById('profileEmailPreview');
       if (preview) preview.textContent = email || '';
+
+      // ── AUTO-FYLL CV:T MED EMAIL FRÅN AUTH ──
+      // Körs varje gång Profil-fliken öppnas. Säkerställer att fältet är fyllt
+      // även om timing-problem uppstått tidigare i app-livscykeln.
+      if (email && !cvData.email) {
+        cvData.email = email;
+        try { _scopedSet('cvData', JSON.stringify(cvData)); } catch(e) {}
+      }
+      // Synka ALLTID DOM-fält med cvData (så användaren ser värdena)
+      ['name','title','email','phone'].forEach(function(f) {
+        var v = cvData[f] || '';
+        var d = document.getElementById(f);     if (d && !d.value) d.value = v;
+        var m = document.getElementById('mob-' + f); if (m && !m.value) m.value = v;
+      });
     }
+
+    // Diagnos: visa vad som finns sparat (för felsökning av tomma fält)
+    window.diagShowStorage = function() {
+      var saved = pfRead(AUTH_STORAGE_KEY);
+      var auth = {};
+      try { auth = JSON.parse(saved) || {}; } catch(e) {}
+      var msg = 'DIAGNOS — datalager:\n\n' +
+        'Auth e-post:  ' + (auth.email || '(saknas)') + '\n' +
+        'Auth userId:  ' + (auth.userId ? auth.userId.substring(0,8) + '...' : '(saknas)') + '\n\n' +
+        'cvData.name:  ' + (cvData.name  || '(tomt)') + '\n' +
+        'cvData.email: ' + (cvData.email || '(tomt)') + '\n' +
+        'cvData.phone: ' + (cvData.phone || '(tomt)') + '\n\n' +
+        'DOM-fält:\n' +
+        'name:    ' + ((document.getElementById('name')||{}).value     || '(tomt)') + '\n' +
+        'email:   ' + ((document.getElementById('email')||{}).value    || '(tomt)') + '\n' +
+        'phone:   ' + ((document.getElementById('phone')||{}).value    || '(tomt)') + '\n' +
+        'mob-email: ' + ((document.getElementById('mob-email')||{}).value || '(tomt)') + '\n' +
+        'mob-phone: ' + ((document.getElementById('mob-phone')||{}).value || '(tomt)') + '\n';
+      alert(msg);
+    };
 
     // ===== RADERA KONTO =====
     async function handleDeleteAccount() {
@@ -8726,6 +8761,17 @@ ${styleTexts}
                 <div class="train-tile-desc">Öva på vanliga intervjufrågor och få AI-feedback.</div>
               </div>
               <div class="train-tile-meta">Öppna →</div>
+            </div>
+            <!-- Språkassistent (Duolingo-liknande) — Kommer snart-kort -->
+            <div class="train-tile train-tile--coming" onclick="trainShowComingSoon('sprak')" style="border-color:rgba(34,197,94,0.35);background:linear-gradient(180deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 100%);position:relative;">
+              <div class="train-tile-glow" style="background:radial-gradient(circle at top right, rgba(34,197,94,0.18), transparent 60%);"></div>
+              <div style="position:absolute;top:14px;right:14px;background:#22c55e;color:#fff;font-size:9px;font-weight:900;padding:3px 9px;border-radius:10px;letter-spacing:0.6px;text-transform:uppercase;z-index:2;">Snart</div>
+              <div>
+                <div class="train-tile-icon" style="filter:drop-shadow(0 4px 12px rgba(34,197,94,0.4));">🦉</div>
+                <div class="train-tile-name">Språkassistent</div>
+                <div class="train-tile-desc">Träna svenska 5 min/dag — som Duolingo, anpassat för jobb och vardag.</div>
+              </div>
+              <div class="train-tile-meta" style="color:#22c55e;font-style:italic;">Under utveckling</div>
             </div>
           </div>
         </div>
@@ -10690,6 +10736,39 @@ var D={
     D.showModList(cat.mods,id,cat.icon+' '+cat.name,cat.color);
   },
 
+  // ── COMING SOON-modal för Språkassistent och andra blivande funktioner ──
+  showComingSoon:function(id){
+    var cat=CATS.find(function(c){return c.id===id});
+    if(!cat)return;
+    // Bygg en fullskärmsmodal som beskriver kommande funktion
+    var ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:csFadeIn 0.2s ease-out;';
+    ov.onclick=function(e){if(e.target===ov)ov.remove();};
+    // Beskrivande innehåll baserat på vilken kategori det är
+    var content='';
+    if(id==='sprak'){
+      content='<div style="text-align:center;font-size:13px;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:20px;">Som Duolingo — fast för svenska som du behöver för jobb och vardag.<br><br>'+
+        '<span style="display:inline-block;text-align:left;background:rgba(255,255,255,0.05);padding:14px 18px;border-radius:10px;border:1px solid rgba(34,197,94,0.2);">'+
+        '✅ <b>Daglig träning</b> — 5 min/dag<br>'+
+        '✅ <b>Yrkesvokabulär</b> — lager, vård, bygg<br>'+
+        '✅ <b>Uttal</b> — lyssna och prata<br>'+
+        '✅ <b>Streaks</b> — håll igång varje dag<br>'+
+        '✅ <b>Personligt anpassat</b> — efter ditt språkläge'+
+        '</span></div>';
+    } else {
+      content='<div style="text-align:center;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:20px;">'+(cat.sub||'Den här funktionen kommer snart.')+'</div>';
+    }
+    ov.innerHTML=
+      '<div style="background:linear-gradient(180deg, rgba(20,30,25,0.98) 0%, rgba(15,20,18,0.98) 100%);border:1.5px solid '+cat.color+'66;border-radius:20px;padding:32px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">'+
+      '<div style="font-size:64px;line-height:1;margin-bottom:12px;filter:drop-shadow(0 4px 12px '+cat.color+'66);">'+cat.icon+'</div>'+
+      '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-0.5px;">'+cat.name+'</div>'+
+      '<div style="display:inline-block;background:'+cat.color+';color:#fff;font-size:10px;font-weight:900;padding:4px 12px;border-radius:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:18px;">🚧 Kommer snart</div>'+
+      content+
+      '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:'+cat.color+';color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;width:100%;transition:opacity 0.15s;">OK, ser fram emot det!</button>'+
+      '</div>';
+    document.body.appendChild(ov);
+  },
+
   // ── MOD LIST ──
   showModList:function(mods,catId,catName,color){
     document.getElementById('ovnHome').style.display='none';
@@ -12118,6 +12197,55 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
   };
 
   // ═══════════════════════════════════════════════════════════════
+  // Visa "Kommer snart"-modal för funktioner under utveckling
+  // (Språkassistent m.fl.). Generisk så vi kan lägga fler senare.
+  // ═══════════════════════════════════════════════════════════════
+  window.trainShowComingSoon = function(id) {
+    var defs = {
+      sprak: {
+        icon: '🦉',
+        color: '#22c55e',
+        title: 'Språkassistent',
+        sub: 'Som Duolingo — fast för svenska du behöver i jobb och vardag',
+        features: [
+          ['📅', 'Daglig träning', '5 minuter om dagen — bygg en streak'],
+          ['💼', 'Yrkesvokabulär', 'Lager, vård, bygg, kontor — anpassat för ditt mål'],
+          ['🎙️', 'Uttal & lyssning', 'Hör hur orden låter — repetera tills det sitter'],
+          ['🎯', 'Personligt anpassat', 'AI-tester ger dig nästa lektion baserat på vad du kan'],
+          ['🏆', 'Belöningar', 'XP, streaks och nivåer som peppar dig framåt']
+        ]
+      }
+    };
+    var def = defs[id];
+    if (!def) return;
+
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:csFadeIn 0.2s ease-out;';
+    ov.onclick = function(e) { if (e.target === ov) ov.remove(); };
+
+    var featuresHtml = def.features.map(function(f) {
+      return '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">' +
+        '<div style="font-size:22px;line-height:1;flex-shrink:0;width:28px;text-align:center;">' + f[0] + '</div>' +
+        '<div style="flex:1;min-width:0;text-align:left;">' +
+        '<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">' + f[1] + '</div>' +
+        '<div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.4;">' + f[2] + '</div>' +
+        '</div></div>';
+    }).join('');
+
+    ov.innerHTML =
+      '<div style="background:linear-gradient(180deg, rgba(20,30,25,0.98) 0%, rgba(15,20,18,0.98) 100%);border:1.5px solid ' + def.color + '66;border-radius:20px;padding:28px 24px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:88vh;overflow-y:auto;">' +
+      '<div style="font-size:64px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 4px 16px ' + def.color + '88);">' + def.icon + '</div>' +
+      '<div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:4px;letter-spacing:-0.5px;">' + def.title + '</div>' +
+      '<div style="display:inline-block;background:' + def.color + ';color:#fff;font-size:10px;font-weight:900;padding:4px 12px;border-radius:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">🚧 Kommer snart</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;margin-bottom:18px;">' + def.sub + '</div>' +
+      '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:6px 16px;margin-bottom:20px;">' + featuresHtml + '</div>' +
+      '<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:' + def.color + ';color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;width:100%;">OK, ser fram emot det!</button>' +
+      '</div>';
+
+    document.body.appendChild(ov);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
   // Genväg från Profil-fliken till Träna-fliken på en specifik vy.
   // 'ovn'      → Träna → Övningar
   // 'intervju' → Träna → Intervjuträning
@@ -12208,6 +12336,9 @@ function toast(msg){var t=document.getElementById('ovnToast');t.textContent=msg;
           </div>
           <button onclick="savePersonalInfo()" style="width:100%;padding:10px;background:rgba(62,180,137,0.15);border:1.5px solid rgba(62,180,137,0.4);border-radius:10px;color:#3eb489;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Spara</button>
           <div id="piMsg" style="font-size:11px;text-align:center;margin-top:8px;min-height:16px;color:#3eb489;"></div>
+
+          <!-- DIAGNOS-KNAPP (för felsökning av tomma fält) -->
+          <button onclick="if(typeof diagShowStorage==='function') diagShowStorage();" style="width:100%;margin-top:10px;padding:8px;background:rgba(167,139,250,0.1);border:1px dashed rgba(167,139,250,0.4);border-radius:8px;color:#a78bfa;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">🔍 Visa diagnos (vid felsökning)</button>
         </div>
 
         <!-- Logga ut — röd, överst -->
