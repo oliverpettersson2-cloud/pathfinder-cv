@@ -1435,6 +1435,20 @@ function roleSubtitle(){
          (admin.enheter?.name || admin.enhet_name || admin.email || 'Enhet');
 }
 function showErr(msg){const el=document.getElementById('errBox');if(!el)return;el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),8000);}
+// Visa en grön bekräftelse-toast (lägger till en temporär element ovanpå allt)
+function showOk(msg){
+  let el = document.getElementById('okBox');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'okBox';
+    el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(16,185,129,0.95);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:99999;max-width:90vw;text-align:center;opacity:0;transition:opacity 0.2s;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 4000);
+}
 function showLoginInfo(msg,type){const el=document.getElementById('loginMsg');el.textContent=msg;el.className='login-msg '+(type||'error');}
 // Lista över actions som backend inte stödjer än men som har klient-side fallbacks.
 // När en av dessa returnerar 400/404/500 returnerar vi {error:...} tyst istället
@@ -4787,10 +4801,19 @@ function wizardSelectAllTargets(){
 // • 3-8 övningar (skalat efter tid)
 // • Facit
 async function generateLessonGuide() {
-  if (!window.jspdf || !window.jspdf.jsPDF) {
-    showErr('PDF-biblioteket laddas — försök igen om en sekund.');
-    return;
+  try {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      showErr('PDF-biblioteket har inte laddats. Kontrollera internetanslutning och försök igen.');
+      return;
+    }
+    return await _generateLessonGuideImpl();
+  } catch (err) {
+    console.error('[CVmatchen] generateLessonGuide kraschade:', err);
+    showErr('Något gick fel vid generering av lektionsmaterial: ' + (err.message || err));
   }
+}
+
+async function _generateLessonGuideImpl() {
   const { jsPDF } = window.jspdf;
 
   // Anpassa antal uppgifter till lektionstid
