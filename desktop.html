@@ -3360,7 +3360,8 @@
             <textarea class="cv-textarea" id="cv-summary" placeholder="Skriv en kort presentation om dig själv..." rows="8" oninput="cvUpdate('summary', this.value)"></textarea>
             <div class="btn-row">
               <button class="btn btn-secondary" onclick="cvClearSummary()">🗑️ Rensa</button>
-              <button class="btn btn-ai" onclick="cvAiSummary()">✨ AI-förslag</button>
+              <button class="btn btn-ai" onclick="cvAiSummary()" title="AI skriver ett förslag direkt i textrutan">✨ AI-förslag</button>
+              <button class="btn btn-ai" onclick="cvAiSummary3()" title="AI skapar 3 olika förslag — du väljer det som passar bäst">✨ AI 3 förslag</button>
             </div>
           </div>
         </div>
