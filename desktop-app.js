@@ -1797,6 +1797,97 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   }
 
   // ============================================================
+  // NYTT CV — matchande mobilens beteende
+  // ============================================================
+  // Skapar ett nytt CV men BEHÅLLER jobb, utbildning, språk, körkort,
+  // certifikat och referenser. Rensar bara de fält som typiskt skiljer
+  // mellan olika ansökningar (namn/kontakt/profiltext/foto/kompetenser).
+  //
+  // Kompetenser rensas medvetet — de bör matcha den nya yrkestiteln,
+  // och AI:n kan föreslå nya direkt baserat på behållna jobb.
+  // ============================================================
+  window.nyttCV = function() {
+    // Bygg en bekräftelsemodal inline (samma stil som desktops andra overlays)
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(10,12,28,0.85);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    const card = document.createElement('div');
+    card.style.cssText = 'max-width:440px;width:100%;background:#1a1f3a;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:28px;color:#fff;font-family:inherit;';
+
+    const jobCount = (cvData.jobs || []).length;
+    const eduCount = (cvData.education || []).length;
+    const keepSummary = [
+      jobCount ? jobCount + ' jobb' : '',
+      eduCount ? eduCount + ' utbildning' + (eduCount > 1 ? 'ar' : '') : '',
+      (cvData.languages || []).length ? 'språk' : '',
+      (cvData.licenses || []).length ? 'körkort' : '',
+      (cvData.certifications || []).length ? 'certifikat' : '',
+      (cvData.references || []).length ? 'referenser' : ''
+    ].filter(Boolean).join(', ');
+
+    card.innerHTML =
+      '<div style="font-size:32px;margin-bottom:12px;">📝</div>' +
+      '<div style="font-size:20px;font-weight:800;margin-bottom:10px;">Skapa nytt CV?</div>' +
+      '<div style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.75);margin-bottom:18px;">' +
+        'Du börjar om med tomma fält för namn, kontakt, profiltext, foto och kompetenser. ' +
+        (keepSummary ? '<br><br><strong style="color:#3eb489;">Behålls:</strong> ' + keepSummary + '.' : '') +
+      '</div>' +
+      '<div style="display:flex;gap:10px;">' +
+        '<button id="nyttCvCancelBtn" style="flex:1;padding:14px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Avbryt</button>' +
+        '<button id="nyttCvConfirmBtn" style="flex:1;padding:14px;background:linear-gradient(135deg,#3eb489,#10b981);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;">Ja, skapa nytt</button>' +
+      '</div>';
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    document.getElementById('nyttCvCancelBtn').onclick = function() { overlay.remove(); };
+    document.getElementById('nyttCvConfirmBtn').onclick = function() {
+      overlay.remove();
+      nyttCVConfirm();
+    };
+  };
+
+  window.nyttCVConfirm = function() {
+    if (typeof logEvent === 'function') logEvent('cv_created');
+
+    // Behåll: jobb, utbildning, språk, körkort, certifikat, referenser
+    // Rensa: namn, titel, email, telefon, profiltext, foto, kompetenser, mall
+    cvData = {
+      name: '',
+      title: '',
+      email: '',
+      phone: '',
+      summary: '',
+      jobs: cvData.jobs || [],
+      education: cvData.education || [],
+      languages: cvData.languages || [],
+      certifications: cvData.certifications || [],
+      licenses: cvData.licenses || [],
+      references: cvData.references || [],
+      refOnRequest: cvData.refOnRequest || false,
+      skills: [],          // Kompetenser rensas — stämmer sällan med ny titel
+      photoData: null,
+      showPhoto: false,
+      template: 'classic'
+    };
+
+    // Spara + ladda in i formuläret + rendera om allt
+    if (typeof saveCVLocal === 'function') saveCVLocal();
+    if (typeof loadCVIntoForm === 'function') loadCVIntoForm();
+    if (typeof renderJobs === 'function') renderJobs();
+    if (typeof renderEducation === 'function') renderEducation();
+    if (typeof renderSkillsChips === 'function') renderSkillsChips();
+    if (typeof renderLanguages === 'function') renderLanguages();
+    if (typeof renderLicenses === 'function') renderLicenses();
+    if (typeof renderTemplates === 'function') renderTemplates();
+    if (typeof renderPreview === 'function') renderPreview();
+    if (typeof cvSwitchStep === 'function') cvSwitchStep('profil');
+
+    toast('🎯 Nytt CV startat — jobb och utbildning är kvar');
+  };
+
+  // ============================================================
   // STORAGE
   // ============================================================
   function safeGet(key) {
@@ -2592,6 +2683,38 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
   }
 
   // ============================================================
+  // AI-CACHE — sparar AI-svar i localStorage så samma input
+  // (t.ex. "lagerarbetare" → kompetenser) inte triggar nytt API-anrop.
+  // Portad från mobilen för att minska kostnader och ge snabbare UX.
+  // ============================================================
+  const AI_CACHE_KEY = 'pf_ai_cache';
+  const AI_CACHE_MAX = 50; // Max antal sparade svar — äldsta rensas automatiskt
+
+  function aiCacheGet(key) {
+    try {
+      const cache = JSON.parse(localStorage.getItem(AI_CACHE_KEY) || '{}');
+      return cache[key] || null;
+    } catch(e) { return null; }
+  }
+
+  function aiCacheSet(key, value) {
+    try {
+      const cache = JSON.parse(localStorage.getItem(AI_CACHE_KEY) || '{}');
+      cache[key] = value;
+      // Rensa äldsta posten om vi når taket (FIFO)
+      const keys = Object.keys(cache);
+      if (keys.length > AI_CACHE_MAX) {
+        delete cache[keys[0]];
+      }
+      localStorage.setItem(AI_CACHE_KEY, JSON.stringify(cache));
+    } catch(e) {}
+  }
+
+  function aiCacheKey(...parts) {
+    return parts.filter(Boolean).join('|').toLowerCase().trim();
+  }
+
+  // ============================================================
   // SETTINGS
   // ============================================================
   window.openSettings = function() {
@@ -3092,6 +3215,21 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
 
     const btn = document.getElementById('jobAutofillBtn');
     const originalText = btn ? btn.textContent : '';
+
+    // ── Cache-check: samma titel + bolag + period + duplicate-count → samma uppgifter ──
+    // OBS: vi inkluderar duplicateCount så att cachen INTE återanvänds när
+    // användaren har flera jobb med samma titel (då vill vi ha unika svar varje gång).
+    const jobCacheKey = aiCacheKey('job', title, company, periodStr, String(duplicateCount));
+    const cachedTasks = aiCacheGet(jobCacheKey);
+    if (cachedTasks && Array.isArray(cachedTasks) && cachedTasks.length >= 1) {
+      if (cachedTasks[0]) document.getElementById('jobDesc1').value = cachedTasks[0];
+      if (cachedTasks[1]) document.getElementById('jobDesc2').value = cachedTasks[1];
+      if (cachedTasks[2]) document.getElementById('jobDesc3').value = cachedTasks[2];
+      toast('⚡ Arbetsuppgifter från cache');
+      logEvent('ai_cv_analysis', { context: 'job_autofill', source: 'cache' });
+      return;
+    }
+
     if (btn) { btn.disabled = true; btn.textContent = '⏳ AI genererar...'; }
     showAiLoader('Genererar arbetsuppgifter...', 'AI skriver unika meningar');
 
@@ -3151,6 +3289,9 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       if (tasks[0]) document.getElementById('jobDesc1').value = tasks[0];
       if (tasks[1]) document.getElementById('jobDesc2').value = tasks[1];
       if (tasks[2]) document.getElementById('jobDesc3').value = tasks[2];
+
+      // Spara i cache för framtida anrop med samma titel/bolag/period
+      aiCacheSet(jobCacheKey, tasks);
 
       hideAiLoader();
       toast('✨ AI-förslag klara!');
@@ -5356,6 +5497,20 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       '- ' + (e.degree || '') + (e.schoolName || e.school ? ' (' + (e.schoolName || e.school) + ')' : '')
     ).join('\n');
 
+    // ── Cache-check: samma titel + jobb-summary → samma kompetenser ──
+    const skillsCacheKey = aiCacheKey('skills', title, jobSummary.slice(0, 80));
+    const cachedSkills = aiCacheGet(skillsCacheKey);
+    if (cachedSkills && Array.isArray(cachedSkills) && cachedSkills.length) {
+      cachedSkills.forEach(s => { if (!cvData.skills.includes(s)) cvData.skills.push(s); });
+      saveCVLocal();
+      renderSkillsChips();
+      renderPreview();
+      markStepDone('mer');
+      toast('⚡ ' + cachedSkills.length + ' kompetenser från cache');
+      logEvent('ai_skill_match', { title, source: 'cache', count: cachedSkills.length });
+      return;
+    }
+
     showAiLoader('Hämtar kompetenser...', 'AI analyserar dina jobb och utbildning');
     try {
       const userContent =
@@ -5381,6 +5536,8 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       const parsed = JSON.parse(raw);
       const skills = (parsed.kompetenser || []).slice(0, 6);
       if (!skills.length) throw new Error('Inga kompetenser');
+      // Spara i cache för framtida anrop med samma titel/jobb
+      aiCacheSet(skillsCacheKey, skills);
       // Slå ihop med existerande, dedupe
       skills.forEach(s => { if (!cvData.skills.includes(s)) cvData.skills.push(s); });
       saveCVLocal();
@@ -5603,6 +5760,20 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       '- ' + (e.degree || '') + (e.schoolName || e.school ? ' (' + (e.schoolName || e.school) + ')' : '')
     ).join('\n');
 
+    // ── Cache-check: samma titel + jobb + kompetenser → samma profiltext ──
+    const profileCacheKey = aiCacheKey('summary', title, jobSummary.slice(0, 80), skills.slice(0, 40));
+    const cachedSummary = aiCacheGet(profileCacheKey);
+    if (cachedSummary && typeof cachedSummary === 'string' && cachedSummary.length > 20) {
+      cvData.summary = cachedSummary;
+      document.getElementById('cv-summary').value = cachedSummary;
+      saveCVLocal();
+      renderPreview();
+      markStepDone('text');
+      toast('⚡ Profiltext från cache');
+      logEvent('profile_generated', { source: 'cache' });
+      return;
+    }
+
     showAiLoader('Skriver profiltext...', 'AI bygger en personlig presentation baserat på din bakgrund');
     try {
       const userContent =
@@ -5644,12 +5815,211 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
       renderPreview();
       markStepDone('text');
       hideAiLoader();
+      // Spara i cache för framtida anrop med samma kontext
+      aiCacheSet(profileCacheKey, text);
       toast('✨ Profiltext genererad');
       logEvent('profile_generated');
     } catch(e) {
       hideAiLoader();
       toast('Kunde inte generera: ' + e.message, 'error');
     }
+  };
+
+  // ============================================================
+  // CV: PROFILTEXT — 3 ALTERNATIV (portad från mobilen)
+  // ============================================================
+  // Genererar 3 olika profiltextsförslag och visar dem i en modal där
+  // användaren väljer det som passar bäst. Komplement till cvAiSummary
+  // som ger ett enda direkt-svar.
+  // ============================================================
+  window.cvAiSummary3 = async function() {
+    const title = (cvData.title || document.getElementById('cv-title').value || '').trim();
+    const existingSummary = (cvData.summary || '').trim();
+
+    // Om varken titel eller befintlig profiltext finns — kräv titel
+    if (!title && !existingSummary) {
+      toast('Skriv in en jobbtitel först', 'error');
+      return;
+    }
+    const effectiveTitle = title || 'samma yrkestitel som tidigare';
+
+    const jobSummary = (cvData.jobs || []).map(j =>
+      j.title + (j.company ? ' på ' + j.company : '') +
+      ([j.desc1, j.desc2, j.desc3].filter(Boolean).length
+        ? ': ' + [j.desc1, j.desc2, j.desc3].filter(Boolean).join('; ')
+        : '')
+    ).join('\n') || 'Ingen arbetslivserfarenhet angiven';
+
+    const skillsList = (cvData.skills || []).join(', ') || '';
+    const eduList = (cvData.education || []).map(e =>
+      [e.degree, e.schoolName || e.school].filter(Boolean).join(' på ')
+    ).join(', ') || '';
+
+    const firstName = (cvData.name || '').trim().split(' ')[0] || '';
+
+    // ── Cache-check: samma kontext → samma 3 alternativ ──
+    const cacheKey = aiCacheKey('summary3', effectiveTitle, jobSummary.slice(0, 80), skillsList.slice(0, 40));
+    const cached = aiCacheGet(cacheKey);
+    if (cached && Array.isArray(cached) && cached.length >= 1) {
+      showSummaryAlternativesModal(cached);
+      toast('⚡ Alternativ från cache', 'ai');
+      logEvent('profile_generated', { source: 'cache', variant: '3-alt' });
+      return;
+    }
+
+    const prompt = [
+      'Du ska skriva 3 profiltexter på svenska för ett CV.',
+      'Texterna ska kännas äkta, varma och mänskligt skrivna — INTE som AI-text.',
+      '',
+      'Info om personen:',
+      firstName ? 'Förnamn: ' + firstName : '',
+      'Sökt titel: ' + effectiveTitle,
+      jobSummary ? 'Erfarenhet:\n' + jobSummary : '',
+      skillsList ? 'Kompetenser: ' + skillsList : '',
+      eduList    ? 'Utbildning: ' + eduList    : '',
+      '',
+      'VIKTIGA REGLER:',
+      '- Skriv ALLTID i första person (jag/mig/min — ALDRIG "han/hon/de")',
+      '- Varje alternativ: TVÅ stycken separerade med \\n\\n, totalt minst 120 ord',
+      '- Stycke 1 (3-4 meningar): presentera dig, din bakgrund och dina styrkor',
+      '- Stycke 2 (3-4 meningar): vad du bidrar med, vad som driver dig',
+      firstName ? '- Alt 1 ska börja med "' + firstName + ' heter jag" eller liknande varm inledning' : '- Alt 1: varm, personlig inledning i jagform',
+      '- Alt 2: börja med en konkret styrka eller passion, fortfarande i jagform',
+      '- Alt 3: fokus på samarbete och vad du bidrar med, jagform',
+      '- Naturligt talspråk, inte stelt "CV-språk"',
+      '- Variera inledningarna kraftigt — inga upprepningar mellan alternativen',
+      '- Basera enbart på given info, hitta inte på fakta',
+      '- Undvik klichéer som "driven", "passionerad", "dedikerad", "resultatorienterad"',
+      '',
+      'Svara BARA med JSON: {"alternativ": ["text1\\n\\ntext2", "text1\\n\\ntext2", "text1\\n\\ntext2"]}'
+    ].filter(Boolean).join('\n');
+
+    showAiLoader('Genererar 3 profiltexter...', 'AI skapar olika varianter att välja mellan');
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1200,
+          system: 'Du är en svensk CV-coach som skriver profiltexter som INTE låter AI-genererade. Mänsklig, konkret, berättande svenska — inte corporate buzzwords. Alltid i FÖRSTA PERSON.',
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) throw new Error('API-fel ' + response.status);
+
+      const data = await response.json();
+      const rawText = (data.content && data.content[0] && data.content[0].text || '')
+        .trim().replace(/```json|```/g, '').trim();
+
+      let parsed;
+      try { parsed = JSON.parse(rawText); }
+      catch(e) {
+        // Fallback: hitta första {…}-blocket
+        const m = rawText.match(/\{[\s\S]*\}/);
+        if (!m) throw new Error('AI svarade i fel format');
+        parsed = JSON.parse(m[0]);
+      }
+
+      const alts = (parsed.alternativ || []).filter(a => a && typeof a === 'string');
+      if (alts.length < 1) throw new Error('Inga alternativ returnerades');
+
+      // Spara i cache
+      aiCacheSet(cacheKey, alts);
+
+      hideAiLoader();
+      showSummaryAlternativesModal(alts);
+      logEvent('profile_generated', { source: 'ai', variant: '3-alt', count: alts.length });
+
+    } catch(e) {
+      hideAiLoader();
+      console.error('[cvAiSummary3] Fel:', e);
+      toast('Kunde inte generera alternativ: ' + (e.message || 'okänt fel'), 'error');
+    }
+  };
+
+  // Visar de 3 alternativen i en modal — användaren väljer ett
+  function showSummaryAlternativesModal(alts) {
+    // Spara på window så selectProfileSummary kan läsa dem
+    window.currentSummaryAlternatives = alts;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'summaryAlternativesOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(10,12,28,0.85);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);overflow-y:auto;';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    const card = document.createElement('div');
+    card.style.cssText = 'max-width:720px;width:100%;background:#1a1f3a;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:28px;color:#fff;font-family:inherit;max-height:90vh;overflow-y:auto;';
+
+    let html =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">' +
+        '<div style="font-size:28px;">✨</div>' +
+        '<div style="font-size:20px;font-weight:800;">Välj profiltext</div>' +
+      '</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:20px;">' +
+        'AI har skrivit ' + alts.length + ' alternativ. Klicka på det som känns mest som du.' +
+      '</div>';
+
+    alts.forEach((text, i) => {
+      const escaped = (text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      html +=
+        '<button class="summary-alt-btn" data-idx="' + i + '" style="' +
+          'width:100%;padding:18px;margin-bottom:12px;' +
+          'background:rgba(124,58,237,0.12);border:1.5px solid rgba(124,58,237,0.35);' +
+          'border-radius:14px;color:#fff;cursor:pointer;font-family:inherit;text-align:left;' +
+          'transition:all 0.15s;line-height:1.6;font-size:13px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">' +
+            '<span style="font-size:18px;">📋</span>' +
+            '<strong style="font-size:13px;font-weight:800;color:#a78bfa;">Alternativ ' + (i + 1) + '</strong>' +
+          '</div>' +
+          '<div style="white-space:pre-wrap;color:rgba(255,255,255,0.92);">' + escaped + '</div>' +
+        '</button>';
+    });
+
+    html +=
+      '<button id="summaryAltCancelBtn" style="' +
+        'margin-top:8px;width:100%;padding:14px;' +
+        'background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);' +
+        'border-radius:12px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;' +
+        'cursor:pointer;font-family:inherit;">Avbryt</button>';
+
+    card.innerHTML = html;
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    // Hover-effekter och klick-handlers
+    card.querySelectorAll('.summary-alt-btn').forEach(btn => {
+      btn.onmouseenter = () => { btn.style.background = 'rgba(124,58,237,0.22)'; btn.style.borderColor = 'rgba(124,58,237,0.55)'; };
+      btn.onmouseleave = () => { btn.style.background = 'rgba(124,58,237,0.12)'; btn.style.borderColor = 'rgba(124,58,237,0.35)'; };
+      btn.onclick = () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        selectProfileSummary(idx);
+      };
+    });
+    document.getElementById('summaryAltCancelBtn').onclick = () => overlay.remove();
+  }
+
+  // Sätter vald profiltext på CV:t (anropas från modal-knappen)
+  window.selectProfileSummary = function(idx) {
+    const alts = window.currentSummaryAlternatives;
+    if (!alts || !alts[idx]) return;
+
+    cvData.summary = alts[idx];
+    const ta = document.getElementById('cv-summary');
+    if (ta) ta.value = alts[idx];
+
+    if (typeof saveCVLocal === 'function') saveCVLocal();
+    if (typeof renderPreview === 'function') renderPreview();
+    if (typeof markStepDone === 'function') markStepDone('text');
+
+    // Stäng modalen
+    const overlay = document.getElementById('summaryAlternativesOverlay');
+    if (overlay) overlay.remove();
+
+    toast('✨ Profiltext vald!', 'ai');
+    logEvent('profile_selected', { idx });
   };
 
   // ============================================================
@@ -5948,19 +6318,27 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
         btn.onmouseleave = () => { btn.style.background = 'rgba(255,255,255,0.03)'; btn.style.borderColor = 'rgba(255,255,255,0.15)'; };
         btn.innerHTML =
           '<div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">➕</div>' +
-          '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.5);">Skapa nytt CV</div>';
+          '<div style="flex:1;">' +
+            '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);">Skapa nytt CV</div>' +
+            '<div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px;">Behåller jobb och utbildning</div>' +
+          '</div>';
         btn.onclick = function() {
           overlay.remove();
-          // Rensa nuvarande arbetsdata för ett rent nytt CV
-          cvData = createEmptyCV();
-          saveCVLocal();
-          loadCVIntoForm();
-          renderJobs(); renderEducation();
-          renderSkillsChips(); renderLanguages(); renderLicenses();
-          renderTemplates();
-          renderPreview();
-          cvSwitchStep('profil');
-          toast('🎯 Nytt CV startat — fyll i informationen');
+          // Använd bekräftelse-modal — behåller jobb/utbildning/språk/körkort/cert/refs
+          if (typeof window.nyttCV === 'function') {
+            window.nyttCV();
+          } else {
+            // Fallback: gamla beteendet (rensar allt) om nyttCV inte finns
+            cvData = createEmptyCV();
+            saveCVLocal();
+            loadCVIntoForm();
+            renderJobs(); renderEducation();
+            renderSkillsChips(); renderLanguages(); renderLicenses();
+            renderTemplates();
+            renderPreview();
+            cvSwitchStep('profil');
+            toast('🎯 Nytt CV startat — fyll i informationen');
+          }
         };
         row.appendChild(btn);
       }
@@ -6570,8 +6948,115 @@ pr:['Vilken utbildning passar mig baserat på [din bakgrund]?','Hitta YH-utbildn
           : '') +
       '</div>';
     });
+
+    // Export-knapp för aktivitetsrapport (Arbetsförmedlingen)
+    html += '<div style="margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);">' +
+      '<button onclick="diaryExport()" class="btn btn-secondary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;">' +
+        '📋 Exportera aktivitetsrapport' +
+      '</button>' +
+      '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;text-align:center;line-height:1.5;">' +
+        'Sammanställer alla sökta jobb veckovis — användbart för Arbetsförmedlingen' +
+      '</div>' +
+    '</div>';
+
     return html;
   }
+
+  // ============================================================
+  // JOBBDAGBOK — getDiary + diaryExport (portad från mobilen)
+  // ============================================================
+  // Läser jobbdagboken från localStorage med 45 dagars TTL.
+  // Samma nyckel som mobilen ('pathfinder_job_diary') så datan delas.
+  if (typeof window.getDiary !== 'function') {
+    window.getDiary = function() {
+      const TTL = 45 * 24 * 3600 * 1000;
+      try {
+        return JSON.parse(localStorage.getItem('pathfinder_job_diary') || '[]')
+          .filter(e => Date.now() - e.savedAt < TTL);
+      } catch(e) { return []; }
+    };
+  }
+
+  // Exporterar aktivitetsrapport som text — försöker dela via Web Share API,
+  // faller tillbaka till clipboard, sist en prompt-dialog.
+  window.diaryExport = function() {
+    const allDiary = (typeof getDiary === 'function') ? getDiary() : [];
+    const diary = allDiary.filter(e => e.applied);
+    if (!diary.length) {
+      toast('Markera jobb som sökta först!', 'error');
+      return;
+    }
+
+    const statusLabels = {
+      sokt:     'Sökt',
+      intervju: 'Kallad på intervju',
+      fatt:     'Fått jobbet!',
+      nej:      'Inget svar / Nej'
+    };
+
+    // Gruppera jobb veckovis (måndag-söndag)
+    const weeks = {};
+    diary.forEach(e => {
+      const d = new Date(e.savedAt);
+      const mon = new Date(d);
+      mon.setDate(d.getDate() - d.getDay() + 1);
+      const wk = 'Vecka ' + mon.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
+      if (!weeks[wk]) weeks[wk] = [];
+      weeks[wk].push(e);
+    });
+
+    const today = new Date().toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
+    let text = 'JOBBSÖKNING — AKTIVITETSRAPPORT\n';
+    text += '='.repeat(35) + '\n';
+    text += 'Skapad: ' + today + '\n\n';
+
+    Object.entries(weeks).forEach(([week, entries]) => {
+      text += week + '\n';
+      entries.forEach(e => {
+        const dStr = new Date(e.savedAt).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' });
+        const statusTxt = statusLabels[e.status] || 'Sökt';
+        text += '  • ' + (e.jobTitle || 'Okänt jobb') + (e.company ? ' hos ' + e.company : '') + ' (' + dStr + ')\n';
+        text += '    Status: ' + statusTxt + '\n';
+        if (e.jobUrl) text += '    ' + e.jobUrl + '\n';
+      });
+      text += '\n';
+    });
+
+    // Sammanfattning
+    const counts = { sokt: 0, intervju: 0, fatt: 0, nej: 0 };
+    diary.forEach(e => {
+      const s = e.status || 'sokt';
+      if (counts[s] !== undefined) counts[s]++;
+    });
+    text += '-'.repeat(35) + '\n';
+    text += 'Totalt sökta: ' + diary.length + ' jobb\n';
+    if (counts.intervju) text += 'Kallad på intervju: ' + counts.intervju + '\n';
+    if (counts.fatt)     text += 'Fått jobbet: ' + counts.fatt + '\n';
+    if (counts.nej)      text += 'Inget svar: ' + counts.nej + '\n';
+    text += '\nSkapad med CVmatchen av PathfinderAI';
+
+    // Försök dela via OS-share (mobil/PWA), annars clipboard, annars prompt
+    if (navigator.share) {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const file = new File([blob], 'aktivitetsrapport.txt', { type: 'text/plain' });
+      navigator.share({ files: [file], title: 'Jobbsökning aktivitetsrapport' })
+        .then(() => { if (typeof logEvent === 'function') logEvent('diary_exported', { method: 'share', count: diary.length }); })
+        .catch(() => {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => toast('✅ Kopierat till urklipp!'));
+          }
+        });
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          toast('✅ Kopierat till urklipp!');
+          if (typeof logEvent === 'function') logEvent('diary_exported', { method: 'clipboard', count: diary.length });
+        })
+        .catch(() => prompt('Kopiera texten nedan:', text));
+    } else {
+      prompt('Kopiera texten nedan:', text);
+    }
+  };
 
   // ============================================================
   // PROFIL: AVTAL & INSTÄLLNINGAR (speglar mobilen)
