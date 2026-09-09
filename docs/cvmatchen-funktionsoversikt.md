@@ -2,7 +2,7 @@
 
 **AI-driven jobb- och CV-plattform för deltagare i ekonomiskt bistånd, aktivitetskrav och arbetsmarknadsinsatser.**
 
-PathfinderAI AB · www.cvmatchen.com · oliver@cvmatchen.se
+PathfinderAI (enskild firma) · www.cvmatchen.com · oliver@cvmatchen.se
 
 ---
 
@@ -180,7 +180,7 @@ Detaljerad genomgång lämnas på begäran för respektive upphandling.
 - Kommunen har rätt att genomföra säkerhetsrevision
 
 ### Informationshantering
-- Kommunen är personuppgiftsansvarig, PathfinderAI AB är biträde
+- Kommunen är personuppgiftsansvarig, PathfinderAI (enskild firma) är biträde
 - All data inom EU/EES
 - Permanent radering på begäran
 - Personuppgiftsbiträdesavtal tecknas inför pilot
@@ -194,7 +194,7 @@ Detaljerad genomgång lämnas på begäran för respektive upphandling.
 
 ## 6. Kontakt
 
-PathfinderAI AB
+PathfinderAI (enskild firma)
 Oliver Pettersson — grundare och utvecklare
 oliver@cvmatchen.se
 www.cvmatchen.com

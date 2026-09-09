@@ -2,7 +2,7 @@
 
 **CVmatchen — AI-driven jobb- och CV-plattform för deltagare i ekonomiskt bistånd och aktivitetskrav.**
 
-PathfinderAI AB · oliver@cvmatchen.se · www.cvmatchen.com
+PathfinderAI (enskild firma) · oliver@cvmatchen.se · www.cvmatchen.com
 
 ---
 
@@ -58,4 +58,4 @@ separat säkerhetsdokument.
 
 ---
 
-Kontakt: Oliver Pettersson · oliver@cvmatchen.se · PathfinderAI AB
+Kontakt: Oliver Pettersson · oliver@cvmatchen.se · PathfinderAI (enskild firma)

@@ -37,7 +37,7 @@ Tre färdiga mall: (1) uppföljning HBG, (2) första-kontakt Lindow/Perstorp,
 > Vänliga hälsningar,
 > Oliver Pettersson
 > Studie- & Yrkesvägledare · Arbetsmarknadsenheten Helsingborg
-> Grundare, PathfinderAI AB
+> PathfinderAI (enskild firma)
 > 0766 07 17 57 · oliver.mac@pathfinderai.se
 > cvmatchen.com
 
@@ -82,7 +82,7 @@ Tre färdiga mall: (1) uppföljning HBG, (2) första-kontakt Lindow/Perstorp,
 > Vänliga hälsningar,
 > Oliver Pettersson
 > Studie- & Yrkesvägledare · Arbetsmarknadsenheten Helsingborg
-> Grundare, PathfinderAI AB
+> PathfinderAI (enskild firma)
 > 0766 07 17 57 · oliver.mac@pathfinderai.se
 > cvmatchen.com
 

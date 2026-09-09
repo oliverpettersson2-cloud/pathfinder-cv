@@ -95,4 +95,4 @@ Funktionsöversikten kan skickas i efterhand om hon vill ha en längre beskrivni
 
 ---
 
-*Internt minnesdokument. Avsedd endast för Oliver Pettersson, PathfinderAI AB.*
+*Internt minnesdokument. Avsedd endast för Oliver Pettersson, PathfinderAI (enskild firma).*

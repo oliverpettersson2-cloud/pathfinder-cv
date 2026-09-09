@@ -90,7 +90,7 @@ Kärnpunkter (välj 2–3 som matchar vad de just sa):
 > CSV för deltagardata). Inga proprietära format, inget inlåst. Det skrivs in
 > i PuB-avtalet.
 >
-> Själva tjänsten och koden ägs av PathfinderAI AB — det är vår produkt och
+> Själva tjänsten och koden ägs av PathfinderAI — det är vår produkt och
 > vår IP. Ni licensierar nyttjanderätten under avtalstiden. Det är samma modell
 > som med Office 365, Visma eller andra SaaS-tjänster ni redan använder."
 
@@ -178,7 +178,7 @@ Mejl-mall: se `docs/mejl-utkast-2026-06-07.md`
 - **Allt EU. Allt GDPR. Bedrock i Frankfurt. Zero data retention.** (säg det utantill)
 - **990 kr per deltagare per år** vs **8 000–15 000 hos externa**
 - **2 veckor från avtal till drift**
-- **PathfinderAI AB**, jag är grundare, SYV i Helsingborg
+- **PathfinderAI (enskild firma)**, jag är grundare, SYV i Helsingborg
 - **105 moduler · 6 spår** (Intro · Arbete · Studier · Hälsa · Ekonomi · Digitalt)
 - **Svenska + 23 språk** för översättning
 - **WCAG 2.1 AA** delvis (full inom 2026-06-30)
@@ -189,7 +189,7 @@ Detta är centralt. Förväxla ALDRIG dessa två:
 
 | Vad? | Vem äger? |
 |---|---|
-| **Källkoden + tjänsten CVmatchen** | **PathfinderAI AB** (vår IP) |
+| **Källkoden + tjänsten CVmatchen** | **PathfinderAI** (vår IP) |
 | **Deltagardata, CV, progress** | **Kunden** (kommunen, som personuppgiftsansvarig) |
 
 - Kommunen **licensierar nyttjanderätten** — de köper INTE koden.
